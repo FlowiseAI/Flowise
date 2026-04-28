@@ -1,0 +1,95 @@
+.edgebutton {
+    width: 20px;
+    height: 20px;
+    background: #eee;
+    border: 1px solid #fff;
+    cursor: pointer;
+    border-radius: 50%;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.edgebutton:hover {
+    background: #5e35b1;
+    color: #eee;
+    box-shadow: 0 0 6px 2px rgba(0, 0, 0, 0.08);
+}
+
+.edgebutton-foreignobject div {
+    background: transparent;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+}
+
+.reactflow-parent-wrapper {
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+}
+
+.reactflow-parent-wrapper .reactflow-wrapper {
+    flex-grow: 1;
+    height: 100%;
+}
+
+.chatflow-canvas .react-flow__handle-connecting {
+    cursor: not-allowed;
+    background: #db4e4e !important;
+}
+
+.chatflow-canvas .react-flow__handle-valid {
+    cursor: crosshair;
+    background: #5dba62 !important;
+}
+
+.agent-flow-edge-selector:hover {
+    cursor: pointer;
+}
+
+.agent-flow-edge-selector:hover + .agent-flow-edge {
+    stroke-width: 3 !important;
+    opacity: 1;
+}
+
+/* Dark mode controls styling */
+.dark-mode-controls {
+    --xy-controls-button-background-color-default: #2d2d2d;
+    --xy-controls-button-background-color-hover-default: #404040;
+    --xy-controls-button-border-color-default: #525252;
+    --xy-controls-box-shadow-default: 0 0 2px 1px rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode-controls .react-flow__controls-button {
+    background-color: #2d2d2d;
+    border-color: #525252;
+    color: #ffffff;
+    border: 1px solid #525252;
+}
+
+.dark-mode-controls .react-flow__controls-button:hover {
+    background-color: #404040;
+}
+
+.dark-mode-controls .react-flow__controls-button.react-flow__controls-interactive {
+    background-color: #2d2d2d;
+    border-color: #525252;
+    color: #ffffff;
+}
+
+.dark-mode-controls .react-flow__controls-button.react-flow__controls-interactive:hover {
+    background-color: #404040;
+}
+
+.dark-mode-controls .react-flow__controls-button svg {
+    color: #ffffff;
+    fill: #ffffff;
+}
+
+.dark-mode-controls .react-flow__controls-button:hover svg {
+    color: #ffffff;
+    fill: #ffffff;
+}

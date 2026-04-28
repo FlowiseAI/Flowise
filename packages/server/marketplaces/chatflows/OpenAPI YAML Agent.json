@@ -1,0 +1,459 @@
+{
+    "description": "Given an OpenAPI YAML file, agent automatically decide which API to call, generating url and body request from conversation",
+    "framework": ["Langchain"],
+    "usecases": ["Interacting with API"],
+    "nodes": [
+        {
+            "id": "toolAgent_0",
+            "position": {
+                "x": 2142.702888476286,
+                "y": 52.064582962824204
+            },
+            "type": "customNode",
+            "data": {
+                "id": "toolAgent_0",
+                "label": "Tool Agent",
+                "version": 2,
+                "name": "toolAgent",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
+                "category": "Agents",
+                "description": "Agent that uses Function Calling to pick the tools and args to call",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessage",
+                        "type": "string",
+                        "default": "You are a helpful AI assistant.",
+                        "description": "If Chat Prompt Template is provided, this will be ignored",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "toolAgent_0-input-systemMessage-string"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "toolAgent_0-input-maxIterations-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "toolAgent_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "toolAgent_0-input-memory-BaseChatMemory"
+                    },
+                    {
+                        "label": "Tool Calling Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat",
+                        "id": "toolAgent_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Chat Prompt Template",
+                        "name": "chatPromptTemplate",
+                        "type": "ChatPromptTemplate",
+                        "description": "Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable",
+                        "optional": true,
+                        "id": "toolAgent_0-input-chatPromptTemplate-ChatPromptTemplate"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "toolAgent_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{openAPIToolkit_0.data.instance}}"],
+                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "model": "{{chatAnthropic_0.data.instance}}",
+                    "chatPromptTemplate": "",
+                    "systemMessage": "You are an agent that can interact with the API to perform specific tasks based on user requests.\n\nYour main goal is to understand the user's needs, make appropriate API calls, and return the results in a clear format. Ensure you verify inputs before making API requests and handle errors gracefully if the API fails.\n\n# Steps\n\n1. **Receive User Input:** Listen carefully to the user's request and identify key parameters needed for the API call.\n2. **Validate Input:** Ensure that the user input is in the correct format and contains all necessary information.\n3. **Make API Call:** Use the provided OpenAPI tools to call appropriate API endpoint with the validated input.\n",
+                    "inputModeration": "",
+                    "maxIterations": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "toolAgent_0-output-toolAgent-AgentExecutor|BaseChain|Runnable",
+                        "name": "toolAgent",
+                        "label": "AgentExecutor",
+                        "description": "Agent that uses Function Calling to pick the tools and args to call",
+                        "type": "AgentExecutor | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 483,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2142.702888476286,
+                "y": 52.064582962824204
+            },
+            "dragging": false
+        },
+        {
+            "id": "bufferMemory_0",
+            "position": {
+                "x": 1017.5366991719394,
+                "y": 70.40237946649512
+            },
+            "type": "customNode",
+            "data": {
+                "id": "bufferMemory_0",
+                "label": "Buffer Memory",
+                "version": 2,
+                "name": "bufferMemory",
+                "type": "BufferMemory",
+                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Retrieve chat messages stored in database",
+                "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "bufferMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "bufferMemory_0-input-memoryKey-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "sessionId": "",
+                    "memoryKey": "chat_history"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+                        "name": "bufferMemory",
+                        "label": "BufferMemory",
+                        "description": "Retrieve chat messages stored in database",
+                        "type": "BufferMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 250,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1017.5366991719394,
+                "y": 70.40237946649512
+            },
+            "dragging": false
+        },
+        {
+            "id": "chatAnthropic_0",
+            "position": {
+                "x": 1782.2489802995697,
+                "y": -97.03292069533617
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatAnthropic_0",
+                "label": "ChatAnthropic",
+                "version": 8,
+                "name": "chatAnthropic",
+                "type": "ChatAnthropic",
+                "baseClasses": ["ChatAnthropic", "ChatAnthropicMessages", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Wrapper around ChatAnthropic large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["anthropicApi"],
+                        "id": "chatAnthropic_0-input-credential-credential",
+                        "display": true
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "claude-3-haiku",
+                        "id": "chatAnthropic_0-input-modelName-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatAnthropic_0-input-temperature-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Streaming",
+                        "name": "streaming",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_0-input-streaming-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokensToSample",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_0-input-maxTokensToSample-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Top P",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_0-input-topP-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_0-input-topK-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Extended Thinking",
+                        "name": "extendedThinking",
+                        "type": "boolean",
+                        "description": "Enable extended thinking for reasoning model such as Claude Sonnet 3.7",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_0-input-extendedThinking-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Budget Tokens",
+                        "name": "budgetTokens",
+                        "type": "number",
+                        "step": 1,
+                        "default": 1024,
+                        "description": "Maximum number of tokens Claude is allowed use for its internal reasoning process",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_0-input-budgetTokens-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Allow image input. Refer to the <a href=\"https://docs.flowiseai.com/using-flowise/uploads#image\" target=\"_blank\">docs</a> for more details.",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatAnthropic_0-input-allowImageUploads-boolean",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatAnthropic_0-input-cache-BaseCache",
+                        "display": true
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "claude-3-5-haiku-latest",
+                    "temperature": 0.9,
+                    "streaming": true,
+                    "maxTokensToSample": "",
+                    "topP": "",
+                    "topK": "",
+                    "extendedThinking": "",
+                    "budgetTokens": 1024,
+                    "allowImageUploads": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatAnthropic_0-output-chatAnthropic-ChatAnthropic|ChatAnthropicMessages|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "chatAnthropic",
+                        "label": "ChatAnthropic",
+                        "description": "Wrapper around ChatAnthropic large language models that use the Chat endpoint",
+                        "type": "ChatAnthropic | ChatAnthropicMessages | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 668,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1782.2489802995697,
+                "y": -97.03292069533617
+            },
+            "dragging": false
+        },
+        {
+            "id": "openAPIToolkit_0",
+            "position": {
+                "x": 1406.3474125716532,
+                "y": -26.543208700976493
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAPIToolkit_0",
+                "label": "OpenAPI Toolkit",
+                "version": 2,
+                "name": "openAPIToolkit",
+                "type": "OpenAPIToolkit",
+                "baseClasses": ["OpenAPIToolkit", "Tool"],
+                "category": "Tools",
+                "description": "Load OpenAPI specification, and converts each API endpoint to a tool",
+                "inputParams": [
+                    {
+                        "label": "YAML File",
+                        "name": "yamlFile",
+                        "type": "file",
+                        "fileType": ".yaml",
+                        "id": "openAPIToolkit_0-input-yamlFile-file",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Direct",
+                        "name": "returnDirect",
+                        "description": "Return the output of the tool directly to the user",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "openAPIToolkit_0-input-returnDirect-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Headers",
+                        "name": "headers",
+                        "type": "json",
+                        "description": "Request headers to be sent with the API request. For example, {\"Authorization\": \"Bearer token\"}",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "openAPIToolkit_0-input-headers-json",
+                        "display": true
+                    },
+                    {
+                        "label": "Remove null parameters",
+                        "name": "removeNulls",
+                        "type": "boolean",
+                        "optional": true,
+                        "description": "Remove all keys with null values from the parsed arguments",
+                        "id": "openAPIToolkit_0-input-removeNulls-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Custom Code",
+                        "name": "customCode",
+                        "type": "code",
+                        "hint": {
+                            "label": "How to use",
+                            "value": "- **Libraries:**  \n  You can use any libraries imported in Flowise.\n\n- **Tool Input Arguments:**  \n  Tool input arguments are available as the following variables:\n  - `$PathParameters`\n  - `$QueryParameters`\n  - `$RequestBody`\n\n- **HTTP Requests:**  \n  By default, you can get the following values for making HTTP requests:\n  - `$url`\n  - `$options`\n\n- **Default Flow Config:**  \n  You can access the default flow configuration using these variables:\n  - `$flow.sessionId`\n  - `$flow.chatId`\n  - `$flow.chatflowId`\n  - `$flow.input`\n  - `$flow.state`\n\n- **Custom Variables:**  \n  You can get custom variables using the syntax:\n  - `$vars.<variable-name>`\n\n- **Return Value:**  \n  The function must return a **string** value at the end.\n\n```js\nconst fetch = require('node-fetch');\nconst url = $url;\nconst options = $options;\n\ntry {\n\tconst response = await fetch(url, options);\n\tconst resp = await response.json();\n\treturn JSON.stringify(resp);\n} catch (error) {\n\tconsole.error(error);\n\treturn '';\n}\n\n```\n"
+                        },
+                        "codeExample": "const fetch = require('node-fetch');\nconst url = $url;\nconst options = $options;\n\ntry {\n\tconst response = await fetch(url, options);\n\tconst resp = await response.json();\n\treturn JSON.stringify(resp);\n} catch (error) {\n\tconsole.error(error);\n\treturn '';\n}\n",
+                        "description": "Custom code to return the output of the tool. The code should be a function that takes in the input and returns a string",
+                        "hideCodeExecute": true,
+                        "default": "const fetch = require('node-fetch');\nconst url = $url;\nconst options = $options;\n\ntry {\n\tconst response = await fetch(url, options);\n\tconst resp = await response.json();\n\treturn JSON.stringify(resp);\n} catch (error) {\n\tconsole.error(error);\n\treturn '';\n}\n",
+                        "additionalParams": true,
+                        "id": "openAPIToolkit_0-input-customCode-code",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "returnDirect": "",
+                    "headers": "",
+                    "removeNulls": "",
+                    "customCode": "const fetch = require('node-fetch');\nconst url = $url;\nconst options = $options;\n\ntry {\n\tconst response = await fetch(url, options);\n\tconst resp = await response.json();\n\treturn JSON.stringify(resp);\n} catch (error) {\n\tconsole.error(error);\n\treturn '';\n}\n"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAPIToolkit_0-output-openAPIToolkit-OpenAPIToolkit|Tool",
+                        "name": "openAPIToolkit",
+                        "label": "OpenAPIToolkit",
+                        "description": "Load OpenAPI specification, and converts each API endpoint to a tool",
+                        "type": "OpenAPIToolkit | Tool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 552,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1406.3474125716532,
+                "y": -26.543208700976493
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "bufferMemory_0",
+            "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+            "target": "toolAgent_0",
+            "targetHandle": "toolAgent_0-input-memory-BaseChatMemory",
+            "type": "buttonedge",
+            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-toolAgent_0-toolAgent_0-input-memory-BaseChatMemory"
+        },
+        {
+            "source": "openAPIToolkit_0",
+            "sourceHandle": "openAPIToolkit_0-output-openAPIToolkit-OpenAPIToolkit|Tool",
+            "target": "toolAgent_0",
+            "targetHandle": "toolAgent_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "openAPIToolkit_0-openAPIToolkit_0-output-openAPIToolkit-OpenAPIToolkit|Tool-toolAgent_0-toolAgent_0-input-tools-Tool"
+        },
+        {
+            "source": "chatAnthropic_0",
+            "sourceHandle": "chatAnthropic_0-output-chatAnthropic-ChatAnthropic|ChatAnthropicMessages|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "toolAgent_0",
+            "targetHandle": "toolAgent_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatAnthropic_0-chatAnthropic_0-output-chatAnthropic-ChatAnthropic|ChatAnthropicMessages|BaseChatModel|BaseLanguageModel|Runnable-toolAgent_0-toolAgent_0-input-model-BaseChatModel"
+        }
+    ]
+}

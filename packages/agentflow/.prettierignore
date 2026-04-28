@@ -1,0 +1,11 @@
+dist
+node_modules
+build
+coverage
+*.config.ts
+*.config.js
+vite.config.ts
+examples/dist
+examples/vite.config.ts
+pnpm-lock.yaml
+package-lock.json

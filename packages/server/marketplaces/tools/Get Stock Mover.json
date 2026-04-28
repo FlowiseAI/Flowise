@@ -1,0 +1,8 @@
+{
+    "name": "get_stock_movers",
+    "description": "Get the stocks that has biggest price/volume moves, e.g. actives, gainers, losers, etc.",
+    "iconSrc": "https://rapidapi.com/cdn/images?url=https://rapidapi-prod-apis.s3.amazonaws.com/9c/e743343bdd41edad39a3fdffd5b974/016c33699f51603ae6fe4420c439124b.png",
+    "color": "linear-gradient(rgb(191,202,167), rgb(143,202,246))",
+    "schema": "[]",
+    "func": "const fetch = require('node-fetch');\nconst url = 'https://morning-star.p.rapidapi.com/market/v2/get-movers';\nconst options = {\n\tmethod: 'GET',\n\theaders: {\n\t\t'X-RapidAPI-Key': 'YOUR-API-KEY',\n\t\t'X-RapidAPI-Host': 'morning-star.p.rapidapi.com'\n\t}\n};\n\ntry {\n\tconst response = await fetch(url, options);\n\tconst result = await response.text();\n\tconsole.log(result);\n\treturn result;\n} catch (error) {\n\tconsole.error(error);\n\treturn '';\n}"
+}

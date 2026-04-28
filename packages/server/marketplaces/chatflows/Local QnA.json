@@ -1,0 +1,695 @@
+{
+    "description": "QnA chain using Ollama local LLM, LocalAI embedding model, and Faiss local vector store",
+    "usecases": ["Documents QnA"],
+    "framework": ["Langchain"],
+    "nodes": [
+        {
+            "width": 300,
+            "height": 429,
+            "id": "recursiveCharacterTextSplitter_1",
+            "position": {
+                "x": 424.5721426652516,
+                "y": 122.99825010325736
+            },
+            "type": "customNode",
+            "data": {
+                "id": "recursiveCharacterTextSplitter_1",
+                "label": "Recursive Character Text Splitter",
+                "version": 2,
+                "name": "recursiveCharacterTextSplitter",
+                "type": "RecursiveCharacterTextSplitter",
+                "baseClasses": ["RecursiveCharacterTextSplitter", "TextSplitter"],
+                "category": "Text Splitters",
+                "description": "Split documents recursively by different characters - starting with \"\n\n\", then \"\n\", then \" \"",
+                "inputParams": [
+                    {
+                        "label": "Chunk Size",
+                        "name": "chunkSize",
+                        "type": "number",
+                        "default": 1000,
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_1-input-chunkSize-number"
+                    },
+                    {
+                        "label": "Chunk Overlap",
+                        "name": "chunkOverlap",
+                        "type": "number",
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_1-input-chunkOverlap-number"
+                    },
+                    {
+                        "label": "Custom Separators",
+                        "name": "separators",
+                        "type": "string",
+                        "rows": 4,
+                        "description": "Array of custom separators to determine when to split the text, will override the default separators",
+                        "placeholder": "[\"|\", \"##\", \">\", \"-\"]",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_1-input-separators-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "chunkSize": 1000,
+                    "chunkOverlap": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
+                        "name": "recursiveCharacterTextSplitter",
+                        "label": "RecursiveCharacterTextSplitter",
+                        "type": "RecursiveCharacterTextSplitter | TextSplitter"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 424.5721426652516,
+                "y": 122.99825010325736
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 480,
+            "id": "conversationalRetrievalQAChain_0",
+            "position": {
+                "x": 1604.8865818627112,
+                "y": 329.6333122200366
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationalRetrievalQAChain_0",
+                "label": "Conversational Retrieval QA Chain",
+                "version": 3,
+                "name": "conversationalRetrievalQAChain",
+                "type": "ConversationalRetrievalQAChain",
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "conversationalRetrievalQAChain_0-input-returnSourceDocuments-boolean"
+                    },
+                    {
+                        "label": "Rephrase Prompt",
+                        "name": "rephrasePrompt",
+                        "type": "string",
+                        "description": "Using previous chat history, rephrase question into a standalone question",
+                        "warning": "Prompt must include input variables: {chat_history} and {question}",
+                        "rows": 4,
+                        "additionalParams": true,
+                        "optional": true,
+                        "default": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.\n\nChat History:\n{chat_history}\nFollow Up Input: {question}\nStandalone Question:",
+                        "id": "conversationalRetrievalQAChain_0-input-rephrasePrompt-string"
+                    },
+                    {
+                        "label": "Response Prompt",
+                        "name": "responsePrompt",
+                        "type": "string",
+                        "description": "Taking the rephrased question, search for answer from the provided context",
+                        "warning": "Prompt must include input variable: {context}",
+                        "rows": 4,
+                        "additionalParams": true,
+                        "optional": true,
+                        "default": "You are a helpful assistant. Using the provided context, answer the user's question to the best of your ability using the resources provided.\nIf there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.\n------------\n{context}\n------------\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.",
+                        "id": "conversationalRetrievalQAChain_0-input-responsePrompt-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "conversationalRetrievalQAChain_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "BaseRetriever",
+                        "id": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseMemory",
+                        "optional": true,
+                        "description": "If left empty, a default BufferMemory will be used",
+                        "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationalRetrievalQAChain_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "inputModeration": "",
+                    "model": "{{chatOllama_0.data.instance}}",
+                    "vectorStoreRetriever": "{{faiss_0.data.instance}}",
+                    "memory": "",
+                    "rephrasePrompt": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.\n\nChat History:\n{chat_history}\nFollow Up Input: {question}\nStandalone Question:",
+                    "responsePrompt": "You are a helpful assistant. Using the provided context, answer the user's question to the best of your ability using the resources provided.\nIf there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.\n------------\n{context}\n------------\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure.\" Don't try to make up an answer."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|Runnable",
+                        "name": "conversationalRetrievalQAChain",
+                        "label": "ConversationalRetrievalQAChain",
+                        "type": "ConversationalRetrievalQAChain | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1604.8865818627112,
+                "y": 329.6333122200366
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 419,
+            "id": "textFile_0",
+            "position": {
+                "x": 809.5432731751458,
+                "y": 55.85095796777051
+            },
+            "type": "customNode",
+            "data": {
+                "id": "textFile_0",
+                "label": "Text File",
+                "version": 3,
+                "name": "textFile",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from text files",
+                "inputParams": [
+                    {
+                        "label": "Txt File",
+                        "name": "txtFile",
+                        "type": "file",
+                        "fileType": ".txt, .html, .aspx, .asp, .cpp, .c, .cs, .css, .go, .h, .java, .js, .less, .ts, .php, .proto, .python, .py, .rst, .ruby, .rb, .rs, .scala, .sc, .scss, .sol, .sql, .swift, .markdown, .md, .tex, .ltx, .vb, .xml",
+                        "id": "textFile_0-input-txtFile-file"
+                    },
+                    {
+                        "label": "Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "textFile_0-input-metadata-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "textFile_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "textSplitter": "{{recursiveCharacterTextSplitter_1.data.instance}}",
+                    "metadata": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "textFile_0-output-document-Document|json",
+                                "name": "document",
+                                "label": "Document",
+                                "type": "Document | json"
+                            },
+                            {
+                                "id": "textFile_0-output-text-string|json",
+                                "name": "text",
+                                "label": "Text",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "document"
+                    }
+                ],
+                "outputs": {
+                    "output": "document"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 809.5432731751458,
+                "y": 55.85095796777051
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 376,
+            "id": "localAIEmbeddings_0",
+            "position": {
+                "x": 809.5432731751458,
+                "y": 507.4586304746849
+            },
+            "type": "customNode",
+            "data": {
+                "id": "localAIEmbeddings_0",
+                "label": "LocalAI Embeddings",
+                "version": 1,
+                "name": "localAIEmbeddings",
+                "type": "LocalAI Embeddings",
+                "baseClasses": ["LocalAI Embeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "Use local embeddings models like llama.cpp",
+                "inputParams": [
+                    {
+                        "label": "Base Path",
+                        "name": "basePath",
+                        "type": "string",
+                        "placeholder": "http://localhost:8080/v1",
+                        "id": "localAIEmbeddings_0-input-basePath-string"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "string",
+                        "placeholder": "text-embedding-ada-002",
+                        "id": "localAIEmbeddings_0-input-modelName-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "basePath": "http://localhost:8080/v1",
+                    "modelName": "text-embedding-ada-002"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "localAIEmbeddings_0-output-localAIEmbeddings-LocalAI Embeddings|Embeddings",
+                        "name": "localAIEmbeddings",
+                        "label": "LocalAI Embeddings",
+                        "type": "LocalAI Embeddings | Embeddings"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 809.5432731751458,
+                "y": 507.4586304746849
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 578,
+            "id": "chatOllama_0",
+            "position": {
+                "x": 1198.006914501795,
+                "y": -78.92345253481488
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOllama_0",
+                "label": "ChatOllama",
+                "version": 2,
+                "name": "chatOllama",
+                "type": "ChatOllama",
+                "baseClasses": ["ChatOllama", "SimpleChatModel", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Chat completion using open-source LLM on Ollama",
+                "inputParams": [
+                    {
+                        "label": "Base URL",
+                        "name": "baseUrl",
+                        "type": "string",
+                        "default": "http://localhost:11434",
+                        "id": "chatOllama_0-input-baseUrl-string"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "string",
+                        "placeholder": "llama2",
+                        "id": "chatOllama_0-input-modelName-string"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "description": "The temperature of the model. Increasing the temperature will make the model answer more creatively. (Default: 0.8). Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOllama_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Top P",
+                        "name": "topP",
+                        "type": "number",
+                        "description": "Works together with top-k. A higher value (e.g., 0.95) will lead to more diverse text, while a lower value (e.g., 0.5) will generate more focused and conservative text. (Default: 0.9). Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-topP-number"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "type": "number",
+                        "description": "Reduces the probability of generating nonsense. A higher value (e.g. 100) will give more diverse answers, while a lower value (e.g. 10) will be more conservative. (Default: 40). Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-topK-number"
+                    },
+                    {
+                        "label": "Mirostat",
+                        "name": "mirostat",
+                        "type": "number",
+                        "description": "Enable Mirostat sampling for controlling perplexity. (default: 0, 0 = disabled, 1 = Mirostat, 2 = Mirostat 2.0). Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-mirostat-number"
+                    },
+                    {
+                        "label": "Mirostat ETA",
+                        "name": "mirostatEta",
+                        "type": "number",
+                        "description": "Influences how quickly the algorithm responds to feedback from the generated text. A lower learning rate will result in slower adjustments, while a higher learning rate will make the algorithm more responsive. (Default: 0.1) Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-mirostatEta-number"
+                    },
+                    {
+                        "label": "Mirostat TAU",
+                        "name": "mirostatTau",
+                        "type": "number",
+                        "description": "Controls the balance between coherence and diversity of the output. A lower value will result in more focused and coherent text. (Default: 5.0) Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-mirostatTau-number"
+                    },
+                    {
+                        "label": "Context Window Size",
+                        "name": "numCtx",
+                        "type": "number",
+                        "description": "Sets the size of the context window used to generate the next token. (Default: 2048) Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-numCtx-number"
+                    },
+                    {
+                        "label": "Number of GQA groups",
+                        "name": "numGqa",
+                        "type": "number",
+                        "description": "The number of GQA groups in the transformer layer. Required for some models, for example it is 8 for llama2:70b. Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-numGqa-number"
+                    },
+                    {
+                        "label": "Number of GPU",
+                        "name": "numGpu",
+                        "type": "number",
+                        "description": "The number of layers to send to the GPU(s). On macOS it defaults to 1 to enable metal support, 0 to disable. Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-numGpu-number"
+                    },
+                    {
+                        "label": "Number of Thread",
+                        "name": "numThread",
+                        "type": "number",
+                        "description": "Sets the number of threads to use during computation. By default, Ollama will detect this for optimal performance. It is recommended to set this value to the number of physical CPU cores your system has (as opposed to the logical number of cores). Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-numThread-number"
+                    },
+                    {
+                        "label": "Repeat Last N",
+                        "name": "repeatLastN",
+                        "type": "number",
+                        "description": "Sets how far back for the model to look back to prevent repetition. (Default: 64, 0 = disabled, -1 = num_ctx). Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-repeatLastN-number"
+                    },
+                    {
+                        "label": "Repeat Penalty",
+                        "name": "repeatPenalty",
+                        "type": "number",
+                        "description": "Sets how strongly to penalize repetitions. A higher value (e.g., 1.5) will penalize repetitions more strongly, while a lower value (e.g., 0.9) will be more lenient. (Default: 1.1). Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-repeatPenalty-number"
+                    },
+                    {
+                        "label": "Stop Sequence",
+                        "name": "stop",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "AI assistant:",
+                        "description": "Sets the stop sequences to use. Use comma to seperate different sequences. Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-stop-string"
+                    },
+                    {
+                        "label": "Tail Free Sampling",
+                        "name": "tfsZ",
+                        "type": "number",
+                        "description": "Tail free sampling is used to reduce the impact of less probable tokens from the output. A higher value (e.g., 2.0) will reduce the impact more, while a value of 1.0 disables this setting. (Default: 1). Refer to <a target=\"_blank\" href=\"https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values\">docs</a> for more details",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOllama_0-input-tfsZ-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOllama_0-input-cache-BaseCache"
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "baseUrl": "http://localhost:11434",
+                    "modelName": "llama2",
+                    "temperature": 0.9,
+                    "topP": "",
+                    "topK": "",
+                    "mirostat": "",
+                    "mirostatEta": "",
+                    "mirostatTau": "",
+                    "numCtx": "",
+                    "numGqa": "",
+                    "numGpu": "",
+                    "numThread": "",
+                    "repeatLastN": "",
+                    "repeatPenalty": "",
+                    "stop": "",
+                    "tfsZ": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOllama_0-output-chatOllama-ChatOllama|SimpleChatModel|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "chatOllama",
+                        "label": "ChatOllama",
+                        "type": "ChatOllama | SimpleChatModel | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1198.006914501795,
+                "y": -78.92345253481488
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 458,
+            "id": "faiss_0",
+            "position": {
+                "x": 1199.3135683364685,
+                "y": 520.9300176396024
+            },
+            "type": "customNode",
+            "data": {
+                "id": "faiss_0",
+                "label": "Faiss",
+                "version": 1,
+                "name": "faiss",
+                "type": "Faiss",
+                "baseClasses": ["Faiss", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Upsert embedded data and perform similarity search upon query using Faiss library from Meta",
+                "inputParams": [
+                    {
+                        "label": "Base Path to load",
+                        "name": "basePath",
+                        "description": "Path to load faiss.index file",
+                        "placeholder": "C:\\Users\\User\\Desktop",
+                        "type": "string",
+                        "id": "faiss_0-input-basePath-string"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "faiss_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "optional": true,
+                        "id": "faiss_0-input-document-Document"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "faiss_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "document": ["{{textFile_0.data.instance}}"],
+                    "embeddings": "{{localAIEmbeddings_0.data.instance}}",
+                    "basePath": "C:\\Users\\your-folder",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "faiss_0-output-retriever-Faiss|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Faiss Retriever",
+                                "type": "Faiss | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "faiss_0-output-vectorStore-Faiss|SaveableVectorStore|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Faiss Vector Store",
+                                "type": "Faiss | SaveableVectorStore | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1199.3135683364685,
+                "y": 520.9300176396024
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "recursiveCharacterTextSplitter_1",
+            "sourceHandle": "recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
+            "target": "textFile_0",
+            "targetHandle": "textFile_0-input-textSplitter-TextSplitter",
+            "type": "buttonedge",
+            "id": "recursiveCharacterTextSplitter_1-recursiveCharacterTextSplitter_1-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter-textFile_0-textFile_0-input-textSplitter-TextSplitter",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOllama_0",
+            "sourceHandle": "chatOllama_0-output-chatOllama-ChatOllama|SimpleChatModel|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOllama_0-chatOllama_0-output-chatOllama-ChatOllama|SimpleChatModel|BaseChatModel|BaseLanguageModel|Runnable-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseChatModel",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "textFile_0",
+            "sourceHandle": "textFile_0-output-document-Document|json",
+            "target": "faiss_0",
+            "targetHandle": "faiss_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "textFile_0-textFile_0-output-document-Document|json-faiss_0-faiss_0-input-document-Document",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "localAIEmbeddings_0",
+            "sourceHandle": "localAIEmbeddings_0-output-localAIEmbeddings-LocalAI Embeddings|Embeddings",
+            "target": "faiss_0",
+            "targetHandle": "faiss_0-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "localAIEmbeddings_0-localAIEmbeddings_0-output-localAIEmbeddings-LocalAI Embeddings|Embeddings-faiss_0-faiss_0-input-embeddings-Embeddings",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "faiss_0",
+            "sourceHandle": "faiss_0-output-retriever-Faiss|VectorStoreRetriever|BaseRetriever",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "faiss_0-faiss_0-output-retriever-Faiss|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

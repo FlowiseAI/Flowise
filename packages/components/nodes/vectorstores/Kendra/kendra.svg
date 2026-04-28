@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <defs>
+    <linearGradient id="kendraGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9900;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF6600;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="80" height="80" rx="4" fill="#232F3E"/>
+  
+  <!-- AWS Kendra Icon representation -->
+  <!-- Main search/document icon -->
+  <g transform="translate(42, 35) scale(1.5)">
+    <!-- Document stack -->
+    <rect x="-18" y="-12" width="24" height="28" rx="2" fill="#FF9900" opacity="0.3" transform="translate(3, -3)"/>
+    <rect x="-18" y="-12" width="24" height="28" rx="2" fill="#FF9900" opacity="0.6" transform="translate(1.5, -1.5)"/>
+    <rect x="-18" y="-12" width="24" height="28" rx="2" fill="url(#kendraGradient)"/>
+    
+    <!-- Search lines on document -->
+    <line x1="-12" y1="-4" x2="0" y2="-4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-12" y1="2" x2="-2" y2="2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-12" y1="8" x2="0" y2="8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    
+    <!-- Magnifying glass -->
+    <circle cx="10" cy="5" r="7" fill="none" stroke="white" stroke-width="2.5"/>
+    <line x1="15" y1="10" x2="20" y2="15" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <!-- AWS Kendra text (optional, small) -->
+  <text x="40" y="74" font-family="Arial, sans-serif" font-size="14" fill="#FF9900" text-anchor="middle">Kendra</text>
+
+</svg>

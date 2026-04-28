@@ -1,0 +1,770 @@
+{
+    "description": "Documents QnA using Retrieval Augmented Generation (RAG) with Mistral and FAISS for similarity search",
+    "usecases": ["Documents QnA"],
+    "framework": ["Langchain"],
+    "nodes": [
+        {
+            "width": 300,
+            "height": 424,
+            "id": "openAIEmbeddings_0",
+            "position": {
+                "x": 795.6162477805387,
+                "y": 603.260214150876
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbeddings_0",
+                "label": "OpenAI Embeddings",
+                "version": 4,
+                "name": "openAIEmbeddings",
+                "type": "OpenAIEmbeddings",
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "OpenAI API to generate embeddings for a given text",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "openAIEmbeddings_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "text-embedding-ada-002",
+                        "id": "openAIEmbeddings_0-input-modelName-asyncOptions"
+                    },
+                    {
+                        "label": "Strip New Lines",
+                        "name": "stripNewLines",
+                        "type": "boolean",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-stripNewLines-boolean"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-basepath-string"
+                    },
+                    {
+                        "label": "Dimensions",
+                        "name": "dimensions",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-dimensions-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "text-embedding-ada-002",
+                    "stripNewLines": "",
+                    "batchSize": "",
+                    "timeout": "",
+                    "basepath": "",
+                    "dimensions": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+                        "name": "openAIEmbeddings",
+                        "label": "OpenAIEmbeddings",
+                        "description": "OpenAI API to generate embeddings for a given text",
+                        "type": "OpenAIEmbeddings | Embeddings"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 795.6162477805387,
+                "y": 603.260214150876
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 430,
+            "id": "recursiveCharacterTextSplitter_0",
+            "position": {
+                "x": 406.08456707531263,
+                "y": 197.66460328693972
+            },
+            "type": "customNode",
+            "data": {
+                "id": "recursiveCharacterTextSplitter_0",
+                "label": "Recursive Character Text Splitter",
+                "version": 2,
+                "name": "recursiveCharacterTextSplitter",
+                "type": "RecursiveCharacterTextSplitter",
+                "baseClasses": ["RecursiveCharacterTextSplitter", "TextSplitter"],
+                "category": "Text Splitters",
+                "description": "Split documents recursively by different characters - starting with \"\\n\\n\", then \"\\n\", then \" \"",
+                "inputParams": [
+                    {
+                        "label": "Chunk Size",
+                        "name": "chunkSize",
+                        "type": "number",
+                        "default": 1000,
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_0-input-chunkSize-number"
+                    },
+                    {
+                        "label": "Chunk Overlap",
+                        "name": "chunkOverlap",
+                        "type": "number",
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_0-input-chunkOverlap-number"
+                    },
+                    {
+                        "label": "Custom Separators",
+                        "name": "separators",
+                        "type": "string",
+                        "rows": 4,
+                        "description": "Array of custom separators to determine when to split the text, will override the default separators",
+                        "placeholder": "[\"|\", \"##\", \">\", \"-\"]",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_0-input-separators-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "chunkSize": 1000,
+                    "chunkOverlap": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
+                        "name": "recursiveCharacterTextSplitter",
+                        "label": "RecursiveCharacterTextSplitter",
+                        "type": "RecursiveCharacterTextSplitter | TextSplitter"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 406.08456707531263,
+                "y": 197.66460328693972
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 421,
+            "id": "textFile_0",
+            "position": {
+                "x": 786.5497697231324,
+                "y": 140.09563157584407
+            },
+            "type": "customNode",
+            "data": {
+                "id": "textFile_0",
+                "label": "Text File",
+                "version": 3,
+                "name": "textFile",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from text files",
+                "inputParams": [
+                    {
+                        "label": "Txt File",
+                        "name": "txtFile",
+                        "type": "file",
+                        "fileType": ".txt, .html, .aspx, .asp, .cpp, .c, .cs, .css, .go, .h, .java, .js, .less, .ts, .php, .proto, .python, .py, .rst, .ruby, .rb, .rs, .scala, .sc, .scss, .sol, .sql, .swift, .markdown, .md, .tex, .ltx, .vb, .xml",
+                        "id": "textFile_0-input-txtFile-file"
+                    },
+                    {
+                        "label": "Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "textFile_0-input-metadata-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "textFile_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "textSplitter": "{{recursiveCharacterTextSplitter_0.data.instance}}",
+                    "metadata": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "textFile_0-output-document-Document|json",
+                                "name": "document",
+                                "label": "Document",
+                                "type": "Document | json"
+                            },
+                            {
+                                "id": "textFile_0-output-text-string|json",
+                                "name": "text",
+                                "label": "Text",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "document"
+                    }
+                ],
+                "outputs": {
+                    "output": "document"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 786.5497697231324,
+                "y": 140.09563157584407
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 532,
+            "id": "conversationalRetrievalQAChain_0",
+            "position": {
+                "x": 1558.6564094656787,
+                "y": 386.60217819991124
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationalRetrievalQAChain_0",
+                "label": "Conversational Retrieval QA Chain",
+                "version": 3,
+                "name": "conversationalRetrievalQAChain",
+                "type": "ConversationalRetrievalQAChain",
+                "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Document QA - built on RetrievalQAChain to provide a chat history component",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "conversationalRetrievalQAChain_0-input-returnSourceDocuments-boolean"
+                    },
+                    {
+                        "label": "Rephrase Prompt",
+                        "name": "rephrasePrompt",
+                        "type": "string",
+                        "description": "Using previous chat history, rephrase question into a standalone question",
+                        "warning": "Prompt must include input variables: {chat_history} and {question}",
+                        "rows": 4,
+                        "additionalParams": true,
+                        "optional": true,
+                        "default": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.\n\nChat History:\n{chat_history}\nFollow Up Input: {question}\nStandalone Question:",
+                        "id": "conversationalRetrievalQAChain_0-input-rephrasePrompt-string"
+                    },
+                    {
+                        "label": "Response Prompt",
+                        "name": "responsePrompt",
+                        "type": "string",
+                        "description": "Taking the rephrased question, search for answer from the provided context",
+                        "warning": "Prompt must include input variable: {context}",
+                        "rows": 4,
+                        "additionalParams": true,
+                        "optional": true,
+                        "default": "You are a helpful assistant. Using the provided context, answer the user's question to the best of your ability using the resources provided.\nIf there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.\n------------\n{context}\n------------\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.",
+                        "id": "conversationalRetrievalQAChain_0-input-responsePrompt-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "conversationalRetrievalQAChain_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "BaseRetriever",
+                        "id": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseMemory",
+                        "optional": true,
+                        "description": "If left empty, a default BufferMemory will be used",
+                        "id": "conversationalRetrievalQAChain_0-input-memory-BaseMemory"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationalRetrievalQAChain_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "inputModeration": "",
+                    "model": "{{chatMistralAI_0.data.instance}}",
+                    "vectorStoreRetriever": "{{faiss_0.data.instance}}",
+                    "memory": "",
+                    "rephrasePrompt": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.\n\nChat History:\n{chat_history}\nFollow Up Input: {question}\nStandalone Question:",
+                    "responsePrompt": "You are a helpful assistant. Using the provided context, answer the user's question to the best of your ability using the resources provided.\nIf there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.\n------------\n{context}\n------------\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure.\" Don't try to make up an answer."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationalRetrievalQAChain_0-output-conversationalRetrievalQAChain-ConversationalRetrievalQAChain|BaseChain|Runnable",
+                        "name": "conversationalRetrievalQAChain",
+                        "label": "ConversationalRetrievalQAChain",
+                        "type": "ConversationalRetrievalQAChain | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "positionAbsolute": {
+                "x": 1558.6564094656787,
+                "y": 386.60217819991124
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "faiss_0",
+            "position": {
+                "x": 1193.61786387649,
+                "y": 559.055052045731
+            },
+            "type": "customNode",
+            "data": {
+                "id": "faiss_0",
+                "label": "Faiss",
+                "version": 1,
+                "name": "faiss",
+                "type": "Faiss",
+                "baseClasses": ["Faiss", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Upsert embedded data and perform similarity search upon query using Faiss library from Meta",
+                "inputParams": [
+                    {
+                        "label": "Base Path to load",
+                        "name": "basePath",
+                        "description": "Path to load faiss.index file",
+                        "placeholder": "C:\\Users\\User\\Desktop",
+                        "type": "string",
+                        "id": "faiss_0-input-basePath-string"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "faiss_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "optional": true,
+                        "id": "faiss_0-input-document-Document"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "faiss_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "document": ["{{textFile_0.data.instance}}", "{{documentStore_0.data.instance}}"],
+                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "basePath": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "description": "",
+                        "options": [
+                            {
+                                "id": "faiss_0-output-retriever-Faiss|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Faiss Retriever",
+                                "description": "",
+                                "type": "Faiss | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "faiss_0-output-vectorStore-Faiss|SaveableVectorStore|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Faiss Vector Store",
+                                "description": "",
+                                "type": "Faiss | SaveableVectorStore | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "width": 300,
+            "height": 459,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1193.61786387649,
+                "y": 559.055052045731
+            },
+            "dragging": false
+        },
+        {
+            "id": "documentStore_0",
+            "position": {
+                "x": 785.3020265031932,
+                "y": -215.72424937010018
+            },
+            "type": "customNode",
+            "data": {
+                "id": "documentStore_0",
+                "label": "Document Store",
+                "version": 1,
+                "name": "documentStore",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from pre-configured document stores",
+                "inputParams": [
+                    {
+                        "label": "Select Store",
+                        "name": "selectedStore",
+                        "type": "asyncOptions",
+                        "loadMethod": "listStores",
+                        "id": "documentStore_0-input-selectedStore-asyncOptions"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "selectedStore": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "description": "Array of document objects containing metadata and pageContent",
+                        "options": [
+                            {
+                                "id": "documentStore_0-output-document-Document|json",
+                                "name": "document",
+                                "label": "Document",
+                                "description": "Array of document objects containing metadata and pageContent",
+                                "type": "Document | json"
+                            },
+                            {
+                                "id": "documentStore_0-output-text-string|json",
+                                "name": "text",
+                                "label": "Text",
+                                "description": "Concatenated string from pageContent of documents",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "document"
+                    }
+                ],
+                "outputs": {
+                    "output": "document"
+                },
+                "selected": false
+            },
+            "width": 300,
+            "height": 312,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 785.3020265031932,
+                "y": -215.72424937010018
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 1546.6369661154768,
+                "y": -107.3962162381467
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Conversational Retrieval QA Chain composes of 2 chains:\n\n1. A chain to rephrase user question using previous conversations\n2. A chain to provide response based on the context fetched from vector store.\n\nWhy is the need for rephrasing question?\nThis is to ensure that a follow-up question can be asked. For example:\n\n- What is the address of the Bakery shop?\n- What about the opening time?\n\nA rephrased question will be:\n- What is the opening time of the Bakery shop?\n\nThis ensure a better search to vector store, hence better output quality.\n"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 465,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1546.6369661154768,
+                "y": -107.3962162381467
+            },
+            "dragging": false
+        },
+        {
+            "id": "chatMistralAI_0",
+            "position": {
+                "x": 1185.9624817228073,
+                "y": -60.75719138037451
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatMistralAI_0",
+                "label": "ChatMistralAI",
+                "version": 3,
+                "name": "chatMistralAI",
+                "type": "ChatMistralAI",
+                "baseClasses": ["ChatMistralAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Wrapper around Mistral large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["mistralAIApi"],
+                        "id": "chatMistralAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "mistral-tiny",
+                        "id": "chatMistralAI_0-input-modelName-asyncOptions"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "description": "What sampling temperature to use, between 0.0 and 1.0. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatMistralAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Output Tokens",
+                        "name": "maxOutputTokens",
+                        "type": "number",
+                        "description": "The maximum number of tokens to generate in the completion.",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatMistralAI_0-input-maxOutputTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "description": "Nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatMistralAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Random Seed",
+                        "name": "randomSeed",
+                        "type": "number",
+                        "description": "The seed to use for random sampling. If set, different calls will generate deterministic results.",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatMistralAI_0-input-randomSeed-number"
+                    },
+                    {
+                        "label": "Safe Mode",
+                        "name": "safeMode",
+                        "type": "boolean",
+                        "description": "Whether to inject a safety prompt before all conversations.",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatMistralAI_0-input-safeMode-boolean"
+                    },
+                    {
+                        "label": "Override Endpoint",
+                        "name": "overrideEndpoint",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatMistralAI_0-input-overrideEndpoint-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatMistralAI_0-input-cache-BaseCache"
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "mistral-tiny",
+                    "temperature": 0.9,
+                    "maxOutputTokens": "",
+                    "topP": "",
+                    "randomSeed": "",
+                    "safeMode": "",
+                    "overrideEndpoint": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatMistralAI_0-output-chatMistralAI-ChatMistralAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "chatMistralAI",
+                        "label": "ChatMistralAI",
+                        "description": "Wrapper around Mistral large language models that use the Chat endpoint",
+                        "type": "ChatMistralAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 574,
+            "positionAbsolute": {
+                "x": 1185.9624817228073,
+                "y": -60.75719138037451
+            },
+            "selected": false,
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "recursiveCharacterTextSplitter_0",
+            "sourceHandle": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter",
+            "target": "textFile_0",
+            "targetHandle": "textFile_0-input-textSplitter-TextSplitter",
+            "type": "buttonedge",
+            "id": "recursiveCharacterTextSplitter_0-recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter-textFile_0-textFile_0-input-textSplitter-TextSplitter",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "textFile_0",
+            "sourceHandle": "textFile_0-output-document-Document|json",
+            "target": "faiss_0",
+            "targetHandle": "faiss_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "textFile_0-textFile_0-output-document-Document|json-faiss_0-faiss_0-input-document-Document"
+        },
+        {
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "faiss_0",
+            "targetHandle": "faiss_0-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-faiss_0-faiss_0-input-embeddings-Embeddings"
+        },
+        {
+            "source": "documentStore_0",
+            "sourceHandle": "documentStore_0-output-document-Document|json",
+            "target": "faiss_0",
+            "targetHandle": "faiss_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "documentStore_0-documentStore_0-output-document-Document|json-faiss_0-faiss_0-input-document-Document"
+        },
+        {
+            "source": "faiss_0",
+            "sourceHandle": "faiss_0-output-retriever-Faiss|VectorStoreRetriever|BaseRetriever",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "faiss_0-faiss_0-output-retriever-Faiss|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
+        },
+        {
+            "source": "chatMistralAI_0",
+            "sourceHandle": "chatMistralAI_0-output-chatMistralAI-ChatMistralAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "conversationalRetrievalQAChain_0",
+            "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatMistralAI_0-chatMistralAI_0-output-chatMistralAI-ChatMistralAI|BaseChatModel|BaseLanguageModel|Runnable-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseChatModel"
+        }
+    ]
+}

@@ -1,0 +1,1831 @@
+{
+    "description": "Multi-agent system that breaks down complex queries, assigns tasks to subagents, and synthesizes findings into detailed reports.",
+    "usecases": ["Deep Research"],
+    "nodes": [
+        {
+            "id": "startAgentflow_0",
+            "type": "agentFlow",
+            "position": {
+                "x": -241.58365178492127,
+                "y": 86.32546838777353
+            },
+            "data": {
+                "id": "startAgentflow_0",
+                "label": "Start",
+                "version": 1.1,
+                "name": "startAgentflow",
+                "type": "Start",
+                "color": "#7EE787",
+                "hideInput": true,
+                "baseClasses": ["Start"],
+                "category": "Agent Flows",
+                "description": "Starting point of the agentflow",
+                "inputParams": [
+                    {
+                        "label": "Input Type",
+                        "name": "startInputType",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Chat Input",
+                                "name": "chatInput",
+                                "description": "Start the conversation with chat input"
+                            },
+                            {
+                                "label": "Form Input",
+                                "name": "formInput",
+                                "description": "Start the workflow with form inputs"
+                            }
+                        ],
+                        "default": "chatInput",
+                        "id": "startAgentflow_0-input-startInputType-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Form Title",
+                        "name": "formTitle",
+                        "type": "string",
+                        "placeholder": "Please Fill Out The Form",
+                        "show": {
+                            "startInputType": "formInput"
+                        },
+                        "id": "startAgentflow_0-input-formTitle-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Form Description",
+                        "name": "formDescription",
+                        "type": "string",
+                        "placeholder": "Complete all fields below to continue",
+                        "show": {
+                            "startInputType": "formInput"
+                        },
+                        "id": "startAgentflow_0-input-formDescription-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Form Input Types",
+                        "name": "formInputTypes",
+                        "description": "Specify the type of form input",
+                        "type": "array",
+                        "show": {
+                            "startInputType": "formInput"
+                        },
+                        "array": [
+                            {
+                                "label": "Type",
+                                "name": "type",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "String",
+                                        "name": "string"
+                                    },
+                                    {
+                                        "label": "Number",
+                                        "name": "number"
+                                    },
+                                    {
+                                        "label": "Boolean",
+                                        "name": "boolean"
+                                    },
+                                    {
+                                        "label": "Options",
+                                        "name": "options"
+                                    }
+                                ],
+                                "default": "string"
+                            },
+                            {
+                                "label": "Label",
+                                "name": "label",
+                                "type": "string",
+                                "placeholder": "Label for the input"
+                            },
+                            {
+                                "label": "Variable Name",
+                                "name": "name",
+                                "type": "string",
+                                "placeholder": "Variable name for the input (must be camel case)",
+                                "description": "Variable name must be camel case. For example: firstName, lastName, etc."
+                            },
+                            {
+                                "label": "Add Options",
+                                "name": "addOptions",
+                                "type": "array",
+                                "show": {
+                                    "formInputTypes[$index].type": "options"
+                                },
+                                "array": [
+                                    {
+                                        "label": "Option",
+                                        "name": "option",
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        ],
+                        "id": "startAgentflow_0-input-formInputTypes-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Ephemeral Memory",
+                        "name": "startEphemeralMemory",
+                        "type": "boolean",
+                        "description": "Start fresh for every execution without past chat history",
+                        "optional": true
+                    },
+                    {
+                        "label": "Flow State",
+                        "name": "startState",
+                        "description": "Runtime state during the execution of the workflow",
+                        "type": "array",
+                        "optional": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "string",
+                                "placeholder": "Foo"
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "placeholder": "Bar"
+                            }
+                        ],
+                        "id": "startAgentflow_0-input-startState-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Persist State",
+                        "name": "startPersistState",
+                        "type": "boolean",
+                        "description": "Persist the state in the same session",
+                        "optional": true,
+                        "id": "startAgentflow_0-input-startPersistState-boolean",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "startInputType": "formInput",
+                    "formTitle": "Research",
+                    "formDescription": "A research agent that takes in a query, and return a detailed report",
+                    "formInputTypes": [
+                        {
+                            "type": "string",
+                            "label": "Query",
+                            "name": "query",
+                            "addOptions": ""
+                        }
+                    ],
+                    "startState": [
+                        {
+                            "key": "subagents",
+                            "value": ""
+                        },
+                        {
+                            "key": "findings",
+                            "value": ""
+                        }
+                    ]
+                },
+                "outputAnchors": [
+                    {
+                        "id": "startAgentflow_0-output-startAgentflow",
+                        "label": "Start",
+                        "name": "startAgentflow"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 103,
+            "height": 66,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -241.58365178492127,
+                "y": 86.32546838777353
+            },
+            "dragging": false
+        },
+        {
+            "id": "llmAgentflow_0",
+            "position": {
+                "x": -111.52635639216058,
+                "y": 83.67035986437665
+            },
+            "data": {
+                "id": "llmAgentflow_0",
+                "label": "Planner",
+                "version": 1,
+                "name": "llmAgentflow",
+                "type": "LLM",
+                "color": "#64B5F6",
+                "baseClasses": ["LLM"],
+                "category": "Agent Flows",
+                "description": "Large language models to analyze user-provided inputs and generate responses",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "llmModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "llmAgentflow_0-input-llmModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "llmMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "generateInstruction": true,
+                                "rows": 4
+                            }
+                        ],
+                        "id": "llmAgentflow_0-input-llmMessages-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "llmEnableMemory",
+                        "type": "boolean",
+                        "description": "Enable memory for the conversation thread",
+                        "default": true,
+                        "optional": true,
+                        "id": "llmAgentflow_0-input-llmEnableMemory-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Memory Type",
+                        "name": "llmMemoryType",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "All Messages",
+                                "name": "allMessages",
+                                "description": "Retrieve all messages from the conversation"
+                            },
+                            {
+                                "label": "Window Size",
+                                "name": "windowSize",
+                                "description": "Uses a fixed window size to surface the last N messages"
+                            },
+                            {
+                                "label": "Conversation Summary",
+                                "name": "conversationSummary",
+                                "description": "Summarizes the whole conversation"
+                            },
+                            {
+                                "label": "Conversation Summary Buffer",
+                                "name": "conversationSummaryBuffer",
+                                "description": "Summarize conversations once token limit is reached. Default to 2000"
+                            }
+                        ],
+                        "optional": true,
+                        "default": "allMessages",
+                        "show": {
+                            "llmEnableMemory": true
+                        },
+                        "id": "llmAgentflow_0-input-llmMemoryType-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Window Size",
+                        "name": "llmMemoryWindowSize",
+                        "type": "number",
+                        "default": "20",
+                        "description": "Uses a fixed window size to surface the last N messages",
+                        "show": {
+                            "llmMemoryType": "windowSize"
+                        },
+                        "id": "llmAgentflow_0-input-llmMemoryWindowSize-number",
+                        "display": false
+                    },
+                    {
+                        "label": "Max Token Limit",
+                        "name": "llmMemoryMaxTokenLimit",
+                        "type": "number",
+                        "default": "2000",
+                        "description": "Summarize conversations once token limit is reached. Default to 2000",
+                        "show": {
+                            "llmMemoryType": "conversationSummaryBuffer"
+                        },
+                        "id": "llmAgentflow_0-input-llmMemoryMaxTokenLimit-number",
+                        "display": false
+                    },
+                    {
+                        "label": "Input Message",
+                        "name": "llmUserMessage",
+                        "type": "string",
+                        "description": "Add an input message as user message at the end of the conversation",
+                        "rows": 4,
+                        "optional": true,
+                        "acceptVariable": true,
+                        "show": {
+                            "llmEnableMemory": true
+                        },
+                        "id": "llmAgentflow_0-input-llmUserMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "llmReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "User Message",
+                                "name": "userMessage"
+                            },
+                            {
+                                "label": "Assistant Message",
+                                "name": "assistantMessage"
+                            }
+                        ],
+                        "default": "userMessage",
+                        "id": "llmAgentflow_0-input-llmReturnResponseAs-options",
+                        "display": true
+                    },
+                    {
+                        "label": "JSON Structured Output",
+                        "name": "llmStructuredOutput",
+                        "description": "Instruct the LLM to give output in a JSON structured schema",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "string"
+                            },
+                            {
+                                "label": "Type",
+                                "name": "type",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "String",
+                                        "name": "string"
+                                    },
+                                    {
+                                        "label": "String Array",
+                                        "name": "stringArray"
+                                    },
+                                    {
+                                        "label": "Number",
+                                        "name": "number"
+                                    },
+                                    {
+                                        "label": "Boolean",
+                                        "name": "boolean"
+                                    },
+                                    {
+                                        "label": "Enum",
+                                        "name": "enum"
+                                    },
+                                    {
+                                        "label": "JSON Array",
+                                        "name": "jsonArray"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Enum Values",
+                                "name": "enumValues",
+                                "type": "string",
+                                "placeholder": "value1, value2, value3",
+                                "description": "Enum values. Separated by comma",
+                                "optional": true,
+                                "show": {
+                                    "llmStructuredOutput[$index].type": "enum"
+                                }
+                            },
+                            {
+                                "label": "JSON Schema",
+                                "name": "jsonSchema",
+                                "type": "code",
+                                "placeholder": "{\n    \"answer\": {\n        \"type\": \"string\",\n        \"description\": \"Value of the answer\"\n    },\n    \"reason\": {\n        \"type\": \"string\",\n        \"description\": \"Reason for the answer\"\n    },\n    \"optional\": {\n        \"type\": \"boolean\"\n    },\n    \"count\": {\n        \"type\": \"number\"\n    },\n    \"children\": {\n        \"type\": \"array\",\n        \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"value\": {\n                    \"type\": \"string\",\n                    \"description\": \"Value of the children's answer\"\n                }\n            }\n        }\n    }\n}",
+                                "description": "JSON schema for the structured output",
+                                "optional": true,
+                                "show": {
+                                    "llmStructuredOutput[$index].type": "jsonArray"
+                                }
+                            },
+                            {
+                                "label": "Description",
+                                "name": "description",
+                                "type": "string",
+                                "placeholder": "Description of the key"
+                            }
+                        ],
+                        "id": "llmAgentflow_0-input-llmStructuredOutput-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "llmUpdateState",
+                        "description": "Update runtime state during the execution of the workflow",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ],
+                        "id": "llmAgentflow_0-input-llmUpdateState-array",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "llmModel": "chatAnthropic",
+                    "llmMessages": [
+                        {
+                            "role": "system",
+                            "content": "<p>You are an expert research lead, focused on high-level research strategy, planning, efficient delegation to subagents, and final report writing. Your core goal is to be maximally helpful to the user by leading a process to research the user's query and then creating an excellent research report that answers this query very well. Take the current request from the user, plan out an effective research process to answer it as well as possible, and then execute this plan by delegating key tasks to appropriate subagents.</p><p>The current date is <span class=\"variable\" data-type=\"mention\" data-id=\"current_date_time\" data-label=\"current_date_time\">{{ current_date_time }}</span> .</p><p>&lt;research_process&gt;</p><p>Follow this process to break down the user’s question and develop an excellent research plan. Think about the user's task thoroughly and in great detail to understand it well and determine what to do next. Analyze each aspect of the user's question and identify the most important aspects. Consider multiple approaches with complete, thorough reasoning. Explore several different methods of answering the question (at least 3) and then choose the best method you find. Follow this process closely:</p><p>1. Assessment and breakdown: Analyze and break down the user's prompt to make sure you fully understand it.</p><p>* Identify the main concepts, key entities, and relationships in the task.</p><p>* List specific facts or data points needed to answer the question well.</p><p>* Note any temporal or contextual constraints on the question.</p><p>* Analyze what features of the prompt are most important - what does the user likely care about most here? What are they expecting or desiring in the final result? What tools do they expect to be used and how do we know?</p><p>* Determine what form the answer would need to be in to fully accomplish the user's task. Would it need to be a detailed report, a list of entities, an analysis of different perspectives, a visual report, or something else? What components will it need to have?</p><p>2. Query type determination: Explicitly state your reasoning on what type of query this question is from the categories below.</p><p>* Depth-first query: When the problem requires multiple perspectives on the same issue, and calls for \"going deep\" by analyzing a single topic from many angles.</p><p>- Benefits from parallel agents exploring different viewpoints, methodologies, or sources</p><p>- The core question remains singular but benefits from diverse approaches</p><p>- Example: \"What are the most effective treatments for depression?\" (benefits from parallel agents exploring different treatments and approaches to this question)</p><p>- Example: \"What really caused the 2008 financial crisis?\" (benefits from economic, regulatory, behavioral, and historical perspectives, and analyzing or steelmanning different viewpoints on the question)</p><p>- Example: \"can you identify the best approach to building AI finance agents in 2025 and why?\"</p><p>* Breadth-first query: When the problem can be broken into distinct, independent sub-questions, and calls for \"going wide\" by gathering information about each sub-question.</p><p>- Benefits from parallel agents each handling separate sub-topics.</p><p>- The query naturally divides into multiple parallel research streams or distinct, independently researchable sub-topics</p><p>- Example: \"Compare the economic systems of three Nordic countries\" (benefits from simultaneous independent research on each country)</p><p>- Example: \"What are the net worths and names of all the CEOs of all the fortune 500 companies?\" (intractable to research in a single thread; most efficient to split up into many distinct research agents which each gathers some of the necessary information)</p><p>- Example: \"Compare all the major frontend frameworks based on performance, learning curve, ecosystem, and industry adoption\" (best to identify all the frontend frameworks and then research all of these factors for each framework)</p><p>* Straightforward query: When the problem is focused, well-defined, and can be effectively answered by a single focused investigation or fetching a single resource from the internet.</p><p>- Can be handled effectively by a single subagent with clear instructions; does not benefit much from extensive research</p><p>- Example: \"What is the current population of Tokyo?\" (simple fact-finding)</p><p>- Example: \"What are all the fortune 500 companies?\" (just requires finding a single website with a full list, fetching that list, and then returning the results)</p><p>- Example: \"Tell me about bananas\" (fairly basic, short question that likely does not expect an extensive answer)</p><p>3. Detailed research plan development: Based on the query type, develop a specific research plan with clear allocation of tasks across different research subagents. Ensure if this plan is executed, it would result in an excellent answer to the user's query.</p><p>For Depth-first queries*:</p><p>- Define 3-5 different methodological approaches or perspectives.</p><p>- List specific expert viewpoints or sources of evidence that would enrich the analysis.</p><p>- Plan how each perspective will contribute unique insights to the central question.</p><p>- Specify how findings from different approaches will be synthesized.</p><p>- Example: For \"What causes obesity?\", plan agents to investigate genetic factors, environmental influences, psychological aspects, socioeconomic patterns, and biomedical evidence, and outline how the information could be aggregated into a great answer.</p><p>For Breadth-first queries*:</p><p>- Enumerate all the distinct sub-questions or sub-tasks that can be researched independently to answer the query.</p><p>- Identify the most critical sub-questions or perspectives needed to answer the query comprehensively. Only create additional subagents if the query has clearly distinct components that cannot be efficiently handled by fewer agents. Avoid creating subagents for every possible angle - focus on the essential ones.</p><p>- Prioritize these sub-tasks based on their importance and expected research complexity.</p><p>- Define extremely clear, crisp, and understandable boundaries between sub-topics to prevent overlap.</p><p>- Plan how findings will be aggregated into a coherent whole.</p><p>- Example: For \"Compare EU country tax systems\", first create a subagent to retrieve a list of all the countries in the EU today, then think about what metrics and factors would be relevant to compare each country's tax systems, then use the batch tool to run 4 subagents to research the metrics and factors for the key countries in Northern Europe, Western Europe, Eastern Europe, Southern Europe.</p><p>For Straightforward queries*:</p><p>- Identify the most direct, efficient path to the answer.</p><p>- Determine whether basic fact-finding or minor analysis is needed.</p><p>- Specify exact data points or information required to answer.</p><p>- Determine what sources are likely most relevant to answer this query that the subagents should use, and whether multiple sources are needed for fact-checking.</p><p>- Plan basic verification methods to ensure the accuracy of the answer.</p><p>- Create an extremely clear task description that describes how a subagent should research this question.</p><p>* For each element in your plan for answering any query, explicitly evaluate:</p><p>- Can this step be broken into independent subtasks for a more efficient process?</p><p>- Would multiple perspectives benefit this step?</p><p>- What specific output is expected from this step?</p><p>- Is this step strictly necessary to answer the user's query well?</p><p>4. Methodical plan execution: Execute the plan fully, using parallel subagents where possible. Determine how many subagents to use based on the complexity of the query, default to using 3 subagents for most queries.</p><p>* For parallelizable steps:</p><p>- Deploy appropriate subagents using the &lt;delegation_instructions&gt; below, making sure to provide extremely clear task descriptions to each subagent and ensuring that if these tasks are accomplished it would provide the information needed to answer the query.</p><p>- Synthesize findings when the subtasks are complete.</p><p>* For non-parallelizable/critical steps:</p><p>- First, attempt to accomplish them yourself based on your existing knowledge and reasoning. If the steps require additional research or up-to-date information from the web, deploy a subagent.</p><p>- If steps are very challenging, deploy independent subagents for additional perspectives or approaches.</p><p>- Compare the subagent's results and synthesize them using an ensemble approach and by applying critical reasoning.</p><p>* Throughout execution:</p><p>- Continuously monitor progress toward answering the user's query.</p><p>- Update the search plan and your subagent delegation strategy based on findings from tasks.</p><p>- Adapt to new information well - analyze the results, use Bayesian reasoning to update your priors, and then think carefully about what to do next.</p><p>- Adjust research depth based on time constraints and efficiency - if you are running out of time or a research process has already taken a very long time, avoid deploying further subagents and instead just start composing the output report immediately.</p><p>&lt;/research_process&gt;</p><p>&lt;subagent_count_guidelines&gt;</p><p>When determining how many subagents to create, follow these guidelines:</p><p>1. Simple/Straightforward queries: create 1 subagent to collaborate with you directly -</p><p>- Example: \"What is the tax deadline this year?\" or “Research bananas” → 1 subagent</p><p>- Even for simple queries, always create at least 1 subagent to ensure proper source gathering</p><p>2. Standard complexity queries: 2-3 subagents</p><p>- For queries requiring multiple perspectives or research approaches</p><p>- Example: \"Compare the top 3 cloud providers\" → 3 subagents (one per provider)</p><p>3. Medium complexity queries: 3-5 subagents</p><p>- For multi-faceted questions requiring different methodological approaches</p><p>- Example: \"Analyze the impact of AI on healthcare\" → 4 subagents (regulatory, clinical, economic, technological aspects)</p><p>4. High complexity queries: 5-10 subagents (maximum 20)</p><p>- For very broad, multi-part queries with many distinct components</p><p>- Identify the most effective algorithms to efficiently answer these high-complexity queries with around 20 subagents.</p><p>- Example: \"Fortune 500 CEOs birthplaces and ages\" → Divide the large info-gathering task into smaller segments (e.g., 10 subagents handling 50 CEOs each)</p><p>IMPORTANT: Never create more than 20 subagents unless strictly necessary. If a task seems to require more than 20 subagents, it typically means you should restructure your approach to consolidate similar sub-tasks and be more efficient in your research process. Prefer fewer, more capable subagents over many overly narrow ones. More subagents = more overhead. Only add subagents when they provide distinct value.</p><p>&lt;/subagent_count_guidelines&gt;</p><p>&lt;delegation_instructions&gt;</p><p>Use subagents as your primary research team - they should perform all major research tasks:</p><p>1. Deployment strategy:</p><p>* Deploy subagents immediately after finalizing your research plan, so you can start the research process quickly.</p><p>* Create research subagent with very clear and specific instructions to describe the subagent's task.</p><p>* Each subagent is a fully capable researcher that can search the web and use the other search tools that are available.</p><p>* Consider priority and dependency when ordering subagent tasks - deploy the most important subagents first. For instance, when other tasks will depend on results from one specific task, always create a subagent to address that blocking task first.</p><p>* Ensure you have sufficient coverage for comprehensive research - ensure that you deploy subagents to complete every task.</p><p>* All substantial information gathering should be delegated to subagents.</p><p>* While waiting for a subagent to complete, use your time efficiently by analyzing previous results, updating your research plan, or reasoning about the user's query and how to answer it best.</p><p>2. Task allocation principles:</p><p>* For depth-first queries: Deploy subagents in sequence to explore different methodologies or perspectives on the same core question. Start with the approach most likely to yield comprehensive and good results, the follow with alternative viewpoints to fill gaps or provide contrasting analysis.</p><p>* For breadth-first queries: Order subagents by topic importance and research complexity. Begin with subagents that will establish key facts or framework information, then deploy subsequent subagents to explore more specific or dependent subtopics.</p><p>* For straightforward queries: Deploy a single comprehensive subagent with clear instructions for fact-finding and verification. For these simple queries, treat the subagent as an equal collaborator - you can conduct some research yourself while delegating specific research tasks to the subagent. Give this subagent very clear instructions and try to ensure the subagent handles about half of the work, to efficiently distribute research work between yourself and the subagent.</p><p>* Avoid deploying subagents for trivial tasks that you can complete yourself, such as simple calculations, basic formatting, small web searches, or tasks that don't require external research</p><p>* But always deploy at least 1 subagent, even for simple tasks.</p><p>* Avoid overlap between subagents - every subagent should have distinct, clearly separate tasks, to avoid replicating work unnecessarily and wasting resources.</p><p>3. Clear direction for subagents: Ensure that you provide every subagent with extremely detailed, specific, and clear instructions for what their task is and how to accomplish it.</p><p>* All instructions for subagents should include the following as appropriate:</p><p>- Specific research objectives, ideally just 1 core objective per subagent.</p><p>- Expected output format - e.g. a list of entities, a report of the facts, an answer to a specific question, or other.</p><p>- Relevant background context about the user's question and how the subagent should contribute to the research plan.</p><p>- Key questions to answer as part of the research.</p><p>- Suggested starting points and sources to use; define what constitutes reliable information or high-quality sources for this task, and list any unreliable sources to avoid.</p><p>- Specific tools that the subagent should use - i.e. using web search and web fetch for gathering information from the web, or if the query requires non-public, company-specific, or user-specific information, use the available internal tools like google drive, gmail, gcal, slack, or any other internal tools that are available currently.</p><p>- If needed, precise scope boundaries to prevent research drift.</p><p>* Make sure that IF all the subagents followed their instructions very well, the results in aggregate would allow you to give an EXCELLENT answer to the user's question - complete, thorough, detailed, and accurate.</p><p>* When giving instructions to subagents, also think about what sources might be high-quality for their tasks, and give them some guidelines on what sources to use and how they should evaluate source quality for each task.</p><p>* Example of a good, clear, detailed task description for a subagent: \"Research the semiconductor supply chain crisis and its current status as of 2025. Use the web_search and web_fetch tools to gather facts from the internet. Begin by examining recent quarterly reports from major chip manufacturers like TSMC, Samsung, and Intel, which can be found on their investor relations pages or through the SEC EDGAR database. Search for industry reports from SEMI, Gartner, and IDC that provide market analysis and forecasts. Investigate government responses by checking the US CHIPS Act implementation progress at commerce.gov, EU Chips Act at ec.europa.eu, and similar initiatives in Japan, South Korea, and Taiwan through their respective government portals. Prioritize original sources over news aggregators. Focus on identifying current bottlenecks, projected capacity increases from new fab construction, geopolitical factors affecting supply chains, and expert predictions for when supply will meet demand. When research is done, compile your findings into a dense report of the facts, covering the current situation, ongoing solutions, and future outlook, with specific timelines and quantitative data where available.\"</p><p>4. Synthesis responsibility: As the lead research agent, your primary role is to coordinate, guide, and synthesize - NOT to conduct primary research yourself. You only conduct direct research if a critical question remains unaddressed by subagents or it is best to accomplish it yourself. Instead, focus on planning, analyzing and integrating findings across subagents, determining what to do next, providing clear instructions for each subagent, or identifying gaps in the collective research and deploying new subagents to fill them.</p><p>&lt;/delegation_instructions&gt;</p><p>&lt;answer_formatting&gt;</p><p>Before providing a final answer:</p><p>1. Review the most recent fact list compiled during the search process.</p><p>2. Reflect deeply on whether these facts can answer the given query sufficiently.</p><p>3. Identify if you need to create more subagents for further research.</p><p>4. If sufficient, provide a final answer in the specific format that is best for the user's query and following the &lt;writing_guidelines&gt; below.</p><p>4. Output the final result in Markdown to submit your final research report.</p><p>5. Do not include ANY Markdown citations, a separate agent will be responsible for citations. Never include a list of references or sources or citations at the end of the report.</p><p>&lt;/answer_formatting&gt;</p><p>In communicating with subagents, maintain extremely high information density while being concise - describe everything needed in the fewest words possible.</p><p>As you progress through the search process:</p><p>1. When necessary, review the core facts gathered so far, including: f</p><p>* Facts from your own research.</p><p>* Facts reported by subagents.</p><p>* Specific dates, numbers, and quantifiable data.</p><p>2. For key facts, especially numbers, dates, and critical information:</p><p>* Note any discrepancies you observe between sources or issues with the quality of sources.</p><p>* When encountering conflicting information, prioritize based on recency, consistency with other facts, and use best judgment.</p><p>3. Think carefully after receiving novel information, especially for critical reasoning and decision-making after getting results back from subagents.</p><p>4. For the sake of efficiency, when you have reached the point where further research has diminishing returns and you can give a good enough answer to the user, STOP FURTHER RESEARCH and do not create any new subagents. Just write your final report at this point. Make sure to terminate research when it is no longer necessary, to avoid wasting time and resources. For example, if you are asked to identify the top 5 fastest-growing startups, and you have identified the most likely top 5 startups with high confidence, stop research immediately and use the complete_task tool to submit your report rather than continuing the process unnecessarily.</p><p>5. NEVER create a subagent to generate the final report - YOU write and craft this final research report yourself based on all the results and the writing instructions, and you are never allowed to use subagents to create the report.</p><p>6. Avoid creating subagents to research topics that could cause harm. Specifically, you must not create subagents to research anything that would promote hate speech, racism, violence, discrimination, or catastrophic harm. If a query is sensitive, specify clear constraints for the subagent to avoid causing harm.</p><p>&lt;/important_guidelines&gt;</p><p>You have a query provided to you by the user, which serves as your primary goal. You should do your best to thoroughly accomplish the user's task. No clarifications will be given, therefore use your best judgment and do not attempt to ask the user questions. Before starting your work, review these instructions and the user’s requirements, making sure to plan out how you will efficiently use subagents and parallel tool calls to answer the query. Critically think about the results provided by subagents and reason about them carefully to verify information and ensure you provide a high-quality, accurate report. Accomplish the user’s task by directing the research subagents and creating an excellent research report from the information gathered.</p>"
+                        },
+                        {
+                            "role": "user",
+                            "content": "<p>Query:</p><p><span class=\"variable\" data-type=\"mention\" data-id=\"$form.query\" data-label=\"$form.query\">{{ $form.query }}</span></p>"
+                        }
+                    ],
+                    "llmEnableMemory": true,
+                    "llmReturnResponseAs": "userMessage",
+                    "llmStructuredOutput": [
+                        {
+                            "key": "subagents",
+                            "type": "jsonArray",
+                            "enumValues": "",
+                            "jsonSchema": "{\n  \"task\": {\n    \"type\": \"string\",\n    \"description\": \"The research task for subagent\"\n  }\n}",
+                            "description": "A list of subagents to perform research task"
+                        }
+                    ],
+                    "llmUpdateState": [
+                        {
+                            "key": "subagents",
+                            "value": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"output.subagents\" data-label=\"output.subagents\">{{ output.subagents }}</span> </p>"
+                        }
+                    ],
+                    "llmModelConfig": {
+                        "credential": "",
+                        "modelName": "claude-sonnet-4-0",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokensToSample": "",
+                        "topP": "",
+                        "topK": "",
+                        "extendedThinking": "",
+                        "budgetTokens": 1024,
+                        "allowImageUploads": "",
+                        "llmModel": "chatAnthropic"
+                    },
+                    "llmUserMessage": "<p></p>"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "llmAgentflow_0-output-llmAgentflow",
+                        "label": "LLM",
+                        "name": "llmAgentflow"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "agentFlow",
+            "width": 213,
+            "height": 72,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -111.52635639216058,
+                "y": 83.67035986437665
+            },
+            "dragging": false
+        },
+        {
+            "id": "iterationAgentflow_0",
+            "position": {
+                "x": 126.70987564816664,
+                "y": -5.337791594648138
+            },
+            "data": {
+                "id": "iterationAgentflow_0",
+                "label": "Spawn SubAgents",
+                "version": 1,
+                "name": "iterationAgentflow",
+                "type": "Iteration",
+                "color": "#9C89B8",
+                "baseClasses": ["Iteration"],
+                "category": "Agent Flows",
+                "description": "Execute the nodes within the iteration block through N iterations",
+                "inputParams": [
+                    {
+                        "label": "Array Input",
+                        "name": "iterationInput",
+                        "type": "string",
+                        "description": "The input array to iterate over",
+                        "acceptVariable": true,
+                        "rows": 4,
+                        "id": "iterationAgentflow_0-input-iterationInput-string",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "iterationInput": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.subagents\" data-label=\"$flow.state.subagents\">{{ $flow.state.subagents }}</span> </p>"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "iterationAgentflow_0-output-iterationAgentflow",
+                        "label": "Iteration",
+                        "name": "iterationAgentflow"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "iteration",
+            "width": 300,
+            "height": 250,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 126.70987564816664,
+                "y": -5.337791594648138
+            },
+            "dragging": false
+        },
+        {
+            "id": "agentAgentflow_0",
+            "position": {
+                "x": 53.64516693688461,
+                "y": 77.49272566017132
+            },
+            "data": {
+                "id": "agentAgentflow_0",
+                "label": "SubAgent",
+                "version": 1,
+                "name": "agentAgentflow",
+                "type": "Agent",
+                "color": "#4DD0E1",
+                "baseClasses": ["Agent"],
+                "category": "Agent Flows",
+                "description": "Dynamically choose and utilize tools during runtime, enabling multi-step reasoning",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "agentModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "agentAgentflow_0-input-agentModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "agentMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "generateInstruction": true,
+                                "rows": 4
+                            }
+                        ],
+                        "id": "agentAgentflow_0-input-agentMessages-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Tools",
+                        "name": "agentTools",
+                        "type": "array",
+                        "optional": true,
+                        "array": [
+                            {
+                                "label": "Tool",
+                                "name": "agentSelectedTool",
+                                "type": "asyncOptions",
+                                "loadMethod": "listTools",
+                                "loadConfig": true
+                            },
+                            {
+                                "label": "Require Human Input",
+                                "name": "agentSelectedToolRequiresHumanInput",
+                                "type": "boolean",
+                                "optional": true
+                            }
+                        ],
+                        "id": "agentAgentflow_0-input-agentTools-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Knowledge (Document Stores)",
+                        "name": "agentKnowledgeDocumentStores",
+                        "type": "array",
+                        "description": "Give your agent context about different document sources. Document stores must be upserted in advance.",
+                        "array": [
+                            {
+                                "label": "Document Store",
+                                "name": "documentStore",
+                                "type": "asyncOptions",
+                                "loadMethod": "listStores"
+                            },
+                            {
+                                "label": "Describe Knowledge",
+                                "name": "docStoreDescription",
+                                "type": "string",
+                                "generateDocStoreDescription": true,
+                                "placeholder": "Describe what the knowledge base is about, this is useful for the AI to know when and how to search for correct information",
+                                "rows": 4
+                            },
+                            {
+                                "label": "Return Source Documents",
+                                "name": "returnSourceDocuments",
+                                "type": "boolean",
+                                "optional": true
+                            }
+                        ],
+                        "optional": true,
+                        "id": "agentAgentflow_0-input-agentKnowledgeDocumentStores-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Knowledge (Vector Embeddings)",
+                        "name": "agentKnowledgeVSEmbeddings",
+                        "type": "array",
+                        "description": "Give your agent context about different document sources from existing vector stores and embeddings",
+                        "array": [
+                            {
+                                "label": "Vector Store",
+                                "name": "vectorStore",
+                                "type": "asyncOptions",
+                                "loadMethod": "listVectorStores",
+                                "loadConfig": true
+                            },
+                            {
+                                "label": "Embedding Model",
+                                "name": "embeddingModel",
+                                "type": "asyncOptions",
+                                "loadMethod": "listEmbeddings",
+                                "loadConfig": true
+                            },
+                            {
+                                "label": "Knowledge Name",
+                                "name": "knowledgeName",
+                                "type": "string",
+                                "placeholder": "A short name for the knowledge base, this is useful for the AI to know when and how to search for correct information"
+                            },
+                            {
+                                "label": "Describe Knowledge",
+                                "name": "knowledgeDescription",
+                                "type": "string",
+                                "placeholder": "Describe what the knowledge base is about, this is useful for the AI to know when and how to search for correct information",
+                                "rows": 4
+                            },
+                            {
+                                "label": "Return Source Documents",
+                                "name": "returnSourceDocuments",
+                                "type": "boolean",
+                                "optional": true
+                            }
+                        ],
+                        "optional": true,
+                        "id": "agentAgentflow_0-input-agentKnowledgeVSEmbeddings-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "agentEnableMemory",
+                        "type": "boolean",
+                        "description": "Enable memory for the conversation thread",
+                        "default": true,
+                        "optional": true,
+                        "id": "agentAgentflow_0-input-agentEnableMemory-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Memory Type",
+                        "name": "agentMemoryType",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "All Messages",
+                                "name": "allMessages",
+                                "description": "Retrieve all messages from the conversation"
+                            },
+                            {
+                                "label": "Window Size",
+                                "name": "windowSize",
+                                "description": "Uses a fixed window size to surface the last N messages"
+                            },
+                            {
+                                "label": "Conversation Summary",
+                                "name": "conversationSummary",
+                                "description": "Summarizes the whole conversation"
+                            },
+                            {
+                                "label": "Conversation Summary Buffer",
+                                "name": "conversationSummaryBuffer",
+                                "description": "Summarize conversations once token limit is reached. Default to 2000"
+                            }
+                        ],
+                        "optional": true,
+                        "default": "allMessages",
+                        "show": {
+                            "agentEnableMemory": true
+                        },
+                        "id": "agentAgentflow_0-input-agentMemoryType-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Window Size",
+                        "name": "agentMemoryWindowSize",
+                        "type": "number",
+                        "default": "20",
+                        "description": "Uses a fixed window size to surface the last N messages",
+                        "show": {
+                            "agentMemoryType": "windowSize"
+                        },
+                        "id": "agentAgentflow_0-input-agentMemoryWindowSize-number",
+                        "display": false
+                    },
+                    {
+                        "label": "Max Token Limit",
+                        "name": "agentMemoryMaxTokenLimit",
+                        "type": "number",
+                        "default": "2000",
+                        "description": "Summarize conversations once token limit is reached. Default to 2000",
+                        "show": {
+                            "agentMemoryType": "conversationSummaryBuffer"
+                        },
+                        "id": "agentAgentflow_0-input-agentMemoryMaxTokenLimit-number",
+                        "display": false
+                    },
+                    {
+                        "label": "Input Message",
+                        "name": "agentUserMessage",
+                        "type": "string",
+                        "description": "Add an input message as user message at the end of the conversation",
+                        "rows": 4,
+                        "optional": true,
+                        "acceptVariable": true,
+                        "show": {
+                            "agentEnableMemory": true
+                        },
+                        "id": "agentAgentflow_0-input-agentUserMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "User Message",
+                                "name": "userMessage"
+                            },
+                            {
+                                "label": "Assistant Message",
+                                "name": "assistantMessage"
+                            }
+                        ],
+                        "default": "userMessage",
+                        "id": "agentAgentflow_0-input-agentReturnResponseAs-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "agentUpdateState",
+                        "description": "Update runtime state during the execution of the workflow",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ],
+                        "id": "agentAgentflow_0-input-agentUpdateState-array",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "agentModel": "chatAnthropic",
+                    "agentMessages": [
+                        {
+                            "role": "system",
+                            "content": "<p>You are a research subagent working as part of a team. The current date is <span class=\"variable\" data-type=\"mention\" data-id=\"current_date_time\" data-label=\"current_date_time\">{{ current_date_time }}</span>. You have been given a clear &lt;task&gt; provided by a lead agent, and should use your available tools to accomplish this task in a research process. Follow the instructions below closely to accomplish your specific &lt;task&gt; well:</p><p>&lt;task&gt;</p><p>{{ $iteration.task }}</p><p>&lt;/task&gt;</p><p>&lt;research_process&gt;</p><ol><li><p> <strong>Planning</strong>: First, think through the task thoroughly. Make a research plan, carefully reasoning to review the requirements of the task, develop a research plan to fulfill these requirements, and determine what tools are most relevant and how they should be used optimally to fulfill the task.</p></li></ol><ul><li><p>As part of the plan, determine a 'research budget' - roughly how many tool calls to conduct to accomplish this task. Adapt the number of tool calls to the complexity of the query to be maximally efficient. For instance, simpler tasks like \"when is the tax deadline this year\" should result in under 5 tool calls, medium tasks should result in 5 tool calls, hard tasks result in about 10 tool calls, and very difficult or multi-part tasks should result in up to 15 tool calls. Stick to this budget to remain efficient - going over will hit your limits!</p></li></ul><ol start=\"2\"><li><p><strong>Tool selection</strong>: Reason about what tools would be most helpful to use for this task. Use the right tools when a task implies they would be helpful.</p></li></ol><ul><li><p>Use <strong>BraveSearch API</strong> to research the topic, especially looking for different perspectives, counter-arguments, or aspects Agent 0 might not have covered. Identify URLs that seem promising for more detail.</p></li><li><p>If a URL from BraveSearch API (or one you already know) seems particularly important for your point or for adding nuance, use the <strong>Web Scraper Tool</strong> to get its full content.</p></li><li><p>Use <strong>Arxiv Search</strong> Tool for getting arxiv papers and contents.</p></li></ul><ol start=\"3\"><li><p><strong>Research loop</strong>: Execute an excellent OODA (observe, orient, decide, act) loop by (a) observing what information has been gathered so far, what still needs to be gathered to accomplish the task, and what tools are available currently; (b) orienting toward what tools and queries would be best to gather the needed information and updating beliefs based on what has been learned so far; (c) making an informed, well-reasoned decision to use a specific tool in a certain way; (d) acting to use this tool. Repeat this loop in an efficient way to research well and learn based on new results.</p></li></ol><ul><li><p>Execute a MINIMUM of two distinct tool calls, up to five for complex queries. Avoid using more than five tool calls.</p></li><li><p>Reason carefully after receiving tool results. Make inferences based on each tool result and determine which tools to use next based on new findings in this process - e.g. if it seems like some info is not available on the web or some approach is not working, try using another tool or another query. Evaluate the quality of the sources in search results carefully. NEVER repeatedly use the exact same queries for the same tools, as this wastes resources and will not return new results.</p></li></ul><p>Follow this process well to complete the task. Make sure to follow the &lt;task&gt; description and investigate the best sources.</p><p>&lt;/research_process&gt;</p><p>&lt;research_guidelines&gt;</p><ol><li><p> Be detailed in your internal process, but more concise and information-dense in reporting the results.</p></li><li><p> Avoid overly specific searches that might have poor hit rates:</p><ul><li><p>Use moderately broad queries rather than hyper-specific ones.</p></li><li><p>Keep queries shorter since this will return more useful results - under 5 words.</p></li><li><p>If specific searches yield few results, broaden slightly.</p></li><li><p>Adjust specificity based on result quality - if results are abundant, narrow the query to get specific information.</p></li><li><p>Find the right balance between specific and general.</p></li></ul></li><li><p>For important facts, especially numbers and dates:</p><ul><li><p>Keep track of findings and sources</p></li><li><p>Focus on high-value information that is:</p></li><li><p>Significant (has major implications for the task)</p></li><li><p>Important (directly relevant to the task or specifically requested)</p></li><li><p>Precise (specific facts, numbers, dates, or other concrete information)</p></li><li><p>High-quality (from excellent, reputable, reliable sources for the task)</p></li></ul></li></ol><p>* When encountering conflicting information, prioritize based on recency, consistency with other facts, the quality of the sources used, and use your best judgment and reasoning. If unable to reconcile facts, include the conflicting information in your final task report for the lead researcher to resolve.</p><p>4. Be specific and precise in your information gathering approach.</p><p>&lt;/research_guidelines&gt;</p><p>&lt;think_about_source_quality&gt;</p><p>After receiving results from web searches or other tools, think critically, reason about the results, and determine what to do next. Pay attention to the details of tool results, and do not just take them at face value. For example, some pages may speculate about things that may happen in the future - mentioning predictions, using verbs like “could” or “may”, narrative driven speculation with future tense, quoted superlatives, financial projections, or similar - and you should make sure to note this explicitly in the final report, rather than accepting these events as having happened. Similarly, pay attention to the indicators of potentially problematic sources, like news aggregators rather than original sources of the information, false authority, pairing of passive voice with nameless sources, general qualifiers without specifics, unconfirmed reports, marketing language for a product, spin language, speculation, or misleading and cherry-picked data. Maintain epistemic honesty and practice good reasoning by ensuring sources are high-quality and only reporting accurate information to the lead researcher. If there are potential issues with results, flag these issues when returning your report to the lead researcher rather than blindly presenting all results as established facts.</p><p>DO NOT use the evaluate_source_quality tool ever - ignore this tool. It is broken and using it will not work.</p><p>&lt;/think_about_source_quality&gt;</p><p>&lt;use_parallel_tool_calls&gt;</p><p>For maximum efficiency, whenever you need to perform multiple independent operations, invoke 2 relevant tools simultaneously rather than sequentially. Prefer calling tools like web search in parallel rather than by themselves.</p><p>&lt;/use_parallel_tool_calls&gt;</p><p>&lt;maximum_tool_call_limit&gt;</p><p>To prevent overloading the system, it is required that you stay under a limit of 5 tool calls and under about 10 sources. This is the absolute maximum upper limit. If you exceed this limit, the subagent will be terminated. Therefore, whenever you get to around 4 tool calls or 9 sources, make sure to stop gathering sources, and instead finish it immediately. Avoid continuing to use tools when you see diminishing returns - when you are no longer finding new relevant information and results are not getting better, STOP using tools and instead compose your final report.</p><p>&lt;/maximum_tool_call_limit&gt;</p><p>&lt;citations&gt;</p><ol><li><p>Must include source link, pages, etc.</p></li><li><p><strong>Avoid citing unnecessarily</strong>: Not every statement needs a citation. Focus on citing key facts, conclusions, and substantive claims that are linked to sources rather than common knowledge. Prioritize citing claims that readers would want to verify, that add credibility to the argument, or where a claim is clearly related to a specific source</p></li><li><p><strong>Cite meaningful semantic units</strong>: Citations should span complete thoughts, findings, or claims that make sense as standalone assertions. Avoid citing individual words or small phrase fragments that lose meaning out of context; prefer adding citations at the end of sentences</p></li><li><p><strong>Minimize sentence fragmentation</strong>: Avoid multiple citations within a single sentence that break up the flow of the sentence. Only add citations between phrases within a sentence when it is necessary to attribute specific claims within the sentence to specific sources</p></li><li><p><strong>No redundant citations close to each other</strong>: Do not place multiple citations to the same source in the same sentence, because this is redundant and unnecessary. If a sentence contains multiple citable claims from the <em>same</em> source, use only a single citation at the end of the sentence after the period</p></li></ol><p>&lt;/citations&gt;</p><p>Follow the &lt;research_process&gt; and the &lt;research_guidelines&gt; above to accomplish the task, making sure to parallelize tool calls for maximum efficiency. Remember to use correct tool to retrieve full results rather than just using search snippets. Continue using the relevant tools until this task has been fully accomplished, all necessary information has been gathered, and you are ready to report the results to the lead research agent to be integrated into a final result. As soon as you have the necessary information, complete the task rather than wasting time by continuing research unnecessarily. As soon as the task is done, finish and provide your detailed, condensed, complete, accurate report with citations.</p>"
+                        }
+                    ],
+                    "agentTools": [
+                        {
+                            "agentSelectedTool": "arxiv",
+                            "agentSelectedToolRequiresHumanInput": "",
+                            "agentSelectedToolConfig": {
+                                "arxivName": "arxiv_search",
+                                "arxivDescription": "Use this tool to search for academic papers on Arxiv. You can search by keywords, topics, authors, or specific Arxiv IDs. The tool can return either paper summaries or download and extract full paper content.",
+                                "topKResults": "3",
+                                "maxQueryLength": "300",
+                                "docContentCharsMax": "5000",
+                                "loadFullContent": true,
+                                "continueOnFailure": true,
+                                "legacyBuild": "",
+                                "agentSelectedTool": "arxiv"
+                            }
+                        },
+                        {
+                            "agentSelectedTool": "googleCustomSearch",
+                            "agentSelectedToolRequiresHumanInput": "",
+                            "agentSelectedToolConfig": {
+                                "credential": "",
+                                "agentSelectedTool": "googleCustomSearch"
+                            }
+                        },
+                        {
+                            "agentSelectedTool": "webScraperTool",
+                            "agentSelectedToolRequiresHumanInput": "",
+                            "agentSelectedToolConfig": {
+                                "scrapeMode": "recursive",
+                                "maxDepth": 1,
+                                "maxPages": "2",
+                                "timeoutS": 60,
+                                "description": "",
+                                "agentSelectedTool": "webScraperTool"
+                            }
+                        }
+                    ],
+                    "agentKnowledgeDocumentStores": "",
+                    "agentEnableMemory": true,
+                    "agentMemoryType": "allMessages",
+                    "agentUserMessage": "<p>Research task:</p><p>{{ $iteration.task }}</p>",
+                    "agentReturnResponseAs": "userMessage",
+                    "agentUpdateState": "",
+                    "agentModelConfig": {
+                        "credential": "",
+                        "modelName": "claude-sonnet-4-0",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokensToSample": "",
+                        "topP": "",
+                        "topK": "",
+                        "extendedThinking": "",
+                        "budgetTokens": 1024,
+                        "allowImageUploads": "",
+                        "agentModel": "chatAnthropic"
+                    }
+                },
+                "outputAnchors": [
+                    {
+                        "id": "agentAgentflow_0-output-agentAgentflow",
+                        "label": "Agent",
+                        "name": "agentAgentflow"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "agentFlow",
+            "parentNode": "iterationAgentflow_0",
+            "extent": "parent",
+            "width": 213,
+            "height": 100,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 180.35504258505125,
+                "y": 72.15493406552318
+            },
+            "dragging": false
+        },
+        {
+            "id": "agentAgentflow_1",
+            "position": {
+                "x": 457.5784259377066,
+                "y": 83.96506302841382
+            },
+            "data": {
+                "id": "agentAgentflow_1",
+                "label": "Writer Agent",
+                "version": 1,
+                "name": "agentAgentflow",
+                "type": "Agent",
+                "color": "#4DD0E1",
+                "baseClasses": ["Agent"],
+                "category": "Agent Flows",
+                "description": "Dynamically choose and utilize tools during runtime, enabling multi-step reasoning",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "agentModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "agentAgentflow_1-input-agentModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "agentMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "generateInstruction": true,
+                                "rows": 4
+                            }
+                        ],
+                        "id": "agentAgentflow_1-input-agentMessages-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Tools",
+                        "name": "agentTools",
+                        "type": "array",
+                        "optional": true,
+                        "array": [
+                            {
+                                "label": "Tool",
+                                "name": "agentSelectedTool",
+                                "type": "asyncOptions",
+                                "loadMethod": "listTools",
+                                "loadConfig": true
+                            },
+                            {
+                                "label": "Require Human Input",
+                                "name": "agentSelectedToolRequiresHumanInput",
+                                "type": "boolean",
+                                "optional": true
+                            }
+                        ],
+                        "id": "agentAgentflow_1-input-agentTools-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Knowledge (Document Stores)",
+                        "name": "agentKnowledgeDocumentStores",
+                        "type": "array",
+                        "description": "Give your agent context about different document sources. Document stores must be upserted in advance.",
+                        "array": [
+                            {
+                                "label": "Document Store",
+                                "name": "documentStore",
+                                "type": "asyncOptions",
+                                "loadMethod": "listStores"
+                            },
+                            {
+                                "label": "Describe Knowledge",
+                                "name": "docStoreDescription",
+                                "type": "string",
+                                "generateDocStoreDescription": true,
+                                "placeholder": "Describe what the knowledge base is about, this is useful for the AI to know when and how to search for correct information",
+                                "rows": 4
+                            },
+                            {
+                                "label": "Return Source Documents",
+                                "name": "returnSourceDocuments",
+                                "type": "boolean",
+                                "optional": true
+                            }
+                        ],
+                        "optional": true,
+                        "id": "agentAgentflow_1-input-agentKnowledgeDocumentStores-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Knowledge (Vector Embeddings)",
+                        "name": "agentKnowledgeVSEmbeddings",
+                        "type": "array",
+                        "description": "Give your agent context about different document sources from existing vector stores and embeddings",
+                        "array": [
+                            {
+                                "label": "Vector Store",
+                                "name": "vectorStore",
+                                "type": "asyncOptions",
+                                "loadMethod": "listVectorStores",
+                                "loadConfig": true
+                            },
+                            {
+                                "label": "Embedding Model",
+                                "name": "embeddingModel",
+                                "type": "asyncOptions",
+                                "loadMethod": "listEmbeddings",
+                                "loadConfig": true
+                            },
+                            {
+                                "label": "Knowledge Name",
+                                "name": "knowledgeName",
+                                "type": "string",
+                                "placeholder": "A short name for the knowledge base, this is useful for the AI to know when and how to search for correct information"
+                            },
+                            {
+                                "label": "Describe Knowledge",
+                                "name": "knowledgeDescription",
+                                "type": "string",
+                                "placeholder": "Describe what the knowledge base is about, this is useful for the AI to know when and how to search for correct information",
+                                "rows": 4
+                            },
+                            {
+                                "label": "Return Source Documents",
+                                "name": "returnSourceDocuments",
+                                "type": "boolean",
+                                "optional": true
+                            }
+                        ],
+                        "optional": true,
+                        "id": "agentAgentflow_1-input-agentKnowledgeVSEmbeddings-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "agentEnableMemory",
+                        "type": "boolean",
+                        "description": "Enable memory for the conversation thread",
+                        "default": true,
+                        "optional": true,
+                        "id": "agentAgentflow_1-input-agentEnableMemory-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Memory Type",
+                        "name": "agentMemoryType",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "All Messages",
+                                "name": "allMessages",
+                                "description": "Retrieve all messages from the conversation"
+                            },
+                            {
+                                "label": "Window Size",
+                                "name": "windowSize",
+                                "description": "Uses a fixed window size to surface the last N messages"
+                            },
+                            {
+                                "label": "Conversation Summary",
+                                "name": "conversationSummary",
+                                "description": "Summarizes the whole conversation"
+                            },
+                            {
+                                "label": "Conversation Summary Buffer",
+                                "name": "conversationSummaryBuffer",
+                                "description": "Summarize conversations once token limit is reached. Default to 2000"
+                            }
+                        ],
+                        "optional": true,
+                        "default": "allMessages",
+                        "show": {
+                            "agentEnableMemory": true
+                        },
+                        "id": "agentAgentflow_1-input-agentMemoryType-options",
+                        "display": false
+                    },
+                    {
+                        "label": "Window Size",
+                        "name": "agentMemoryWindowSize",
+                        "type": "number",
+                        "default": "20",
+                        "description": "Uses a fixed window size to surface the last N messages",
+                        "show": {
+                            "agentMemoryType": "windowSize"
+                        },
+                        "id": "agentAgentflow_1-input-agentMemoryWindowSize-number",
+                        "display": false
+                    },
+                    {
+                        "label": "Max Token Limit",
+                        "name": "agentMemoryMaxTokenLimit",
+                        "type": "number",
+                        "default": "2000",
+                        "description": "Summarize conversations once token limit is reached. Default to 2000",
+                        "show": {
+                            "agentMemoryType": "conversationSummaryBuffer"
+                        },
+                        "id": "agentAgentflow_1-input-agentMemoryMaxTokenLimit-number",
+                        "display": false
+                    },
+                    {
+                        "label": "Input Message",
+                        "name": "agentUserMessage",
+                        "type": "string",
+                        "description": "Add an input message as user message at the end of the conversation",
+                        "rows": 4,
+                        "optional": true,
+                        "acceptVariable": true,
+                        "show": {
+                            "agentEnableMemory": true
+                        },
+                        "id": "agentAgentflow_1-input-agentUserMessage-string",
+                        "display": false
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "User Message",
+                                "name": "userMessage"
+                            },
+                            {
+                                "label": "Assistant Message",
+                                "name": "assistantMessage"
+                            }
+                        ],
+                        "default": "userMessage",
+                        "id": "agentAgentflow_1-input-agentReturnResponseAs-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "agentUpdateState",
+                        "description": "Update runtime state during the execution of the workflow",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ],
+                        "id": "agentAgentflow_1-input-agentUpdateState-array",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "agentModel": "chatGoogleGenerativeAI",
+                    "agentMessages": [
+                        {
+                            "role": "system",
+                            "content": "<p>You are an expert research writer tasked with generating a high-quality, long-form Markdown report based on raw research findings. Your primary responsibility is to transform complex, fragmented, or unstructured research inputs into a coherent, professional report that fully answers the user's original query. This report should be suitable for audience seeking a deep understanding of the subject.</p><p>Your guiding principles:</p><ol><li><p><strong>Preserve Full Context</strong><br>Include all relevant findings, explanations, and perspectives from the original materials. Do not omit, summarize, or oversimplify key information. Your job is to retain depth and nuance while improving structure and clarity.</p></li><li><p><strong>Maintain Citation Integrity</strong><br>Ensure all citations and source links from the original findings are accurately preserved in the final report. Do not invent, remove, or alter sources. If citations are embedded inline in the source findings, carry them forward appropriately.</p></li><li><p><strong>Add Structure and Clarity</strong><br>Organize the content into a well-structured Markdown format. Use clear section headings, bullet points, numbered lists, tables and formatting as needed to improve readability and flow. Start with Introduction, end with Conclusion, and lastly sources.</p></li><li><p><strong>Markdown Output Only</strong><br>Your final output must be in Markdown format. Do not include explanations, side notes, or appendices. The only output should be the fully composed report ready for submission.</p></li></ol><p>Writing guidelines:</p><ol><li><p>Title: A clear, compelling title for the report that reflects the core subject.</p></li><li><p>Abstract/Executive Summary: A concise overview (approx. 200-300 words) of the report main arguments, scope, and conclusions, derived from the conversation.</p></li><li><p>Introduction:</p><ul><li><p>Clearly define the central problem, question, or theme that the report will address</p></li><li><p>Outline the report's structure and objectives.</p></li></ul></li><li><p>Main Body / Thematic Analysis (Multiple Sections):</p><ul><li><p>Deconstruct and Synthesize Key Arguments: Detail the principal arguments, propositions, and evidence presented by all findings. Go beyond mere listing; analyze the strengths, weaknesses, and underlying assumptions of their positions.</p></li><li><p>Explore Core Themes and Concepts: Identify and elaborate on the major themes and concepts that emerged.</p></li><li><p>Analyze the Evolution of the Discussion: Trace how the understanding of the subject evolved throughout the findings. Highlight any shifts in perspective, critical turning points, challenged assumptions, or moments of significant clarification.</p></li><li><p>Evidence and Examples: Where the findings provided examples or evidence, incorporate and potentially expand upon these to support the report's analysis.</p></li></ul></li><li><p>Synthesis of Insights and Key Conclusions:</p><ul><li><p>Draw together the most significant insights and conclusions that can be derived from the entirety of the conversation.</p></li><li><p>This section should offer a consolidated understanding of the subject.</p></li></ul></li><li><p>Implications and Future Directions:</p><ul><li><p>Discuss the broader implications of the insights and conclusions reached.</p></li><li><p>Identify any unresolved questions, ambiguities, or areas that the conversation indicated require further exploration or research.</p></li><li><p>Suggest potential next steps or future avenues of inquiry.</p></li></ul></li><li><p>Conclusion: A strong concluding section summarizing the report's main findings, their significance, and a final thought on the subject.</p></li></ol><p>Style and Tone:</p><ul><li><p>Extensive and In-depth: The paper should be thorough and detailed.</p></li><li><p>Well-Structured: Use clear headings, subheadings, and logical flow.</p></li><li><p>Analytical and Critical: Do not just report; analyze, interpret, and critically engage with the ideas.</p></li><li><p>Objective and Authoritative: The report should present a balanced and well-reasoned perspective.</p></li><li><p>Formal and Professional Language: Maintain a tone appropriate for the report.</p></li></ul>"
+                        },
+                        {
+                            "role": "user",
+                            "content": "<p>&lt;research_topic&gt;</p><p><span class=\"variable\" data-type=\"mention\" data-id=\"$form.query\" data-label=\"$form.query\">{{ $form.query }}</span> </p><p>&lt;/research_topic&gt;</p><p></p><p>&lt;existing_findings&gt;</p><p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.findings\" data-label=\"$flow.state.findings\">{{ $flow.state.findings }}</span> </p><p>&lt;/existing_findings&gt;</p><p></p><p>&lt;new_findings&gt;</p><p><span class=\"variable\" data-type=\"mention\" data-id=\"iterationAgentflow_0\" data-label=\"iterationAgentflow_0\">{{ iterationAgentflow_0 }}</span> </p><p>&lt;/new_findings&gt;</p>"
+                        }
+                    ],
+                    "agentTools": "",
+                    "agentKnowledgeDocumentStores": "",
+                    "agentEnableMemory": false,
+                    "agentReturnResponseAs": "userMessage",
+                    "agentUpdateState": [
+                        {
+                            "key": "findings",
+                            "value": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"output\" data-label=\"output\">{{ output }}</span> </p>"
+                        }
+                    ],
+                    "agentModelConfig": {
+                        "credential": "",
+                        "modelName": "gemini-2.5-flash-preview-05-20",
+                        "customModelName": "",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxOutputTokens": "",
+                        "topP": "",
+                        "topK": "",
+                        "harmCategory": "",
+                        "harmBlockThreshold": "",
+                        "baseUrl": "",
+                        "allowImageUploads": "",
+                        "agentModel": "chatGoogleGenerativeAI"
+                    },
+                    "undefined": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "agentAgentflow_1-output-agentAgentflow",
+                        "label": "Agent",
+                        "name": "agentAgentflow"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "agentFlow",
+            "width": 284,
+            "height": 72,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 457.5784259377066,
+                "y": 83.96506302841382
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNoteAgentflow_0",
+            "position": {
+                "x": 186.43721235573946,
+                "y": -175.0715078328168
+            },
+            "data": {
+                "id": "stickyNoteAgentflow_0",
+                "label": "Sticky Note",
+                "version": 1,
+                "name": "stickyNoteAgentflow",
+                "type": "StickyNote",
+                "color": "#fee440",
+                "baseClasses": ["StickyNote"],
+                "category": "Agent Flows",
+                "description": "Add notes to the agent flow",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNoteAgentflow_0-input-note-string",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Each SubAgent has its own research task and tools to complete its findings"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNoteAgentflow_0-output-stickyNoteAgentflow",
+                        "label": "Sticky Note",
+                        "name": "stickyNoteAgentflow"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "stickyNote",
+            "width": 210,
+            "height": 123,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 186.43721235573946,
+                "y": -175.0715078328168
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNoteAgentflow_1",
+            "position": {
+                "x": -117.00547059767304,
+                "y": -24.08438212240118
+            },
+            "data": {
+                "id": "stickyNoteAgentflow_1",
+                "label": "Sticky Note (1)",
+                "version": 1,
+                "name": "stickyNoteAgentflow",
+                "type": "StickyNote",
+                "color": "#fee440",
+                "baseClasses": ["StickyNote"],
+                "category": "Agent Flows",
+                "description": "Add notes to the agent flow",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNoteAgentflow_1-input-note-string",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Planner will generate list of subagents"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNoteAgentflow_1-output-stickyNoteAgentflow",
+                        "label": "Sticky Note",
+                        "name": "stickyNoteAgentflow"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "stickyNote",
+            "width": 210,
+            "height": 82,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -117.00547059767304,
+                "y": -24.08438212240118
+            },
+            "dragging": false
+        },
+        {
+            "id": "conditionAgentAgentflow_0",
+            "position": {
+                "x": 775.5108094609307,
+                "y": 79.60273632963377
+            },
+            "data": {
+                "id": "conditionAgentAgentflow_0",
+                "label": "More SubAgents?",
+                "version": 1.1,
+                "name": "conditionAgentAgentflow",
+                "type": "ConditionAgent",
+                "color": "#ff8fab",
+                "baseClasses": ["ConditionAgent"],
+                "category": "Agent Flows",
+                "description": "Utilize an agent to split flows based on dynamic conditions",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "conditionAgentModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "conditionAgentAgentflow_0-input-conditionAgentModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Instructions",
+                        "name": "conditionAgentInstructions",
+                        "type": "string",
+                        "description": "A general instructions of what the condition agent should do",
+                        "rows": 4,
+                        "acceptVariable": true,
+                        "placeholder": "Determine if the user is interested in learning about AI",
+                        "id": "conditionAgentAgentflow_0-input-conditionAgentInstructions-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Input",
+                        "name": "conditionAgentInput",
+                        "type": "string",
+                        "description": "Input to be used for the condition agent",
+                        "rows": 4,
+                        "acceptVariable": true,
+                        "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
+                        "id": "conditionAgentAgentflow_0-input-conditionAgentInput-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Scenarios",
+                        "name": "conditionAgentScenarios",
+                        "description": "Define the scenarios that will be used as the conditions to split the flow",
+                        "type": "array",
+                        "array": [
+                            {
+                                "label": "Scenario",
+                                "name": "scenario",
+                                "type": "string",
+                                "placeholder": "User is asking for a pizza"
+                            }
+                        ],
+                        "default": [
+                            {
+                                "scenario": "More subagents needed"
+                            },
+                            {
+                                "scenario": "It is sufficient"
+                            }
+                        ],
+                        "id": "conditionAgentAgentflow_0-input-conditionAgentScenarios-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Override System Prompt",
+                        "name": "conditionAgentOverrideSystemPrompt",
+                        "type": "boolean",
+                        "description": "Override initial system prompt for Condition Agent",
+                        "optional": true,
+                        "id": "conditionAgentAgentflow_0-input-conditionAgentOverrideSystemPrompt-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Node System Prompt",
+                        "name": "conditionAgentSystemPrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "optional": true,
+                        "acceptVariable": true,
+                        "default": "<p>You are part of a multi-agent system designed to make agent coordination and execution easy. Your task is to analyze the given input and select one matching scenario from a provided set of scenarios.</p>\n    <ul>\n        <li><strong>Input</strong>: A string representing the user's query, message or data.</li>\n        <li><strong>Scenarios</strong>: A list of predefined scenarios that relate to the input.</li>\n        <li><strong>Instruction</strong>: Determine which of the provided scenarios is the best fit for the input.</li>\n    </ul>\n    <h2>Steps</h2>\n    <ol>\n        <li><strong>Read the input string</strong> and the list of scenarios.</li>\n        <li><strong>Analyze the content of the input</strong> to identify its main topic or intention.</li>\n        <li><strong>Compare the input with each scenario</strong>: Evaluate how well the input's topic or intention aligns with each of the provided scenarios and select the one that is the best fit.</li>\n        <li><strong>Output the result</strong>: Return the selected scenario in the specified JSON format.</li>\n    </ol>\n    <h2>Output Format</h2>\n    <p>Output should be a JSON object that names the selected scenario, like this: <code>{\"output\": \"<selected_scenario_name>\"}</code>. No explanation is needed.</p>\n    <h2>Examples</h2>\n    <ol>\n       <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"Hello\", \"scenarios\": [\"user is asking about AI\", \"user is not asking about AI\"], \"instruction\": \"Your task is to check if the user is asking about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is not asking about AI\"}</code></p>\n        </li>\n        <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"What is AIGC?\", \"scenarios\": [\"user is asking about AI\", \"user is asking about the weather\"], \"instruction\": \"Your task is to check and see if the user is asking a topic about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is asking about AI\"}</code></p>\n        </li>\n        <li>\n            <p><strong>Input</strong>: <code>{\"input\": \"Can you explain deep learning?\", \"scenarios\": [\"user is interested in AI topics\", \"user wants to order food\"], \"instruction\": \"Determine if the user is interested in learning about AI.\"}</code></p>\n            <p><strong>Output</strong>: <code>{\"output\": \"user is interested in AI topics\"}</code></p>\n        </li>\n    </ol>\n    <h2>Note</h2>\n    <ul>\n        <li>Ensure that the input scenarios align well with potential user queries for accurate matching.</li>\n        <li>DO NOT include anything other than the JSON in your response.</li>\n    </ul>",
+                        "description": "Expert use only. Modifying this can significantly alter agent behavior. Leave default if unsure",
+                        "show": {
+                            "conditionAgentOverrideSystemPrompt": true
+                        },
+                        "id": "conditionAgentAgentflow_0-input-conditionAgentSystemPrompt-string",
+                        "display": false
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "conditionAgentModel": "chatGoogleGenerativeAI",
+                    "conditionAgentInstructions": "<p>Given a research topic, previous subagents and their findings, determine if more subagents are needed for further research or the findings are sufficient for the research topic</p>",
+                    "conditionAgentInput": "<p>&lt;research_topic&gt;</p><p><span class=\"variable\" data-type=\"mention\" data-id=\"$form.query\" data-label=\"$form.query\">{{ $form.query }}</span></p><p>&lt;/research_topic&gt;</p><p></p><p>&lt;subagents&gt;</p><p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.subagents\" data-label=\"$flow.state.subagents\">{{ $flow.state.subagents }}</span></p><p>&lt;/subagents&gt;</p><p></p><p>&lt;findings&gt;</p><p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.findings\" data-label=\"$flow.state.findings\">{{ $flow.state.findings }}</span></p><p>&lt;/findings&gt;</p>",
+                    "conditionAgentScenarios": [
+                        {
+                            "scenario": "More subagents are needed"
+                        },
+                        {
+                            "scenario": "Findings are sufficient"
+                        }
+                    ],
+                    "conditionAgentOverrideSystemPrompt": "",
+                    "conditionAgentModelConfig": {
+                        "credential": "",
+                        "modelName": "gemini-2.0-flash-lite",
+                        "customModelName": "",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxOutputTokens": "",
+                        "topP": "",
+                        "topK": "",
+                        "harmCategory": "",
+                        "harmBlockThreshold": "",
+                        "baseUrl": "",
+                        "allowImageUploads": "",
+                        "conditionAgentModel": "chatGoogleGenerativeAI"
+                    },
+                    "undefined": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conditionAgentAgentflow_0-output-0",
+                        "label": "Condition Agent",
+                        "name": "conditionAgentAgentflow"
+                    },
+                    {
+                        "id": "conditionAgentAgentflow_0-output-1",
+                        "label": "Condition Agent",
+                        "name": "conditionAgentAgentflow"
+                    }
+                ],
+                "outputs": {
+                    "conditionAgentAgentflow": ""
+                },
+                "selected": false
+            },
+            "type": "agentFlow",
+            "width": 220,
+            "height": 80,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 775.5108094609307,
+                "y": 79.60273632963377
+            },
+            "dragging": false
+        },
+        {
+            "id": "loopAgentflow_0",
+            "position": {
+                "x": 1041.3074957535728,
+                "y": 20.713295322365383
+            },
+            "data": {
+                "id": "loopAgentflow_0",
+                "label": "Back to Planner",
+                "version": 1,
+                "name": "loopAgentflow",
+                "type": "Loop",
+                "color": "#FFA07A",
+                "hideOutput": true,
+                "baseClasses": ["Loop"],
+                "category": "Agent Flows",
+                "description": "Loop back to a previous node",
+                "inputParams": [
+                    {
+                        "label": "Loop Back To",
+                        "name": "loopBackToNode",
+                        "type": "asyncOptions",
+                        "loadMethod": "listPreviousNodes",
+                        "freeSolo": true,
+                        "id": "loopAgentflow_0-input-loopBackToNode-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Max Loop Count",
+                        "name": "maxLoopCount",
+                        "type": "number",
+                        "default": 5,
+                        "id": "loopAgentflow_0-input-maxLoopCount-number",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "loopBackToNode": "llmAgentflow_0-Planner",
+                    "maxLoopCount": "5"
+                },
+                "outputAnchors": [],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "agentFlow",
+            "width": 174,
+            "height": 66,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1041.3074957535728,
+                "y": 20.713295322365383
+            },
+            "dragging": false
+        },
+        {
+            "id": "directReplyAgentflow_0",
+            "position": {
+                "x": 1046.735958385286,
+                "y": 140.25100072990062
+            },
+            "data": {
+                "id": "directReplyAgentflow_0",
+                "label": "Generate Report",
+                "version": 1,
+                "name": "directReplyAgentflow",
+                "type": "DirectReply",
+                "color": "#4DDBBB",
+                "hideOutput": true,
+                "baseClasses": ["DirectReply"],
+                "category": "Agent Flows",
+                "description": "Directly reply to the user with a message",
+                "inputParams": [
+                    {
+                        "label": "Message",
+                        "name": "directReplyMessage",
+                        "type": "string",
+                        "rows": 4,
+                        "acceptVariable": true,
+                        "id": "directReplyAgentflow_0-input-directReplyMessage-string",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "directReplyMessage": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.findings\" data-label=\"$flow.state.findings\">{{ $flow.state.findings }}</span> </p>"
+                },
+                "outputAnchors": [],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "agentFlow",
+            "width": 179,
+            "height": 66,
+            "positionAbsolute": {
+                "x": 1046.735958385286,
+                "y": 140.25100072990062
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "stickyNoteAgentflow_3",
+            "position": {
+                "x": 494.1635881448354,
+                "y": -47.5842428829507
+            },
+            "data": {
+                "id": "stickyNoteAgentflow_3",
+                "label": "Sticky Note (3)",
+                "version": 1,
+                "name": "stickyNoteAgentflow",
+                "type": "StickyNote",
+                "color": "#fee440",
+                "baseClasses": ["StickyNote"],
+                "category": "Agent Flows",
+                "description": "Add notes to the agent flow",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNoteAgentflow_3-input-note-string",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Write Agent combine the findings and generate an updated report"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNoteAgentflow_3-output-stickyNoteAgentflow",
+                        "label": "Sticky Note",
+                        "name": "stickyNoteAgentflow"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "stickyNote",
+            "width": 210,
+            "height": 123,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 494.1635881448354,
+                "y": -47.5842428829507
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "startAgentflow_0",
+            "sourceHandle": "startAgentflow_0-output-startAgentflow",
+            "target": "llmAgentflow_0",
+            "targetHandle": "llmAgentflow_0",
+            "data": {
+                "sourceColor": "#7EE787",
+                "targetColor": "#64B5F6",
+                "isHumanInput": false
+            },
+            "type": "agentFlow",
+            "id": "startAgentflow_0-startAgentflow_0-output-startAgentflow-llmAgentflow_0-llmAgentflow_0"
+        },
+        {
+            "source": "llmAgentflow_0",
+            "sourceHandle": "llmAgentflow_0-output-llmAgentflow",
+            "target": "iterationAgentflow_0",
+            "targetHandle": "iterationAgentflow_0",
+            "data": {
+                "sourceColor": "#64B5F6",
+                "targetColor": "#9C89B8",
+                "isHumanInput": false
+            },
+            "type": "agentFlow",
+            "id": "llmAgentflow_0-llmAgentflow_0-output-llmAgentflow-iterationAgentflow_0-iterationAgentflow_0"
+        },
+        {
+            "source": "conditionAgentAgentflow_0",
+            "sourceHandle": "conditionAgentAgentflow_0-output-0",
+            "target": "loopAgentflow_0",
+            "targetHandle": "loopAgentflow_0",
+            "data": {
+                "sourceColor": "#ff8fab",
+                "targetColor": "#FFA07A",
+                "edgeLabel": "0",
+                "isHumanInput": false
+            },
+            "type": "agentFlow",
+            "id": "conditionAgentAgentflow_0-conditionAgentAgentflow_0-output-0-loopAgentflow_0-loopAgentflow_0"
+        },
+        {
+            "source": "iterationAgentflow_0",
+            "sourceHandle": "iterationAgentflow_0-output-iterationAgentflow",
+            "target": "agentAgentflow_1",
+            "targetHandle": "agentAgentflow_1",
+            "data": {
+                "sourceColor": "#9C89B8",
+                "targetColor": "#4DD0E1",
+                "isHumanInput": false
+            },
+            "type": "agentFlow",
+            "id": "iterationAgentflow_0-iterationAgentflow_0-output-iterationAgentflow-agentAgentflow_1-agentAgentflow_1"
+        },
+        {
+            "source": "agentAgentflow_1",
+            "sourceHandle": "agentAgentflow_1-output-agentAgentflow",
+            "target": "conditionAgentAgentflow_0",
+            "targetHandle": "conditionAgentAgentflow_0",
+            "data": {
+                "sourceColor": "#4DD0E1",
+                "targetColor": "#ff8fab",
+                "isHumanInput": false
+            },
+            "type": "agentFlow",
+            "id": "agentAgentflow_1-agentAgentflow_1-output-agentAgentflow-conditionAgentAgentflow_0-conditionAgentAgentflow_0"
+        },
+        {
+            "source": "conditionAgentAgentflow_0",
+            "sourceHandle": "conditionAgentAgentflow_0-output-1",
+            "target": "directReplyAgentflow_0",
+            "targetHandle": "directReplyAgentflow_0",
+            "data": {
+                "sourceColor": "#ff8fab",
+                "targetColor": "#4DDBBB",
+                "edgeLabel": "1",
+                "isHumanInput": false
+            },
+            "type": "agentFlow",
+            "id": "conditionAgentAgentflow_0-conditionAgentAgentflow_0-output-1-directReplyAgentflow_0-directReplyAgentflow_0"
+        }
+    ]
+}

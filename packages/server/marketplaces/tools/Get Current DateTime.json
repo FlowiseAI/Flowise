@@ -1,0 +1,8 @@
+{
+    "name": "todays_date_time",
+    "description": "Useful to get todays day, date and time.",
+    "color": "linear-gradient(rgb(117,118,129), rgb(230,10,250))",
+    "iconSrc": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/javascript.svg",
+    "schema": "[]",
+    "func": "const timeZone = 'Australia/Sydney';\nconst options = {\n    timeZone: timeZone,\n    year: 'numeric',\n    month: 'long',\n    day: 'numeric',\n    weekday: 'long',\n    hour: '2-digit',\n    minute: '2-digit',\n    second: '2-digit',\n    hour12: true\n};\nconst today = new Date();\nconst formattedDate = today.toLocaleString('en-GB', options);\nconst result = {\n    \"formattedDate\": formattedDate,\n    \"timezone\": timeZone\n};\nreturn JSON.stringify(result);\n"
+}

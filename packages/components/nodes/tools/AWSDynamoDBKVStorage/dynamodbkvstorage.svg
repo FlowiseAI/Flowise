@@ -1,0 +1,29 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Variant 8: DynamoDB Hexagon Style -->
+  <defs>
+    <linearGradient id="dynamoHex" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9900;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#EC7211;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C45500;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Hexagon shape (AWS service style) -->
+  <path d="M16 2L27.4 8.5V23.5L16 30L4.6 23.5V8.5Z" fill="url(#dynamoHex)"/>
+  
+  <!-- Database with layers -->
+  <g transform="translate(16, 14)">
+    <ellipse cx="0" cy="-3" rx="7" ry="2.5" fill="#FFFFFF" opacity="0.95"/>
+    <rect x="-7" y="-3" width="14" height="8" fill="#FFFFFF" opacity="0.9"/>
+    <ellipse cx="0" cy="5" rx="7" ry="2.5" fill="#FFFFFF"/>
+    
+    <!-- Data lines -->
+    <line x1="-4" y1="0" x2="-2" y2="0" stroke="#FF9900" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="2" y1="0" x2="4" y2="0" stroke="#FF9900" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="-4" y1="2.5" x2="-2" y2="2.5" stroke="#EC7211" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="2" y1="2.5" x2="4" y2="2.5" stroke="#EC7211" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+  
+  <!-- KV text -->
+  <text x="16" y="26" font-family="Arial" font-size="8" font-weight="bold" fill="#232F3E" text-anchor="middle">K:V</text>
+</svg>

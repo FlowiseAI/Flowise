@@ -1,0 +1,222 @@
+// color variants
+@import 'themes-vars.module.scss';
+
+// third-party
+@import 'react-perfect-scrollbar/dist/css/styles.css';
+
+// ==============================|| LIGHT BOX ||============================== //
+.fullscreen .react-images__blanket {
+    z-index: 1200;
+}
+
+// ==============================|| PERFECT SCROLLBAR ||============================== //
+
+.scrollbar-container {
+    .ps__rail-y {
+        &:hover > .ps__thumb-y,
+        &:focus > .ps__thumb-y,
+        &.ps--clicking .ps__thumb-y {
+            background-color: $grey500;
+            width: 5px;
+        }
+    }
+    .ps__thumb-y {
+        background-color: $grey500;
+        border-radius: 6px;
+        width: 5px;
+        right: 0;
+    }
+}
+
+.scrollbar-container.ps,
+.scrollbar-container > .ps {
+    &.ps--active-y > .ps__rail-y {
+        width: 5px;
+        background-color: transparent !important;
+        z-index: 999;
+        &:hover,
+        &.ps--clicking {
+            width: 5px;
+            background-color: transparent;
+        }
+    }
+    &.ps--scrolling-y > .ps__rail-y,
+    &.ps--scrolling-x > .ps__rail-x {
+        opacity: 0.4;
+        background-color: transparent;
+    }
+}
+
+// ==============================|| ANIMATION KEYFRAMES ||============================== //
+
+@keyframes wings {
+    50% {
+        transform: translateY(-40px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes bounce {
+    0%,
+    20%,
+    53%,
+    to {
+        animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+        transform: translateZ(0);
+    }
+    40%,
+    43% {
+        animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+        transform: translate3d(0, -5px, 0);
+    }
+    70% {
+        animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+        transform: translate3d(0, -7px, 0);
+    }
+    80% {
+        transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+        transform: translateZ(0);
+    }
+    90% {
+        transform: translate3d(0, -2px, 0);
+    }
+}
+
+@keyframes slideY {
+    0%,
+    50%,
+    100% {
+        transform: translateY(0px);
+    }
+    25% {
+        transform: translateY(-10px);
+    }
+    75% {
+        transform: translateY(10px);
+    }
+}
+
+@keyframes slideX {
+    0%,
+    50%,
+    100% {
+        transform: translateX(0px);
+    }
+    25% {
+        transform: translateX(-10px);
+    }
+    75% {
+        transform: translateX(10px);
+    }
+}
+
+.tiptap {
+    .variable {
+        background-color: #b3f0b8;
+        border-radius: 0.4rem;
+        box-decoration-break: clone;
+        color: #0d7115;
+        padding: 0.1rem 0.3rem;
+        &::after {
+            content: '\200B';
+        }
+    }
+
+    pre {
+        background: var(--code-bg, #2d2d2d) !important;
+        border-radius: 0.5rem;
+        color: var(--code-color, #d4d4d4) !important;
+        font-family: 'JetBrainsMono', 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+        margin: 1.5rem 0;
+        padding: 0.75rem 1rem;
+
+        code {
+            background: none !important;
+            color: inherit !important;
+            font-size: 0.8rem;
+            padding: 0;
+        }
+
+        /* Syntax highlighting matching the screenshot colors */
+        .hljs-comment,
+        .hljs-quote {
+            color: var(--hljs-comment, #6a9955) !important;
+        }
+
+        .hljs-variable,
+        .hljs-name {
+            color: var(--hljs-variable, #9cdcfe) !important; /* Light blue for variables */
+        }
+
+        .hljs-number,
+        .hljs-literal {
+            color: var(--hljs-number, #b5cea8) !important; /* Light green for numbers */
+        }
+
+        .hljs-string {
+            color: var(--hljs-string, #ce9178) !important; /* Orange/peach for strings */
+        }
+
+        .hljs-title,
+        .hljs-built_in,
+        .hljs-builtin-name {
+            color: var(--hljs-title, #dcdcaa) !important; /* Yellow for function names */
+        }
+
+        .hljs-keyword,
+        .hljs-selector-tag {
+            color: var(--hljs-keyword, #569cd6) !important; /* Blue for keywords */
+        }
+
+        /* Additional elements that should match the base text color */
+        .hljs-operator,
+        .hljs-punctuation,
+        .hljs-template-variable,
+        .hljs-attribute,
+        .hljs-tag,
+        .hljs-regexp,
+        .hljs-link,
+        .hljs-selector-id,
+        .hljs-selector-class,
+        .hljs-meta,
+        .hljs-type,
+        .hljs-params,
+        .hljs-symbol,
+        .hljs-bullet,
+        .hljs-section {
+            color: var(--code-color, #d4d4d4) !important; /* Default text color */
+        }
+
+        .hljs-emphasis {
+            font-style: italic;
+        }
+
+        .hljs-strong {
+            font-weight: 700;
+        }
+    }
+}
+
+.spin-animation {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

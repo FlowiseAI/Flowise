@@ -1,0 +1,8 @@
+{
+    "name": "sendgrid_email",
+    "description": "Send email using SendGrid",
+    "color": "linear-gradient(rgb(230,108,70), rgb(222,4,98))",
+    "iconSrc": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/sendgrid-icon.svg",
+    "schema": "[{\"id\":0,\"property\":\"fromEmail\",\"description\":\"Email address used to send the message\",\"type\":\"string\",\"required\":true},{\"id\":1,\"property\":\"toEmail\",\"description\":\"The intended recipient's email address\",\"type\":\"string\",\"required\":true},{\"id\":2,\"property\":\"subject\",\"description\":\"The subject of email\",\"type\":\"string\",\"required\":true},{\"id\":3,\"property\":\"content\",\"description\":\"Content of email\",\"type\":\"string\",\"required\":true}]",
+    "func": "const fetch = require('node-fetch');\nconst url = 'https://api.sendgrid.com/v3/mail/send';\nconst api_key = 'YOUR-API-KEY';\n\nconst body = {\n        \"personalizations\": [\n                {\n                        \"to\": [{ \"email\": $toEmail }]\n                }\n        ],\n\t\"from\": {\n\t        \"email\": $fromEmail\n\t},\n\t\"subject\": $subject,\n\t\"content\": [\n\t        {\n\t                \"type\": 'text/plain',\n\t                \"value\": $content\n\t        }\n\t]\n};\n\nconst options = {\n\tmethod: 'POST',\n\theaders: {\n\t        'Authorization': `Bearer ${api_key}`,\n\t\t'Content-Type': 'application/json'\n\t},\n\tbody: JSON.stringify(body)\n};\n\ntry {\n\tconst response = await fetch(url, options);\n\tconst text = await response.text();\n\treturn text;\n} catch (error) {\n\tconsole.error(error);\n\treturn '';\n}"
+}

@@ -1,0 +1,79 @@
+#!/bin/bash
+[ -f "$(dirname "$0")/_/husky.sh" ] && . "$(dirname "$0")/_/husky.sh"
+
+# =============================================================================
+# OSS Guardrail: Prevent pushing proprietary code to OSS repository
+# =============================================================================
+
+# Paths that should NEVER go to OSS (explicitly blocked)
+BLOCKED_PATHS="^extensions/"
+
+# Allowed apps (whitelist) - everything else in apps/ is blocked
+ALLOWED_APPS="^apps/oss-app/"
+
+# Get the remote being pushed to
+remote="$1"
+url="$2"
+
+# Check if pushing to OSS remote (FlowiseAI/Flowise)
+if echo "$url" | grep -qE "FlowiseAI/Flowise(\.git)?$"; then
+    echo "🔒 Pushing to OSS repo - checking for proprietary code..."
+
+    # Read stdin for refs being pushed
+    while read local_ref local_sha remote_ref remote_sha; do
+        # Skip delete operations
+        if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
+            continue
+        fi
+
+        # Get list of files to check based on whether this is a new or existing branch
+        if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+            # New branch - check ALL files across ALL commits being pushed
+            # Find merge base with remote's main/master to determine the branch point
+            base=$(git merge-base "$local_sha" "$remote/main" 2>/dev/null || \
+                   git merge-base "$local_sha" "$remote/master" 2>/dev/null || \
+                   echo "")
+            if [ -n "$base" ]; then
+                # Found common ancestor - diff from there to get all new files
+                files_to_check=$(git diff --name-only "$base..$local_sha")
+            else
+                # No common ancestor - check all files in all commits on this branch
+                files_to_check=$(git log --name-only --pretty=format: "$local_sha" | sort -u)
+            fi
+        else
+            # Existing branch - check only files changed in new commits
+            files_to_check=$(git diff --name-only "$remote_sha..$local_sha")
+        fi
+
+        # Check for proprietary paths
+        # Note: || true prevents grep's exit code 1 (no match) from aborting the subshell
+        violations=$(
+            {
+                echo "$files_to_check" | grep -E "$BLOCKED_PATHS" || true
+                echo "$files_to_check" | grep -E "^apps/" | grep -vE "$ALLOWED_APPS" || true
+            } 2>/dev/null | sort -u
+        )
+
+        if [ -n "$violations" ]; then
+            echo ""
+            echo "❌ BLOCKED: Push contains changes to proprietary paths!"
+            echo ""
+            echo "The following files cannot be pushed to OSS:"
+            echo "$violations" | sed 's/^/  - /'
+            echo ""
+            echo "Proprietary paths that are blocked:"
+            echo "  - extensions/           (all extensions)"
+            echo "  - apps/*                (except apps/oss-app/)"
+            echo ""
+            echo "Only apps/oss-app/ is allowed in the OSS repository."
+            echo ""
+            echo "These paths are reserved for proprietary extensions."
+            echo ""
+            exit 1
+        fi
+    done
+
+    echo "✅ No proprietary code detected - push allowed"
+fi
+
+exit 0

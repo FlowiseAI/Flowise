@@ -1,0 +1,8 @@
+{
+    "name": "send_message_to_teams_channel",
+    "description": "Send message to Teams channel",
+    "color": "linear-gradient(rgb(155,190,84), rgb(176,69,245))",
+    "iconSrc": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/microsoft-teams.svg",
+    "schema": "[{\"id\":1,\"property\":\"content\",\"description\":\"message to send\",\"type\":\"string\",\"required\":true}]",
+    "func": "const fetch = require('node-fetch');\nconst webhookUrl = 'YOUR-WEBHOOK-URL'\n\nconst body = {\n\t\"content\": $content\n};\n\nconst options = {\n\tmethod: 'POST',\n\theaders: {\n\t\t'Content-Type': 'application/json'\n\t},\n\tbody: JSON.stringify(body)\n};\n\nconst url = `${webhookUrl}?wait=true`\n\ntry {\n\tconst response = await fetch(url, options);\n\tconst text = await response.text();\n\treturn text;\n} catch (error) {\n\tconsole.error(error);\n\treturn '';\n}"
+}

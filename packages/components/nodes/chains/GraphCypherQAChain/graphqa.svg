@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <!-- Graph Nodes and Edges -->
+        <circle fill="#4CAF50" cx="6" cy="6" r="2.5"/>
+        <circle fill="#4CAF50" cx="18" cy="6" r="2.5"/>
+        <circle fill="#4CAF50" cx="6" cy="18" r="2.5"/>
+        <circle fill="#4CAF50" cx="18" cy="18" r="2.5"/>
+        
+        <!-- Graph Connections -->
+        <line x1="6" y1="6" x2="18" y2="6" stroke="#4CAF50" stroke-width="1.5"/>
+        <line x1="6" y1="6" x2="6" y2="18" stroke="#4CAF50" stroke-width="1.5"/>
+        <line x1="18" y1="6" x2="18" y2="18" stroke="#4CAF50" stroke-width="1.5"/>
+        <line x1="6" y1="18" x2="18" y2="18" stroke="#4CAF50" stroke-width="1.5"/>
+        
+        <!-- Question Mark -->
+        <path d="M12,8 C13.1045695,8 14,8.8954305 14,10 C14,10.7403567 13.5978014,11.3866184 13,11.7324555 L13,13 C13,13.5522847 12.5522847,14 12,14 C11.4477153,14 11,13.5522847 11,13 L11,11 C11,10.4477153 11.4477153,10 12,10 C12.5522847,10 13,10.4477153 13,11 C13,11.5522847 12.5522847,12 12,12" 
+              fill="#2196F3" 
+              fill-rule="nonzero"/>
+        <circle fill="#2196F3" cx="12" cy="16" r="1"/>
+    </g>
+</svg> 
