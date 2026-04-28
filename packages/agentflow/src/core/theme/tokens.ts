@@ -28,6 +28,7 @@ const baseColors = {
     gray800: '#333',
 
     // Dark mode grays
+    lightBorderDefault: '#21212125',
     darkBorderDefault: 'rgba(255, 255, 255, 0.145)',
     darkGray100: '#1a1a1a',
     darkGray200: '#1a1a2e',
@@ -35,6 +36,7 @@ const baseColors = {
     darkGray350: '#23262c',
     darkGray400: '#2d2d2d',
     darkGray450: '#32353b',
+    darkGray460: '#454c59',
     darkGray500: '#404040',
     darkBlueHover: '#233345',
     darkGray600: '#525252',
@@ -125,14 +127,15 @@ export const tokens = {
             card: { light: baseColors.white, dark: baseColors.darkGray350 },
             cardHover: { light: baseColors.gray75, dark: baseColors.darkGray500 },
             header: { light: baseColors.white, dark: baseColors.darkGray400 },
-            input: { light: baseColors.white, dark: baseColors.darkGray450 },
-            optionHover: { light: '', dark: baseColors.darkBlueHover }
+            input: { light: baseColors.gray50, dark: baseColors.darkGray450 },
+            optionHover: { light: '', dark: baseColors.darkBlueHover },
+            listItemSelected: { light: '', dark: baseColors.darkGray460 }
         },
 
         border: {
             default: { light: baseColors.gray300, dark: baseColors.darkBorderDefault },
             hover: { light: baseColors.gray400, dark: baseColors.darkGray600 },
-            input: { light: baseColors.gray400, dark: baseColors.darkGray750 },
+            input: { light: baseColors.lightBorderDefault, dark: baseColors.darkGray750 },
             validation: baseColors.nodeCondition
         },
 
@@ -241,6 +244,21 @@ export const tokens = {
 
     // Typography
     typography: {
+        // Font size scale
+        fontSize: {
+            xs: '0.625rem', // 10px — badge, compact caption
+            sm: '0.75rem', // 12px — secondary label, helper text
+            md: '0.875rem', // 14px — body, input, primary label
+            lg: '1rem' // 16px — section heading
+        },
+
+        // Font weight scale
+        fontWeight: {
+            regular: 400,
+            medium: 500,
+            semibold: 600
+        },
+
         /** Matches MUI OutlinedInput's default line-height (1.4375em) so the
          *  RichTextEditor aligns with standard TextField height at the same row count. */
         rowHeightRem: 1.4375,

@@ -24,7 +24,7 @@ class BraveSearch_MCP implements INode {
         this.icon = 'brave.svg'
         this.category = 'Tools (MCP)'
         this.description = 'MCP server that integrates the Brave Search API - a real-time API to access web search capabilities'
-        this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search'
+        this.documentation = 'https://github.com/brave/brave-search-mcp-server'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -86,7 +86,7 @@ class BraveSearch_MCP implements INode {
     async getTools(nodeData: INodeData, options: ICommonObject): Promise<Tool[]> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const braveApiKey = getCredentialParam('braveApiKey', credentialData, nodeData)
-        const packagePath = getNodeModulesPackagePath('@modelcontextprotocol/server-brave-search/dist/index.js')
+        const packagePath = getNodeModulesPackagePath('@brave/brave-search-mcp-server/dist/index.js')
 
         const serverParams = {
             command: 'node',

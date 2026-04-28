@@ -161,18 +161,21 @@ export class WorkspaceUserService {
         }))
     }
 
-    public async readWorkspaceUserByRoleId(roleId: string | undefined, queryRunner: QueryRunner) {
+    public async readWorkspaceUserByRoleId(roleId: string | undefined, queryRunner: QueryRunner, organizationId?: string | undefined) {
         const role = await this.roleService.readRoleById(roleId, queryRunner)
         if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
         const ownerRole = await this.roleService.readGeneralRoleByName(GeneralRole.OWNER, queryRunner)
 
-        const workspaceUsers = await queryRunner.manager
+        const qb = queryRunner.manager
             .createQueryBuilder(WorkspaceUser, 'workspaceUser')
             .innerJoinAndSelect('workspaceUser.workspace', 'workspace')
             .innerJoinAndSelect('workspaceUser.user', 'user')
             .innerJoinAndSelect('workspaceUser.role', 'role')
             .where('workspaceUser.roleId = :roleId', { roleId })
-            .getMany()
+        if (organizationId) {
+            qb.andWhere('workspace.organizationId = :organizationId', { organizationId })
+        }
+        const workspaceUsers = await qb.getMany()
 
         return workspaceUsers.map((workspaceUser) => {
             delete workspaceUser.user.credential
