@@ -84,5 +84,5 @@ Public Disclosure occurs exactly 30 days after the next official release that in
 
 #### Reaching out to the Security team
 
-To report a new vulnerability, please submit a Github security Security Advisory report.
+To report a new vulnerability, please submit a GitHub Security Advisory report.
 If you have any questions or concerns about the existing Security Advisory, please contact security-team@flowiseai.com.
