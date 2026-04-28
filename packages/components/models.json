@@ -2228,7 +2228,7 @@
                     "output_cost": 0.006
                 },
                 {
-                    "label": "codestral-latsest",
+"label": "codestral-latest",
                     "name": "codestral-latest",
                     "input_cost": 0.0002,
                     "output_cost": 0.0006
