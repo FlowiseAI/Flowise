@@ -219,8 +219,8 @@ class AWSChatBedrock_ChatModels implements INode {
                     region: iRegion,
                     modelId: effectiveModel,
                     format,
-                    temperature: parseFloat(iTemperature) || 0.7,
-                    maxTokens: parseInt(iMax_tokens_to_sample, 10) || 200,
+                    temperature: !isNaN(parseFloat(iTemperature)) ? parseFloat(iTemperature) : 0.7,
+                    maxTokens: !isNaN(parseInt(iMax_tokens_to_sample, 10)) ? parseInt(iMax_tokens_to_sample, 10) : 200,
                     streaming: streaming ?? true,
                     credentials: credentialConfig.credentials
                 })
@@ -254,8 +254,8 @@ class AWSChatBedrock_ChatModels implements INode {
         const obj: ChatBedrockConverseInput = {
             region: iRegion,
             model: modelId,
-            maxTokens: parseInt(iMax_tokens_to_sample, 10),
-            temperature: parseFloat(iTemperature),
+            maxTokens: !isNaN(parseInt(iMax_tokens_to_sample, 10)) ? parseInt(iMax_tokens_to_sample, 10) : 200,
+            temperature: !isNaN(parseFloat(iTemperature)) ? parseFloat(iTemperature) : 0.7,
             streaming: streaming ?? true
         }
 
