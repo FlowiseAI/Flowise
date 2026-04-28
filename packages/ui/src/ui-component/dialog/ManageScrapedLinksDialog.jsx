@@ -101,20 +101,16 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
     }
 
     const handleParseLinks = () => {
-        const urlPattern = /(https?:\/\/[^\s]+)/g
-        const matches = url.match(urlPattern)
-        if (matches && matches.length > 0) {
-            const uniqueLinks = []
-            const links = url.split(/[\r\n\t; ]+/).map((link) => link.trim())
-            for (const link of links) {
-                if (!uniqueLinks.some((x) => x === link) && link.length > 0) {
-                    uniqueLinks.push(link)
-                }
-            }
-            if (uniqueLinks.length > 0) {
-                setUrl(uniqueLinks[0])
-                setSelectedLinks(uniqueLinks)
-            }
+        const urlPattern = /^https?:\/\/\S+$/
+        const links = url
+            .split(/[\r\n\t; ]+/)
+            .map((link) => link.trim())
+            .filter((link) => urlPattern.test(link))
+
+        const uniqueLinks = [...new Set(links)]
+        if (uniqueLinks.length > 0) {
+            setUrl(uniqueLinks[0])
+            setSelectedLinks(uniqueLinks)
         }
     }
 
