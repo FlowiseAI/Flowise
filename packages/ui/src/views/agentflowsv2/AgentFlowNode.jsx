@@ -432,7 +432,9 @@ const AgentFlowNode = ({ data }) => {
                                                     alt={item.model}
                                                 />
                                                 <Typography sx={{ fontSize: '0.7rem', ml: 0.5 }}>
-                                                    {item.config.modelName || item.config.model}
+                                                    {item.config.customModel
+                                                        ? item.config.customModel.replace(/^arn:aws:bedrock:[^:]+:[^:]+:/, '')
+                                                        : item.config.modelName || item.config.model}
                                                 </Typography>
                                             </Box>
                                         </Box>
