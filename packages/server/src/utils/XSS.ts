@@ -30,12 +30,13 @@ export function getAllowCredentials(): boolean {
 }
 
 export function getAllowedAuthCorsOrigins(): string[] {
-    const raw = process.env.CORS_AUTH_ORIGINS?.trim() ?? ''
-    if (!raw) return []
-    return raw
-        .split(',')
-        .map((o) => o.trim().toLowerCase())
-        .filter((o) => o.length > 0)
+    const appUrl = process.env.APP_URL?.trim()
+    if (!appUrl) return []
+    try {
+        return [new URL(appUrl).origin.toLowerCase()]
+    } catch {
+        return []
+    }
 }
 
 // Endpoints that issue or refresh session tokens — must not accept wildcard origins
