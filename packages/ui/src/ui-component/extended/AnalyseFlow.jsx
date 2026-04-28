@@ -32,6 +32,7 @@ import langwatchSVG from '@/assets/images/langwatch.svg'
 import arizePNG from '@/assets/images/arize.png'
 import phoenixPNG from '@/assets/images/phoenix.png'
 import opikPNG from '@/assets/images/opik.png'
+import mlflowSVG from '@/assets/images/mlflow.svg'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -209,6 +210,34 @@ const analyticProviders = [
                 type: 'string',
                 description: 'Name of your Opik project',
                 placeholder: 'default'
+            },
+            {
+                label: 'On/Off',
+                name: 'status',
+                type: 'boolean',
+                optional: true
+            }
+        ]
+    },
+    {
+        label: 'MLflow',
+        name: 'mlflow',
+        icon: mlflowSVG,
+        url: 'https://mlflow.org',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['mlflowApi']
+            },
+            {
+                label: 'Experiment ID',
+                name: 'experimentId',
+                type: 'string',
+                optional: true,
+                description: 'MLflow experiment ID where traces will be logged. If not provided, the default experiment will be used.',
+                placeholder: '0'
             },
             {
                 label: 'On/Off',
