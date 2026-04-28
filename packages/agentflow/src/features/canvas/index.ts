@@ -6,7 +6,7 @@ import './canvas.css'
 
 // Presentational components
 export type { AgentflowHeaderProps } from './components'
-export { AgentflowHeader, ConnectionLine, createHeaderProps } from './components'
+export { AgentflowHeader, ConnectionLine, createHeaderProps, TestFlowButton } from './components'
 
 // Hooks
 export { useDragAndDrop, useFlowHandlers, useFlowNodes } from './hooks'

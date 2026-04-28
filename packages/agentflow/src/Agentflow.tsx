@@ -14,6 +14,7 @@ import {
     createHeaderProps,
     edgeTypes,
     nodeTypes,
+    TestFlowButton,
     useDragAndDrop,
     useFlowHandlers,
     useFlowNodes
@@ -286,6 +287,7 @@ function AgentflowCanvas({
                                 gap: 8
                             }}
                         >
+                            <TestFlowButton />
                             <ValidationFeedback
                                 nodes={nodes as FlowNode[]}
                                 edges={edges as FlowEdge[]}

@@ -15,7 +15,8 @@ const initialState: AgentflowState = {
     isDirty: false,
     reactFlowInstance: null,
     editingNodeId: null,
-    editDialogProps: null
+    editDialogProps: null,
+    executionState: null
 }
 
 describe('normalizeNodes', () => {
@@ -131,7 +132,8 @@ describe('agentflowReducer', () => {
             isDirty: true,
             reactFlowInstance: null,
             editingNodeId: null,
-            editDialogProps: null
+            editDialogProps: null,
+            executionState: null
         }
         const result = agentflowReducer(dirtyState, { type: 'RESET' })
         expect(result.nodes).toEqual([])
