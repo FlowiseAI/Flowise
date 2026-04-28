@@ -4,7 +4,7 @@ import CancelIcon from '@mui/icons-material/Cancel'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import { Avatar, Tooltip } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconAlertCircleFilled, IconCheck, IconExclamationMark, IconLoader, IconUserQuestion } from '@tabler/icons-react'
+import { IconAlertCircleFilled, IconCheck, IconExclamationMark, IconLoader } from '@tabler/icons-react'
 
 import type { ExecutionStatus } from '@/core/types'
 
@@ -33,11 +33,10 @@ function NodeStatusIndicatorComponent({ status, error }: NodeStatusIndicatorProp
                 return theme.palette.warning.dark
             case 'STOPPED':
             case 'TERMINATED':
+            case 'WAITING_FOR_INPUT':
                 return theme.palette.error.main
             case 'FINISHED':
                 return theme.palette.success.dark
-            case 'WAITING_FOR_INPUT':
-                return theme.palette.info.main
             default:
                 return theme.palette.primary.dark
         }
@@ -50,20 +49,22 @@ function NodeStatusIndicatorComponent({ status, error }: NodeStatusIndicatorProp
             case 'ERROR':
                 return <IconExclamationMark />
             case 'TERMINATED':
-                return <CancelIcon sx={{ color: getStatusBackgroundColor(status), fontSize: 16 }} />
+                return <CancelIcon sx={{ color: getStatusBackgroundColor(status) }} />
             case 'STOPPED':
-                return <StopCircleIcon sx={{ color: getStatusBackgroundColor(status), fontSize: 16 }} />
+                return <StopCircleIcon sx={{ color: getStatusBackgroundColor(status) }} />
             case 'WAITING_FOR_INPUT':
-                return <IconUserQuestion />
+                return <StopCircleIcon sx={{ color: getStatusBackgroundColor(status) }} />
             default:
                 return <IconCheck />
         }
     }
 
-    const isTransparentBg = status === 'STOPPED' || status === 'TERMINATED'
+    const isTransparentBg = status === 'STOPPED' || status === 'TERMINATED' || status === 'WAITING_FOR_INPUT'
+
+    const tooltipTitle = status === 'ERROR' ? error || 'Error' : status === 'WAITING_FOR_INPUT' ? 'Waiting for input' : ''
 
     return (
-        <Tooltip title={status === 'ERROR' ? error || 'Error' : status === 'WAITING_FOR_INPUT' ? 'Waiting for input' : ''}>
+        <Tooltip title={tooltipTitle} placement='top' arrow disableInteractive>
             <Avatar
                 variant='rounded'
                 sx={{
@@ -76,7 +77,9 @@ function NodeStatusIndicatorComponent({ status, error }: NodeStatusIndicatorProp
                     ml: 2,
                     position: 'absolute',
                     top: -10,
-                    right: -10
+                    right: -10,
+                    pointerEvents: 'all',
+                    cursor: 'default'
                 }}
             >
                 {renderStatusIcon()}

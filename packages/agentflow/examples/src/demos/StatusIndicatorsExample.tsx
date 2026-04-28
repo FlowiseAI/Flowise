@@ -149,7 +149,11 @@ export function StatusIndicatorsExample() {
             { nodeId: 'llmAgentflow_0', status: 'INPROGRESS' },
             { nodeId: 'llmAgentflow_1', status: 'INPROGRESS' },
             { nodeId: 'llmAgentflow_0', status: 'FINISHED' },
-            { nodeId: 'llmAgentflow_1', status: 'ERROR', error: 'API rate limit exceeded. Please try again later.' },
+            {
+                nodeId: 'llmAgentflow_1',
+                status: 'ERROR',
+                error: 'Client network socket disconnected before secure TLS connection was established.'
+            },
             { nodeId: 'agentAgentflow_0', status: 'INPROGRESS' },
             { nodeId: 'humanInputAgentflow_0', status: 'WAITING_FOR_INPUT' },
             { nodeId: 'agentAgentflow_0', status: 'FINISHED' },
