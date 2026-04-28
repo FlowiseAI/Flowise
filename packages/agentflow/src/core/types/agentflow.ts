@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
 import type { RequestInterceptor } from './api'
+import type { ExecutionStatus } from './execution'
 import type { FlowData, FlowDataCallback, FlowNode } from './flow'
 import type { NodeDataSchema } from './node'
 import type { ValidationResult } from './validation'
@@ -125,4 +126,10 @@ export interface AgentFlowInstance {
 
     /** Clear all nodes and edges */
     clear(): void
+
+    /** Update a single node's execution status badge */
+    setNodeExecutionStatus(nodeId: string, status: ExecutionStatus, error?: string): void
+
+    /** Remove all execution status badges from nodes */
+    clearExecutionState(): void
 }

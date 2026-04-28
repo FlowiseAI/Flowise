@@ -35,6 +35,7 @@ import './features/canvas/canvas.css'
  */
 function AgentflowCanvas({
     initialFlow,
+    flowId,
     readOnly,
     onFlowChange,
     onSave,
@@ -47,6 +48,7 @@ function AgentflowCanvas({
     renderNodePalette
 }: {
     initialFlow?: FlowData
+    flowId?: string
     readOnly?: boolean
     onFlowChange?: FlowDataCallback
     onSave?: FlowDataCallback
@@ -63,6 +65,7 @@ function AgentflowCanvas({
         syncNodesFromReactFlow,
         syncEdgesFromReactFlow,
         setDirty,
+        setChatflow,
         setReactFlowInstance,
         closeEditDialog,
         registerLocalStateSetters,
@@ -138,6 +141,11 @@ function AgentflowCanvas({
         registerOnFlowChange(onFlowChange)
         return () => registerOnFlowChange(undefined)
     }, [registerOnFlowChange, onFlowChange])
+
+    // Sync flowId into context so features like TestFlowButton can read state.chatflow.id
+    useEffect(() => {
+        setChatflow(flowId ? { id: flowId } : null)
+    }, [flowId, setChatflow])
 
     // Sync local ReactFlow state to context (when user interacts with canvas)
     useEffect(() => {
@@ -374,6 +382,7 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
         token,
         requestInterceptor,
         initialFlow,
+        flowId,
         components,
         onFlowChange,
         onSave,
@@ -402,6 +411,7 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
                 <AgentflowCanvasWithRef
                     ref={ref}
                     initialFlow={initialFlow}
+                    flowId={flowId}
                     readOnly={readOnly}
                     onFlowChange={onFlowChange}
                     onSave={onSave}
@@ -425,6 +435,7 @@ const AgentflowCanvasWithRef = forwardRef<
     AgentFlowInstance,
     {
         initialFlow?: FlowData
+        flowId?: string
         readOnly?: boolean
         onFlowChange?: FlowDataCallback
         onSave?: FlowDataCallback
