@@ -8,6 +8,7 @@ import { CachePool } from '../CachePool'
 import { QueueEvents, QueueEventsListener } from 'bullmq'
 import { AbortControllerPool } from '../AbortControllerPool'
 import { UsageCacheManager } from '../UsageCacheManager'
+import { OtelTracerProviderPool } from 'flowise-components'
 
 interface CustomListener extends QueueEventsListener {
     abort: (args: { id: string }, id: string) => void
@@ -74,6 +75,10 @@ export default class Worker extends BaseCommand {
         // Initialize cache pool
         const cachePool = new CachePool()
 
+        // Initialize OTEL TracerProvider pool (lazily creates providers on first use)
+        OtelTracerProviderPool.getInstance()
+        logger.info('🔭 [worker]: OTEL TracerProvider pool initialized successfully')
+
         // Initialize usage cache manager
         const usageCacheManager = await UsageCacheManager.getInstance()
 
@@ -98,6 +103,8 @@ export default class Worker extends BaseCommand {
             const upsertWorker = queueManager.getQueue('upsert').getWorker()
             logger.info(`Shutting down Flowise Upsertion Worker ${this.upsertionWorkerId}...`)
             await upsertWorker.close()
+
+            await OtelTracerProviderPool.getInstance().shutdownAll()
         } catch (error) {
             logger.error('There was an error shutting down Flowise Worker...', error)
             await this.failExit()

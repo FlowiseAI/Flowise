@@ -113,6 +113,14 @@ export interface INodeParams {
     generateInstruction?: boolean
     minItems?: number
     maxItems?: number
+    /**
+     * When this param is an `options` dropdown, selecting an option key that
+     * exists in `autoPopulate` will bulk-set sibling credential fields to the
+     * mapped values. Used for vendor-preset dropdowns.
+     *
+     * Shape: { [optionValue: string]: { [siblingFieldName: string]: string | number | boolean } }
+     */
+    autoPopulate?: Record<string, Record<string, string | number | boolean>>
 }
 
 export interface INodeExecutionData {

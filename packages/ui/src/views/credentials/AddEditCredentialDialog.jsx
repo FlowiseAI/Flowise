@@ -6,7 +6,21 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import parser from 'html-react-parser'
 
 // Material
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Stack, OutlinedInput, Typography } from '@mui/material'
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Box,
+    Stack,
+    OutlinedInput,
+    Typography,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails
+} from '@mui/material'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // Project imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -477,8 +491,44 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                     componentCredential &&
                     componentCredential.inputs &&
                     componentCredential.inputs
-                        .filter((inputParam) => inputParam.hidden !== true)
-                        .map((inputParam, index) => <CredentialInputHandler key={index} inputParam={inputParam} data={credentialData} />)}
+                        .filter(
+                            (inputParam) =>
+                                inputParam.hidden !== true &&
+                                (componentCredential.name !== 'openTelemetryApi' || !inputParam.additionalParams)
+                        )
+                        .map((inputParam, index) => (
+                            <CredentialInputHandler
+                                key={index}
+                                inputParam={inputParam}
+                                data={credentialData}
+                                onDataChange={(updated) => setCredentialData(updated)}
+                            />
+                        ))}
+                {!shared &&
+                    componentCredential &&
+                    componentCredential.name === 'openTelemetryApi' &&
+                    componentCredential.inputs &&
+                    componentCredential.inputs.some((inputParam) => inputParam.hidden !== true && inputParam.additionalParams) && (
+                        <Box sx={{ p: 2 }}>
+                            <Accordion disableGutters>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                    <Typography>Additional Parameters</Typography>
+                                </AccordionSummary>
+                                <AccordionDetails sx={{ p: 0 }}>
+                                    {componentCredential.inputs
+                                        .filter((inputParam) => inputParam.hidden !== true && inputParam.additionalParams)
+                                        .map((inputParam, index) => (
+                                            <CredentialInputHandler
+                                                key={index}
+                                                inputParam={inputParam}
+                                                data={credentialData}
+                                                onDataChange={(updated) => setCredentialData(updated)}
+                                            />
+                                        ))}
+                                </AccordionDetails>
+                            </Accordion>
+                        </Box>
+                    )}
 
                 {!shared && componentCredential && componentCredential.name && componentCredential.name.includes('OAuth2') && (
                     <Box sx={{ p: 2 }}>

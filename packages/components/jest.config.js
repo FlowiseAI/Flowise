@@ -10,6 +10,7 @@ module.exports = {
     verbose: true,
     testPathIgnorePatterns: ['/node_modules/', '/dist/'],
     moduleNameMapper: {
+        '^uuid$': require.resolve('uuid'),
         '^../../../src/(.*)$': '<rootDir>/src/$1',
         // @modelcontextprotocol/sdk is ESM-only (type:module, no exports map, no CJS builds).
         // It cannot be require()'d in Jest's CJS environment and crashes the worker.

@@ -8,7 +8,7 @@ import { RunTree, RunTreeConfig, Client as LangsmithClient } from 'langsmith'
 import { Langfuse, LangfuseTraceClient, LangfuseSpanClient, LangfuseGenerationClient } from 'langfuse'
 import { LangChainInstrumentation } from '@arizeai/openinference-instrumentation-langchain'
 import { Metadata } from '@grpc/grpc-js'
-import opentelemetry, { Span, SpanStatusCode } from '@opentelemetry/api'
+import opentelemetry, { Span, SpanKind, SpanStatusCode } from '@opentelemetry/api'
 import { OTLPTraceExporter as GrpcOTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc'
 import { OTLPTraceExporter as ProtoOTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
 import { registerInstrumentations } from '@opentelemetry/instrumentation'
@@ -26,6 +26,13 @@ import { AgentAction } from '@langchain/core/agents'
 import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
 
 import { getCredentialData, getCredentialParam, getEnvironmentVariable } from './utils'
+import {
+    getCallbackHandler as getOtelCallbackHandler,
+    buildDestinationConfig as buildOtelDestConfig
+} from './analyticsHandlers/otel/OtelAnalyticsProvider'
+import { sanitizeError } from './analyticsHandlers/otel/OtelDestinationFactory'
+import { OtelTracerProviderPool } from './analyticsHandlers/otel/OtelTracerProviderPool'
+import { isReservedAttributeKey } from './analyticsHandlers/otel/OtelLangChainCallbackHandler'
 import { EvaluationRunTracer } from '../evaluation/EvaluationRunTracer'
 import { EvaluationRunTracerLlama } from '../evaluation/EvaluationRunTracerLlama'
 import { ICommonObject, IDatabaseEntity, INodeData, IServerSideEventStreamer } from './Interface'
@@ -34,6 +41,37 @@ import { DataSource } from 'typeorm'
 import { ChatGenerationChunk } from '@langchain/core/outputs'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import { Serialized } from '@langchain/core/load/serializable'
+
+const RETRIEVAL_TOOL_PATTERNS = [
+    /retriev/i,
+    /vectorstore/i,
+    /vector_store/i,
+    /similarity.?search/i,
+    /search_documents/i,
+    /rag/i,
+    /document.?lookup/i,
+    /knowledge.?base/i,
+    /embedding.?search/i,
+    /semantic.?search/i,
+    /pinecone/i,
+    /chroma/i,
+    /weaviate/i,
+    /milvus/i,
+    /qdrant/i,
+    /faiss/i,
+    /supabase.*vector/i,
+    /pgvector/i,
+    /redis.*vector/i,
+    /opensearch.*vector/i,
+    /elasticsearch.*vector/i,
+    /mongo.*atlas.*vector/i,
+    /zep/i,
+    /vectara/i
+]
+
+function isRetrievalTool(name: string): boolean {
+    return RETRIEVAL_TOOL_PATTERNS.some((pattern) => pattern.test(name))
+}
 
 export interface AgentRun extends Run {
     actions: AgentAction[]
@@ -679,6 +717,22 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
 
                     const tracer: Tracer | undefined = getOpikTracer(opikOptions)
                     callbacks.push(tracer)
+                } else if (provider === 'openTelemetry') {
+                    try {
+                        const handler = await getOtelCallbackHandler(
+                            options.chatflowid ?? options.chatflowId ?? '',
+                            analytic[provider],
+                            credentialData,
+                            {
+                                chatId: options.chatId,
+                                spanAttributes: analytic[provider].spanAttributes,
+                                overrideConfig: nodeData?.inputs
+                            }
+                        )
+                        callbacks.push(handler)
+                    } catch (error) {
+                        console.warn(`[OTEL] Skipping OpenTelemetry callback setup: ${sanitizeError(error)}`)
+                    }
                 }
             }
         }
@@ -738,7 +792,7 @@ export class AnalyticHandler {
 
     /**
      * Helper method to end an OpenTelemetry span with output, token usage, and model name attributes.
-     * Used by arize, phoenix, and opik providers.
+     * Uses OpenInference semantic conventions. Shared by arize, phoenix, opik, and openTelemetry providers.
      */
     private _endOtelSpan(
         providerName: string,
@@ -749,8 +803,8 @@ export class AnalyticHandler {
     ): void {
         const llmSpan: Span | undefined = this.handlers[providerName]?.llmSpan?.[returnIds[providerName]?.llmSpan]
         if (llmSpan) {
-            llmSpan.setAttribute('output.value', JSON.stringify(outputText))
-            llmSpan.setAttribute('output.mime_type', 'application/json')
+            llmSpan.setAttribute('output.value', outputText)
+            llmSpan.setAttribute('output.mime_type', 'text/plain')
             if (usageMetadata) {
                 if (usageMetadata.input_tokens !== undefined) {
                     llmSpan.setAttribute('llm.token_count.prompt', usageMetadata.input_tokens)
@@ -765,6 +819,28 @@ export class AnalyticHandler {
             if (modelName) {
                 llmSpan.setAttribute('llm.model_name', modelName)
             }
+
+            if (providerName === 'openTelemetry') {
+                if (usageMetadata) {
+                    if (usageMetadata.input_tokens !== undefined) {
+                        llmSpan.setAttribute('llm.prompt_tokens', usageMetadata.input_tokens)
+                    }
+                    if (usageMetadata.output_tokens !== undefined) {
+                        llmSpan.setAttribute('llm.completion_tokens', usageMetadata.output_tokens)
+                    }
+                    if (usageMetadata.total_tokens !== undefined) {
+                        llmSpan.setAttribute('llm.total_tokens', usageMetadata.total_tokens)
+                    }
+                }
+                if (modelName) {
+                    llmSpan.setAttribute('llm.model', modelName)
+                }
+                const startTime = this.handlers[providerName]?.llmStartTime?.[returnIds[providerName]?.llmSpan]
+                if (startTime !== undefined) {
+                    llmSpan.setAttribute('llm.latency_ms', Date.now() - startTime)
+                }
+            }
+
             llmSpan.setStatus({ code: SpanStatusCode.OK })
             llmSpan.end()
         }
@@ -898,6 +974,17 @@ export class AnalyticHandler {
             const rootSpan: Span | undefined = undefined
 
             this.handlers['opik'] = { client: opik, opikProject, rootSpan }
+        } else if (provider === 'openTelemetry') {
+            const destConfig = buildOtelDestConfig(credentialData)
+            const pool = OtelTracerProviderPool.getInstance()
+            const tracer = await pool.getOrCreate(this.options.chatflowid ?? '', destConfig)
+            const rootSpan: Span | undefined = undefined
+
+            this.handlers['openTelemetry'] = {
+                client: tracer,
+                rootSpan,
+                spanAttributes: providerConfig.spanAttributes
+            }
         }
     }
 
@@ -909,7 +996,8 @@ export class AnalyticHandler {
             langWatch: {},
             arize: {},
             phoenix: {},
-            opik: {}
+            opik: {},
+            openTelemetry: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -1125,6 +1213,69 @@ export class AnalyticHandler {
             returnIds['opik'].chainSpan = chainSpanId
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'openTelemetry')) {
+            const tracer: Tracer | undefined = this.handlers['openTelemetry'].client
+            let rootSpan: Span | undefined = this.handlers['openTelemetry'].rootSpan
+
+            if (!parentIds || !Object.keys(parentIds).length) {
+                rootSpan = tracer ? tracer.startSpan('Flowise', { kind: SpanKind.SERVER }) : undefined
+                if (rootSpan) {
+                    rootSpan.setAttribute('session.id', this.options.chatId)
+                    rootSpan.setAttribute('openinference.span.kind', 'AGENT')
+                    rootSpan.setAttribute('request.type', 'agentflow')
+                    rootSpan.setAttribute('input.value', input)
+                    rootSpan.setAttribute('input.mime_type', 'text/plain')
+                    rootSpan.setAttribute('flowise.chatflow_id', this.options.chatflowid ?? '')
+                    rootSpan.setAttribute('metadata', JSON.stringify({ 'flowise.chatflow_id': this.options.chatflowid ?? '' }))
+
+                    const spanAttributes = this.handlers['openTelemetry'].spanAttributes
+                    if (spanAttributes && typeof spanAttributes === 'object') {
+                        for (const [key, value] of Object.entries(spanAttributes)) {
+                            if (typeof value === 'string' && !isReservedAttributeKey(key)) {
+                                rootSpan.setAttribute(key, value)
+                            }
+                        }
+                    }
+
+                    const overrideConfig = this.options.overrideConfig
+                    const otelOverrides = overrideConfig?.analytics?.openTelemetry
+                    if (otelOverrides) {
+                        if (otelOverrides.userId) {
+                            rootSpan.setAttribute('user.id', otelOverrides.userId)
+                        }
+                        if (otelOverrides.sessionId) {
+                            rootSpan.setAttribute('session.id', otelOverrides.sessionId)
+                        }
+                        if (otelOverrides.customAttributes && typeof otelOverrides.customAttributes === 'object') {
+                            for (const [key, value] of Object.entries(otelOverrides.customAttributes)) {
+                                if (
+                                    (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') &&
+                                    !isReservedAttributeKey(key)
+                                ) {
+                                    rootSpan.setAttribute(key, value as string | number | boolean)
+                                }
+                            }
+                        }
+                    }
+                }
+                this.handlers['openTelemetry'].rootSpan = rootSpan
+            }
+
+            const rootSpanContext = rootSpan
+                ? opentelemetry.trace.setSpan(opentelemetry.context.active(), rootSpan as Span)
+                : opentelemetry.context.active()
+            const chainSpan = tracer?.startSpan(name, { kind: SpanKind.INTERNAL }, rootSpanContext)
+            if (chainSpan) {
+                chainSpan.setAttribute('openinference.span.kind', 'CHAIN')
+                chainSpan.setAttribute('input.value', JSON.stringify(input))
+                chainSpan.setAttribute('input.mime_type', 'application/json')
+            }
+            const chainSpanId: any = chainSpan?.spanContext().spanId
+
+            this.handlers['openTelemetry'].chainSpan = { [chainSpanId]: chainSpan }
+            returnIds['openTelemetry'].chainSpan = chainSpanId
+        }
+
         return returnIds
     }
 
@@ -1213,6 +1364,30 @@ export class AnalyticHandler {
             }
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'openTelemetry')) {
+            const chainSpan: Span | undefined = this.handlers['openTelemetry'].chainSpan?.[returnIds['openTelemetry']?.chainSpan]
+            if (chainSpan) {
+                chainSpan.setAttribute('output.value', JSON.stringify(output))
+                chainSpan.setAttribute('output.mime_type', 'application/json')
+                chainSpan.setStatus({ code: SpanStatusCode.OK })
+                chainSpan.end()
+            }
+            if (shutdown) {
+                const rootSpan: Span | undefined = this.handlers['openTelemetry'].rootSpan
+                if (rootSpan) {
+                    rootSpan.setAttribute('output.value', JSON.stringify(output))
+                    rootSpan.setAttribute('output.mime_type', 'application/json')
+                    rootSpan.setStatus({ code: SpanStatusCode.OK })
+                    rootSpan.end()
+                }
+                const chatflowId = this.options.chatflowid ?? ''
+                const provider = OtelTracerProviderPool.getInstance().getProvider(chatflowId)
+                if (provider) {
+                    await provider.forceFlush()
+                }
+            }
+        }
+
         if (shutdown) {
             // Cleanup this instance when chain ends
             AnalyticHandler.resetInstance(this.chatId)
@@ -1296,6 +1471,33 @@ export class AnalyticHandler {
             }
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'openTelemetry')) {
+            const chainSpan: Span | undefined = this.handlers['openTelemetry'].chainSpan?.[returnIds['openTelemetry']?.chainSpan]
+            if (chainSpan) {
+                chainSpan.setAttribute('exception.type', typeof error === 'object' ? (error as any).name ?? 'Error' : 'Error')
+                chainSpan.setAttribute('exception.message', error.toString())
+                chainSpan.recordException(typeof error === 'string' ? new Error(error) : (error as Error))
+                chainSpan.setStatus({ code: SpanStatusCode.ERROR, message: error.toString() })
+                chainSpan.end()
+            }
+            if (shutdown) {
+                const rootSpan: Span | undefined = this.handlers['openTelemetry'].rootSpan
+                if (rootSpan) {
+                    const errMessage = error.toString()
+                    rootSpan.setAttribute('exception.type', typeof error === 'object' ? (error as any).name ?? 'Error' : 'Error')
+                    rootSpan.setAttribute('exception.message', errMessage)
+                    rootSpan.recordException(typeof error === 'string' ? new Error(error) : (error as Error))
+                    rootSpan.setStatus({ code: SpanStatusCode.ERROR, message: errMessage })
+                    rootSpan.end()
+                }
+                const chatflowId = this.options.chatflowid ?? ''
+                const provider = OtelTracerProviderPool.getInstance().getProvider(chatflowId)
+                if (provider) {
+                    await provider.forceFlush()
+                }
+            }
+        }
+
         if (shutdown) {
             // Cleanup this instance when chain ends
             AnalyticHandler.resetInstance(this.chatId)
@@ -1310,7 +1512,8 @@ export class AnalyticHandler {
             langWatch: {},
             arize: {},
             phoenix: {},
-            opik: {}
+            opik: {},
+            openTelemetry: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -1430,6 +1633,29 @@ export class AnalyticHandler {
 
             this.handlers['opik'].llmSpan = { [llmSpanId]: llmSpan }
             returnIds['opik'].llmSpan = llmSpanId
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'openTelemetry')) {
+            const tracer: Tracer | undefined = this.handlers['openTelemetry'].client
+            const parentChainSpan: Span | undefined = this.handlers['openTelemetry'].chainSpan?.[parentIds['openTelemetry']?.chainSpan]
+            const rootSpan: Span | undefined = this.handlers['openTelemetry'].rootSpan
+            const parentSpan = parentChainSpan ?? rootSpan
+
+            const parentContext = parentSpan
+                ? opentelemetry.trace.setSpan(opentelemetry.context.active(), parentSpan as Span)
+                : opentelemetry.context.active()
+            const llmSpan = tracer?.startSpan(name, { kind: SpanKind.CLIENT }, parentContext)
+            if (llmSpan) {
+                llmSpan.setAttribute('openinference.span.kind', 'LLM')
+                llmSpan.setAttribute('llm.provider', name)
+                llmSpan.setAttribute('input.value', JSON.stringify(input))
+                llmSpan.setAttribute('input.mime_type', 'application/json')
+            }
+            const llmSpanId: any = llmSpan?.spanContext().spanId
+
+            this.handlers['openTelemetry'].llmSpan = { [llmSpanId]: llmSpan }
+            this.handlers['openTelemetry'].llmStartTime = { [llmSpanId]: Date.now() }
+            returnIds['openTelemetry'].llmSpan = llmSpanId
         }
 
         return returnIds
@@ -1590,6 +1816,10 @@ export class AnalyticHandler {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'opik')) {
             this._endOtelSpan('opik', returnIds, outputText, usageMetadata, modelName)
         }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'openTelemetry')) {
+            this._endOtelSpan('openTelemetry', returnIds, outputText, usageMetadata, modelName)
+        }
     }
 
     async onLLMError(returnIds: ICommonObject, error: string | object) {
@@ -1664,6 +1894,21 @@ export class AnalyticHandler {
                 llmSpan.end()
             }
         }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'openTelemetry')) {
+            const llmSpan: Span | undefined = this.handlers['openTelemetry'].llmSpan?.[returnIds['openTelemetry']?.llmSpan]
+            if (llmSpan) {
+                const startTime = this.handlers['openTelemetry']?.llmStartTime?.[returnIds['openTelemetry']?.llmSpan]
+                if (startTime !== undefined) {
+                    llmSpan.setAttribute('llm.latency_ms', Date.now() - startTime)
+                }
+                llmSpan.setAttribute('exception.type', typeof error === 'object' ? (error as any).name ?? 'Error' : 'Error')
+                llmSpan.setAttribute('exception.message', error.toString())
+                llmSpan.recordException(typeof error === 'string' ? new Error(error) : (error as Error))
+                llmSpan.setStatus({ code: SpanStatusCode.ERROR, message: error.toString() })
+                llmSpan.end()
+            }
+        }
     }
 
     async onToolStart(name: string, input: string | object, parentIds: ICommonObject) {
@@ -1674,7 +1919,8 @@ export class AnalyticHandler {
             langWatch: {},
             arize: {},
             phoenix: {},
-            opik: {}
+            opik: {},
+            openTelemetry: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -1792,6 +2038,55 @@ export class AnalyticHandler {
             returnIds['opik'].toolSpan = toolSpanId
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'openTelemetry')) {
+            const tracer: Tracer | undefined = this.handlers['openTelemetry'].client
+            const parentChainSpan: Span | undefined = this.handlers['openTelemetry'].chainSpan?.[parentIds['openTelemetry']?.chainSpan]
+            const rootSpan: Span | undefined = this.handlers['openTelemetry'].rootSpan
+            const parentSpan = parentChainSpan ?? rootSpan
+
+            const parentContext = parentSpan
+                ? opentelemetry.trace.setSpan(opentelemetry.context.active(), parentSpan as Span)
+                : opentelemetry.context.active()
+
+            const isRetrieval = isRetrievalTool(name)
+
+            if (isRetrieval) {
+                const spanName = `retrieval.${name}`
+                const toolSpan = tracer?.startSpan(spanName, { kind: SpanKind.CLIENT }, parentContext)
+                if (toolSpan) {
+                    toolSpan.setAttribute('openinference.span.kind', 'RETRIEVER')
+                    toolSpan.setAttribute('retrieval.source', name)
+                    toolSpan.setAttribute('retrieval.query', JSON.stringify(input))
+                    toolSpan.setAttribute('input.value', JSON.stringify(input))
+                    toolSpan.setAttribute('input.mime_type', 'application/json')
+                }
+                const toolSpanId: any = toolSpan?.spanContext().spanId
+
+                this.handlers['openTelemetry'].toolSpan = { [toolSpanId]: toolSpan }
+                this.handlers['openTelemetry'].toolStartTime = { [toolSpanId]: Date.now() }
+                this.handlers['openTelemetry'].retrievalSpanIds = {
+                    ...(this.handlers['openTelemetry'].retrievalSpanIds ?? {}),
+                    [toolSpanId]: true
+                }
+                returnIds['openTelemetry'].toolSpan = toolSpanId
+            } else {
+                const toolSpan = tracer?.startSpan(name, { kind: SpanKind.CLIENT }, parentContext)
+                if (toolSpan) {
+                    toolSpan.setAttribute('openinference.span.kind', 'TOOL')
+                    toolSpan.setAttribute('tool.name', name)
+                    toolSpan.setAttribute('tool.type', 'unknown')
+                    toolSpan.setAttribute('tool.input', JSON.stringify(input))
+                    toolSpan.setAttribute('input.value', JSON.stringify(input))
+                    toolSpan.setAttribute('input.mime_type', 'application/json')
+                }
+                const toolSpanId: any = toolSpan?.spanContext().spanId
+
+                this.handlers['openTelemetry'].toolSpan = { [toolSpanId]: toolSpan }
+                this.handlers['openTelemetry'].toolStartTime = { [toolSpanId]: Date.now() }
+                returnIds['openTelemetry'].toolSpan = toolSpanId
+            }
+        }
+
         return returnIds
     }
 
@@ -1863,6 +2158,51 @@ export class AnalyticHandler {
             if (toolSpan) {
                 toolSpan.setAttribute('output.value', JSON.stringify(output))
                 toolSpan.setAttribute('output.mime_type', 'application/json')
+                toolSpan.setStatus({ code: SpanStatusCode.OK })
+                toolSpan.end()
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'openTelemetry')) {
+            const spanId = returnIds['openTelemetry']?.toolSpan
+            const toolSpan: Span | undefined = this.handlers['openTelemetry'].toolSpan?.[spanId]
+            if (toolSpan) {
+                const isRetrieval = this.handlers['openTelemetry'].retrievalSpanIds?.[spanId] === true
+                const startTime = this.handlers['openTelemetry'].toolStartTime?.[spanId]
+
+                const isString = typeof output === 'string'
+                const outputStr = isString ? output : JSON.stringify(output)
+                const mimeType = isString ? 'text/plain' : 'application/json'
+
+                if (isRetrieval) {
+                    let numResults: number | undefined
+                    try {
+                        const parsed = isString ? JSON.parse(output) : output
+                        if (Array.isArray(parsed)) {
+                            numResults = parsed.length
+                        }
+                    } catch {
+                        // output is not a valid JSON string; leave numResults undefined
+                    }
+
+                    toolSpan.setAttribute('output.value', outputStr)
+                    toolSpan.setAttribute('output.mime_type', mimeType)
+                    toolSpan.setAttribute('retrieval.documents', outputStr)
+                    if (numResults !== undefined) {
+                        toolSpan.setAttribute('retrieval.num_results', numResults)
+                    }
+                    if (startTime !== undefined) {
+                        toolSpan.setAttribute('retrieval.latency_ms', Date.now() - startTime)
+                    }
+                    delete this.handlers['openTelemetry'].retrievalSpanIds?.[spanId]
+                } else {
+                    toolSpan.setAttribute('output.value', outputStr)
+                    toolSpan.setAttribute('output.mime_type', mimeType)
+                    toolSpan.setAttribute('tool.output', outputStr)
+                    if (startTime !== undefined) {
+                        toolSpan.setAttribute('tool.latency_ms', Date.now() - startTime)
+                    }
+                }
                 toolSpan.setStatus({ code: SpanStatusCode.OK })
                 toolSpan.end()
             }
@@ -1939,6 +2279,29 @@ export class AnalyticHandler {
                 toolSpan.setAttribute('error.mime_type', 'application/json')
                 toolSpan.setStatus({ code: SpanStatusCode.ERROR, message: error.toString() })
                 toolSpan.end()
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'openTelemetry')) {
+            const spanId = returnIds['openTelemetry']?.toolSpan
+            const toolSpan: Span | undefined = this.handlers['openTelemetry'].toolSpan?.[spanId]
+            if (toolSpan) {
+                const isRetrieval = this.handlers['openTelemetry'].retrievalSpanIds?.[spanId] === true
+                const startTime = this.handlers['openTelemetry'].toolStartTime?.[spanId]
+                const latencyAttr = isRetrieval ? 'retrieval.latency_ms' : 'tool.latency_ms'
+
+                if (startTime !== undefined) {
+                    toolSpan.setAttribute(latencyAttr, Date.now() - startTime)
+                }
+                toolSpan.setAttribute('exception.type', typeof error === 'object' ? (error as any).name ?? 'Error' : 'Error')
+                toolSpan.setAttribute('exception.message', error.toString())
+                toolSpan.recordException(typeof error === 'string' ? new Error(error) : (error as Error))
+                toolSpan.setStatus({ code: SpanStatusCode.ERROR, message: error.toString() })
+                toolSpan.end()
+
+                if (isRetrieval) {
+                    delete this.handlers['openTelemetry'].retrievalSpanIds?.[spanId]
+                }
             }
         }
     }

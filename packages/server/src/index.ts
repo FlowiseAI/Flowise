@@ -26,6 +26,7 @@ import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import flowiseApiV1Router from './routes'
 import { UsageCacheManager } from './UsageCacheManager'
+import { OtelTracerProviderPool } from 'flowise-components'
 import { getEncryptionKey, getNodeModulesPackagePath } from './utils'
 import { API_KEY_BLACKLIST_URLS, WHITELIST_URLS } from './utils/constants'
 import logger, { expressRequestLogger } from './utils/logger'
@@ -117,6 +118,10 @@ export class App {
             // Initialize cache pool
             this.cachePool = new CachePool()
             logger.info('💾 [server]: Cache pool initialized successfully')
+
+            // Initialize OTEL TracerProvider pool (lazily creates providers on first use)
+            OtelTracerProviderPool.getInstance()
+            logger.info('🔭 [server]: OTEL TracerProvider pool initialized successfully')
 
             // Initialize usage cache manager
             this.usageCacheManager = await UsageCacheManager.getInstance()
@@ -361,6 +366,7 @@ export class App {
             if (this.queueManager) {
                 removePromises.push(this.redisSubscriber.disconnect())
             }
+            removePromises.push(OtelTracerProviderPool.getInstance().shutdownAll())
             await Promise.all(removePromises)
         } catch (e) {
             logger.error(`❌[server]: Flowise Server shut down error: ${e}`)

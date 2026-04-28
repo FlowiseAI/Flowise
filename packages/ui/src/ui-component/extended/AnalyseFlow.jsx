@@ -25,6 +25,7 @@ import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { SwitchInput } from '@/ui-component/switch/Switch'
 import { Input } from '@/ui-component/input/Input'
 import { StyledButton } from '@/ui-component/button/StyledButton'
+import OtelAnalyticsConfig from './OtelAnalyticsConfig'
 import langsmithPNG from '@/assets/images/langchain.png'
 import langfuseSVG from '@/assets/images/langfuse.svg'
 import lunarySVG from '@/assets/images/lunary.svg'
@@ -35,7 +36,6 @@ import opikPNG from '@/assets/images/opik.png'
 
 // store
 import useNotifier from '@/utils/useNotifier'
-
 // API
 import chatflowsApi from '@/api/chatflows'
 
@@ -423,6 +423,12 @@ const AnalyseFlow = ({ dialogProps }) => {
                     </AccordionDetails>
                 </Accordion>
             ))}
+            <OtelAnalyticsConfig
+                analytic={analytic}
+                setValue={setValue}
+                providerExpanded={providerExpanded}
+                onAccordionChange={handleAccordionChange}
+            />
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
                     Save
