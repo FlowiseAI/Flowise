@@ -9,6 +9,7 @@ import { IconArrowsMaximize, IconAlertTriangle } from '@tabler/icons-react'
 // project import
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import { Input } from '@/ui-component/input/Input'
+import { SensitiveInput } from '@/ui-component/input/SensitiveInput'
 import { SwitchInput } from '@/ui-component/switch/Switch'
 import { JsonEditorInput } from '@/ui-component/json/JsonEditor'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
@@ -90,33 +91,28 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false, onReveal }
                                 value={data[inputParam.name] ?? inputParam.default ?? false}
                             />
                         )}
-                        {(inputParam.type === 'string' ||
-                            inputParam.type === 'password' ||
-                            inputParam.type === 'url' ||
-                            inputParam.type === 'number') && (
-                            <Input
-                                key={inputParam.type === 'url' ? inputParam.name : data[inputParam.name]}
+                        {(inputParam.type === 'url' || inputParam.type === 'password') && (
+                            <SensitiveInput
+                                key={inputParam.name}
+                                inputParam={inputParam}
+                                value={data[inputParam.name] ?? inputParam.default ?? ''}
+                                onChange={(newValue) => (data[inputParam.name] = newValue)}
                                 disabled={disabled}
-                                inputParam={
-                                    inputParam.type === 'url'
-                                        ? onReveal
-                                            ? { ...inputParam, enablePasswordToggle: true }
-                                            : { ...inputParam, type: 'string' }
-                                        : inputParam
-                                }
+                                onReveal={onReveal ? () => onReveal(inputParam.name) : undefined}
+                            />
+                        )}
+                        {(inputParam.type === 'string' || inputParam.type === 'number') && (
+                            <Input
+                                key={data[inputParam.name]}
+                                disabled={disabled}
+                                inputParam={inputParam}
                                 onChange={(newValue) => (data[inputParam.name] = newValue)}
                                 value={data[inputParam.name] ?? inputParam.default ?? ''}
                                 showDialog={showExpandDialog}
                                 dialogProps={expandDialogProps}
                                 onDialogCancel={() => setShowExpandDialog(false)}
                                 onDialogConfirm={(newValue, inputParamName) => onExpandDialogSave(newValue, inputParamName)}
-                                onReveal={onReveal && inputParam.type === 'url' ? () => onReveal(inputParam.name) : undefined}
                             />
-                        )}
-                        {inputParam.type === 'url' && onReveal && (
-                            <Typography variant='caption' sx={{ color: 'text.secondary', mt: 0.5, display: 'block' }}>
-                                Click the eye icon to reveal the value before editing.
-                            </Typography>
                         )}
                         {inputParam.type === 'json' && (
                             <JsonEditorInput
