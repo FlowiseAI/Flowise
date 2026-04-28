@@ -29,6 +29,31 @@ export function getAllowCredentials(): boolean {
     return process.env.CORS_ALLOW_CREDENTIALS === 'true'
 }
 
+export function getAllowedAuthCorsOrigins(): string[] {
+    const raw = process.env.CORS_AUTH_ORIGINS?.trim() ?? ''
+    if (!raw) return []
+    return raw
+        .split(',')
+        .map((o) => o.trim().toLowerCase())
+        .filter((o) => o.length > 0)
+}
+
+// Endpoints that issue or refresh session tokens — must not accept wildcard origins
+const SESSION_ENDPOINTS = [
+    '/api/v1/auth/login',
+    '/api/v1/auth/refreshtoken',
+    '/api/v1/account/register',
+    '/api/v1/azure/callback',
+    '/api/v1/google/callback',
+    '/api/v1/auth0/callback',
+    '/api/v1/github/callback'
+]
+
+function isSessionEndpoint(url: string): boolean {
+    const path = url.split('?')[0].toLowerCase()
+    return SESSION_ENDPOINTS.some((ep) => path.startsWith(ep))
+}
+
 function parseAllowedOrigins(allowedOrigins: string): string[] {
     if (!allowedOrigins) {
         return []
@@ -55,6 +80,15 @@ export function getCorsOptions(): any {
 
                 // Always allow no-Origin requests (same-origin, server-to-server)
                 if (!originLc) return originCallback(null, true)
+
+                // Block null origins (sandboxed iframes, data: URIs, file:// pages)
+                if (originLc === 'null') return originCallback(null, false)
+
+                // Session-issuing endpoints: ignore global wildcard, use CORS_AUTH_ORIGINS only
+                if (isSessionEndpoint(req.url)) {
+                    const authList = getAllowedAuthCorsOrigins()
+                    return originCallback(null, authList.includes(originLc))
+                }
 
                 // Global allow: '*' or exact match
                 const globallyAllowed = allowedOrigins === '*' || allowedList.includes(originLc)
