@@ -16,7 +16,7 @@ import python from 'highlight.js/lib/languages/python'
 import typescript from 'highlight.js/lib/languages/typescript'
 import { createLowlight } from 'lowlight'
 
-import { getEditorMarkdown, isHtmlContent } from '@/atoms/utils/'
+import { escapeXmlTags, getEditorMarkdown, isHtmlContent, unescapeXmlEntities, unescapeXmlTags } from '@/atoms/utils/'
 import { tokens } from '@/core/theme/tokens'
 
 const lowlight = createLowlight()
@@ -42,11 +42,22 @@ export interface RichTextEditorProps {
     useMarkdown?: boolean
 }
 
+/* ── Helpers ── */
+
+function loadContent(editor: Editor, value: string, markdown: boolean) {
+    if (!markdown || isHtmlContent(value)) {
+        editor.commands.setContent(value, { emitUpdate: false, contentType: 'html' })
+    } else {
+        editor.commands.setContent(escapeXmlTags(value), { emitUpdate: false, contentType: 'markdown' })
+        editor.commands.setContent(unescapeXmlEntities(editor.getJSON()), { emitUpdate: false })
+    }
+}
+
 /* ── TipTap extensions (no mention/variable support — that belongs in features/) ── */
 
-const buildExtensions = (placeholder?: string) => [
-    Markdown,
-    StarterKit.configure({ codeBlock: false }),
+const buildExtensions = (placeholder?: string, useMarkdown = true) => [
+    ...(useMarkdown ? [Markdown] : []),
+    StarterKit.configure({ codeBlock: false, ...(!useMarkdown && { link: false }) }),
     CodeBlockLowlight.configure({ lowlight, enableTabIndentation: true, tabSize: 2 }),
     ...(placeholder ? [Placeholder.configure({ placeholder })] : [])
 ]
@@ -66,21 +77,21 @@ const StyledEditorContent = styled(EditorContent, {
             overflowY: rows ? 'auto' : 'hidden',
             overflowX: rows ? 'auto' : 'hidden',
             lineHeight: rows ? `${tokens.typography.rowHeightRem}em` : `${tokens.typography.singleLineLineHeightEm}em`,
-            fontWeight: 500,
-            color: disabled ? theme.palette.action.disabled : theme.palette.grey[900],
-            border: `1px solid ${theme.palette.grey[900]}25`,
+            fontSize: tokens.typography.fontSize.md,
+            fontWeight: tokens.typography.fontWeight.medium,
+            color: disabled ? theme.palette.action.disabled : theme.palette.text.primary,
+            border: `1px solid ${tokens.colors.border.input[mode]}`,
             borderRadius: '10px',
-            backgroundColor:
-                (theme.palette as { textBackground?: { main: string } }).textBackground?.main ?? theme.palette.background.paper,
+            backgroundColor: tokens.colors.background.input[mode],
             boxSizing: 'border-box',
             whiteSpace: rows ? 'pre-wrap' : 'nowrap',
 
             '&:hover': {
-                borderColor: disabled ? `${theme.palette.grey[900]}25` : theme.palette.text.primary,
+                borderColor: disabled ? tokens.colors.border.input[mode] : theme.palette.text.primary,
                 cursor: disabled ? 'default' : 'text'
             },
             '&:focus': {
-                borderColor: disabled ? `${theme.palette.grey[900]}25` : theme.palette.primary.main,
+                borderColor: disabled ? tokens.colors.border.input[mode] : theme.palette.primary.main,
                 outline: 'none'
             },
 
@@ -174,7 +185,7 @@ export function RichTextEditor({
     const initialValueRef = useRef(value)
     const useMarkdownRef = useRef(useMarkdown)
 
-    const extensions = useMemo(() => buildExtensions(placeholder), [placeholder])
+    const extensions = useMemo(() => buildExtensions(placeholder, useMarkdown), [placeholder, useMarkdown])
 
     const editor = useEditor({
         extensions,
@@ -182,9 +193,10 @@ export function RichTextEditor({
         editable: !disabled,
         autofocus: autoFocus ? 'end' : false,
         onUpdate: ({ editor: ed }) => {
-            const value = useMarkdown ? getEditorMarkdown(ed) : ed.getHTML()
-            lastEmittedRef.current = value
-            onChangeRef.current(value)
+            const raw = useMarkdown ? getEditorMarkdown(ed) : ed.getHTML()
+            const emitted = useMarkdown ? unescapeXmlTags(raw) : raw
+            lastEmittedRef.current = emitted
+            onChangeRef.current(emitted)
         }
     })
 
@@ -199,16 +211,14 @@ export function RichTextEditor({
     // Reads from refs so only `editor` needs to be in the dep array.
     useEffect(() => {
         if (!editor || !initialValueRef.current) return
-        const contentType = !useMarkdownRef.current || isHtmlContent(initialValueRef.current) ? 'html' : 'markdown'
-        editor.commands.setContent(initialValueRef.current, { emitUpdate: false, contentType })
+        loadContent(editor, initialValueRef.current, useMarkdownRef.current)
         lastEmittedRef.current = initialValueRef.current
     }, [editor])
 
     // Sync genuine external value changes (e.g. parent resets the field programmatically).
     useEffect(() => {
         if (editor && value !== lastEmittedRef.current) {
-            const contentType = !useMarkdown || isHtmlContent(value) ? 'html' : 'markdown'
-            editor.commands.setContent(value, { emitUpdate: false, contentType })
+            loadContent(editor, value, useMarkdown)
             lastEmittedRef.current = value
         }
     }, [editor, value, useMarkdown])

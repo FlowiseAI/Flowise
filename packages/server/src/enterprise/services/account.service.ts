@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { removeFolderFromStorage } from 'flowise-components'
-import jwt, { JwtPayload } from 'jsonwebtoken'
 import { StatusCodes } from 'http-status-codes'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import moment from 'moment'
 import { DataSource, In, QueryRunner } from 'typeorm'
 import { ApiKey } from '../../database/entities/ApiKey'
@@ -30,6 +30,7 @@ import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import logger from '../../utils/logger'
 import { checkUsageLimit } from '../../utils/quotaUsage'
+import { sanitizeUser } from '../../utils/sanitize.util'
 import { emitEvent, TelemetryEventCategory, TelemetryEventResult } from '../../utils/telemetry'
 import { WorkspaceShared } from '../database/entities/EnterpriseEntities'
 import { OrganizationUser, OrganizationUserStatus } from '../database/entities/organization-user.entity'
@@ -41,8 +42,8 @@ import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
 import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
 import { getJWTAuthTokenSecret } from '../utils/authSecrets'
-import { compareHash, getHash, getPasswordSaltRounds, hashNeedsUpgrade } from '../utils/encryption.util'
 import { EMAIL_CHANGE_JWT_TYP, isEmailChangeJwtShape, signEmailChangeJwt, verifyEmailChangeJwt } from '../utils/emailChangeJwt.util'
+import { compareHash, getHash, getPasswordSaltRounds, hashNeedsUpgrade } from '../utils/encryption.util'
 import {
     isSmtpConfigured,
     sendEmailChangeConfirmationEmail,
@@ -58,7 +59,6 @@ import auditService from './audit'
 import { OrganizationUserErrorMessage, OrganizationUserService } from './organization-user.service'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
 import { RoleErrorMessage, RoleService } from './role.service'
-import { sanitizeUser } from '../../utils/sanitize.util'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
@@ -409,9 +409,7 @@ export class AccountService {
                 data.workspaceUser = await this.workspaceUserService.saveWorkspaceUser(data.workspaceUser, queryRunner)
                 data.role = await this.roleService.saveRole(data.role, queryRunner)
                 await queryRunner.commitTransaction()
-                delete data.user.credential
-                delete data.user.tempToken
-                delete data.user.tokenExpiry
+                data.user = sanitizeUser(data.user)
 
                 return data
             }
@@ -522,6 +520,7 @@ export class AccountService {
             data.role = await this.roleService.saveRole(data.role, queryRunner)
             await queryRunner.commitTransaction()
 
+            data.user = sanitizeUser(data.user)
             return data
         } catch (error) {
             if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
@@ -586,7 +585,9 @@ export class AccountService {
             if (platform === Platform.ENTERPRISE) {
                 await auditService.recordLoginActivity(user.email, LoginActivityCode.LOGIN_SUCCESS, 'Login Success')
             }
-            return { user, workspaceDetails: wsUserOrUsers }
+
+            const sanitizedUser = sanitizeUser(user)
+            return { user: sanitizedUser, workspaceDetails: wsUserOrUsers }
         } finally {
             await queryRunner.release()
         }
@@ -614,7 +615,7 @@ export class AccountService {
         } finally {
             await queryRunner.release()
         }
-
+        data.user = sanitizeUser(data.user)
         return data
     }
 

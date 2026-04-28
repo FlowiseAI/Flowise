@@ -18,12 +18,13 @@ on:
                 required: false
                 type: string
             tag:
-                description: 'npm dist-tag'
+                description: 'npm dist-tag (dev = internal, next = pre-release, latest = stable)'
                 required: false
                 type: choice
                 default: 'dev'
                 options:
                     - dev
+                    - next
                     - latest
 
 jobs:
@@ -34,15 +35,15 @@ jobs:
         outputs:
             version: ${{ steps.resolve-version.outputs.version }}
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
 
-            - uses: pnpm/action-setup@v2
+            - uses: pnpm/action-setup@v4
               with:
                   version: 10.26.0
 
-            - uses: actions/setup-node@v4
+            - uses: actions/setup-node@v6
               with:
-                  node-version: '18.15.0'
+                  node-version: '20.20.2'
                   registry-url: 'https://registry.npmjs.org'
 
             - name: Validate custom version
@@ -99,15 +100,15 @@ jobs:
             contents: write
             pull-requests: write
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
 
-            - uses: pnpm/action-setup@v2
+            - uses: pnpm/action-setup@v4
               with:
                   version: 10.26.0
 
-            - uses: actions/setup-node@v4
+            - uses: actions/setup-node@v6
               with:
-                  node-version: '18.15.0'
+                  node-version: '20.20.2'
                   registry-url: 'https://registry.npmjs.org'
 
             - name: Install dependencies

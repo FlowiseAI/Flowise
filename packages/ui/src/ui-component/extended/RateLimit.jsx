@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
 import PropTypes from 'prop-types'
 
-import { Typography, Button, OutlinedInput, Stack } from '@mui/material'
+import { Typography, Button, OutlinedInput, Stack, Box } from '@mui/material'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -19,7 +19,7 @@ import chatflowsApi from '@/api/chatflows'
 // utils
 import useNotifier from '@/utils/useNotifier'
 
-const RateLimit = ({ dialogProps }) => {
+const RateLimit = ({ dialogProps, hideTitle = false }) => {
     const dispatch = useDispatch()
     const chatflow = useSelector((state) => state.canvas.chatflow)
     const chatflowid = chatflow.id
@@ -147,36 +147,39 @@ const RateLimit = ({ dialogProps }) => {
     }
 
     return (
-        <Stack direction='column' spacing={2} sx={{ alignItems: 'start' }}>
-            <Typography variant='h3'>
-                Rate Limit{' '}
-                <TooltipWithParser
-                    style={{ marginLeft: 10 }}
-                    title={
-                        'Visit <a target="_blank" href="https://docs.flowiseai.com/configuration/rate-limit">Rate Limit Setup Guide</a> to set up Rate Limit correctly in your hosting environment.'
-                    }
-                />
-            </Typography>
-            <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
-                <SwitchInput label='Enable Rate Limit' onChange={handleChange} value={rateLimitStatus} />
-                {rateLimitStatus && (
-                    <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
-                        {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number', '5')}
-                        {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number', '60')}
-                        {textField(limitMsg, 'limitMsg', 'Limit Message', 'string', 'You have reached the quota')}
-                    </Stack>
-                )}
-            </Stack>
-            <StyledButton disabled={checkDisabled()} variant='contained' onClick={() => onSave()} sx={{ width: 'auto' }}>
-                Save
-            </StyledButton>
+        <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
+            {!hideTitle && (
+                <Typography variant='h3'>
+                    Rate Limit{' '}
+                    <TooltipWithParser
+                        style={{ marginLeft: 10 }}
+                        title={
+                            'Visit <a target="_blank" href="https://docs.flowiseai.com/configuration/rate-limit">Rate Limit Setup Guide</a> to set up Rate Limit correctly in your hosting environment.'
+                        }
+                    />
+                </Typography>
+            )}
+            <SwitchInput label='Enable Rate Limit' onChange={handleChange} value={rateLimitStatus} />
+            {rateLimitStatus && (
+                <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
+                    {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number', '5')}
+                    {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number', '60')}
+                    {textField(limitMsg, 'limitMsg', 'Limit Message', 'string', 'You have reached the quota')}
+                </Stack>
+            )}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
+                <StyledButton disabled={checkDisabled()} variant='contained' onClick={() => onSave()} sx={{ minWidth: 100 }}>
+                    Save
+                </StyledButton>
+            </Box>
         </Stack>
     )
 }
 
 RateLimit.propTypes = {
     isSessionMemory: PropTypes.bool,
-    dialogProps: PropTypes.object
+    dialogProps: PropTypes.object,
+    hideTitle: PropTypes.bool
 }
 
 export default RateLimit

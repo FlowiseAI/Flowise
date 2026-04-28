@@ -81,7 +81,7 @@ class ChatAnthropic_ChatModels implements INode {
                 optional: true,
                 additionalParams: true,
                 hide: {
-                    modelName: ['claude-opus-4-6', 'claude-sonnet-4-6']
+                    modelName: ['claude-opus-4-7', 'claude-opus-4-6', 'claude-sonnet-4-6']
                 }
             },
             {
@@ -97,7 +97,7 @@ class ChatAnthropic_ChatModels implements INode {
                     extendedThinking: true
                 },
                 hide: {
-                    modelName: ['claude-opus-4-6', 'claude-sonnet-4-6']
+                    modelName: ['claude-opus-4-7', 'claude-opus-4-6', 'claude-sonnet-4-6']
                 }
             },
             {
@@ -110,7 +110,7 @@ class ChatAnthropic_ChatModels implements INode {
                 optional: true,
                 additionalParams: true,
                 show: {
-                    modelName: ['claude-opus-4-6', 'claude-sonnet-4-6']
+                    modelName: ['claude-opus-4-7', 'claude-opus-4-6', 'claude-sonnet-4-6']
                 }
             },
             {
@@ -135,13 +135,13 @@ class ChatAnthropic_ChatModels implements INode {
                     {
                         label: 'Max',
                         name: 'max',
-                        description: 'Absolute maximum capability with no constraints on token spending. Opus 4.6 only'
+                        description: 'Absolute maximum capability with no constraints on token spending. Opus 4.6 and newer only'
                     }
                 ],
                 additionalParams: true,
                 show: {
                     adaptiveThinking: true,
-                    modelName: ['claude-opus-4-6', 'claude-sonnet-4-6']
+                    modelName: ['claude-opus-4-7', 'claude-opus-4-6', 'claude-sonnet-4-6']
                 }
             },
             {

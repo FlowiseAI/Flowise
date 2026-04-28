@@ -25,6 +25,7 @@ import leadsRouter from './leads'
 import loadPromptRouter from './load-prompts'
 import logsRouter from './log'
 import marketplacesRouter from './marketplaces'
+import customMcpServersRouter from './custom-mcp-servers'
 import nodeConfigRouter from './node-configs'
 import nodeCustomFunctionRouter from './node-custom-functions'
 import nodeIconRouter from './node-icons'
@@ -55,6 +56,8 @@ import executionsRouter from './executions'
 import validationRouter from './validation'
 import agentflowv2GeneratorRouter from './agentflowv2-generator'
 import textToSpeechRouter from './text-to-speech'
+import mcpServerRouter from './mcp-server'
+import mcpEndpointRouter from './mcp-endpoint'
 
 import authRouter from '../enterprise/routes/auth'
 import auditRouter from '../enterprise/routes/audit'
@@ -124,6 +127,9 @@ router.use('/executions', executionsRouter)
 router.use('/validation', validationRouter)
 router.use('/agentflowv2-generator', agentflowv2GeneratorRouter)
 router.use('/text-to-speech', textToSpeechRouter)
+router.use('/custom-mcp-servers', customMcpServersRouter)
+router.use('/mcp-server', mcpServerRouter)
+router.use('/mcp', mcpEndpointRouter)
 
 router.use('/auth', authRouter)
 router.use('/audit', IdentityManager.checkFeatureByPlan('feat:login-activity'), auditRouter)

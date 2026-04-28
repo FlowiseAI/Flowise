@@ -1113,6 +1113,7 @@ const executeNode = async ({
                 ...updatedState
             }
             flowConfig.state = updatedState
+            agentflowRuntime.state = updatedState
         }
 
         // Resolve variables in node data
@@ -1162,7 +1163,7 @@ const executeNode = async ({
             !isRecursive &&
             (!graph[nodeId] || graph[nodeId].length === 0 || (!humanInput && reactFlowNode.data.name === 'humanInputAgentflow'))
 
-        if (incomingInput.question && incomingInput.form) {
+        if (incomingInput.question && isObjectNotEmpty(incomingInput.form)) {
             throw new Error('Question and form cannot be provided at the same time')
         }
 
@@ -1170,7 +1171,7 @@ const executeNode = async ({
         if (incomingInput.question) {
             // Prepare final question with uploaded content if any
             finalInput = uploadedFilesContent ? `${uploadedFilesContent}\n\n${incomingInput.question}` : incomingInput.question
-        } else if (incomingInput.form) {
+        } else if (isObjectNotEmpty(incomingInput.form)) {
             finalInput = Object.entries(incomingInput.form || {})
                 .map(([key, value]) => `${key}: ${value}`)
                 .join('\n')
@@ -1511,6 +1512,7 @@ export const executeAgentFlow = async ({
     parentExecutionId,
     iterationContext,
     isTool = false,
+    chatType,
     orgId,
     workspaceId,
     subscriptionId,
@@ -2260,7 +2262,7 @@ export const executeAgentFlow = async ({
         role: 'userMessage',
         content: finalUserInput,
         chatflowid,
-        chatType: evaluationRunId ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+        chatType: chatType || (evaluationRunId ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL),
         chatId,
         sessionId,
         createdDate: userMessageDateTime,
@@ -2275,7 +2277,7 @@ export const executeAgentFlow = async ({
         role: 'apiMessage',
         content: content,
         chatflowid,
-        chatType: evaluationRunId ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+        chatType: chatType || (evaluationRunId ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL),
         chatId,
         sessionId,
         executionId: newExecution.id
@@ -2330,6 +2332,7 @@ export const executeAgentFlow = async ({
     result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
     result.executionId = newExecution.id
     result.agentFlowExecutedData = agentFlowExecutedData
+    if (apiMessage.action) result.action = JSON.parse(apiMessage.action)
 
     if (sessionId) result.sessionId = sessionId
 

@@ -1,5 +1,12 @@
 import { createElement, forwardRef } from 'react'
 
+/** Extract all text from a ProseMirror JSON node recursively. */
+function extractPmText(node: { text?: string; content?: unknown[] }): string {
+    if (node.text) return node.text
+    if (node.content) return (node.content as { text?: string; content?: unknown[] }[]).map(extractPmText).join('')
+    return ''
+}
+
 export const useEditor = (config?: Record<string, unknown>) => {
     // Track the current content so getMarkdown/getHTML reflect setContent() calls,
     // mirroring real TipTap behaviour where setContent updates the editor state.
@@ -9,12 +16,22 @@ export const useEditor = (config?: Record<string, unknown>) => {
         getMarkdown: () => currentContent,
         isEmpty: !currentContent,
         setEditable: jest.fn(),
+        // Returns a minimal ProseMirror JSON for the current string content.
+        // Allows unescapeXmlEntities() to walk and mutate the text node.
+        getJSON: () => ({
+            type: 'doc',
+            content: [{ type: 'paragraph', content: [{ type: 'text', text: currentContent }] }]
+        }),
         commands: {
             focus: jest.fn(),
-            // Capture the first argument (the content string) so getMarkdown/getHTML
-            // return the value that was last loaded into the editor.
-            setContent: jest.fn((content: string) => {
-                currentContent = content
+            // Accepts both string content and ProseMirror JSON objects (second setContent call
+            // in the two-step XML escape/unescape load sequence).
+            setContent: jest.fn((content: string | { text?: string; content?: unknown[] }) => {
+                if (typeof content === 'string') {
+                    currentContent = content
+                } else if (content && typeof content === 'object') {
+                    currentContent = extractPmText(content)
+                }
             })
         },
         _onUpdate: config?.onUpdate

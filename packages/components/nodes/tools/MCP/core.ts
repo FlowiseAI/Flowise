@@ -2,7 +2,6 @@ import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResult
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
-import { z, type ZodTypeAny } from 'zod/v3'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
 import { checkDenyList, secureFetch } from '../../../src/httpSecurity'
@@ -124,11 +123,12 @@ export class MCPToolkit extends BaseToolkit {
             if (this.client === null) {
                 throw new Error('Client is not initialized')
             }
+            const argsSchema = tool.inputSchema ?? { type: 'object', properties: {} }
             return await MCPTool({
                 toolkit: this,
                 name: tool.name,
                 description: tool.description || tool.name,
-                argsSchema: createSchemaModel(tool.inputSchema)
+                argsSchema
             })
         })
         const res = await Promise.allSettled(toolsPromises)
@@ -175,24 +175,6 @@ export async function MCPTool({
             schema: argsSchema
         }
     )
-}
-
-function createSchemaModel(
-    inputSchema: {
-        type: 'object'
-        properties?: Record<string, unknown>
-    } & { [k: string]: unknown }
-): z.ZodObject<Record<string, ZodTypeAny>> {
-    if (inputSchema.type !== 'object' || !inputSchema.properties) {
-        throw new Error('Invalid schema type or missing properties')
-    }
-
-    const schemaProperties = Object.entries(inputSchema.properties).reduce((acc, [key]) => {
-        acc[key] = z.any()
-        return acc
-    }, {} as Record<string, ZodTypeAny>)
-
-    return z.object(schemaProperties)
 }
 
 export const validateArgsForLocalFileAccess = (args: string[]): void => {

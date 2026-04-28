@@ -4,6 +4,13 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "anthropic.claude-opus-4-7-v1",
+                    "name": "anthropic.claude-opus-4-7-v1",
+                    "description": "Claude 4.7 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
                     "label": "anthropic.claude-opus-4-6-v1",
                     "name": "anthropic.claude-opus-4-6-v1",
                     "description": "Claude 4.6 Opus",
@@ -587,6 +594,13 @@
             "name": "chatAnthropic",
             "models": [
                 {
+                    "label": "claude-opus-4-7",
+                    "name": "claude-opus-4-7",
+                    "description": "Claude 4.7 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
                     "label": "claude-opus-4-6",
                     "name": "claude-opus-4-6",
                     "description": "Claude 4.6 Opus",
@@ -816,6 +830,27 @@
             ]
         },
         {
+            "name": "chatBaiduWenxin",
+            "models": [
+                {
+                    "label": "ernie-4.5-8k-preview",
+                    "name": "ernie-4.5-8k-preview"
+                },
+                {
+                    "label": "ernie-4.0-8k",
+                    "name": "ernie-4.0-8k"
+                },
+                {
+                    "label": "ernie-3.5-8k-preview",
+                    "name": "ernie-3.5-8k-preview"
+                },
+                {
+                    "label": "ernie-speed-128k",
+                    "name": "ernie-speed-128k"
+                }
+            ]
+        },
+        {
             "name": "chatAlibabaTongyi",
             "models": [
                 {
@@ -912,6 +947,13 @@
                     "name": "gemini-1.0-pro-vision",
                     "input_cost": 1.25e-7,
                     "output_cost": 3.75e-7
+                },
+                {
+                    "label": "claude-opus-4-7",
+                    "name": "claude-opus-4-7",
+                    "description": "Claude 4.7 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
                 },
                 {
                     "label": "claude-opus-4-6",
@@ -1234,6 +1276,18 @@
             "name": "chatOpenAI",
             "models": [
                 {
+                    "label": "gpt-5.5",
+                    "name": "gpt-5.5",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-5.5-pro",
+                    "name": "gpt-5.5-pro",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00018
+                },
+                {
                     "label": "gpt-5.4",
                     "name": "gpt-5.4",
                     "input_cost": 0.0000025,
@@ -1508,6 +1562,18 @@
         {
             "name": "chatOpenAI_LlamaIndex",
             "models": [
+                {
+                    "label": "gpt-5.5",
+                    "name": "gpt-5.5",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-5.5-pro",
+                    "name": "gpt-5.5-pro",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00018
+                },
                 {
                     "label": "gpt-4o",
                     "name": "gpt-4o",
@@ -2180,6 +2246,27 @@
                 {
                     "label": "text-embedding-ada-002",
                     "name": "text-embedding-ada-002"
+                }
+            ]
+        },
+        {
+            "name": "baiduQianfanEmbeddings",
+            "models": [
+                {
+                    "label": "Embedding-V1",
+                    "name": "Embedding-V1"
+                },
+                {
+                    "label": "bge-large-zh",
+                    "name": "bge-large-zh"
+                },
+                {
+                    "label": "bge-large-en",
+                    "name": "bge-large-en"
+                },
+                {
+                    "label": "tao-8k",
+                    "name": "tao-8k"
                 }
             ]
         },

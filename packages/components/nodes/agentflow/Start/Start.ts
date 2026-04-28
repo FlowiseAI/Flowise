@@ -39,7 +39,8 @@ class Start_Agentflow implements INode {
                     {
                         label: 'Form Input',
                         name: 'formInput',
-                        description: 'Start the workflow with form inputs'
+                        description: 'Start the workflow with form inputs',
+                        client: ['agentflowv2']
                     }
                 ],
                 default: 'chatInput'

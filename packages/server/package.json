@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "3.1.1",
+    "version": "3.1.2",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -23,7 +23,7 @@
         "build": "tsc && rimraf dist/enterprise/emails && gulp",
         "start": "run-script-os",
         "clean": "rimraf dist",
-        "nuke": "rimraf dist node_modules .turbo",
+        "nuke": "pnpm clean && rimraf node_modules .turbo",
         "start:windows": "cd bin && run start",
         "start:default": "cd bin && ./run start",
         "start-worker:windows": "cd bin && run worker",
@@ -58,13 +58,14 @@
         "email": "henryheng@flowiseai.com"
     },
     "engines": {
-        "node": ">=18.15.0 <19.0.0 || ^20"
+        "node": "^20"
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
         "@aws-sdk/client-secrets-manager": "^3.699.0",
         "@bull-board/api": "^6.11.0",
         "@bull-board/express": "^6.11.0",
+        "@modelcontextprotocol/sdk": "^1.10.1",
         "@google-cloud/logging-winston": "^6.0.0",
         "@keyv/redis": "^4.2.0",
         "@oclif/core": "4.0.7",
@@ -88,7 +89,7 @@
         "@types/passport-jwt": "^4.0.1",
         "@types/passport-local": "^1.0.38",
         "async-mutex": "^0.4.0",
-        "axios": "1.12.0",
+        "axios": "1.15.0",
         "bcryptjs": "^2.4.3",
         "bullmq": "5.45.2",
         "cache-manager": "^6.3.2",
@@ -102,7 +103,6 @@
         "csv-parser": "^3.0.0",
         "dotenv": "^16.0.0",
         "express": "^4.17.3",
-        "express-basic-auth": "^1.2.1",
         "express-mysql-session": "^3.0.3",
         "express-rate-limit": "^6.9.0",
         "express-session": "^1.18.1",
@@ -151,7 +151,8 @@
         "uuid": "^10.0.0",
         "winston": "^3.9.0",
         "winston-azure-blob": "^1.5.0",
-        "winston-daily-rotate-file": "^5.0.0"
+        "winston-daily-rotate-file": "^5.0.0",
+        "zod": "^3.25.76 || ^4"
     },
     "devDependencies": {
         "@types/content-disposition": "0.5.8",
