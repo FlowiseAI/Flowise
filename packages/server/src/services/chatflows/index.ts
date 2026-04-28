@@ -1,6 +1,6 @@
 import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
-import { Brackets, In } from 'typeorm'
+import { Brackets, In, QueryRunner } from 'typeorm'
 import { validate as isValidUUID } from 'uuid'
 import { ChatflowType, IReactFlowObject } from '../../Interface'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
@@ -285,6 +285,38 @@ const getChatflowByIdForWorkspace = async (chatflowId: string, workspaceId: stri
     return getChatflowById(chatflowId, workspaceId)
 }
 
+/** Ensures every id exists as a chatflow in workspaceId. One DB query; pass queryRunner when inside a transaction for consistent reads. */
+const assertChatflowIdsInWorkspace = async (chatflowIds: string[], workspaceId: string, queryRunner?: QueryRunner): Promise<void> => {
+    try {
+        if (chatflowIds.length === 0) return
+        for (const id of chatflowIds) {
+            if (!isValidUUID(id)) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, ChatflowErrorMessage.INVALID_CHATFLOW_ID)
+            }
+        }
+        const appServer = getRunningExpressApp()
+        const manager = queryRunner?.manager ?? appServer.AppDataSource.manager
+        const found = await manager.getRepository(ChatFlow).find({
+            where: { id: In(chatflowIds), workspaceId },
+            select: ['id']
+        })
+        if (found.length !== chatflowIds.length) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                'Error: chatflowsService.assertChatflowIdsInWorkspace - one or more chatflows were not found in the workspace!'
+            )
+        }
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.assertChatflowIdsInWorkspace - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 const saveChatflow = async (
     newChatFlow: ChatFlow,
     orgId: string,
@@ -470,6 +502,7 @@ const checkIfChatflowHasChanged = async (chatflowId: string, lastUpdatedDateTime
 }
 
 export default {
+    assertChatflowIdsInWorkspace,
     checkIfChatflowIsValidForStreaming,
     checkIfChatflowIsValidForUploads,
     deleteChatflow,
