@@ -611,7 +611,7 @@ const getEncryptionKey = async (): Promise<string> => {
  * @param {IComponentCredentials} componentCredentials
  * @returns {Promise<ICommonObject>}
  */
-const decryptCredentialData = async (encryptedData: string): Promise<ICommonObject> => {
+export const decryptCredentialData = async (encryptedData: string): Promise<ICommonObject> => {
     let decryptedDataStr: string
 
     if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {

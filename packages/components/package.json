@@ -118,7 +118,7 @@
         "@zilliz/milvus2-sdk-node": "^2.2.24",
         "apify-client": "^2.7.1",
         "assemblyai": "^4.2.2",
-        "axios": "1.12.0",
+        "axios": "1.15.0",
         "cheerio": "^1.0.0-rc.12",
         "chromadb": "3.1.6",
         "cohere-ai": "^7.7.5",

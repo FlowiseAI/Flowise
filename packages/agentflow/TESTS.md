@@ -34,6 +34,7 @@ Presentational components that are mostly JSX. Only add tests if the component c
 
 The Jest config uses file extensions to select the test environment:
 
+<!-- prettier-ignore -->
 | Extension   | Environment             | When to use                                                                |
 | ----------- | ----------------------- | -------------------------------------------------------------------------- |
 | `.test.ts`  | **node** (no DOM)       | Pure logic — utilities, reducers, data transformations                     |
@@ -97,6 +98,8 @@ jest.mock('@/infrastructure/store', () => ({
 **Axios** (`src/__mocks__/axios.ts`): Prevents network errors by mocking all HTTP methods. Returns empty arrays/objects by default.
 
 **CSS/SVG** (`src/__mocks__/styleMock.js`): Empty object export for CSS and SVG imports.
+
+**TipTap** (`src/__mocks__/@tiptap/`): Stubs for `@tiptap/react` and related ESM-only packages that cannot run in Jest's CommonJS environment. The RichTextEditor component is lazy-loaded in production, so these mocks only affect tests that import it directly.
 
 ### Custom Jest Environment
 
