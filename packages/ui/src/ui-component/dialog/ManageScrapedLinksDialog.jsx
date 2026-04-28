@@ -14,6 +14,7 @@ import {
     IconButton,
     OutlinedInput,
     Stack,
+    Tooltip,
     Typography
 } from '@mui/material'
 import { IconEraser, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
@@ -169,15 +170,17 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                                 }}
                             />
                         </FormControl>
-                        <Button
-                            disabled={!url}
-                            sx={{ borderRadius: '12px', mt: 1, display: 'flex', flexShrink: 0 }}
-                            size='small'
-                            variant='contained'
-                            onClick={handleParseLinks}
-                        >
-                            Parse Input
-                        </Button>
+                        <Tooltip title={'Parse a list of links from the input text. Links can be separated by new line, tab or semicolon.'}>
+                            <Button
+                                disabled={!url}
+                                sx={{ borderRadius: '12px', mt: 1, display: 'flex', flexShrink: 0 }}
+                                size='small'
+                                variant='contained'
+                                onClick={handleParseLinks}
+                            >
+                                Parse Input
+                            </Button>
+                        </Tooltip>
                         <Button
                             disabled={!url}
                             sx={{ borderRadius: '12px', mt: 1, display: 'flex', flexShrink: 0 }}
