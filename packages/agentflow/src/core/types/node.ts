@@ -90,6 +90,7 @@ export interface InputParam {
     rows?: number
     description?: string
     acceptVariable?: boolean
+    acceptNodeOutputAsVariable?: boolean
     additionalParams?: boolean
     show?: Record<string, unknown>
     hide?: Record<string, unknown>

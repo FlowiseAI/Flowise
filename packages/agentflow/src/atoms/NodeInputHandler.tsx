@@ -210,13 +210,15 @@ export function NodeInputHandler({
                 }
                 if (isExpandable) {
                     return (
-                        <RichTextEditor
-                            value={typeof value === 'string' ? value : ''}
-                            onChange={(html) => handleDataChange(html)}
-                            placeholder={inputParam.placeholder}
-                            disabled={disabled}
-                            rows={inputParam.rows || 4}
-                        />
+                        <Box sx={{ mt: 1 }}>
+                            <RichTextEditor
+                                value={typeof value === 'string' ? value : ''}
+                                onChange={(html) => handleDataChange(html)}
+                                placeholder={inputParam.placeholder}
+                                disabled={disabled}
+                                rows={inputParam.rows || 4}
+                            />
+                        </Box>
                     )
                 }
                 return (
@@ -308,7 +310,7 @@ export function NodeInputHandler({
                     // acceptVariable: show a button that opens a dialog with JsonInput + variable support
                     return (
                         <Button
-                            sx={{ borderRadius: 25, width: '100%', mb: 0, mt: 2 }}
+                            sx={{ borderRadius: 25, width: '100%', mb: 0, mt: 1 }}
                             variant='outlined'
                             disabled={disabled}
                             onClick={() => setJsonDialogOpen(true)}

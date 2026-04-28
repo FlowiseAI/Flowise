@@ -3,6 +3,8 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState }
 import { Divider, List, ListItem, ListItemButton, Paper, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
+import { tokens } from '@/core/theme/tokens'
+
 /**
  * Shape of items returned by the TipTap suggestion `items()` callback.
  * Matches the UI package's SuggestionList item shape.
@@ -131,7 +133,7 @@ export const SuggestionDropdown = forwardRef<SuggestionDropdownRef, SuggestionDr
                                             alignItems: 'flex-start'
                                         }}
                                     >
-                                        <Typography variant='body1' sx={{ fontWeight: 500 }}>
+                                        <Typography variant='body1' sx={{ fontWeight: tokens.typography.fontWeight.medium }}>
                                             {item.label}
                                         </Typography>
                                         {item.description && (
