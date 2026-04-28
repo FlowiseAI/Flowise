@@ -17,6 +17,7 @@ import { WorkspaceUser } from '../database/entities/workspace-user.entity'
 import { OrganizationUserService } from '../services/organization-user.service'
 import { RoleService } from '../services/role.service'
 import { WorkspaceService } from '../services/workspace.service'
+import { assertQueryOrganizationMatchesActiveOrg, getLoggedInUser, userMayManageOrgUsers } from '../utils/tenantRequestGuards'
 
 export class OrganizationUserController {
     public async create(req: Request, res: Response, next: NextFunction) {
@@ -35,10 +36,13 @@ export class OrganizationUserController {
     public async read(req: Request, res: Response, next: NextFunction) {
         let queryRunner
         try {
+            const user = getLoggedInUser(req)
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             const query = req.query as OrganizationUserQuery
             const organizationUserservice = new OrganizationUserService()
+
+            assertQueryOrganizationMatchesActiveOrg(user, query.organizationId)
 
             let organizationUser:
                 | {
@@ -58,15 +62,32 @@ export class OrganizationUserController {
                     queryRunner
                 )
             } else if (query.organizationId && query.roleId) {
+                if (!userMayManageOrgUsers(user)) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
                 organizationUser = await organizationUserservice.readOrganizationUserByOrganizationIdRoleId(
                     query.organizationId,
                     query.roleId,
                     queryRunner
                 )
             } else if (query.organizationId) {
+                if (!userMayManageOrgUsers(user)) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
                 organizationUser = await organizationUserservice.readOrganizationUserByOrganizationId(query.organizationId, queryRunner)
             } else if (query.userId) {
-                organizationUser = await organizationUserservice.readOrganizationUserByUserId(query.userId, queryRunner)
+                if (query.userId !== user.id && !userMayManageOrgUsers(user)) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
+                if (query.userId === user.id) {
+                    organizationUser = await organizationUserservice.readOrganizationUserByUserId(query.userId, queryRunner)
+                } else {
+                    organizationUser = await organizationUserservice.readOrganizationUserByOrganizationIdUserId(
+                        user.activeOrganizationId,
+                        query.userId,
+                        queryRunner
+                    )
+                }
             } else {
                 throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
             }

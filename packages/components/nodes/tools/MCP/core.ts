@@ -13,10 +13,10 @@ export class MCPToolkit extends BaseToolkit {
     transport: StdioClientTransport | SSEClientTransport | StreamableHTTPClientTransport | null = null
     client: Client | null = null
     serverParams: StdioServerParameters | any
-    transportType: 'stdio' | 'sse'
+    transportType: 'stdio' | 'sse' | 'http'
     /** Per-invocation HTTP headers injected at tools/call time; overrides static toolkit headers for the same names. */
     getToolCallHeaders?: () => Promise<Record<string, string>>
-    constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse') {
+    constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse' | 'http') {
         super()
         this.serverParams = serverParams
         this.transportType = transportType
@@ -72,6 +72,7 @@ export class MCPToolkit extends BaseToolkit {
                 }
                 await client.connect(transport)
             } catch (error) {
+                console.error('Error connecting to MCP server', error)
                 if (headers) {
                     transport = new SSEClientTransport(baseUrl, {
                         requestInit: {

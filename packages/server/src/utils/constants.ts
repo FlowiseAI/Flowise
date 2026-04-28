@@ -108,6 +108,49 @@ export const INPUT_PARAMS_TYPE = [
     'tabs'
 ]
 
+export const ALLOWED_OAUTH2_TOKEN_FIELDS = [
+    'access_token',
+    'refresh_token',
+    'token_type',
+    'expires_in',
+    'scope',
+    'id_token',
+    'granted_scope'
+]
+
+export const DEFAULT_ALLOWED_OAUTH2_DOMAINS = [
+    'login.microsoftonline.com',
+    'oauth2.googleapis.com',
+    'accounts.google.com',
+    'github.com',
+    'login.salesforce.com',
+    'test.salesforce.com',
+    'oauth2.hubapi.com',
+    'api.hubapi.com',
+    'oauth.pipedrive.com',
+    'app.clickup.com',
+    'api.clickup.com',
+    'login.xero.com',
+    'identity.xero.com',
+    'oauth2.sky.blackbaud.com',
+    'app.asana.com',
+    'todoist.com',
+    'api.todoist.com',
+    'slack.com',
+    'oauth.pocketsmith.com',
+    'api.notion.com',
+    'api.dropboxapi.com',
+    'api.box.com',
+    'zoom.us',
+    'auth.atlassian.com',
+    'login.zoho.com',
+    'accounts.zoho.com',
+    'airtable.com',
+    'api.linear.app',
+    'discord.com',
+    'api.pipedream.com'
+]
+
 export const LICENSE_QUOTAS = {
     // Renew per month
     PREDICTIONS_LIMIT: 'quota:predictions',
