@@ -52,7 +52,7 @@ const SESSION_ENDPOINTS = [
 
 function isSessionEndpoint(url: string): boolean {
     const path = url.split('?')[0].toLowerCase()
-    return SESSION_ENDPOINTS.some((ep) => path.startsWith(ep))
+    return SESSION_ENDPOINTS.some((ep) => path === ep || path.startsWith(ep + '/'))
 }
 
 function parseAllowedOrigins(allowedOrigins: string): string[] {
@@ -85,10 +85,10 @@ export function getCorsOptions(): any {
                 // Block null origins (sandboxed iframes, data: URIs, file:// pages)
                 if (originLc === 'null') return originCallback(null, false)
 
-                // Session-issuing endpoints: ignore global wildcard, use CORS_AUTH_ORIGINS only
+                // Session-issuing endpoints: ignore global wildcard, use APP_URL origin or explicit CORS_ORIGINS list
                 if (isSessionEndpoint(req.url)) {
                     const authList = getAllowedAuthCorsOrigins()
-                    return originCallback(null, authList.includes(originLc))
+                    return originCallback(null, authList.includes(originLc) || allowedList.includes(originLc))
                 }
 
                 // Global allow: '*' or exact match
