@@ -44,6 +44,7 @@ import { AddChatFlowNameIndex1759424828558 } from './1759424828558-AddChatFlowNa
 import { FixDocumentStoreFileChunkLongText1765000000000 } from './1765000000000-FixDocumentStoreFileChunkLongText'
 import { AddApiKeyPermission1765360298674 } from './1765360298674-AddApiKeyPermission'
 import { AddReasonContentToChatMessage1764759496768 } from './1764759496768-AddReasonContentToChatMessage'
+import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mysql/1720230151482-AddAuthTables'
@@ -116,5 +117,6 @@ export const mysqlMigrations = [
     FixDocumentStoreFileChunkLongText1765000000000,
     AddApiKeyPermission1765360298674,
     AddReasonContentToChatMessage1764759496768,
+    AddCustomMcpServer1766000000000,
     AddMcpServerConfigToChatFlow1767000000000
 ]

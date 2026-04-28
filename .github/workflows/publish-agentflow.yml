@@ -18,12 +18,13 @@ on:
                 required: false
                 type: string
             tag:
-                description: 'npm dist-tag'
+                description: 'npm dist-tag (dev = internal, next = pre-release, latest = stable)'
                 required: false
                 type: choice
                 default: 'dev'
                 options:
                     - dev
+                    - next
                     - latest
 
 jobs:
@@ -42,7 +43,7 @@ jobs:
 
             - uses: actions/setup-node@v6
               with:
-                  node-version: '18.15.0'
+                  node-version: '20.20.2'
                   registry-url: 'https://registry.npmjs.org'
 
             - name: Validate custom version
@@ -107,7 +108,7 @@ jobs:
 
             - uses: actions/setup-node@v6
               with:
-                  node-version: '18.15.0'
+                  node-version: '20.20.2'
                   registry-url: 'https://registry.npmjs.org'
 
             - name: Install dependencies

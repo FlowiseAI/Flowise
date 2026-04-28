@@ -36,7 +36,7 @@ English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.
 
 ## ⚡Quick Start
 
-Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
+Download and Install [NodeJS](https://nodejs.org/en/download) >= 20.0.0
 
 1. Install Flowise
     ```bash

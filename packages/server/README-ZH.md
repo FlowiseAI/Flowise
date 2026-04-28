@@ -24,7 +24,7 @@
 
 ## 🌱 环境变量
 
-Flowise 支持不同的环境变量来配置您的实例。您可以在`packages/server`文件夹中的`.env`文件中指定以下变量。阅读[更多](https://docs.flowiseai.com/environment-variables)
+Flowise 支持不同的环境变量来配置您的实例。您可以在`packages/server`文件夹中的`.env`文件中指定以下变量。阅读[更多](https://docs.flowiseai.com/configuration/environment-variables)
 
 您还可以在使用`npx`时指定环境变量。例如：
 

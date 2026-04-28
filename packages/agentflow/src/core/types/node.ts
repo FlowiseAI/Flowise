@@ -21,7 +21,8 @@ export interface NodeDefinitionBase {
     badge?: string
     tags?: string[]
     documentation?: string
-    credential?: { credentialNames?: string[]; label?: string; type?: string; optional?: boolean }
+    /** Schema object (from API) or credential ID string (set at runtime when user selects a credential). */
+    credential?: string | { credentialNames?: string[]; label?: string; type?: string; optional?: boolean }
     inputAnchors?: InputAnchor[]
     outputAnchors?: OutputAnchor[]
     selected?: boolean
@@ -89,6 +90,7 @@ export interface InputParam {
     rows?: number
     description?: string
     acceptVariable?: boolean
+    acceptNodeOutputAsVariable?: boolean
     additionalParams?: boolean
     show?: Record<string, unknown>
     hide?: Record<string, unknown>

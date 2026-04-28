@@ -4,6 +4,13 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "anthropic.claude-opus-4-7-v1",
+                    "name": "anthropic.claude-opus-4-7-v1",
+                    "description": "Claude 4.7 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
                     "label": "anthropic.claude-opus-4-6-v1",
                     "name": "anthropic.claude-opus-4-6-v1",
                     "description": "Claude 4.6 Opus",
@@ -587,6 +594,13 @@
             "name": "chatAnthropic",
             "models": [
                 {
+                    "label": "claude-opus-4-7",
+                    "name": "claude-opus-4-7",
+                    "description": "Claude 4.7 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
                     "label": "claude-opus-4-6",
                     "name": "claude-opus-4-6",
                     "description": "Claude 4.6 Opus",
@@ -935,6 +949,13 @@
                     "output_cost": 3.75e-7
                 },
                 {
+                    "label": "claude-opus-4-7",
+                    "name": "claude-opus-4-7",
+                    "description": "Claude 4.7 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
                     "label": "claude-opus-4-6",
                     "name": "claude-opus-4-6",
                     "description": "Claude 4.6 Opus",
@@ -1255,6 +1276,18 @@
             "name": "chatOpenAI",
             "models": [
                 {
+                    "label": "gpt-5.5",
+                    "name": "gpt-5.5",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-5.5-pro",
+                    "name": "gpt-5.5-pro",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00018
+                },
+                {
                     "label": "gpt-5.4",
                     "name": "gpt-5.4",
                     "input_cost": 0.0000025,
@@ -1529,6 +1562,18 @@
         {
             "name": "chatOpenAI_LlamaIndex",
             "models": [
+                {
+                    "label": "gpt-5.5",
+                    "name": "gpt-5.5",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-5.5-pro",
+                    "name": "gpt-5.5-pro",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00018
+                },
                 {
                     "label": "gpt-4o",
                     "name": "gpt-4o",

@@ -4,6 +4,7 @@ import { Box, Button, IconButton, TextField, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconPlus, IconTrash } from '@tabler/icons-react'
 
+import { tokens } from '@/core/theme/tokens'
 import type { StateUpdate } from '@/core/types'
 
 import type { SuggestionItem } from './SuggestionDropdown'
@@ -66,7 +67,7 @@ export function StateKeyValueInput({ value, onChange, disabled = false, suggesti
                         mt: 1,
                         mb: 1,
                         border: 1,
-                        borderColor: theme.palette.grey[300],
+                        borderColor: theme.palette.divider,
                         borderRadius: 2,
                         position: 'relative'
                     }}
@@ -87,7 +88,7 @@ export function StateKeyValueInput({ value, onChange, disabled = false, suggesti
                         <IconTrash size={18} />
                     </IconButton>
 
-                    <Typography variant='body2' fontWeight={500} sx={{ mb: 0.5 }}>
+                    <Typography variant='body2' fontWeight={tokens.typography.fontWeight.medium} sx={{ mb: 0.5 }}>
                         Key
                     </Typography>
                     <TextField
@@ -99,7 +100,7 @@ export function StateKeyValueInput({ value, onChange, disabled = false, suggesti
                         onChange={(e) => handleKeyChange(index, e.target.value)}
                     />
 
-                    <Typography variant='body2' fontWeight={500} sx={{ mt: 1.5, mb: 0.5 }}>
+                    <Typography variant='body2' fontWeight={tokens.typography.fontWeight.medium} sx={{ mt: 1.5, mb: 0.5 }}>
                         Value
                     </Typography>
                     <VariableInput

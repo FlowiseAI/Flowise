@@ -25,6 +25,7 @@ import leadsRouter from './leads'
 import loadPromptRouter from './load-prompts'
 import logsRouter from './log'
 import marketplacesRouter from './marketplaces'
+import customMcpServersRouter from './custom-mcp-servers'
 import nodeConfigRouter from './node-configs'
 import nodeCustomFunctionRouter from './node-custom-functions'
 import nodeIconRouter from './node-icons'
@@ -126,6 +127,7 @@ router.use('/executions', executionsRouter)
 router.use('/validation', validationRouter)
 router.use('/agentflowv2-generator', agentflowv2GeneratorRouter)
 router.use('/text-to-speech', textToSpeechRouter)
+router.use('/custom-mcp-servers', customMcpServersRouter)
 router.use('/mcp-server', mcpServerRouter)
 router.use('/mcp', mcpEndpointRouter)
 

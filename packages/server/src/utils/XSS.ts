@@ -113,5 +113,34 @@ export function getAllowedIframeOrigins(): string {
     return origins
         .split(',')
         .map((s) => s.trim())
+        .filter(Boolean)
         .join(' ')
+}
+
+export function getIframeSecurityHeaders(): Record<string, string> {
+    const allowedOrigins = getAllowedIframeOrigins()
+
+    if (allowedOrigins === '*') {
+        return {
+            'Content-Security-Policy': 'frame-ancestors *'
+        }
+    }
+
+    if (allowedOrigins === "'self'") {
+        return {
+            'Content-Security-Policy': `frame-ancestors ${allowedOrigins}`,
+            'X-Frame-Options': 'SAMEORIGIN'
+        }
+    }
+
+    if (allowedOrigins === "'none'") {
+        return {
+            'Content-Security-Policy': `frame-ancestors ${allowedOrigins}`,
+            'X-Frame-Options': 'DENY'
+        }
+    }
+
+    return {
+        'Content-Security-Policy': `frame-ancestors ${allowedOrigins}`
+    }
 }

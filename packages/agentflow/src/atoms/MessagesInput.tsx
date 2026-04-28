@@ -127,10 +127,11 @@ export function MessagesInput({ inputParam, data, disabled = false, variableItem
                     key={effectiveKeys[index]}
                     sx={{
                         p: 2,
+                        mx: 2,
                         mt: 2,
                         mb: 1,
                         border: 1,
-                        borderColor: theme.palette.grey[900] + 25,
+                        borderColor: theme.palette.divider,
                         borderRadius: 2,
                         position: 'relative'
                     }}
@@ -219,13 +220,13 @@ export function MessagesInput({ inputParam, data, disabled = false, variableItem
             ))}
 
             {/* Add button */}
-            <Box sx={{ px: 2 }}>
+            <Box sx={{ px: 2, pb: 2 }}>
                 <Button
                     fullWidth
                     size='small'
                     variant='outlined'
                     disabled={isAddDisabled}
-                    sx={{ borderRadius: '16px', mt: 2 }}
+                    sx={{ borderRadius: '16px', mt: 1 }}
                     startIcon={<IconPlus />}
                     onClick={handleAddMessage}
                 >

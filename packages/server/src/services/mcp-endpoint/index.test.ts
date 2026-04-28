@@ -387,6 +387,54 @@ describe('handleMcpRequest', () => {
                 'Failed to build form input schema due to invalid configuration'
             )
         })
+
+        it('skips options field when addOptions is a string', async () => {
+            const chatflow = makeAgentflowWithFormInputs([
+                { type: 'options', label: 'Favorite Drink', name: 'favorite_drink', addOptions: '' }
+            ])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
+
+            const schema = mockMcpTool.mock.calls[0][2] as Record<string, any>
+            expect(schema.form.shape.favorite_drink).toBeUndefined()
+        })
+
+        it('skips options field when addOptions is undefined', async () => {
+            const chatflow = makeAgentflowWithFormInputs([
+                { type: 'options', label: 'Favorite Drink', name: 'favorite_drink', addOptions: undefined }
+            ])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
+
+            const schema = mockMcpTool.mock.calls[0][2] as Record<string, any>
+            expect(schema.form.shape.favorite_drink).toBeUndefined()
+        })
+
+        it('skips options field when addOptions is null', async () => {
+            const chatflow = makeAgentflowWithFormInputs([
+                { type: 'options', label: 'Favorite Drink', name: 'favorite_drink', addOptions: null }
+            ])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
+
+            const schema = mockMcpTool.mock.calls[0][2] as Record<string, any>
+            expect(schema.form.shape.favorite_drink).toBeUndefined()
+        })
+
+        it('skips options field when addOptions is an empty array', async () => {
+            const chatflow = makeAgentflowWithFormInputs([
+                { type: 'options', label: 'Favorite Drink', name: 'favorite_drink', addOptions: [] }
+            ])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
+
+            const schema = mockMcpTool.mock.calls[0][2] as Record<string, any>
+            expect(schema.form.shape.favorite_drink).toBeUndefined()
+        })
     })
 })
 

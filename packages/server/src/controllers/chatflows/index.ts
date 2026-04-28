@@ -268,7 +268,14 @@ const checkIfChatflowHasChanged = async (req: Request, res: Response, next: Next
                 `Error: chatflowsController.checkIfChatflowHasChanged - lastUpdatedDateTime not provided!`
             )
         }
-        const apiResponse = await chatflowsService.checkIfChatflowHasChanged(req.params.id, req.params.lastUpdatedDateTime)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                'Error: chatflowsController.checkIfChatflowHasChanged - active workspace ID not found!'
+            )
+        }
+        const apiResponse = await chatflowsService.checkIfChatflowHasChanged(req.params.id, req.params.lastUpdatedDateTime, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

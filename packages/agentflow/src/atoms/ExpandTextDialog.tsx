@@ -125,13 +125,15 @@ export function ExpandTextDialog({
                         <TextField
                             fullWidth
                             multiline
-                            minRows={15}
                             value={localValue}
                             disabled={disabled}
                             onChange={(e) => setLocalValue(e.target.value)}
                             placeholder={placeholder}
                             data-testid='source-input'
-                            inputProps={{ style: { fontFamily: 'monospace', fontSize: '0.85em' } }}
+                            sx={{
+                                '& .MuiInputBase-root': { height: 'calc(100vh - 220px)', alignItems: 'flex-start' },
+                                '& textarea': { height: '100% !important', overflowY: 'auto !important', boxSizing: 'border-box' }
+                            }}
                         />
                     ) : suggestionItems?.length ? (
                         <VariableInput

@@ -19,6 +19,7 @@ import {
 import { useTheme } from '@mui/material/styles'
 import { IconSparkles } from '@tabler/icons-react'
 
+import { tokens } from '@/core/theme/tokens'
 import type { FlowData } from '@/core/types'
 import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
@@ -161,7 +162,7 @@ function GenerateFlowDialogComponent({ open, onClose, onGenerated }: GenerateFlo
             onClose={loading ? undefined : onClose}
             aria-labelledby='generate-flow-dialog-title'
         >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='generate-flow-dialog-title'>
+            <DialogTitle sx={{ fontSize: tokens.typography.fontSize.lg }} id='generate-flow-dialog-title'>
                 What would you like to build?
             </DialogTitle>
             <DialogContent>
