@@ -147,7 +147,8 @@ export const DEFAULT_ALLOWED_OAUTH2_DOMAINS = [
     'accounts.zoho.com',
     'airtable.com',
     'api.linear.app',
-    'discord.com'
+    'discord.com',
+    'api.pipedream.com'
 ]
 
 export const LICENSE_QUOTAS = {
