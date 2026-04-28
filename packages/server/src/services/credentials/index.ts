@@ -178,12 +178,7 @@ const updateCredential = async (credentialId: string, requestBody: any, workspac
         }
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
         const incomingData = requestBody.plainDataObj ?? {}
-        const sanitizedData = Object.fromEntries(
-            Object.entries(incomingData).filter(
-                ([, v]) => typeof v !== 'string' || (!v.includes('\u2022\u2022\u2022\u2022\u2022\u2022') && v !== REDACTED_CREDENTIAL_VALUE)
-            )
-        )
-        requestBody.plainDataObj = { ...decryptedCredentialData, ...sanitizedData }
+        requestBody.plainDataObj = { ...decryptedCredentialData, ...incomingData }
         const updateCredential = await transformToCredentialEntity(requestBody)
         updateCredential.workspaceId = workspaceId
         await appServer.AppDataSource.getRepository(Credential).merge(credential, updateCredential)
