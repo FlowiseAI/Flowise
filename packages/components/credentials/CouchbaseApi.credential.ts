@@ -15,7 +15,7 @@ class CouchbaseApi implements INodeCredential {
             {
                 label: 'Couchbase Connection String',
                 name: 'connectionString',
-                type: 'password'
+                type: 'url'
             },
             {
                 label: 'Couchbase Username',

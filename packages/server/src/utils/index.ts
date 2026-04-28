@@ -1767,6 +1767,17 @@ export const transformToCredentialEntity = async (body: ICredentialReqBody): Pro
  * @param {IComponentCredentials} componentCredentials
  * @returns {ICredentialDataDecrypted}
  */
+const maskUrlPassword = (value: string): string | null => {
+    try {
+        const url = new URL(value)
+        if (!url.password) return null
+        url.password = 'FLOWISE_MASKED'
+        return url.toString().replace('FLOWISE_MASKED', '\u2022\u2022\u2022\u2022\u2022\u2022')
+    } catch {
+        return null
+    }
+}
+
 export const redactCredentialWithPasswordType = (
     componentCredentialName: string,
     decryptedCredentialObj: ICredentialDataDecrypted,
@@ -1774,8 +1785,16 @@ export const redactCredentialWithPasswordType = (
 ): ICredentialDataDecrypted => {
     const plainDataObj = cloneDeep(decryptedCredentialObj)
     for (const cred in plainDataObj) {
-        const inputParam = componentCredentials[componentCredentialName].inputs?.find((inp) => inp.type === 'password' && inp.name === cred)
-        if (inputParam) {
+        const inputs = componentCredentials[componentCredentialName].inputs
+        const inputParam = inputs?.find((inp) => inp.name === cred && (inp.type === 'password' || inp.type === 'url'))
+        if (!inputParam) continue
+        if (inputParam.type === 'url') {
+            const maskedUrl = typeof plainDataObj[cred] === 'string' ? maskUrlPassword(plainDataObj[cred]) : null
+            // Only redact if there was actually a password to mask; otherwise keep URL as-is
+            if (maskedUrl !== null) {
+                plainDataObj[cred] = maskedUrl
+            }
+        } else {
             plainDataObj[cred] = REDACTED_CREDENTIAL_VALUE
         }
     }

@@ -120,15 +120,20 @@ Flowise has 3 different modules in a single mono repository.
 
 Credential definitions live in `packages/components/credentials/`. Each input field has a `type` that controls both UI rendering and how the value is handled on the server.
 
-**Security rule: any field that contains a secret must use `type: 'password'`.**
+**Security rule: any field that contains a secret must use `type: 'url'` or `type: 'password'` — never `type: 'string'`.**
 
-The server redacts fields typed `password` before returning credential data to the client. Fields typed `string` are returned in plaintext. This means using `type: 'string'` for a sensitive field exposes the stored secret to any authenticated user with `credentials:view` permission.
+The server redacts both `url` and `password` fields before returning credential data to the client. Fields typed `string` are returned in plaintext, which exposes stored secrets to any authenticated user with `credentials:view` permission.
 
-Fields that must be `type: 'password'`:
+Use `type: 'url'` for connection strings with embedded credentials:
+
+-   Connection URLs that embed a username/password (e.g. `mongodb+srv://user:pass@host/db`, `redis://:pass@host`, `postgresql://user:pass@host/db`)
+-   Displayed with the password portion masked (e.g. `mongodb+srv://user:••••••@host/db`); users with edit permission can reveal the full URL
+
+Use `type: 'password'` for opaque secrets with no meaningful preview:
 
 -   API keys, access keys, secret keys, tokens
--   Connection URLs that may contain embedded credentials (e.g. `mongodb+srv://user:pass@host/db`, `redis://:pass@host`)
 -   JSON blobs containing private keys or certificates (e.g. Google service account JSON)
+-   Fully redacted in the UI; users must replace the entire value to update them
 
 Fields that are safe as `type: 'string'`:
 
@@ -136,7 +141,7 @@ Fields that are safe as `type: 'string'`:
 -   Region, host, port, database name, project ID
 -   Non-secret identifiers and configuration values
 
-If in doubt, use `type: 'password'`. The only cost is that the field is masked in the UI and must be re-entered on edit; the cost of using `type: 'string'` for a secret is that it is exposed via the API.
+If in doubt, use `type: 'password'`. The only cost is that the field must be re-entered on edit; the cost of using `type: 'string'` for a secret is that it is exposed via the API.
 
 ### Testing
 

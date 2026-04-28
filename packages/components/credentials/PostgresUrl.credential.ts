@@ -15,7 +15,7 @@ class PostgresUrl implements INodeCredential {
             {
                 label: 'Postgres URL',
                 name: 'postgresUrl',
-                type: 'password',
+                type: 'url',
                 placeholder: 'postgresql://localhost/mydb'
             }
         ]

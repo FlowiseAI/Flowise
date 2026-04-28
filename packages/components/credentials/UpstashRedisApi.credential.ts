@@ -17,7 +17,7 @@ class UpstashRedisApi implements INodeCredential {
             {
                 label: 'Upstash Redis REST URL',
                 name: 'upstashConnectionUrl',
-                type: 'password'
+                type: 'url'
             },
             {
                 label: 'Token',
