@@ -45,6 +45,7 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                 case 'Chatflow':
                     return <IconHierarchy size={20} />
                 case 'Custom Assistant':
+                case 'Agent':
                     return <IconRobot size={20} />
                 case 'Agentflow v2':
                     return <IconUsersGroup size={20} />
@@ -164,7 +165,7 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                                 <Chip
                                                     variant='outlined'
                                                     size='small'
-                                                    label={'Chain: ' + dialogProps.data.metrics[index]?.chain}
+                                                    label={'Flow Latency: ' + dialogProps.data.metrics[index]?.chain}
                                                 />
                                             )}
                                             {dialogProps.data.metrics[index]?.retriever && (

@@ -7,6 +7,7 @@ import Account from '@/views/account'
 import Executions from '@/views/agentexecutions'
 import Agentflows from '@/views/agentflows'
 import APIKey from '@/views/apikey'
+import Agents from '@/views/agents'
 import Assistants from '@/views/assistants'
 import Login from '@/views/auth/login'
 import LoginActivityPage from '@/views/auth/loginActivity'
@@ -38,6 +39,7 @@ export const DefaultRedirect = () => {
 
     // Define the order of routes to check (based on the menu order in dashboard.js)
     const routesToCheck = [
+        { component: Agents, permission: 'agents:view' },
         { component: Chatflows, permission: 'chatflows:view' },
         { component: Agentflows, permission: 'agentflows:view' },
         { component: Executions, permission: 'executions:view' },
@@ -68,14 +70,14 @@ export const DefaultRedirect = () => {
         return <Login />
     }
 
-    // For open source, show chatflows (no permission checks)
+    // For open source, show agents (no permission checks)
     if (isOpenSource) {
-        return <Chatflows />
+        return <Agents />
     }
 
-    // For global admins, show chatflows (they have access to everything)
+    // For global admins, show agents (they have access to everything)
     if (isGlobal) {
-        return <Chatflows />
+        return <Agents />
     }
 
     // Check each route in order and return the first accessible component

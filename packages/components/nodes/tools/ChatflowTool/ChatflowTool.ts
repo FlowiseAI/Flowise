@@ -141,8 +141,8 @@ class ChatflowTool_Tools implements INode {
                     type = 'AgentflowV2'
                 } else if (type === 'MULTIAGENT') {
                     type = 'AgentflowV1'
-                } else if (type === 'ASSISTANT') {
-                    type = 'Custom Assistant'
+                } else if (type === 'ASSISTANT' || type === 'AGENT') {
+                    type = 'Agent'
                 } else {
                     type = 'Chatflow'
                 }

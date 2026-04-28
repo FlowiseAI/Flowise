@@ -15,7 +15,7 @@ import MainCard from '@/ui-component/cards/MainCard'
 import Transitions from '@/ui-component/extended/Transitions'
 import settings from '@/menu-items/settings'
 import agentsettings from '@/menu-items/agentsettings'
-import customAssistantSettings from '@/menu-items/customassistant'
+import agentSettings from '@/menu-items/agentsettings'
 import { useAuth } from '@/hooks/useAuth'
 
 // ==============================|| SETTINGS ||============================== //
@@ -46,13 +46,20 @@ const Settings = ({ chatflow, isSettingsOpen, isCustomAssistant, anchorEl, isAge
 
     useEffect(() => {
         if (chatflow && !chatflow.id) {
-            const menus = isAgentCanvas ? agentsettings : settings
-            const settingsMenu = menus.children.filter((menu) => menu.id === 'loadChatflow')
-            setSettingsMenu(settingsMenu)
+            if (isCustomAssistant) {
+                // New agent at /agents/new — only show Load Agent
+                const menus = agentSettings
+                setSettingsMenu(menus.children.filter((menu) => menu.id === 'loadAgent'))
+            } else {
+                const menus = isAgentCanvas ? agentsettings : settings
+                const settingsMenu = menus.children.filter((menu) => menu.id === 'loadChatflow' || menu.id === 'loadAgent')
+                setSettingsMenu(settingsMenu)
+            }
         } else if (chatflow && chatflow.id) {
             if (isCustomAssistant) {
-                const menus = customAssistantSettings
-                setSettingsMenu(menus.children)
+                const menus = agentSettings
+                // Hide Load Agent for existing agents — only available on /agents/new
+                setSettingsMenu(menus.children.filter((menu) => menu.id !== 'loadAgent'))
             } else {
                 const menus = isAgentCanvas ? agentsettings : settings
                 setSettingsMenu(menus.children)
@@ -92,7 +99,7 @@ const Settings = ({ chatflow, isSettingsOpen, isCustomAssistant, anchorEl, isAge
                     pl: `24px`
                 }}
                 onClick={() => {
-                    if (menu.id === 'loadChatflow' && inputFile) {
+                    if ((menu.id === 'loadChatflow' || menu.id === 'loadAgent') && inputFile) {
                         inputFile?.current.click()
                     } else {
                         onSettingsItemClick(menu.id)

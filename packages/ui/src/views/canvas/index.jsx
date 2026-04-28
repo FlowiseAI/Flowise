@@ -166,6 +166,27 @@ const Canvas = () => {
     const handleLoadFlow = (file) => {
         try {
             const flowData = JSON.parse(file)
+            const expectedType = isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW'
+            if (flowData.type && flowData.type !== expectedType) {
+                enqueueSnackbar({
+                    message: `Invalid file: expected ${expectedType} type but got ${flowData.type}`,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <button
+                                style={{ color: 'white', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                                onClick={() => closeSnackbar(key)}
+                            >
+                                ✕
+                            </button>
+                        )
+                    }
+                })
+                return
+            }
+            delete flowData.type
             const nodes = flowData.nodes || []
 
             setNodes(nodes)
@@ -432,7 +453,7 @@ const Canvas = () => {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
-            window.history.replaceState(state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
+            window.history.replaceState(window.history.state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
             errorFailed(`Failed to retrieve ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         }

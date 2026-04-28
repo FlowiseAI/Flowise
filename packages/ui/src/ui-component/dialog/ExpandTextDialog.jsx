@@ -118,7 +118,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
                                     borderColor: theme.palette.grey['500'],
                                     borderRadius: '12px',
                                     height: '100%',
-                                    maxHeight: languageType === 'js' ? 'calc(100vh - 250px)' : 'calc(100vh - 220px)',
+                                    maxHeight: inputParam.type === 'code' ? 'calc(100vh - 250px)' : 'calc(100vh - 220px)',
                                     overflowX: 'hidden',
                                     backgroundColor: 'white'
                                 }}
@@ -126,19 +126,19 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
                                 <CodeEditor
                                     disabled={dialogProps.disabled}
                                     value={inputValue}
-                                    height={languageType === 'js' ? 'calc(100vh - 250px)' : 'calc(100vh - 220px)'}
+                                    height={inputParam.type === 'code' ? 'calc(100vh - 250px)' : 'calc(100vh - 220px)'}
                                     theme={customization.isDarkMode ? 'dark' : 'light'}
                                     lang={languageType}
                                     placeholder={inputParam.placeholder}
                                     basicSetup={
-                                        languageType !== 'js'
-                                            ? {
+                                        inputParam.type === 'code'
+                                            ? {}
+                                            : {
                                                   lineNumbers: false,
                                                   foldGutter: false,
                                                   autocompletion: false,
                                                   highlightActiveLine: false
                                               }
-                                            : {}
                                     }
                                     onValueChange={(code) => setInputValue(code)}
                                 />

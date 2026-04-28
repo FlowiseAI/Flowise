@@ -9,7 +9,7 @@ import { AppBar, Box, CssBaseline, Toolbar, useMediaQuery } from '@mui/material'
 // project imports
 import Header from './Header'
 import Sidebar from './Sidebar'
-import { drawerWidth, headerHeight } from '@/store/constant'
+import { drawerWidth, miniDrawerWidth, headerHeight } from '@/store/constant'
 import { SET_MENU } from '@/store/actions'
 
 // styles
@@ -25,8 +25,8 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
         }),
         marginRight: 0,
         [theme.breakpoints.up('md')]: {
-            marginLeft: -drawerWidth,
-            width: `calc(100% - ${drawerWidth}px)`
+            marginLeft: 0,
+            width: `calc(100% - ${miniDrawerWidth}px)`
         },
         [theme.breakpoints.down('md')]: {
             marginLeft: '20px',

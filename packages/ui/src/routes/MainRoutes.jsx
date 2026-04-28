@@ -6,6 +6,7 @@ import Loadable from '@/ui-component/loading/Loadable'
 
 import { RequireAuth } from '@/routes/RequireAuth'
 import { DefaultRedirect } from '@/routes/DefaultRedirect'
+import { Navigate } from 'react-router-dom'
 
 // chatflows routing
 const Chatflows = Loadable(lazy(() => import('@/views/chatflows')))
@@ -22,11 +23,15 @@ const APIKey = Loadable(lazy(() => import('@/views/apikey')))
 // tools routing
 const Tools = Loadable(lazy(() => import('@/views/tools')))
 
+// agents routing (custom assistants rebranded)
+const Agents = Loadable(lazy(() => import('@/views/agents')))
+const AgentConfigurePreview = Loadable(lazy(() => import('@/views/agents/AgentConfigurePreview')))
+
 // assistants routing
 const Assistants = Loadable(lazy(() => import('@/views/assistants')))
 const OpenAIAssistantLayout = Loadable(lazy(() => import('@/views/assistants/openai/OpenAIAssistantLayout')))
 const CustomAssistantLayout = Loadable(lazy(() => import('@/views/assistants/custom/CustomAssistantLayout')))
-const CustomAssistantConfigurePreview = Loadable(lazy(() => import('@/views/assistants/custom/CustomAssistantConfigurePreview')))
+// CustomAssistantConfigurePreview is now used via AgentConfigurePreview wrapper at /agents/:id
 
 // credentials routing
 const Credentials = Loadable(lazy(() => import('@/views/credentials')))
@@ -129,6 +134,30 @@ const MainRoutes = {
             )
         },
         {
+            path: '/agents',
+            element: (
+                <RequireAuth permission={'agents:view'}>
+                    <Agents />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/agents/:id',
+            element: (
+                <RequireAuth permission={'agents:view'}>
+                    <AgentConfigurePreview />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/marketplace/agents/:id',
+            element: (
+                <RequireAuth permission={'templates:marketplace,templates:custom'}>
+                    <AgentConfigurePreview />
+                </RequireAuth>
+            )
+        },
+        {
             path: '/assistants',
             element: (
                 <RequireAuth permission={'assistants:view'}>
@@ -146,11 +175,7 @@ const MainRoutes = {
         },
         {
             path: '/assistants/custom/:id',
-            element: (
-                <RequireAuth permission={'assistants:view'}>
-                    <CustomAssistantConfigurePreview />
-                </RequireAuth>
-            )
+            element: <Navigate to='/agents' replace />
         },
         {
             path: '/assistants/openai',

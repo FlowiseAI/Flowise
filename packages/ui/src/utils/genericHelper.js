@@ -567,12 +567,13 @@ const _removeCredentialId = (obj) => {
     const newObj = {}
     for (const [key, value] of Object.entries(obj)) {
         if (key === 'FLOWISE_CREDENTIAL_ID') continue
+        if (key === 'credential') continue
         newObj[key] = _removeCredentialId(value)
     }
     return newObj
 }
 
-export const generateExportFlowData = (flowData) => {
+export const generateExportFlowData = (flowData, type) => {
     const nodes = flowData.nodes
     const edges = flowData.edges
 
@@ -620,6 +621,7 @@ export const generateExportFlowData = (flowData) => {
         nodes,
         edges
     }
+    if (type) exportJson.type = type
     return exportJson
 }
 

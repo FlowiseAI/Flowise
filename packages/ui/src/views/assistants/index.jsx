@@ -14,16 +14,17 @@ import { IconRobotFace, IconBrandOpenai } from '@tabler/icons-react'
 
 const cards = [
     {
-        title: 'Custom Assistant',
-        description: 'Create custom assistant using your choice of LLMs',
+        title: 'Agent',
+        description: 'Custom Assistant has been moved to Agents. You can now find it under the Agents section in the sidebar.',
         icon: <IconRobotFace />,
         iconText: 'Custom',
-        gradient: 'linear-gradient(135deg, #fff8e14e 0%, #ffcc802f 100%)'
+        gradient: 'linear-gradient(135deg, #fff8e14e 0%, #ffcc802f 100%)',
+        deprecated: true,
+        deprecatedLabel: 'Moved to Agents'
     },
     {
         title: 'OpenAI Assistant',
-        description:
-            'Create assistant using OpenAI Assistant API. This option is being deprecated; consider using Custom Assistant instead.',
+        description: 'Create assistant using OpenAI Assistant API. This option is being deprecated; consider using Agent instead.',
         icon: <IconBrandOpenai />,
         iconText: 'OpenAI',
         gradient: 'linear-gradient(135deg, #c9ffd85f 0%, #a0f0b567 100%)',
@@ -59,7 +60,7 @@ const FeatureCards = () => {
     const customization = useSelector((state) => state.customization)
 
     const onCardClick = (index) => {
-        if (index === 0) navigate('/assistants/custom')
+        if (index === 0) navigate('/agents')
         if (index === 1) navigate('/assistants/openai')
     }
 
@@ -100,6 +101,7 @@ const FeatureCards = () => {
                                 {card.icon}
                                 <span className='text-xs uppercase'>{card.iconText}</span>
                             </FeatureIcon>
+                            {card.deprecated && <Chip label={card.deprecatedLabel} size='small' color='info' sx={{ fontWeight: 600 }} />}
                             {card.deprecating && <Chip label='Deprecating' size='small' color='warning' sx={{ fontWeight: 600 }} />}
                         </Stack>
                         <h2 className='text-2xl font-bold mb-2'>{card.title}</h2>

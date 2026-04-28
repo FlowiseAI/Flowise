@@ -18,7 +18,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // Icons
-import { IconX, IconFiles } from '@tabler/icons-react'
+import { IconX, IconRobot } from '@tabler/icons-react'
 
 // API
 import assistantsApi from '@/api/assistants'
@@ -58,7 +58,7 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
             const createResp = await assistantsApi.createNewAssistant(obj)
             if (createResp.data) {
                 enqueueSnackbar({
-                    message: 'New Custom Assistant created.',
+                    message: 'New Agent created.',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -73,7 +73,7 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
             }
         } catch (err) {
             enqueueSnackbar({
-                message: `Failed to add new Custom Assistant: ${
+                message: `Failed to add new Agent: ${
                     typeof err.response.data === 'object' ? err.response.data.message : err.response.data
                 }`,
                 options: {
@@ -102,7 +102,7 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
         >
             <DialogTitle style={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <IconFiles style={{ marginRight: '10px' }} />
+                    <IconRobot style={{ marginRight: '10px' }} />
                     {dialogProps.title}
                 </div>
             </DialogTitle>

@@ -9,6 +9,7 @@ import { styled } from '@mui/material/styles'
 import { tableCellClasses } from '@mui/material/TableCell'
 import {
     Box,
+    Fade,
     Skeleton,
     Stack,
     Table,
@@ -537,112 +538,114 @@ const Roles = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Roles' title='Roles'>
-                            <StyledPermissionButton
-                                permissionId={'roles:manage'}
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
-                                id='btn_createUser'
-                            >
-                                Add Role
-                            </StyledPermissionButton>
-                        </ViewHeader>
-                        {!isLoading && roles.length === 0 ? (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={roles_emptySVG}
-                                        alt='roles_emptySVG'
-                                    />
-                                </Box>
-                                <div>No Roles Yet</div>
-                            </Stack>
-                        ) : (
-                            <>
-                                <Stack flexDirection='row'>
-                                    <Box sx={{ p: 2, height: 'auto', width: '100%' }}>
-                                        <TableContainer
-                                            style={{ display: 'flex', flexDirection: 'row' }}
-                                            sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                            component={Paper}
-                                        >
-                                            <Table sx={{ minWidth: 650 }} aria-label='users table'>
-                                                <TableHead
-                                                    sx={{
-                                                        backgroundColor: customization.isDarkMode
-                                                            ? theme.palette.common.black
-                                                            : theme.palette.grey[100],
-                                                        height: 56
-                                                    }}
-                                                >
-                                                    <TableRow>
-                                                        <StyledTableCell>Name</StyledTableCell>
-                                                        <StyledTableCell>Description</StyledTableCell>
-                                                        <StyledTableCell>Permissions</StyledTableCell>
-                                                        <StyledTableCell>Assigned Users</StyledTableCell>
-                                                        <StyledTableCell> </StyledTableCell>
-                                                    </TableRow>
-                                                </TableHead>
-                                                <TableBody>
-                                                    {isLoading ? (
-                                                        <>
-                                                            <StyledTableRow>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                            </StyledTableRow>
-                                                            <StyledTableRow>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                            </StyledTableRow>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            {roles.filter(filterUsers).map((role, index) => (
-                                                                <ShowRoleRow
-                                                                    role={role}
-                                                                    key={index}
-                                                                    onEditClick={edit}
-                                                                    onViewClick={view}
-                                                                    onDeleteClick={deleteRole}
-                                                                />
-                                                            ))}
-                                                        </>
-                                                    )}
-                                                </TableBody>
-                                            </Table>
-                                        </TableContainer>
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Roles' title='Roles'>
+                                <StyledPermissionButton
+                                    permissionId={'roles:manage'}
+                                    variant='contained'
+                                    sx={{ borderRadius: 2, height: '100%' }}
+                                    onClick={addNew}
+                                    startIcon={<IconPlus />}
+                                    id='btn_createUser'
+                                >
+                                    Add Role
+                                </StyledPermissionButton>
+                            </ViewHeader>
+                            {!isLoading && roles.length === 0 ? (
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                    <Box sx={{ p: 2, height: 'auto' }}>
+                                        <img
+                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                            src={roles_emptySVG}
+                                            alt='roles_emptySVG'
+                                        />
                                     </Box>
+                                    <div>No Roles Yet</div>
                                 </Stack>
-                            </>
-                        )}
-                    </Stack>
+                            ) : (
+                                <>
+                                    <Stack flexDirection='row'>
+                                        <Box sx={{ p: 2, height: 'auto', width: '100%' }}>
+                                            <TableContainer
+                                                style={{ display: 'flex', flexDirection: 'row' }}
+                                                sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                                component={Paper}
+                                            >
+                                                <Table sx={{ minWidth: 650 }} aria-label='users table'>
+                                                    <TableHead
+                                                        sx={{
+                                                            backgroundColor: customization.isDarkMode
+                                                                ? theme.palette.common.black
+                                                                : theme.palette.grey[100],
+                                                            height: 56
+                                                        }}
+                                                    >
+                                                        <TableRow>
+                                                            <StyledTableCell>Name</StyledTableCell>
+                                                            <StyledTableCell>Description</StyledTableCell>
+                                                            <StyledTableCell>Permissions</StyledTableCell>
+                                                            <StyledTableCell>Assigned Users</StyledTableCell>
+                                                            <StyledTableCell> </StyledTableCell>
+                                                        </TableRow>
+                                                    </TableHead>
+                                                    <TableBody>
+                                                        {isLoading ? (
+                                                            <>
+                                                                <StyledTableRow>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                </StyledTableRow>
+                                                                <StyledTableRow>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                </StyledTableRow>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                {roles.filter(filterUsers).map((role, index) => (
+                                                                    <ShowRoleRow
+                                                                        role={role}
+                                                                        key={index}
+                                                                        onEditClick={edit}
+                                                                        onViewClick={view}
+                                                                        onDeleteClick={deleteRole}
+                                                                    />
+                                                                ))}
+                                                            </>
+                                                        )}
+                                                    </TableBody>
+                                                </Table>
+                                            </TableContainer>
+                                        </Box>
+                                    </Stack>
+                                </>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             {showCreateEditDialog && (

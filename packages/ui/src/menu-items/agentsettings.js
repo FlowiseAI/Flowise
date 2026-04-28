@@ -26,7 +26,7 @@ const icons = {
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 
-const agent_settings = {
+const agentSettings = {
     id: 'settings',
     title: '',
     type: 'group',
@@ -46,12 +46,12 @@ const agent_settings = {
             icon: icons.IconUsers
         },
         {
-            id: 'chatflowConfiguration',
+            id: 'agentConfiguration',
             title: 'Configuration',
             type: 'item',
             url: '',
             icon: icons.IconAdjustmentsHorizontal,
-            permission: 'agentflows:config'
+            permission: 'agents:update'
         },
         {
             id: 'saveAsTemplate',
@@ -62,38 +62,38 @@ const agent_settings = {
             permission: 'templates:flowexport'
         },
         {
-            id: 'duplicateChatflow',
-            title: 'Duplicate Agents',
+            id: 'duplicateAgent',
+            title: 'Duplicate Agent',
             type: 'item',
             url: '',
             icon: icons.IconCopy,
-            permission: 'agentflows:duplicate'
+            permission: 'agents:create'
         },
         {
-            id: 'loadChatflow',
-            title: 'Load Agents',
+            id: 'loadAgent',
+            title: 'Load Agent',
             type: 'item',
             url: '',
             icon: icons.IconFileUpload,
-            permission: 'agentflows:import'
+            permission: 'agents:create'
         },
         {
-            id: 'exportChatflow',
-            title: 'Export Agents',
+            id: 'exportAgent',
+            title: 'Export Agent',
             type: 'item',
             url: '',
             icon: icons.IconFileExport,
-            permission: 'agentflows:export'
+            permission: 'agents:update'
         },
         {
-            id: 'deleteChatflow',
-            title: 'Delete Agents',
+            id: 'deleteAgent',
+            title: 'Delete Agent',
             type: 'item',
             url: '',
             icon: icons.IconTrash,
-            permission: 'agentflows:delete'
+            permission: 'agents:delete'
         }
     ]
 }
 
-export default agent_settings
+export default agentSettings

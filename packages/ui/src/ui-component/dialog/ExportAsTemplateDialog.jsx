@@ -50,6 +50,8 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                 setFlowType('Agentflow')
             } else if (dialogProps.chatflow.type === 'CHATFLOW') {
                 setFlowType('Chatflow')
+            } else if (dialogProps.chatflow.type === 'AGENT' || dialogProps.chatflow.type === 'ASSISTANT') {
+                setFlowType('Agent')
             }
         }
 

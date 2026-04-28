@@ -80,9 +80,9 @@ export const evaluators = [
     },
     {
         type: 'numeric',
-        label: 'Chatflow Latency',
+        label: 'Flow Latency',
         name: 'chain',
-        description: 'Actual time spent in executing the chatflow (milliseconds).'
+        description: 'Actual time spent in executing the flow (milliseconds).'
     },
     {
         type: 'numeric',

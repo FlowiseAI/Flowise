@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import {
     IconButton,
     Checkbox,
+    Fade,
     Skeleton,
     Box,
     TableRow,
@@ -309,227 +310,229 @@ const WorkspaceDetails = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            isBackButton={true}
-                            isEditButton={false}
-                            onBack={() => window.history.back()}
-                            search={workspaceUsers.length > 0}
-                            onSearchChange={onSearchChange}
-                            searchPlaceholder={'Search Users'}
-                            title={(workspace?.name || '') + ': Workspace Users'}
-                            description={'Manage workspace users and permissions.'}
-                        >
-                            {workspaceUsers.length > 0 && (
-                                <>
-                                    <PermissionButton
-                                        permissionId={'workspace:unlink-user'}
-                                        sx={{ borderRadius: 2, height: '100%' }}
-                                        variant='outlined'
-                                        disabled={usersSelected.length === 0}
-                                        onClick={unlinkUser}
-                                        color='error'
-                                        startIcon={<IconUnlink />}
-                                    >
-                                        Remove Users
-                                    </PermissionButton>
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            <ViewHeader
+                                isBackButton={true}
+                                isEditButton={false}
+                                onBack={() => window.history.back()}
+                                search={workspaceUsers.length > 0}
+                                onSearchChange={onSearchChange}
+                                searchPlaceholder={'Search Users'}
+                                title={(workspace?.name || '') + ': Workspace Users'}
+                                description={'Manage workspace users and permissions.'}
+                            >
+                                {workspaceUsers.length > 0 && (
+                                    <>
+                                        <PermissionButton
+                                            permissionId={'workspace:unlink-user'}
+                                            sx={{ borderRadius: 2, height: '100%' }}
+                                            variant='outlined'
+                                            disabled={usersSelected.length === 0}
+                                            onClick={unlinkUser}
+                                            color='error'
+                                            startIcon={<IconUnlink />}
+                                        >
+                                            Remove Users
+                                        </PermissionButton>
+                                        <StyledPermissionButton
+                                            permissionId={'workspace:add-user'}
+                                            variant='contained'
+                                            sx={{ borderRadius: 2, height: '100%' }}
+                                            onClick={addUser}
+                                            startIcon={<IconUserPlus />}
+                                        >
+                                            Add User
+                                        </StyledPermissionButton>
+                                    </>
+                                )}
+                            </ViewHeader>
+                            {!isLoading && workspaceUsers?.length <= 0 ? (
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                    <Box sx={{ p: 2, height: 'auto' }}>
+                                        <img
+                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                            src={empty_datasetSVG}
+                                            alt='empty_datasetSVG'
+                                        />
+                                    </Box>
+                                    <div>No Assigned Users Yet</div>
                                     <StyledPermissionButton
                                         permissionId={'workspace:add-user'}
                                         variant='contained'
-                                        sx={{ borderRadius: 2, height: '100%' }}
-                                        onClick={addUser}
+                                        sx={{ borderRadius: 2, height: '100%', mt: 2, color: 'white' }}
                                         startIcon={<IconUserPlus />}
+                                        onClick={addUser}
                                     >
                                         Add User
                                     </StyledPermissionButton>
-                                </>
-                            )}
-                        </ViewHeader>
-                        {!isLoading && workspaceUsers?.length <= 0 ? (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={empty_datasetSVG}
-                                        alt='empty_datasetSVG'
-                                    />
-                                </Box>
-                                <div>No Assigned Users Yet</div>
-                                <StyledPermissionButton
-                                    permissionId={'workspace:add-user'}
-                                    variant='contained'
-                                    sx={{ borderRadius: 2, height: '100%', mt: 2, color: 'white' }}
-                                    startIcon={<IconUserPlus />}
-                                    onClick={addUser}
-                                >
-                                    Add User
-                                </StyledPermissionButton>
-                            </Stack>
-                        ) : (
-                            <>
-                                <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                    component={Paper}
-                                >
-                                    <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-                                        <TableHead
-                                            sx={{
-                                                backgroundColor: customization.isDarkMode
-                                                    ? theme.palette.common.black
-                                                    : theme.palette.grey[100],
-                                                height: 56
-                                            }}
-                                        >
-                                            <TableRow>
-                                                <StyledTableCell padding='checkbox'>
-                                                    <Checkbox
-                                                        color='primary'
-                                                        checked={usersSelected.length === (workspaceUsers || []).length - 1}
-                                                        onChange={onUsersSelectAllClick}
-                                                        inputProps={{
-                                                            'aria-label': 'select all'
-                                                        }}
-                                                    />
-                                                </StyledTableCell>
-                                                <StyledTableCell>Email/Name</StyledTableCell>
-                                                <StyledTableCell>Role</StyledTableCell>
-                                                <StyledTableCell>Status</StyledTableCell>
-                                                <StyledTableCell>Last Login</StyledTableCell>
-                                                <StyledTableCell> </StyledTableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {isLoading ? (
-                                                <>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {(workspaceUsers || []).filter(filterUsers).map((item, index) => (
-                                                        <StyledTableRow
-                                                            hover
-                                                            key={index}
-                                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                                        >
-                                                            <StyledTableCell padding='checkbox'>
-                                                                {item.isOrgOwner ? null : (
-                                                                    <Checkbox
-                                                                        color='primary'
-                                                                        checked={isUserSelected(item.userId)}
-                                                                        onChange={(event) => handleUserSelect(event, item)}
-                                                                        inputProps={{
-                                                                            'aria-labelledby': item.userId
-                                                                        }}
-                                                                    />
-                                                                )}
+                                </Stack>
+                            ) : (
+                                <>
+                                    <TableContainer
+                                        sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                        component={Paper}
+                                    >
+                                        <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                                            <TableHead
+                                                sx={{
+                                                    backgroundColor: customization.isDarkMode
+                                                        ? theme.palette.common.black
+                                                        : theme.palette.grey[100],
+                                                    height: 56
+                                                }}
+                                            >
+                                                <TableRow>
+                                                    <StyledTableCell padding='checkbox'>
+                                                        <Checkbox
+                                                            color='primary'
+                                                            checked={usersSelected.length === (workspaceUsers || []).length - 1}
+                                                            onChange={onUsersSelectAllClick}
+                                                            inputProps={{
+                                                                'aria-label': 'select all'
+                                                            }}
+                                                        />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>Email/Name</StyledTableCell>
+                                                    <StyledTableCell>Role</StyledTableCell>
+                                                    <StyledTableCell>Status</StyledTableCell>
+                                                    <StyledTableCell>Last Login</StyledTableCell>
+                                                    <StyledTableCell> </StyledTableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {isLoading ? (
+                                                    <>
+                                                        <StyledTableRow>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
                                                             </StyledTableCell>
                                                             <StyledTableCell>
-                                                                {item.user.name && (
-                                                                    <>
-                                                                        {item.user.name}
-                                                                        <br />
-                                                                    </>
-                                                                )}
-                                                                {item.user.email}
+                                                                <Skeleton variant='text' />
                                                             </StyledTableCell>
                                                             <StyledTableCell>
-                                                                {item.isOrgOwner ? (
-                                                                    <Chip size='small' label={'ORGANIZATION OWNER'} />
-                                                                ) : (
-                                                                    item.role.name
-                                                                )}
+                                                                <Skeleton variant='text' />
                                                             </StyledTableCell>
                                                             <StyledTableCell>
-                                                                {item.isOrgOwner ? (
-                                                                    <></>
-                                                                ) : (
-                                                                    <>
-                                                                        {'ACTIVE' === item.status.toUpperCase() && (
-                                                                            <Chip color={'success'} label={item.status.toUpperCase()} />
-                                                                        )}
-                                                                        {'INVITED' === item.status.toUpperCase() && (
-                                                                            <Chip color={'warning'} label={item.status.toUpperCase()} />
-                                                                        )}
-                                                                        {'INACTIVE' === item.status.toUpperCase() && (
-                                                                            <Chip color={'error'} label={item.status.toUpperCase()} />
-                                                                        )}
-                                                                    </>
-                                                                )}
+                                                                <Skeleton variant='text' />
                                                             </StyledTableCell>
                                                             <StyledTableCell>
-                                                                {!item.lastLogin
-                                                                    ? 'Never'
-                                                                    : moment(item.lastLogin).format('DD/MM/YYYY HH:mm')}
+                                                                <Skeleton variant='text' />
                                                             </StyledTableCell>
                                                             <StyledTableCell>
-                                                                {!item.isOrgOwner && item.status.toUpperCase() === 'INVITED' && (
-                                                                    <IconButton
-                                                                        title='Edit'
-                                                                        color='primary'
-                                                                        onClick={() => onEditClick(item)}
-                                                                    >
-                                                                        <IconEdit />
-                                                                    </IconButton>
-                                                                )}
-                                                                {!item.isOrgOwner && item.status.toUpperCase() === 'ACTIVE' && (
-                                                                    <IconButton
-                                                                        title='Change Role'
-                                                                        color='primary'
-                                                                        onClick={() => onEditClick(item)}
-                                                                    >
-                                                                        <IconEdit />
-                                                                    </IconButton>
-                                                                )}
+                                                                <Skeleton variant='text' />
                                                             </StyledTableCell>
                                                         </StyledTableRow>
-                                                    ))}
-                                                </>
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                            </>
-                        )}
-                    </Stack>
+                                                        <StyledTableRow>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                        </StyledTableRow>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        {(workspaceUsers || []).filter(filterUsers).map((item, index) => (
+                                                            <StyledTableRow
+                                                                hover
+                                                                key={index}
+                                                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                            >
+                                                                <StyledTableCell padding='checkbox'>
+                                                                    {item.isOrgOwner ? null : (
+                                                                        <Checkbox
+                                                                            color='primary'
+                                                                            checked={isUserSelected(item.userId)}
+                                                                            onChange={(event) => handleUserSelect(event, item)}
+                                                                            inputProps={{
+                                                                                'aria-labelledby': item.userId
+                                                                            }}
+                                                                        />
+                                                                    )}
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    {item.user.name && (
+                                                                        <>
+                                                                            {item.user.name}
+                                                                            <br />
+                                                                        </>
+                                                                    )}
+                                                                    {item.user.email}
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    {item.isOrgOwner ? (
+                                                                        <Chip size='small' label={'ORGANIZATION OWNER'} />
+                                                                    ) : (
+                                                                        item.role.name
+                                                                    )}
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    {item.isOrgOwner ? (
+                                                                        <></>
+                                                                    ) : (
+                                                                        <>
+                                                                            {'ACTIVE' === item.status.toUpperCase() && (
+                                                                                <Chip color={'success'} label={item.status.toUpperCase()} />
+                                                                            )}
+                                                                            {'INVITED' === item.status.toUpperCase() && (
+                                                                                <Chip color={'warning'} label={item.status.toUpperCase()} />
+                                                                            )}
+                                                                            {'INACTIVE' === item.status.toUpperCase() && (
+                                                                                <Chip color={'error'} label={item.status.toUpperCase()} />
+                                                                            )}
+                                                                        </>
+                                                                    )}
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    {!item.lastLogin
+                                                                        ? 'Never'
+                                                                        : moment(item.lastLogin).format('DD/MM/YYYY HH:mm')}
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    {!item.isOrgOwner && item.status.toUpperCase() === 'INVITED' && (
+                                                                        <IconButton
+                                                                            title='Edit'
+                                                                            color='primary'
+                                                                            onClick={() => onEditClick(item)}
+                                                                        >
+                                                                            <IconEdit />
+                                                                        </IconButton>
+                                                                    )}
+                                                                    {!item.isOrgOwner && item.status.toUpperCase() === 'ACTIVE' && (
+                                                                        <IconButton
+                                                                            title='Change Role'
+                                                                            color='primary'
+                                                                            onClick={() => onEditClick(item)}
+                                                                        >
+                                                                            <IconEdit />
+                                                                        </IconButton>
+                                                                    )}
+                                                                </StyledTableCell>
+                                                            </StyledTableRow>
+                                                        ))}
+                                                    </>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                </>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             {showAddUserDialog && (

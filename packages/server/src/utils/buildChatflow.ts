@@ -478,7 +478,7 @@ export const executeFlow = async ({
         }
     }
 
-    const isAgentFlowV2 = chatflow.type === 'AGENTFLOW'
+    const isAgentFlowV2 = chatflow.type === 'AGENTFLOW' || chatflow.type === 'AGENT'
     if (isAgentFlowV2) {
         return executeAgentFlow({
             componentNodes,

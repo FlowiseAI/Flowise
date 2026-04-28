@@ -54,7 +54,7 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
             }
         }
 
-        if (chatflow.type === 'AGENTFLOW') {
+        if (chatflow.type === 'AGENTFLOW' || chatflow.type === 'AGENT') {
             return { isStreaming: true }
         }
 
@@ -160,6 +160,9 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
             queryBuilder.andWhere('chat_flow.type = :type', { type: 'AGENTFLOW' })
         } else if (type === 'ASSISTANT') {
             queryBuilder.andWhere('chat_flow.type = :type', { type: 'ASSISTANT' })
+        } else if (type === 'AGENT') {
+            // fetch both ASSISTANT (legacy) and AGENT (new) types for backward compatibility
+            queryBuilder.andWhere('chat_flow.type IN (:...types)', { types: ['ASSISTANT', 'AGENT'] })
         } else if (type === 'CHATFLOW') {
             // fetch all chatflows that are not agentflow
             queryBuilder.andWhere('chat_flow.type = :type', { type: 'CHATFLOW' })
@@ -186,10 +189,19 @@ async function getAllChatflowsCountByOrganization(type: ChatflowType, organizati
 
         const workspaces = await appServer.AppDataSource.getRepository(Workspace).findBy({ organizationId })
         const workspaceIds = workspaces.map((workspace) => workspace.id)
-        const chatflowsCount = await appServer.AppDataSource.getRepository(ChatFlow).countBy({
-            type,
-            workspaceId: In(workspaceIds)
-        })
+        let chatflowsCount: number
+        if (type === 'AGENT') {
+            // Count both ASSISTANT (legacy) and AGENT (new) types
+            chatflowsCount = await appServer.AppDataSource.getRepository(ChatFlow).countBy([
+                { type: 'ASSISTANT' as ChatflowType, workspaceId: In(workspaceIds) },
+                { type: 'AGENT' as ChatflowType, workspaceId: In(workspaceIds) }
+            ])
+        } else {
+            chatflowsCount = await appServer.AppDataSource.getRepository(ChatFlow).countBy({
+                type,
+                workspaceId: In(workspaceIds)
+            })
+        }
 
         return chatflowsCount
     } catch (error) {
@@ -204,6 +216,14 @@ const getAllChatflowsCount = async (type?: ChatflowType, workspaceId?: string): 
     try {
         const appServer = getRunningExpressApp()
         if (type) {
+            if (type === 'AGENT') {
+                // Count both ASSISTANT (legacy) and AGENT (new) types
+                const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).countBy([
+                    { type: 'ASSISTANT' as ChatflowType, ...getWorkspaceSearchOptions(workspaceId) },
+                    { type: 'AGENT' as ChatflowType, ...getWorkspaceSearchOptions(workspaceId) }
+                ])
+                return dbResponse
+            }
             const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).countBy({
                 type,
                 ...getWorkspaceSearchOptions(workspaceId)

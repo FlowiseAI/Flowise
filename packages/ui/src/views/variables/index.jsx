@@ -9,6 +9,7 @@ import { tableCellClasses } from '@mui/material/TableCell'
 import {
     Button,
     Box,
+    Fade,
     Skeleton,
     Stack,
     Table,
@@ -218,205 +219,215 @@ const Variables = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            searchPlaceholder='Search Variables'
-                            title='Variables'
-                            description='Create and manage global variables'
-                        >
-                            <Button variant='outlined' sx={{ borderRadius: 2, height: '100%' }} onClick={() => setShowHowToDialog(true)}>
-                                How To Use
-                            </Button>
-                            <StyledPermissionButton
-                                permissionId={'variables:create'}
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
-                                id='btn_createVariable'
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            <ViewHeader
+                                onSearchChange={onSearchChange}
+                                search={true}
+                                searchPlaceholder='Search Variables'
+                                title='Variables'
+                                description='Create and manage global variables'
                             >
-                                Add Variable
-                            </StyledPermissionButton>
-                        </ViewHeader>
-                        {!isLoading && variables.length === 0 ? (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={VariablesEmptySVG}
-                                        alt='VariablesEmptySVG'
-                                    />
-                                </Box>
-                                <div>No Variables Yet</div>
-                            </Stack>
-                        ) : (
-                            <>
-                                <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                    component={Paper}
+                                <Button
+                                    variant='outlined'
+                                    sx={{ borderRadius: 2, height: '100%' }}
+                                    onClick={() => setShowHowToDialog(true)}
                                 >
-                                    <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-                                        <TableHead
-                                            sx={{
-                                                backgroundColor: customization.isDarkMode
-                                                    ? theme.palette.common.black
-                                                    : theme.palette.grey[100],
-                                                height: 56
-                                            }}
-                                        >
-                                            <TableRow>
-                                                <StyledTableCell>Name</StyledTableCell>
-                                                <StyledTableCell>Value</StyledTableCell>
-                                                <StyledTableCell>Type</StyledTableCell>
-                                                <StyledTableCell>Last Updated</StyledTableCell>
-                                                <StyledTableCell>Created</StyledTableCell>
-                                                <Available permissionId={'variables:update'}>
-                                                    <StyledTableCell> </StyledTableCell>
-                                                </Available>
-                                                <Available permissionId={'variables:delete'}>
-                                                    <StyledTableCell> </StyledTableCell>
-                                                </Available>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {isLoading ? (
-                                                <>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <Available permission={'variables:create,variables:update'}>
+                                    How To Use
+                                </Button>
+                                <StyledPermissionButton
+                                    permissionId={'variables:create'}
+                                    variant='contained'
+                                    sx={{ borderRadius: 2, height: '100%' }}
+                                    onClick={addNew}
+                                    startIcon={<IconPlus />}
+                                    id='btn_createVariable'
+                                >
+                                    Add Variable
+                                </StyledPermissionButton>
+                            </ViewHeader>
+                            {!isLoading && variables.length === 0 ? (
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                    <Box sx={{ p: 2, height: 'auto' }}>
+                                        <img
+                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                            src={VariablesEmptySVG}
+                                            alt='VariablesEmptySVG'
+                                        />
+                                    </Box>
+                                    <div>No Variables Yet</div>
+                                </Stack>
+                            ) : (
+                                <>
+                                    <TableContainer
+                                        sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                        component={Paper}
+                                    >
+                                        <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                                            <TableHead
+                                                sx={{
+                                                    backgroundColor: customization.isDarkMode
+                                                        ? theme.palette.common.black
+                                                        : theme.palette.grey[100],
+                                                    height: 56
+                                                }}
+                                            >
+                                                <TableRow>
+                                                    <StyledTableCell>Name</StyledTableCell>
+                                                    <StyledTableCell>Value</StyledTableCell>
+                                                    <StyledTableCell>Type</StyledTableCell>
+                                                    <StyledTableCell>Last Updated</StyledTableCell>
+                                                    <StyledTableCell>Created</StyledTableCell>
+                                                    <Available permissionId={'variables:update'}>
+                                                        <StyledTableCell> </StyledTableCell>
+                                                    </Available>
+                                                    <Available permissionId={'variables:delete'}>
+                                                        <StyledTableCell> </StyledTableCell>
+                                                    </Available>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {isLoading ? (
+                                                    <>
+                                                        <StyledTableRow>
                                                             <StyledTableCell>
                                                                 <Skeleton variant='text' />
                                                             </StyledTableCell>
-                                                        </Available>
-                                                        <Available permission={'variables:delete'}>
                                                             <StyledTableCell>
                                                                 <Skeleton variant='text' />
                                                             </StyledTableCell>
-                                                        </Available>
-                                                    </StyledTableRow>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <Available permission={'variables:create,variables:update'}>
                                                             <StyledTableCell>
                                                                 <Skeleton variant='text' />
                                                             </StyledTableCell>
-                                                        </Available>
-                                                        <Available permission={'variables:delete'}>
                                                             <StyledTableCell>
                                                                 <Skeleton variant='text' />
                                                             </StyledTableCell>
-                                                        </Available>
-                                                    </StyledTableRow>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {variables.filter(filterVariables).map((variable, index) => (
-                                                        <StyledTableRow
-                                                            key={index}
-                                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                                        >
-                                                            <StyledTableCell component='th' scope='row'>
-                                                                <div
-                                                                    style={{
-                                                                        display: 'flex',
-                                                                        flexDirection: 'row',
-                                                                        alignItems: 'center'
-                                                                    }}
-                                                                >
-                                                                    <div
-                                                                        style={{
-                                                                            width: 25,
-                                                                            height: 25,
-                                                                            marginRight: 10,
-                                                                            borderRadius: '50%'
-                                                                        }}
-                                                                    >
-                                                                        <IconVariable
-                                                                            style={{
-                                                                                width: '100%',
-                                                                                height: '100%',
-                                                                                borderRadius: '50%',
-                                                                                objectFit: 'contain'
-                                                                            }}
-                                                                        />
-                                                                    </div>
-                                                                    {variable.name}
-                                                                </div>
-                                                            </StyledTableCell>
-                                                            <StyledTableCell>{variable.value}</StyledTableCell>
                                                             <StyledTableCell>
-                                                                <Chip
-                                                                    color={variable.type === 'static' ? 'info' : 'secondary'}
-                                                                    size='small'
-                                                                    label={variable.type}
-                                                                />
-                                                            </StyledTableCell>
-                                                            <StyledTableCell>
-                                                                {moment(variable.updatedDate).format('MMMM Do, YYYY HH:mm:ss')}
-                                                            </StyledTableCell>
-                                                            <StyledTableCell>
-                                                                {moment(variable.createdDate).format('MMMM Do, YYYY HH:mm:ss')}
+                                                                <Skeleton variant='text' />
                                                             </StyledTableCell>
                                                             <Available permission={'variables:create,variables:update'}>
                                                                 <StyledTableCell>
-                                                                    <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
-                                                                        <IconEdit />
-                                                                    </IconButton>
+                                                                    <Skeleton variant='text' />
                                                                 </StyledTableCell>
                                                             </Available>
                                                             <Available permission={'variables:delete'}>
                                                                 <StyledTableCell>
-                                                                    <IconButton
-                                                                        title='Delete'
-                                                                        color='error'
-                                                                        onClick={() => deleteVariable(variable)}
-                                                                    >
-                                                                        <IconTrash />
-                                                                    </IconButton>
+                                                                    <Skeleton variant='text' />
                                                                 </StyledTableCell>
                                                             </Available>
                                                         </StyledTableRow>
-                                                    ))}
-                                                </>
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                                {/* Pagination and Page Size Controls */}
-                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
-                            </>
-                        )}
-                    </Stack>
+                                                        <StyledTableRow>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <Available permission={'variables:create,variables:update'}>
+                                                                <StyledTableCell>
+                                                                    <Skeleton variant='text' />
+                                                                </StyledTableCell>
+                                                            </Available>
+                                                            <Available permission={'variables:delete'}>
+                                                                <StyledTableCell>
+                                                                    <Skeleton variant='text' />
+                                                                </StyledTableCell>
+                                                            </Available>
+                                                        </StyledTableRow>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        {variables.filter(filterVariables).map((variable, index) => (
+                                                            <StyledTableRow
+                                                                key={index}
+                                                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                            >
+                                                                <StyledTableCell component='th' scope='row'>
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            flexDirection: 'row',
+                                                                            alignItems: 'center'
+                                                                        }}
+                                                                    >
+                                                                        <div
+                                                                            style={{
+                                                                                width: 25,
+                                                                                height: 25,
+                                                                                marginRight: 10,
+                                                                                borderRadius: '50%'
+                                                                            }}
+                                                                        >
+                                                                            <IconVariable
+                                                                                style={{
+                                                                                    width: '100%',
+                                                                                    height: '100%',
+                                                                                    borderRadius: '50%',
+                                                                                    objectFit: 'contain'
+                                                                                }}
+                                                                            />
+                                                                        </div>
+                                                                        {variable.name}
+                                                                    </div>
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>{variable.value}</StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    <Chip
+                                                                        color={variable.type === 'static' ? 'info' : 'secondary'}
+                                                                        size='small'
+                                                                        label={variable.type}
+                                                                    />
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    {moment(variable.updatedDate).format('MMMM Do, YYYY HH:mm:ss')}
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    {moment(variable.createdDate).format('MMMM Do, YYYY HH:mm:ss')}
+                                                                </StyledTableCell>
+                                                                <Available permission={'variables:create,variables:update'}>
+                                                                    <StyledTableCell>
+                                                                        <IconButton
+                                                                            title='Edit'
+                                                                            color='primary'
+                                                                            onClick={() => edit(variable)}
+                                                                        >
+                                                                            <IconEdit />
+                                                                        </IconButton>
+                                                                    </StyledTableCell>
+                                                                </Available>
+                                                                <Available permission={'variables:delete'}>
+                                                                    <StyledTableCell>
+                                                                        <IconButton
+                                                                            title='Delete'
+                                                                            color='error'
+                                                                            onClick={() => deleteVariable(variable)}
+                                                                        >
+                                                                            <IconTrash />
+                                                                        </IconButton>
+                                                                    </StyledTableCell>
+                                                                </Available>
+                                                            </StyledTableRow>
+                                                        ))}
+                                                    </>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                    {/* Pagination and Page Size Controls */}
+                                    <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+                                </>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             <AddEditVariableDialog

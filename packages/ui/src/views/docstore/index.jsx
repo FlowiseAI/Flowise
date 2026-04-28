@@ -1,18 +1,33 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
-import { Box, Button, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import {
+    Box,
+    Button,
+    Fade,
+    IconButton,
+    InputAdornment,
+    ListItemIcon,
+    ListItemText,
+    Menu,
+    MenuItem,
+    OutlinedInput,
+    Stack,
+    ToggleButton,
+    ToggleButtonGroup,
+    Typography
+} from '@mui/material'
+import { useTheme, darken } from '@mui/material/styles'
 
 // project imports
 import ErrorBoundary from '@/ErrorBoundary'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import { useError } from '@/store/context/ErrorContext'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
-import DocumentStoreCard from '@/ui-component/cards/DocumentStoreCard'
 import MainCard from '@/ui-component/cards/MainCard'
+import DocumentStoreStatus from '@/views/docstore/DocumentStoreStatus'
+import { kFormatter } from '@/utils/genericHelper'
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 import DeleteDocStoreDialog from '@/views/docstore/DeleteDocStoreDialog'
@@ -23,8 +38,18 @@ import { useAuth } from '@/hooks/useAuth'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconDotsVertical, IconEdit, IconLayoutGrid, IconList, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
-import doc_store_empty from '@/assets/images/doc_store_empty.svg'
+import {
+    IconDotsVertical,
+    IconEdit,
+    IconLanguage,
+    IconLayoutGrid,
+    IconList,
+    IconScissors,
+    IconSearch,
+    IconTrash,
+    IconVectorBezier2,
+    IconX
+} from '@tabler/icons-react'
 
 // const
 import { baseURL, gridSpacing } from '@/store/constant'
@@ -50,6 +75,7 @@ const Documents = () => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const customization = useSelector((state) => state.customization)
     const { hasPermission } = useAuth()
     const getAllDocumentStores = useApi(documentsApi.getAllDocumentStores)
     const { error } = useError()
@@ -271,7 +297,6 @@ const Documents = () => {
     }
 
     const applyFilters = (page, limit) => {
-        setLoading(true)
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
@@ -317,132 +342,329 @@ const Documents = () => {
         setLoading(getAllDocumentStores.loading)
     }, [getAllDocumentStores.loading])
 
-    const hasDocStores = docStores && docStores.length > 0
-
     return (
         <MainCard>
             {error ? (
                 <ErrorBoundary error={error} />
             ) : (
-                <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader
-                        onSearchChange={onSearchChange}
-                        search={hasDocStores}
-                        searchPlaceholder='Search Name'
-                        title='Document Store'
-                        description='Store and upsert documents for LLM retrieval (RAG)'
-                    >
-                        {hasDocStores && (
-                            <ToggleButtonGroup
-                                sx={{ borderRadius: 2, maxHeight: 40 }}
-                                value={view}
-                                color='primary'
-                                exclusive
-                                onChange={handleChange}
-                            >
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='card'
-                                    title='Card View'
-                                >
-                                    <IconLayoutGrid />
-                                </ToggleButton>
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='list'
-                                    title='List View'
-                                >
-                                    <IconList />
-                                </ToggleButton>
-                            </ToggleButtonGroup>
-                        )}
-                        <StyledPermissionButton
-                            permissionId={'documentStores:create'}
-                            variant='contained'
-                            sx={{ borderRadius: 2, height: '100%' }}
-                            onClick={addNew}
-                            startIcon={<IconPlus />}
-                            id='btn_createVariable'
+                <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                        {/* ==================== Hero Section ==================== */}
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                pt: 4,
+                                pb: 2,
+                                ...(!isLoading && docStores.length === 0 ? { minHeight: 'calc(100vh - 200px)' } : {})
+                            }}
                         >
-                            Add New
-                        </StyledPermissionButton>
-                    </ViewHeader>
-                    {!hasDocStores ? (
-                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                            <Box sx={{ p: 2, height: 'auto' }}>
-                                <img
-                                    style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                    src={doc_store_empty}
-                                    alt='doc_store_empty'
-                                />
+                            <Typography
+                                variant='h2'
+                                sx={{
+                                    fontSize: '1.8rem',
+                                    fontWeight: 700,
+                                    mb: 1,
+                                    color: theme.palette.text.primary
+                                }}
+                            >
+                                Create a document store
+                            </Typography>
+
+                            <Typography
+                                sx={{
+                                    mb: 3,
+                                    fontSize: '1rem',
+                                    textAlign: 'center',
+                                    fontWeight: 500,
+                                    maxWidth: 600
+                                }}
+                            >
+                                Manage and upsert documents for Retrieval-Augmented Generation (RAG)
+                            </Typography>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <StyledPermissionButton
+                                    permissionId={'documentStores:create'}
+                                    variant='contained'
+                                    onClick={addNew}
+                                    id='btn_createVariable'
+                                    sx={{
+                                        borderRadius: '24px',
+                                        px: 3,
+                                        height: 44,
+                                        textTransform: 'none',
+                                        fontSize: '0.95rem',
+                                        fontWeight: 600,
+                                        background: `linear-gradient(90deg, ${theme.palette.primary.main} 10%, ${theme.palette.secondary.main} 100%)`,
+                                        color: theme.palette.common.white,
+                                        '&:hover': {
+                                            background: `linear-gradient(90deg, ${darken(theme.palette.primary.main, 0.1)} 10%, ${darken(
+                                                theme.palette.secondary.main,
+                                                0.1
+                                            )} 100%)`
+                                        }
+                                    }}
+                                >
+                                    Create
+                                </StyledPermissionButton>
                             </Box>
-                            <div>No Document Stores Created Yet</div>
-                        </Stack>
-                    ) : (
-                        <React.Fragment>
-                            {!view || view === 'card' ? (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {docStores?.filter(filterDocStores).map((data) => (
-                                        <Box key={data.id} sx={{ position: 'relative' }}>
-                                            <DocumentStoreCard
-                                                images={images[data.id]}
-                                                data={data}
-                                                hasActions={canManageDocumentStore}
-                                                onClick={() => goToDocumentStore(data.id)}
-                                            />
-                                            {canManageDocumentStore && (
-                                                <IconButton
-                                                    size='small'
-                                                    aria-label='Document store actions'
+                        </Box>
+
+                        {/* ==================== Document Stores Listing Section ==================== */}
+                        {docStores.length > 0 && (
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography variant='h3' sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                                    Document Stores
+                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <OutlinedInput
+                                        size='small'
+                                        placeholder='Search Name'
+                                        onChange={onSearchChange}
+                                        startAdornment={
+                                            <InputAdornment position='start'>
+                                                <IconSearch size={16} stroke={1.5} />
+                                            </InputAdornment>
+                                        }
+                                        sx={{
+                                            width: 250,
+                                            borderRadius: 2,
+                                            '& .MuiOutlinedInput-notchedOutline': {
+                                                borderColor: theme.palette.grey[900] + 25
+                                            }
+                                        }}
+                                    />
+                                    <ToggleButtonGroup
+                                        sx={{ borderRadius: 2, maxHeight: 36 }}
+                                        value={view}
+                                        color='primary'
+                                        exclusive
+                                        onChange={handleChange}
+                                    >
+                                        <ToggleButton
+                                            sx={{
+                                                borderColor: theme.palette.grey[900] + 25,
+                                                borderRadius: 2,
+                                                color: customization.isDarkMode ? 'white' : 'inherit'
+                                            }}
+                                            variant='contained'
+                                            value='card'
+                                            title='Card View'
+                                        >
+                                            <IconLayoutGrid size={18} />
+                                        </ToggleButton>
+                                        <ToggleButton
+                                            sx={{
+                                                borderColor: theme.palette.grey[900] + 25,
+                                                borderRadius: 2,
+                                                color: customization.isDarkMode ? 'white' : 'inherit'
+                                            }}
+                                            variant='contained'
+                                            value='list'
+                                            title='List View'
+                                        >
+                                            <IconList size={18} />
+                                        </ToggleButton>
+                                    </ToggleButtonGroup>
+                                </Box>
+                            </Box>
+                        )}
+
+                        {!isLoading && docStores.length > 0 && (
+                            <React.Fragment>
+                                {!view || view === 'card' ? (
+                                    <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>
+                                        {docStores?.filter(filterDocStores).map((data) => {
+                                            const loaderImages = images[data.id] || []
+                                            const visibleLoaders = loaderImages.slice(0, 4)
+                                            const remainingLoaders = loaderImages.length - visibleLoaders.length
+                                            return (
+                                                <Box
+                                                    key={data.id}
+                                                    onClick={() => goToDocumentStore(data.id)}
                                                     sx={{
-                                                        position: 'absolute',
-                                                        top: 16,
-                                                        right: 10,
-                                                        zIndex: 2,
-                                                        width: 30,
-                                                        height: 30,
-                                                        ...getDocStoreActionButtonSx(theme),
-                                                        [theme.breakpoints.down('sm')]: {
-                                                            top: 8,
-                                                            right: 8,
-                                                            width: 28,
-                                                            height: 28
+                                                        position: 'relative',
+                                                        display: 'flex',
+                                                        alignItems: 'flex-start',
+                                                        gap: 1.5,
+                                                        p: 2,
+                                                        height: '100%',
+                                                        borderRadius: 3,
+                                                        border: `1px solid ${theme.palette.grey[900]}15`,
+                                                        cursor: 'pointer',
+                                                        backgroundColor: theme.palette.card?.main || theme.palette.background.paper,
+                                                        boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+                                                        transition: 'background-color 0.2s, box-shadow 0.2s',
+                                                        '&:hover': {
+                                                            backgroundColor: theme.palette.card?.hover || theme.palette.action.hover,
+                                                            boxShadow: '0 4px 20px rgba(0,0,0,0.12)'
                                                         }
                                                     }}
-                                                    onClick={(event) => handleActionMenuOpen(event, data)}
                                                 >
-                                                    <IconDotsVertical size={18} />
-                                                </IconButton>
-                                            )}
-                                        </Box>
-                                    ))}
-                                </Box>
-                            ) : (
-                                <DocumentStoreTable
-                                    isLoading={isLoading}
-                                    data={docStores?.filter(filterDocStores)}
-                                    images={images}
-                                    onRowClick={(row) => goToDocumentStore(row.id)}
-                                    showActions={canManageDocumentStore}
-                                    onActionMenuClick={handleActionMenuOpen}
-                                    actionButtonSx={getDocStoreActionButtonSx(theme)}
-                                />
-                            )}
-                            {/* Pagination and Page Size Controls */}
-                            <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
-                        </React.Fragment>
-                    )}
-                </Stack>
+                                                    <Box sx={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
+                                                        <Stack
+                                                            direction='row'
+                                                            alignItems='center'
+                                                            spacing={1}
+                                                            sx={{ pr: canManageDocumentStore ? 4 : 0 }}
+                                                        >
+                                                            <Typography
+                                                                sx={{
+                                                                    fontSize: '0.95rem',
+                                                                    fontWeight: 600,
+                                                                    overflow: 'hidden',
+                                                                    textOverflow: 'ellipsis',
+                                                                    whiteSpace: 'nowrap',
+                                                                    flex: 1,
+                                                                    color: theme.palette.text.primary
+                                                                }}
+                                                            >
+                                                                {data.name}
+                                                            </Typography>
+                                                            <DocumentStoreStatus status={data.status} isTableView />
+                                                        </Stack>
+                                                        {data.description && (
+                                                            <Typography
+                                                                sx={{
+                                                                    mt: 0.5,
+                                                                    fontSize: '0.8rem',
+                                                                    color: customization.isDarkMode
+                                                                        ? theme.palette.grey[400]
+                                                                        : theme.palette.grey[700],
+                                                                    display: '-webkit-box',
+                                                                    WebkitLineClamp: 2,
+                                                                    WebkitBoxOrient: 'vertical',
+                                                                    overflow: 'hidden',
+                                                                    textOverflow: 'ellipsis'
+                                                                }}
+                                                            >
+                                                                {data.description}
+                                                            </Typography>
+                                                        )}
+                                                        <Box
+                                                            sx={{
+                                                                display: 'flex',
+                                                                flexWrap: 'wrap',
+                                                                columnGap: 1.5,
+                                                                rowGap: 0.5,
+                                                                mt: 1.25,
+                                                                color: customization.isDarkMode
+                                                                    ? theme.palette.grey[400]
+                                                                    : theme.palette.grey[700]
+                                                            }}
+                                                        >
+                                                            <Stack direction='row' alignItems='center' spacing={0.5}>
+                                                                <IconVectorBezier2 size={13} />
+                                                                <Typography sx={{ fontSize: '0.75rem' }}>
+                                                                    {data.whereUsed?.length ?? 0}{' '}
+                                                                    {(data.whereUsed?.length ?? 0) <= 1 ? 'flow' : 'flows'}
+                                                                </Typography>
+                                                            </Stack>
+                                                            <Stack direction='row' alignItems='center' spacing={0.5}>
+                                                                <IconLanguage size={13} />
+                                                                <Typography sx={{ fontSize: '0.75rem' }}>
+                                                                    {kFormatter(data.totalChars ?? 0)} chars
+                                                                </Typography>
+                                                            </Stack>
+                                                            <Stack direction='row' alignItems='center' spacing={0.5}>
+                                                                <IconScissors size={13} />
+                                                                <Typography sx={{ fontSize: '0.75rem' }}>
+                                                                    {kFormatter(data.totalChunks ?? 0)} chunks
+                                                                </Typography>
+                                                            </Stack>
+                                                        </Box>
+                                                        {loaderImages.length > 0 && (
+                                                            <Box
+                                                                sx={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 0.5,
+                                                                    mt: 1,
+                                                                    flexWrap: 'wrap'
+                                                                }}
+                                                            >
+                                                                {visibleLoaders.map((img, i) => (
+                                                                    <Box
+                                                                        key={i}
+                                                                        sx={{
+                                                                            width: 22,
+                                                                            height: 22,
+                                                                            borderRadius: '50%',
+                                                                            backgroundColor: customization.isDarkMode
+                                                                                ? theme.palette.common.white
+                                                                                : theme.palette.grey[300] + 75,
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center'
+                                                                        }}
+                                                                    >
+                                                                        <img
+                                                                            style={{
+                                                                                width: '100%',
+                                                                                height: '100%',
+                                                                                padding: 3,
+                                                                                objectFit: 'contain'
+                                                                            }}
+                                                                            alt=''
+                                                                            src={img}
+                                                                        />
+                                                                    </Box>
+                                                                ))}
+                                                                {remainingLoaders > 0 && (
+                                                                    <Typography
+                                                                        sx={{
+                                                                            fontSize: '0.75rem',
+                                                                            color: theme.palette.text.secondary,
+                                                                            ml: 0.5
+                                                                        }}
+                                                                    >
+                                                                        +{remainingLoaders}
+                                                                    </Typography>
+                                                                )}
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                    {canManageDocumentStore && (
+                                                        <IconButton
+                                                            size='small'
+                                                            aria-label='Document store actions'
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                top: 12,
+                                                                right: 10,
+                                                                zIndex: 2,
+                                                                width: 28,
+                                                                height: 28,
+                                                                ...getDocStoreActionButtonSx(theme)
+                                                            }}
+                                                            onClick={(event) => handleActionMenuOpen(event, data)}
+                                                        >
+                                                            <IconDotsVertical size={16} />
+                                                        </IconButton>
+                                                    )}
+                                                </Box>
+                                            )
+                                        })}
+                                    </Box>
+                                ) : (
+                                    <DocumentStoreTable
+                                        isLoading={isLoading}
+                                        data={docStores?.filter(filterDocStores)}
+                                        images={images}
+                                        onRowClick={(row) => goToDocumentStore(row.id)}
+                                        showActions={canManageDocumentStore}
+                                        onActionMenuClick={handleActionMenuOpen}
+                                        actionButtonSx={getDocStoreActionButtonSx(theme)}
+                                    />
+                                )}
+                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+                            </React.Fragment>
+                        )}
+                    </Stack>
+                </Fade>
             )}
             {showDialog && (
                 <AddDocStoreDialog

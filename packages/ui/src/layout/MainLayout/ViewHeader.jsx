@@ -54,7 +54,7 @@ const ViewHeader = ({
                     <Box sx={{ display: 'flex', alignItems: 'start', flexDirection: 'column' }}>
                         <Typography
                             sx={{
-                                fontSize: '1.8rem',
+                                fontSize: '1.4rem',
                                 fontWeight: 600,
                                 display: '-webkit-box',
                                 WebkitLineClamp: 3,
@@ -62,18 +62,19 @@ const ViewHeader = ({
                                 textOverflow: 'ellipsis',
                                 overflow: 'hidden',
                                 flex: 1,
-                                maxWidth: 'calc(100vh - 100px)'
+                                maxWidth: 'calc(100vh - 100px)',
+                                color: theme.palette.text.primary
                             }}
-                            variant='h1'
+                            variant='h3'
                         >
                             {title}
                         </Typography>
                         {description && (
                             <Typography
                                 sx={{
-                                    fontSize: '1rem',
-                                    fontWeight: 500,
-                                    mt: 2,
+                                    fontSize: '0.85rem',
+                                    fontWeight: 400,
+                                    mt: 0.5,
                                     display: '-webkit-box',
                                     WebkitLineClamp: 5,
                                     WebkitBoxOrient: 'vertical',

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 // material-ui
-import { Box, Button, Stack } from '@mui/material'
+import { Box, Button, Fade, Stack } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -126,22 +126,24 @@ const Files = () => {
             {error ? (
                 <ErrorBoundary error={error} />
             ) : (
-                <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search File' title='Files' />
-                    <FilesTable data={files} filterFunction={filterFiles} handleDelete={handleDeleteFile} isLoading={isLoading} />
-                    {!isLoading && (!getAllFilesApi.data || getAllFilesApi.data.length === 0) && (
-                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                            <Box sx={{ p: 2, height: 'auto' }}>
-                                <img
-                                    style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
-                                    src={WorkflowEmptySVG}
-                                    alt='WorkflowEmptySVG'
-                                />
-                            </Box>
-                            <div>No Files Yet</div>
-                        </Stack>
-                    )}
-                </Stack>
+                <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search File' title='Files' />
+                        <FilesTable data={files} filterFunction={filterFiles} handleDelete={handleDeleteFile} isLoading={isLoading} />
+                        {!isLoading && (!getAllFilesApi.data || getAllFilesApi.data.length === 0) && (
+                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                <Box sx={{ p: 2, height: 'auto' }}>
+                                    <img
+                                        style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
+                                        src={WorkflowEmptySVG}
+                                        alt='WorkflowEmptySVG'
+                                    />
+                                </Box>
+                                <div>No Files Yet</div>
+                            </Stack>
+                        )}
+                    </Stack>
+                </Fade>
             )}
 
             <ConfirmDialog />

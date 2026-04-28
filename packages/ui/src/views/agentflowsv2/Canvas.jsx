@@ -160,6 +160,26 @@ const AgentflowCanvas = () => {
     const handleLoadFlow = (file) => {
         try {
             const flowData = JSON.parse(file)
+            if (flowData.type && flowData.type !== 'AGENTFLOW') {
+                enqueueSnackbar({
+                    message: `Invalid file: expected AGENTFLOW type but got ${flowData.type}`,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <button
+                                style={{ color: 'white', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                                onClick={() => closeSnackbar(key)}
+                            >
+                                ✕
+                            </button>
+                        )
+                    }
+                })
+                return
+            }
+            delete flowData.type
             const nodes = flowData.nodes || []
 
             setNodes(nodes)
@@ -544,7 +564,7 @@ const AgentflowCanvas = () => {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
-            window.history.replaceState(state, null, `/v2/agentcanvas/${chatflow.id}`)
+            window.history.replaceState(window.history.state, null, `/v2/agentcanvas/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
             errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         }

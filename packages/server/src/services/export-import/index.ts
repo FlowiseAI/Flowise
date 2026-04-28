@@ -105,7 +105,7 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId: string): 
             exportInput.assistantCustom === true ? await assistantsService.getAllAssistants(activeWorkspaceId, 'CUSTOM') : []
 
         let AssistantFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
-            exportInput.assistantCustom === true ? await chatflowService.getAllChatflows('ASSISTANT', activeWorkspaceId) : []
+            exportInput.assistantCustom === true ? await chatflowService.getAllChatflows('AGENT', activeWorkspaceId) : []
         AssistantFlow = 'data' in AssistantFlow ? AssistantFlow.data : AssistantFlow
 
         let AssistantOpenAI: Assistant[] =
@@ -683,7 +683,7 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
             if (importData.AssistantFlow.length > 0) {
                 importData.AssistantFlow = reduceSpaceForChatflowFlowData(importData.AssistantFlow)
                 importData.AssistantFlow = insertWorkspaceId(importData.AssistantFlow, activeWorkspaceId)
-                const existingChatflowCount = await chatflowService.getAllChatflowsCountByOrganization('ASSISTANT', orgId)
+                const existingChatflowCount = await chatflowService.getAllChatflowsCountByOrganization('AGENT', orgId)
                 const newChatflowCount = importData.AssistantFlow.length
                 await checkUsageLimit(
                     'flows',

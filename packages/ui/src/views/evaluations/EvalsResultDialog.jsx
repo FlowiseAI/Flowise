@@ -52,7 +52,8 @@ const EvalsResultDialog = ({ show, dialogProps, onCancel, openDetailsDrawer }) =
                 case 'Chatflow':
                     return '/canvas/' + dialogProps.data.evaluation.chatflowId[index]
                 case 'Custom Assistant':
-                    return '/assistants/custom/' + dialogProps.data.evaluation.chatflowId[index]
+                case 'Agent':
+                    return '/agents/' + dialogProps.data.evaluation.chatflowId[index]
                 case 'Agentflow v2':
                     return '/v2/agentcanvas/' + dialogProps.data.evaluation.chatflowId[index]
             }
@@ -307,8 +308,8 @@ const EvalsResultDialog = ({ show, dialogProps, onCancel, openDetailsDrawer }) =
                                                                                     icon={<AlarmIcon />}
                                                                                     label={
                                                                                         item.metrics[index]?.chain
-                                                                                            ? 'Chain Latency: ' + item.metrics[index]?.chain
-                                                                                            : 'Chain Latency: N/A'
+                                                                                            ? 'Flow Latency: ' + item.metrics[index]?.chain
+                                                                                            : 'Flow Latency: N/A'
                                                                                     }
                                                                                     sx={{ mr: 1, mb: 1 }}
                                                                                 />

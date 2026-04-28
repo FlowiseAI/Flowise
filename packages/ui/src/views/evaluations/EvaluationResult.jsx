@@ -336,7 +336,8 @@ const EvalEvaluationRows = () => {
                 case 'Chatflow':
                     return '/canvas/' + evaluation.chatflowId[index]
                 case 'Custom Assistant':
-                    return '/assistants/custom/' + evaluation.chatflowId[index]
+                case 'Agent':
+                    return '/agents/' + evaluation.chatflowId[index]
                 case 'Agentflow v2':
                     return '/v2/agentcanvas/' + evaluation.chatflowId[index]
             }
@@ -360,6 +361,7 @@ const EvalEvaluationRows = () => {
                 case 'Chatflow':
                     return <IconHierarchy size={17} />
                 case 'Custom Assistant':
+                case 'Agent':
                     return <IconRobot size={17} />
                 case 'Agentflow v2':
                     return <IconUsersGroup size={17} />
@@ -486,8 +488,9 @@ const EvalEvaluationRows = () => {
                                                             window.open(
                                                                 chatflow.chatflowType === 'Chatflow'
                                                                     ? '/canvas/' + chatflow.chatflowId
-                                                                    : chatflow.chatflowType === 'Custom Assistant'
-                                                                    ? '/assistants/custom/' + chatflow.chatflowId
+                                                                    : chatflow.chatflowType === 'Custom Assistant' ||
+                                                                      chatflow.chatflowType === 'Agent'
+                                                                    ? '/agents/' + chatflow.chatflowId
                                                                     : '/v2/agentcanvas/' + chatflow.chatflowId,
                                                                 '_blank'
                                                             )
@@ -869,9 +872,9 @@ const EvalEvaluationRows = () => {
                                                                                                 icon={<AlarmIcon />}
                                                                                                 label={
                                                                                                     item.metrics[index]?.chain
-                                                                                                        ? 'Chain Latency: ' +
+                                                                                                        ? 'Flow Latency: ' +
                                                                                                           item.metrics[index]?.chain
-                                                                                                        : 'Chain Latency: N/A'
+                                                                                                        : 'Flow Latency: N/A'
                                                                                                 }
                                                                                                 sx={{ mr: 1, mb: 1 }}
                                                                                             />

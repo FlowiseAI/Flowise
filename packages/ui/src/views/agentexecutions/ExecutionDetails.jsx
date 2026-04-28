@@ -31,6 +31,7 @@ import {
     IconLoader,
     IconCircleXFilled,
     IconRelationOneToManyFilled,
+    IconRobot,
     IconShare,
     IconWorld,
     IconX
@@ -147,7 +148,10 @@ function CustomLabel({ icon: Icon, itemStatus, children, name, ...other }) {
                 }
 
                 // Otherwise display the node icon
-                const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === name)
+                const foundIcon =
+                    name === 'smartAgentAgentflow'
+                        ? { icon: IconRobot, color: '#9575CD' }
+                        : AGENTFLOW_ICONS.find((icon) => icon.name === name)
                 if (foundIcon) {
                     return (
                         <Box
@@ -616,7 +620,7 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
         // Transform to the required format
         const transformNode = (node) => ({
             id: node.uniqueNodeId,
-            label: node.nodeLabel,
+            label: node.data?.name === 'smartAgentAgentflow' ? 'Agent' : node.nodeLabel,
             name: node.data?.name,
             status: node.status,
             data: node.data,
@@ -746,7 +750,15 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                                 variant='outlined'
                                 label={localMetadata?.agentflow?.name || localMetadata?.agentflow?.id || 'Go to AgentFlow'}
                                 className={'button'}
-                                onClick={() => window.open(`/v2/agentcanvas/${localMetadata?.agentflow?.id}`, '_blank')}
+                                onClick={() => {
+                                    const agentflowType = localMetadata?.agentflow?.type
+                                    const agentflowId = localMetadata?.agentflow?.id
+                                    if (agentflowType === 'AGENT' || agentflowType === 'ASSISTANT') {
+                                        window.open(`/agents/${agentflowId}`, '_blank')
+                                    } else {
+                                        window.open(`/v2/agentcanvas/${agentflowId}`, '_blank')
+                                    }
+                                }}
                             />
                         )}
 

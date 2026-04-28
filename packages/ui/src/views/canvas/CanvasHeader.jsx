@@ -71,7 +71,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
     const onSettingsItemClick = (setting) => {
         setSettingsOpen(false)
 
-        if (setting === 'deleteChatflow') {
+        if (setting === 'deleteChatflow' || setting === 'deleteAgent') {
             handleDeleteFlow()
         } else if (setting === 'viewMessages') {
             setViewMessagesDialogProps({
@@ -114,13 +114,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                 chatflow: chatflow
             })
             setUpsertHistoryDialogOpen(true)
-        } else if (setting === 'chatflowConfiguration') {
+        } else if (setting === 'chatflowConfiguration' || setting === 'agentConfiguration') {
             setChatflowConfigurationDialogProps({
                 title: `${title} Configuration`,
                 chatflow: chatflow
             })
             setChatflowConfigurationDialogOpen(true)
-        } else if (setting === 'duplicateChatflow') {
+        } else if (setting === 'duplicateChatflow' || setting === 'duplicateAgent') {
             try {
                 let flowData = chatflow.flowData
                 const parsedFlowData = JSON.parse(flowData)
@@ -136,10 +136,10 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
             } catch (e) {
                 console.error(e)
             }
-        } else if (setting === 'exportChatflow') {
+        } else if (setting === 'exportChatflow' || setting === 'exportAgent') {
             try {
                 const flowData = JSON.parse(chatflow.flowData)
-                let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2)
+                let dataStr = JSON.stringify(generateExportFlowData(flowData, chatflow.type), null, 2)
                 //let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
                 const blob = new Blob([dataStr], { type: 'application/json' })
                 const dataUri = URL.createObjectURL(blob)

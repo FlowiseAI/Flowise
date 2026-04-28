@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types'
 import { forwardRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Chip, ListItemButton, ListItemIcon, ListItemText, Typography, useMediaQuery } from '@mui/material'
+import { Avatar, Chip, ListItemButton, ListItemIcon, ListItemText, Tooltip, Typography, useMediaQuery } from '@mui/material'
 
 // project imports
 import { MENU_OPEN, SET_MENU } from '@/store/actions'
@@ -19,6 +19,7 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
 const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
+    const location = useLocation()
     const customization = useSelector((state) => state.customization)
     const matchesSM = useMediaQuery(theme.breakpoints.down('lg'))
 
@@ -77,60 +78,79 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
         }
     }
 
-    // active menu item on page load
+    // active menu item on page load and route change
     useEffect(() => {
         if (navType === 'MENU') {
-            const currentIndex = document.location.pathname
+            const currentIndex = location.pathname
                 .toString()
                 .split('/')
                 .findIndex((id) => id === item.id)
             if (currentIndex > -1) {
                 dispatch({ type: MENU_OPEN, id: item.id })
             }
-            if (!document.location.pathname.toString().split('/')[1]) {
-                itemHandler('chatflows')
+            if (!location.pathname.toString().split('/')[1]) {
+                itemHandler('agents')
             }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [navType])
+    }, [navType, location.pathname])
 
-    return (
+    const drawerOpened = customization.opened
+    const matchUpMd = useMediaQuery(theme.breakpoints.up('md'))
+    const collapsed = matchUpMd && !drawerOpened
+
+    const button = (
         <ListItemButton
             {...listItemProps}
             disabled={item.disabled}
             sx={{
                 borderRadius: `${customization.borderRadius}px`,
-                alignItems: 'flex-start',
+                alignItems: collapsed ? 'center' : 'flex-start',
                 backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
                 py: level > 1 ? 1 : 1.25,
-                pl: `${level * 24}px`
+                ...(collapsed ? { pl: 0, pr: 0, justifyContent: 'center' } : { pl: `${level * 24}px`, justifyContent: 'flex-start' })
             }}
             selected={customization.isOpen.findIndex((id) => id === item.id) > -1}
             onClick={() => itemHandler(item.id)}
         >
             {item.id === 'loadChatflow' && <input type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />}
-            <ListItemIcon sx={{ my: 'auto', minWidth: !item?.icon ? 18 : 36 }}>{itemIcon}</ListItemIcon>
-            <ListItemText
-                primary={
-                    <Typography
-                        variant={customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'h5' : 'body1'}
-                        color='inherit'
-                        sx={{ my: 0.5 }}
-                    >
-                        {item.title}
-                    </Typography>
-                }
-                secondary={
-                    item.caption && (
-                        <Typography variant='caption' sx={{ ...theme.typography.subMenuCaption, mt: -0.6 }} display='block' gutterBottom>
-                            {item.caption}
+            <ListItemIcon
+                sx={{
+                    my: 'auto',
+                    minWidth: collapsed ? 0 : !item?.icon ? 18 : 36,
+                    justifyContent: collapsed ? 'center' : 'flex-start'
+                }}
+            >
+                {itemIcon}
+            </ListItemIcon>
+            {!collapsed && (
+                <ListItemText
+                    primary={
+                        <Typography
+                            variant={customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'h5' : 'body1'}
+                            color='inherit'
+                            sx={{ my: 0.5 }}
+                        >
+                            {item.title}
                         </Typography>
-                    )
-                }
-                sx={{ my: 'auto' }}
-            />
-            {item.chip && (
+                    }
+                    secondary={
+                        item.caption && (
+                            <Typography
+                                variant='caption'
+                                sx={{ ...theme.typography.subMenuCaption, mt: -0.6 }}
+                                display='block'
+                                gutterBottom
+                            >
+                                {item.caption}
+                            </Typography>
+                        )
+                    }
+                    sx={{ my: 'auto' }}
+                />
+            )}
+            {!collapsed && item.chip && (
                 <Chip
                     color={item.chip.color}
                     variant={item.chip.variant}
@@ -139,7 +159,7 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
                     avatar={item.chip.avatar && <Avatar>{item.chip.avatar}</Avatar>}
                 />
             )}
-            {item.isBeta && (
+            {!collapsed && item.isBeta && (
                 <Chip
                     sx={{
                         my: 'auto',
@@ -153,6 +173,14 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
                 />
             )}
         </ListItemButton>
+    )
+
+    return collapsed ? (
+        <Tooltip title={item.title} placement='right'>
+            {button}
+        </Tooltip>
+    ) : (
+        button
     )
 }
 

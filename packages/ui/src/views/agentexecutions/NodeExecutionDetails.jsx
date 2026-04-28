@@ -25,7 +25,7 @@ import {
 } from '@mui/material'
 import { useTheme, darken } from '@mui/material/styles'
 import { useSnackbar } from 'notistack'
-import { IconCoins, IconCoin, IconClock, IconChevronDown, IconDownload, IconTool } from '@tabler/icons-react'
+import { IconCoins, IconCoin, IconClock, IconChevronDown, IconDownload, IconTool, IconRobot } from '@tabler/icons-react'
 import toolSVG from '@/assets/images/tool.svg'
 
 // Project imports
@@ -262,7 +262,10 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                 <Box item style={{ width: 50 }}>
                     {(() => {
                         const nodeName = data?.name || data?.id?.split('_')[0]
-                        const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodeName)
+                        const isSmartAgent = nodeName === 'smartAgentAgentflow'
+                        const foundIcon = isSmartAgent
+                            ? { icon: IconRobot, color: '#9575CD' }
+                            : AGENTFLOW_ICONS.find((icon) => icon.name === nodeName)
 
                         if (foundIcon) {
                             return (
@@ -304,7 +307,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     })()}
                 </Box>
                 <Typography variant='h5' gutterBottom>
-                    {label}
+                    {data?.name === 'smartAgentAgentflow' ? 'Agent' : label}
                 </Typography>
                 <div style={{ flex: 1 }}></div>
                 {data.output && data.output.timeMetadata && data.output.timeMetadata.delta && (

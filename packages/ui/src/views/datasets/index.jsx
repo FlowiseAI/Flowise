@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import {
     Skeleton,
     Box,
+    Fade,
     Stack,
     TableContainer,
     Paper,
@@ -82,7 +83,6 @@ const EvalDatasets = () => {
     }
 
     const refresh = (page, limit) => {
-        setLoading(true)
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
@@ -199,159 +199,164 @@ const EvalDatasets = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            isBackButton={false}
-                            isEditButton={false}
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            title='Datasets'
-                            description=''
-                        >
-                            <StyledPermissionButton
-                                permissionId={'datasets:create'}
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            <ViewHeader
+                                isBackButton={false}
+                                isEditButton={false}
+                                onSearchChange={onSearchChange}
+                                search={true}
+                                title='Datasets'
+                                description=''
                             >
-                                Add New
-                            </StyledPermissionButton>
-                        </ViewHeader>
-                        {!isLoading && datasets.length <= 0 ? (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={empty_datasetSVG}
-                                        alt='empty_datasetSVG'
-                                    />
-                                </Box>
-                                <div>No Datasets Yet</div>
-                            </Stack>
-                        ) : (
-                            <>
-                                <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                    component={Paper}
+                                <StyledPermissionButton
+                                    permissionId={'datasets:create'}
+                                    variant='contained'
+                                    sx={{ borderRadius: 2, height: '100%' }}
+                                    onClick={addNew}
+                                    startIcon={<IconPlus />}
                                 >
-                                    <Table sx={{ minWidth: 650 }}>
-                                        <TableHead
-                                            sx={{
-                                                backgroundColor: customization.isDarkMode
-                                                    ? theme.palette.common.black
-                                                    : theme.palette.grey[100],
-                                                height: 56
-                                            }}
-                                        >
-                                            <TableRow>
-                                                <TableCell>Name</TableCell>
-                                                <TableCell>Description</TableCell>
-                                                <TableCell>Rows</TableCell>
-                                                <TableCell>Last Updated</TableCell>
-                                                <Available permission={'datasets:update,datasets:create'}>
-                                                    <TableCell> </TableCell>
-                                                </Available>
-                                                <Available permission={'datasets:delete'}>
-                                                    <TableCell> </TableCell>
-                                                </Available>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {isLoading ? (
-                                                <>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <Available permission={'datasets:update,datasets:create'}>
-                                                            <Skeleton variant='text' />
-                                                        </Available>
-                                                        <Available permission={'datasets:delete'}>
-                                                            <Skeleton variant='text' />
-                                                        </Available>
-                                                    </StyledTableRow>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <Available permission={'datasets:update,datasets:create'}>
-                                                            <Skeleton variant='text' />
-                                                        </Available>
-                                                        <Available permission={'datasets:delete'}>
-                                                            <Skeleton variant='text' />
-                                                        </Available>
-                                                    </StyledTableRow>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {datasets.filter(filterDatasets).map((ds, index) => (
-                                                        <StyledTableRow
-                                                            hover
-                                                            key={index}
-                                                            sx={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
-                                                        >
-                                                            <TableCell onClick={() => goToRows(ds)} component='th' scope='row'>
-                                                                {ds.name}
-                                                            </TableCell>
-                                                            <TableCell
-                                                                onClick={() => goToRows(ds)}
-                                                                style={{ wordWrap: 'break-word', flexWrap: 'wrap', width: '40%' }}
-                                                            >
-                                                                {truncateString(ds?.description, 200)}
-                                                            </TableCell>
-                                                            <TableCell onClick={() => goToRows(ds)}>{ds?.rowCount}</TableCell>
-                                                            <TableCell onClick={() => goToRows(ds)}>
-                                                                {moment(ds.updatedDate).format('MMMM Do YYYY, hh:mm A')}
-                                                            </TableCell>
+                                    Add New
+                                </StyledPermissionButton>
+                            </ViewHeader>
+                            {!isLoading && datasets.length <= 0 ? (
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                    <Box sx={{ p: 2, height: 'auto' }}>
+                                        <img
+                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                            src={empty_datasetSVG}
+                                            alt='empty_datasetSVG'
+                                        />
+                                    </Box>
+                                    <div>No Datasets Yet</div>
+                                </Stack>
+                            ) : (
+                                <>
+                                    <TableContainer
+                                        sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                        component={Paper}
+                                    >
+                                        <Table sx={{ minWidth: 650 }}>
+                                            <TableHead
+                                                sx={{
+                                                    backgroundColor: customization.isDarkMode
+                                                        ? theme.palette.common.black
+                                                        : theme.palette.grey[100],
+                                                    height: 56
+                                                }}
+                                            >
+                                                <TableRow>
+                                                    <TableCell>Name</TableCell>
+                                                    <TableCell>Description</TableCell>
+                                                    <TableCell>Rows</TableCell>
+                                                    <TableCell>Last Updated</TableCell>
+                                                    <Available permission={'datasets:update,datasets:create'}>
+                                                        <TableCell> </TableCell>
+                                                    </Available>
+                                                    <Available permission={'datasets:delete'}>
+                                                        <TableCell> </TableCell>
+                                                    </Available>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {isLoading ? (
+                                                    <>
+                                                        <StyledTableRow>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
                                                             <Available permission={'datasets:update,datasets:create'}>
-                                                                <TableCell>
-                                                                    <IconButton title='Edit' color='primary' onClick={() => edit(ds)}>
-                                                                        <IconEdit />
-                                                                    </IconButton>
-                                                                </TableCell>
+                                                                <Skeleton variant='text' />
                                                             </Available>
                                                             <Available permission={'datasets:delete'}>
-                                                                <TableCell>
-                                                                    <IconButton
-                                                                        title='Delete'
-                                                                        color='error'
-                                                                        onClick={() => deleteDataset(ds)}
-                                                                    >
-                                                                        <IconTrash />
-                                                                    </IconButton>
-                                                                </TableCell>
+                                                                <Skeleton variant='text' />
                                                             </Available>
                                                         </StyledTableRow>
-                                                    ))}
-                                                </>
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                                {/* Pagination and Page Size Controls */}
-                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
-                            </>
-                        )}
-                    </Stack>
+                                                        <StyledTableRow>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <Available permission={'datasets:update,datasets:create'}>
+                                                                <Skeleton variant='text' />
+                                                            </Available>
+                                                            <Available permission={'datasets:delete'}>
+                                                                <Skeleton variant='text' />
+                                                            </Available>
+                                                        </StyledTableRow>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        {datasets.filter(filterDatasets).map((ds, index) => (
+                                                            <StyledTableRow
+                                                                hover
+                                                                key={index}
+                                                                sx={{
+                                                                    cursor: 'pointer',
+                                                                    '&:last-child td, &:last-child th': { border: 0 }
+                                                                }}
+                                                            >
+                                                                <TableCell onClick={() => goToRows(ds)} component='th' scope='row'>
+                                                                    {ds.name}
+                                                                </TableCell>
+                                                                <TableCell
+                                                                    onClick={() => goToRows(ds)}
+                                                                    style={{ wordWrap: 'break-word', flexWrap: 'wrap', width: '40%' }}
+                                                                >
+                                                                    {truncateString(ds?.description, 200)}
+                                                                </TableCell>
+                                                                <TableCell onClick={() => goToRows(ds)}>{ds?.rowCount}</TableCell>
+                                                                <TableCell onClick={() => goToRows(ds)}>
+                                                                    {moment(ds.updatedDate).format('MMMM Do YYYY, hh:mm A')}
+                                                                </TableCell>
+                                                                <Available permission={'datasets:update,datasets:create'}>
+                                                                    <TableCell>
+                                                                        <IconButton title='Edit' color='primary' onClick={() => edit(ds)}>
+                                                                            <IconEdit />
+                                                                        </IconButton>
+                                                                    </TableCell>
+                                                                </Available>
+                                                                <Available permission={'datasets:delete'}>
+                                                                    <TableCell>
+                                                                        <IconButton
+                                                                            title='Delete'
+                                                                            color='error'
+                                                                            onClick={() => deleteDataset(ds)}
+                                                                        >
+                                                                            <IconTrash />
+                                                                        </IconButton>
+                                                                    </TableCell>
+                                                                </Available>
+                                                            </StyledTableRow>
+                                                        ))}
+                                                    </>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                    {/* Pagination and Page Size Controls */}
+                                    <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+                                </>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             <AddEditDatasetDialog

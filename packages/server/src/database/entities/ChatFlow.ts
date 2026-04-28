@@ -6,7 +6,8 @@ export enum EnumChatflowType {
     CHATFLOW = 'CHATFLOW',
     AGENTFLOW = 'AGENTFLOW',
     MULTIAGENT = 'MULTIAGENT',
-    ASSISTANT = 'ASSISTANT'
+    ASSISTANT = 'ASSISTANT',
+    AGENT = 'AGENT'
 }
 
 @Entity()

@@ -11,6 +11,7 @@ import { getErrorMessage } from '../../errors/utils'
 import { IReactFlowEdge, IReactFlowNode } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { stripProtectedFields } from '../../utils/stripProtectedFields'
+import logger from '../../utils/logger'
 import chatflowsService from '../chatflows'
 
 type ITemplate = {
@@ -33,41 +34,49 @@ const getAllTemplates = async () => {
         let jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
         let templates: any[] = []
         jsonsInDir.forEach((file) => {
-            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'chatflows', file)
-            const fileData = fs.readFileSync(filePath)
-            const fileDataObj = JSON.parse(fileData.toString()) as ITemplate
+            try {
+                const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'chatflows', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString()) as ITemplate
 
-            const template = {
-                id: uuidv4(),
-                templateName: file.split('.json')[0],
-                flowData: fileData.toString(),
-                badge: fileDataObj?.badge,
-                framework: fileDataObj?.framework,
-                usecases: fileDataObj?.usecases,
-                categories: getCategories(fileDataObj),
-                type: 'Chatflow',
-                description: fileDataObj?.description || ''
+                const template = {
+                    id: uuidv4(),
+                    templateName: file.split('.json')[0],
+                    flowData: fileData.toString(),
+                    badge: fileDataObj?.badge,
+                    framework: fileDataObj?.framework,
+                    usecases: fileDataObj?.usecases,
+                    categories: getCategories(fileDataObj),
+                    type: 'Chatflow',
+                    description: fileDataObj?.description || ''
+                }
+                templates.push(template)
+            } catch (e) {
+                logger.warn(`[server]: Skipping invalid chatflow template file ${file}: ${getErrorMessage(e)}`)
             }
-            templates.push(template)
         })
 
         marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools')
         jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
         jsonsInDir.forEach((file) => {
-            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools', file)
-            const fileData = fs.readFileSync(filePath)
-            const fileDataObj = JSON.parse(fileData.toString())
-            const template = {
-                ...fileDataObj,
-                id: uuidv4(),
-                type: 'Tool',
-                framework: fileDataObj?.framework,
-                badge: fileDataObj?.badge,
-                usecases: fileDataObj?.usecases,
-                categories: [],
-                templateName: file.split('.json')[0]
+            try {
+                const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString())
+                const template = {
+                    ...fileDataObj,
+                    id: uuidv4(),
+                    type: 'Tool',
+                    framework: fileDataObj?.framework,
+                    badge: fileDataObj?.badge,
+                    usecases: fileDataObj?.usecases,
+                    categories: [],
+                    templateName: file.split('.json')[0]
+                }
+                templates.push(template)
+            } catch (e) {
+                logger.warn(`[server]: Skipping invalid tool template file ${file}: ${getErrorMessage(e)}`)
             }
-            templates.push(template)
         })
 
         /*
@@ -95,37 +104,59 @@ const getAllTemplates = async () => {
         marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflowsv2')
         jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
         jsonsInDir.forEach((file) => {
-            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflowsv2', file)
-            const fileData = fs.readFileSync(filePath)
-            const fileDataObj = JSON.parse(fileData.toString())
-            const template = {
-                id: uuidv4(),
-                templateName: file.split('.json')[0],
-                flowData: fileData.toString(),
-                badge: fileDataObj?.badge,
-                framework: fileDataObj?.framework,
-                usecases: fileDataObj?.usecases,
-                categories: getCategories(fileDataObj),
-                type: 'AgentflowV2',
-                description: fileDataObj?.description || ''
+            try {
+                const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflowsv2', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString())
+                const template = {
+                    id: uuidv4(),
+                    templateName: file.split('.json')[0],
+                    flowData: fileData.toString(),
+                    badge: fileDataObj?.badge,
+                    framework: fileDataObj?.framework,
+                    usecases: fileDataObj?.usecases,
+                    categories: getCategories(fileDataObj),
+                    type: 'AgentflowV2',
+                    description: fileDataObj?.description || ''
+                }
+                templates.push(template)
+            } catch (e) {
+                logger.warn(`[server]: Skipping invalid agentflow template file ${file}: ${getErrorMessage(e)}`)
             }
-            templates.push(template)
         })
+        // Scan Agent templates
+        const agentsDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agents')
+        if (fs.existsSync(agentsDir)) {
+            const agentJsons = fs.readdirSync(agentsDir).filter((file) => path.extname(file) === '.json')
+            agentJsons.forEach((file) => {
+                try {
+                    const filePath = path.join(agentsDir, file)
+                    const fileData = fs.readFileSync(filePath)
+                    const fileDataObj = JSON.parse(fileData.toString())
+                    const template = {
+                        id: uuidv4(),
+                        templateName: file.split('.json')[0],
+                        flowData: fileData.toString(),
+                        badge: fileDataObj?.badge,
+                        framework: fileDataObj?.framework,
+                        usecases: fileDataObj?.usecases,
+                        categories: getCategories(fileDataObj),
+                        type: 'Agent',
+                        description: fileDataObj?.description || ''
+                    }
+                    templates.push(template)
+                } catch (e) {
+                    logger.warn(`[server]: Skipping invalid agent template file ${file}: ${getErrorMessage(e)}`)
+                }
+            })
+        }
+
         const sortedTemplates = templates.sort((a, b) => {
-            // Prioritize AgentflowV2 templates first
-            if (a.type === 'AgentflowV2' && b.type !== 'AgentflowV2') {
-                return -1
-            }
-            if (b.type === 'AgentflowV2' && a.type !== 'AgentflowV2') {
-                return 1
-            }
-            // Put Tool templates last
-            if (a.type === 'Tool' && b.type !== 'Tool') {
-                return 1
-            }
-            if (b.type === 'Tool' && a.type !== 'Tool') {
-                return -1
-            }
+            // Prioritize Agent and AgentflowV2 templates first
+            const priority: Record<string, number> = { Agent: 0, AgentflowV2: 1, Chatflow: 2, Agentflow: 3, Tool: 4 }
+            const aPriority = priority[a.type] ?? 3
+            const bPriority = priority[b.type] ?? 3
+            if (aPriority !== bPriority) return aPriority - bPriority
             // For same types, sort alphabetically by templateName
             return a.templateName.localeCompare(b.templateName)
         })

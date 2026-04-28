@@ -8,6 +8,7 @@ import {
     IconTool,
     IconLock,
     IconRobot,
+    IconRobotFace,
     IconSettings,
     IconVariable,
     IconFiles,
@@ -36,6 +37,7 @@ const icons = {
     IconTool,
     IconLock,
     IconRobot,
+    IconRobotFace,
     IconSettings,
     IconVariable,
     IconFiles,
@@ -67,13 +69,13 @@ const dashboard = {
             type: 'group',
             children: [
                 {
-                    id: 'chatflows',
-                    title: 'Chatflows',
+                    id: 'agents',
+                    title: 'Agents',
                     type: 'item',
-                    url: '/chatflows',
-                    icon: icons.IconHierarchy,
+                    url: '/agents',
+                    icon: icons.IconRobot,
                     breadcrumbs: true,
-                    permission: 'chatflows:view'
+                    permission: 'agents:view'
                 },
                 {
                     id: 'agentflows',
@@ -94,11 +96,20 @@ const dashboard = {
                     permission: 'executions:view'
                 },
                 {
+                    id: 'chatflows',
+                    title: 'Chatflows',
+                    type: 'item',
+                    url: '/chatflows',
+                    icon: icons.IconHierarchy,
+                    breadcrumbs: true,
+                    permission: 'chatflows:view'
+                },
+                {
                     id: 'assistants',
                     title: 'Assistants',
                     type: 'item',
                     url: '/assistants',
-                    icon: icons.IconRobot,
+                    icon: icons.IconRobotFace,
                     breadcrumbs: true,
                     permission: 'assistants:view'
                 },

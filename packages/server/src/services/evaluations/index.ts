@@ -509,7 +509,7 @@ const isOutdated = async (id: string, workspaceId: string) => {
             // check for backward compatibility, as previous versions did not the types in additionalConfig
             if (chatflowTypes && chatflowTypes.length >= 0) {
                 if (chatflowTypes[i] === 'Custom Assistant') {
-                    // if the chatflow type is custom assistant, then we should NOT check in the chatflows table
+                    // Legacy custom assistant records are in the assistant table, skip chatflow table check
                     continue
                 }
             }
@@ -530,7 +530,12 @@ const isOutdated = async (id: string, workspaceId: string) => {
                     returnObj.chatflows.push({
                         chatflowName: chatflowNames[i],
                         chatflowId: chatflowIds[i],
-                        chatflowType: chatflow.type === 'AGENTFLOW' ? 'Agentflow v2' : 'Chatflow',
+                        chatflowType:
+                            chatflow.type === 'AGENTFLOW'
+                                ? 'Agentflow v2'
+                                : chatflow.type === 'AGENT' || chatflow.type === 'ASSISTANT'
+                                ? 'Agent'
+                                : 'Chatflow',
                         isOutdated: true
                     })
                 }
@@ -539,7 +544,7 @@ const isOutdated = async (id: string, workspaceId: string) => {
         if (chatflowTypes && chatflowTypes.length > 0) {
             for (let i = 0; i < chatflowIds.length; i++) {
                 if (chatflowTypes[i] !== 'Custom Assistant') {
-                    // if the chatflow type is NOT custom assistant, then bail out for this item
+                    // Only check assistant table for legacy Custom Assistant records
                     continue
                 }
                 const assistant = await appServer.AppDataSource.getRepository(Assistant).findOneBy({
@@ -548,7 +553,7 @@ const isOutdated = async (id: string, workspaceId: string) => {
                 })
                 if (!assistant) {
                     returnObj.errors.push({
-                        message: `Custom Assistant ${chatflowNames[i]} not found`,
+                        message: `Agent ${chatflowNames[i]} not found`,
                         id: chatflowIds[i]
                     })
                     isOutdated = true
@@ -559,7 +564,7 @@ const isOutdated = async (id: string, workspaceId: string) => {
                         returnObj.chatflows.push({
                             chatflowName: chatflowNames[i],
                             chatflowId: chatflowIds[i],
-                            chatflowType: 'Custom Assistant',
+                            chatflowType: 'Agent',
                             isOutdated: true
                         })
                     }
