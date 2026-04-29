@@ -63,18 +63,30 @@ describe('FulfilledConditionsBlock', () => {
         expect(container.firstChild).toBeNull()
     })
 
-    it('preserves the original index when only later entries are fulfilled', () => {
-        // Index labels reflect the position in the *original* array, so a
-        // single fulfilled entry at index 2 should render as "Condition 2",
-        // not "Condition 0". (Current implementation uses .filter then .map
-        // with the post-filter index — anchored here as a behavior pin.)
+    it('labels each fulfilled entry with its index in the original array', () => {
+        // The displayed number must match the branch the user configured in
+        // the Condition node editor. A single fulfilled entry at original
+        // index 2 renders as "Condition 2", not "Condition 0".
         const conditions: ConditionEntry[] = [
             { type: 'string', value1: 'a', value2: 'b', isFulfilled: false },
             { type: 'string', value1: 'a', value2: 'c', isFulfilled: false },
             { type: 'string', value1: 'a', value2: 'a', isFulfilled: true }
         ]
         renderWithTheme(<FulfilledConditionsBlock conditions={conditions} isDarkMode={false} />)
+        expect(screen.getByText('Condition 2')).toBeInTheDocument()
+        expect(screen.queryByText('Condition 0')).not.toBeInTheDocument()
+    })
+
+    it('preserves gaps when non-contiguous entries are fulfilled', () => {
+        const conditions: ConditionEntry[] = [
+            { type: 'string', value1: 'a', value2: 'a', isFulfilled: true },
+            { type: 'string', value1: 'a', value2: 'b', isFulfilled: false },
+            { type: 'string', value1: 'a', value2: 'a', isFulfilled: true }
+        ]
+        renderWithTheme(<FulfilledConditionsBlock conditions={conditions} isDarkMode={false} />)
         expect(screen.getByText('Condition 0')).toBeInTheDocument()
+        expect(screen.queryByText('Condition 1')).not.toBeInTheDocument()
+        expect(screen.getByText('Condition 2')).toBeInTheDocument()
     })
 
     it('renders the condition object as inline JSON in the body', () => {
