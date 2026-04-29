@@ -23,6 +23,9 @@ const baseConfig = {
         '^tippy\\.js$': '<rootDir>/src/__mocks__/tippy.js.ts',
         // uuid ships ESM-only in browser context — redirect to deterministic CJS stub
         '^uuid$': '<rootDir>/src/__mocks__/uuid.ts',
+        // react-markdown and remark-gfm ship ESM-only — redirect to lightweight CJS stubs
+        '^react-markdown$': '<rootDir>/src/__mocks__/react-markdown.tsx',
+        '^remark-gfm$': '<rootDir>/src/__mocks__/remark-gfm.ts',
         // Bypass React.lazy wrappers — resolve Foo.lazy → Foo so tests render synchronously
         '(.*)\\.lazy$': '$1'
     }

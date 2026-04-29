@@ -14,6 +14,9 @@ jest.mock('@microsoft/fetch-event-source', () => ({
 
 const mockSetNodeExecutionStatus = jest.fn()
 const mockClearExecutionState = jest.fn()
+const mockAbortMessage = jest.fn().mockResolvedValue(undefined)
+const mockGetAllExecutions = jest.fn().mockResolvedValue({ data: [], total: 0 })
+const mockGetChatflow = jest.fn().mockResolvedValue({ id: 'flow-123', flowData: '{"nodes":[],"edges":[]}' })
 
 jest.mock('@/infrastructure/store', () => ({
     useAgentflowContext: () => ({
@@ -23,7 +26,14 @@ jest.mock('@/infrastructure/store', () => ({
     }),
     useApiContext: () => ({
         apiBaseUrl: 'http://localhost:3000',
-        token: 'test-token'
+        token: 'test-token',
+        chatflowsApi: {
+            abortMessage: mockAbortMessage,
+            getChatflow: mockGetChatflow
+        },
+        executionsApi: {
+            getAllExecutions: mockGetAllExecutions
+        }
     })
 }))
 
@@ -79,6 +89,8 @@ function makeEvent(event: string, data: unknown) {
 
 beforeEach(() => {
     jest.clearAllMocks()
+    mockGetAllExecutions.mockResolvedValue({ data: [], total: 0 })
+    mockGetChatflow.mockResolvedValue({ id: 'flow-123', flowData: '{"nodes":[],"edges":[]}' })
 })
 
 describe('TestFlowDialog', () => {
@@ -178,7 +190,7 @@ describe('TestFlowDialog', () => {
             const { onopen, onmessage } = getHandlers()
 
             await act(async () => {
-                await onopen({ ok: true, headers: new Headers({ 'content-type': 'text/event-stream' }) })
+                await onopen({ ok: true, headers: new Headers({ 'content-type': 'text/event-stream' }) } as unknown as Response)
                 onmessage(makeEvent('start', null))
                 onmessage(makeEvent('token', 'Hello'))
                 onmessage(makeEvent('token', ' world'))
@@ -198,7 +210,7 @@ describe('TestFlowDialog', () => {
             const { onopen, onmessage } = getHandlers()
 
             await act(async () => {
-                await onopen({ ok: true, headers: new Headers({ 'content-type': 'text/event-stream' }) })
+                await onopen({ ok: true, headers: new Headers({ 'content-type': 'text/event-stream' }) } as unknown as Response)
                 onmessage(makeEvent('nextAgentFlow', { nodeId: 'node1', status: 'INPROGRESS' }))
             })
 
@@ -216,7 +228,7 @@ describe('TestFlowDialog', () => {
             const { onopen, onmessage } = getHandlers()
 
             await act(async () => {
-                await onopen({ ok: true, headers: new Headers({ 'content-type': 'text/event-stream' }) })
+                await onopen({ ok: true, headers: new Headers({ 'content-type': 'text/event-stream' }) } as unknown as Response)
                 onmessage(makeEvent('nextAgentFlow', { nodeId: 'node2', status: 'ERROR', error: 'timeout' }))
             })
 
@@ -234,12 +246,147 @@ describe('TestFlowDialog', () => {
             const { onopen, onmessage } = getHandlers()
 
             await act(async () => {
-                await onopen({ ok: true, headers: new Headers({ 'content-type': 'text/event-stream' }) })
+                await onopen({ ok: true, headers: new Headers({ 'content-type': 'text/event-stream' }) } as unknown as Response)
                 onmessage(makeEvent('start', null))
                 onmessage(makeEvent('error', 'Something went wrong'))
             })
 
             expect(screen.getByText('Error: Something went wrong')).toBeInTheDocument()
+        })
+
+        it('updates chatId from metadata event', async () => {
+            const getHandlers = captureSSEHandlers()
+            renderDialog()
+
+            fireEvent.change(screen.getByPlaceholderText('Type a message...'), { target: { value: 'Meta' } })
+            fireEvent.keyDown(screen.getByPlaceholderText('Type a message...'), { key: 'Enter', shiftKey: false })
+
+            await waitFor(() => expect(mockFetchEventSource).toHaveBeenCalled())
+            const { onopen, onmessage, onclose } = getHandlers()
+
+            await act(async () => {
+                await onopen({ ok: true, headers: new Headers({ 'content-type': 'text/event-stream' }) } as unknown as Response)
+                onmessage(makeEvent('metadata', { chatId: 'server-chat-id-xyz' }))
+                onclose() // finish the stream so loading=false and input re-enables
+            })
+
+            // Subsequent send should use the server-provided chatId
+            await waitFor(() => expect(screen.getByPlaceholderText('Type a message...')).not.toBeDisabled())
+            fireEvent.change(screen.getByPlaceholderText('Type a message...'), { target: { value: 'Next' } })
+            fireEvent.keyDown(screen.getByPlaceholderText('Type a message...'), { key: 'Enter', shiftKey: false })
+
+            await waitFor(() =>
+                expect(mockFetchEventSource).toHaveBeenLastCalledWith(
+                    expect.any(String),
+                    expect.objectContaining({
+                        body: expect.stringContaining('server-chat-id-xyz')
+                    })
+                )
+            )
+        })
+
+        it('renders follow-up prompt chips from metadata event', async () => {
+            const getHandlers = captureSSEHandlers()
+            renderDialog()
+
+            fireEvent.change(screen.getByPlaceholderText('Type a message...'), { target: { value: 'Hi' } })
+            fireEvent.keyDown(screen.getByPlaceholderText('Type a message...'), { key: 'Enter', shiftKey: false })
+
+            await waitFor(() => expect(mockFetchEventSource).toHaveBeenCalled())
+            const { onopen, onmessage } = getHandlers()
+
+            await act(async () => {
+                await onopen({ ok: true, headers: new Headers({ 'content-type': 'text/event-stream' }) } as unknown as Response)
+                onmessage(makeEvent('metadata', { followUpPrompts: JSON.stringify(['Tell me more', 'Explain further']) }))
+                onmessage(makeEvent('end', null))
+            })
+
+            await waitFor(() => expect(screen.getByText('Tell me more')).toBeInTheDocument())
+            expect(screen.getByText('Explain further')).toBeInTheDocument()
+        })
+
+        it('renders action buttons on action event', async () => {
+            const getHandlers = captureSSEHandlers()
+            renderDialog()
+
+            fireEvent.change(screen.getByPlaceholderText('Type a message...'), { target: { value: 'Approve?' } })
+            fireEvent.keyDown(screen.getByPlaceholderText('Type a message...'), { key: 'Enter', shiftKey: false })
+
+            await waitFor(() => expect(mockFetchEventSource).toHaveBeenCalled())
+            const { onopen, onmessage } = getHandlers()
+
+            await act(async () => {
+                await onopen({ ok: true, headers: new Headers({ 'content-type': 'text/event-stream' }) } as unknown as Response)
+                onmessage(makeEvent('start', null))
+                onmessage(
+                    makeEvent('action', {
+                        id: 'action-1',
+                        elements: [
+                            { label: 'Approve', type: 'agentflowv2-approve' },
+                            { label: 'Reject', type: 'agentflowv2-reject' }
+                        ]
+                    })
+                )
+            })
+
+            await waitFor(() => expect(screen.getByText('Approve')).toBeInTheDocument())
+            expect(screen.getByText('Reject')).toBeInTheDocument()
+        })
+    })
+
+    describe('stop button', () => {
+        it('calls abortMessage when stop is clicked', async () => {
+            const getHandlers = captureSSEHandlers()
+            renderDialog()
+
+            fireEvent.change(screen.getByPlaceholderText('Type a message...'), { target: { value: 'Long task' } })
+            fireEvent.keyDown(screen.getByPlaceholderText('Type a message...'), { key: 'Enter', shiftKey: false })
+
+            await waitFor(() => expect(mockFetchEventSource).toHaveBeenCalled())
+            const { onopen } = getHandlers()
+            await act(async () => {
+                await onopen({ ok: true, headers: new Headers({ 'content-type': 'text/event-stream' }) } as unknown as Response)
+            })
+
+            const stopBtn = screen.getByTitle('Stop')
+            await act(async () => {
+                fireEvent.click(stopBtn)
+            })
+
+            await waitFor(() => expect(mockAbortMessage).toHaveBeenCalledWith('flow-123', expect.any(String)))
+        })
+    })
+
+    describe('chat history', () => {
+        it('loads and displays history from executions on open', async () => {
+            mockGetAllExecutions.mockResolvedValue({
+                data: [
+                    {
+                        id: 'exec-1',
+                        sessionId: 'session-abc',
+                        executionData: JSON.stringify([
+                            {
+                                nodeId: 'start_0',
+                                nodeLabel: 'Start',
+                                data: { name: 'startAgentflow', input: { question: 'What is AI?' }, output: { question: 'What is AI?' } },
+                                status: 'FINISHED'
+                            },
+                            {
+                                nodeId: 'llm_0',
+                                nodeLabel: 'LLM',
+                                data: { name: 'llmAgentflow', output: { content: 'AI stands for Artificial Intelligence.' } },
+                                status: 'FINISHED'
+                            }
+                        ])
+                    }
+                ],
+                total: 1
+            })
+
+            renderDialog()
+
+            await waitFor(() => expect(screen.getByText('What is AI?')).toBeInTheDocument())
+            expect(screen.getByText('AI stands for Artificial Intelligence.')).toBeInTheDocument()
         })
     })
 

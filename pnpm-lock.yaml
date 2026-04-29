@@ -192,9 +192,15 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
+      react-markdown:
+        specifier: ^9.1.0
+        version: 9.1.0(@types/react@18.2.65)(react@18.2.0)
       reactflow:
         specifier: ^11.5.0
         version: 11.10.4(@types/react@18.2.65)(immer@10.1.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      remark-gfm:
+        specifier: ^4.0.1
+        version: 4.0.1
       tippy.js:
         specifier: ^6.3.7
         version: 6.3.7

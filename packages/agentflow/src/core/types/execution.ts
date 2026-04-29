@@ -21,7 +21,10 @@ export interface FlowExecutionState {
 export interface Execution {
     id: string
     chatflowId: string
+    agentflowId?: string
+    sessionId?: string
     status: ExecutionStatus
+    state?: string
     executionData?: string
     createdDate: string
     stoppedDate?: string
