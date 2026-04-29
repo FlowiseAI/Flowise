@@ -101,6 +101,7 @@ const baseColors = {
     nodeHttp: '#FF7F7F',
     nodeIteration: '#9C89B8',
     nodeExecuteFlow: '#a3b18a',
+    nodeA2aRemoteAgent: '#83C5BE',
 
     // Gradient colors
     gradientOrange: '#FF6B6B',
@@ -125,7 +126,8 @@ export const tokens = {
             stickyNote: baseColors.nodeStickyNote,
             http: baseColors.nodeHttp,
             iteration: baseColors.nodeIteration,
-            executeFlow: baseColors.nodeExecuteFlow
+            executeFlow: baseColors.nodeExecuteFlow,
+            a2aRemoteAgent: baseColors.nodeA2aRemoteAgent
         },
 
         // Semantic UI colors - referenced from base
