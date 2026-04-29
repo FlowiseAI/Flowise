@@ -27,7 +27,6 @@ import {
 interface ApiContextValue {
     client: AxiosInstance
     apiBaseUrl: string
-    token?: string
     nodesApi: NodesApi
     chatflowsApi: ChatflowsApi
     chatModelsApi: ChatModelsApi
@@ -68,7 +67,6 @@ export function ApiProvider({ apiBaseUrl, token, requestInterceptor, children }:
         return {
             client,
             apiBaseUrl,
-            token,
             nodesApi,
             chatflowsApi,
             chatModelsApi,

@@ -4,8 +4,6 @@ import ReactFlow, { Background, Controls, MiniMap, ReactFlowProvider, useEdgesSt
 import { Alert, Snackbar } from '@mui/material'
 import { IconSparkles } from '@tabler/icons-react'
 
-import { StyledFab } from '@/atoms'
-
 import { tokens } from './core/theme'
 import type { AgentFlowInstance, AgentflowProps, FlowData, FlowDataCallback, FlowEdge, FlowNode } from './core/types'
 import { initNode, resolveNodeType } from './core/utils'
@@ -24,7 +22,7 @@ import {
 import { ValidationFeedback } from './features/canvas/components'
 import { GenerateFlowDialog } from './features/generator'
 import { EditNodeDialog } from './features/node-editor'
-import { AddNodesDrawer } from './features/node-palette'
+import { AddNodesDrawer, StyledFab } from './features/node-palette'
 import { useAgentflowContext, useConfigContext } from './infrastructure/store'
 import { AgentflowProvider } from './AgentflowProvider'
 import { useAgentflow } from './useAgentflow'
@@ -37,7 +35,6 @@ import './features/canvas/canvas.css'
  */
 function AgentflowCanvas({
     initialFlow,
-    flowId,
     readOnly,
     onFlowChange,
     onSave,
@@ -50,7 +47,6 @@ function AgentflowCanvas({
     renderNodePalette
 }: {
     initialFlow?: FlowData
-    flowId?: string
     readOnly?: boolean
     onFlowChange?: FlowDataCallback
     onSave?: FlowDataCallback
@@ -67,7 +63,6 @@ function AgentflowCanvas({
         syncNodesFromReactFlow,
         syncEdgesFromReactFlow,
         setDirty,
-        setChatflow,
         setReactFlowInstance,
         closeEditDialog,
         registerLocalStateSetters,
@@ -94,7 +89,6 @@ function AgentflowCanvas({
     const [nodes, setLocalNodes, onNodesChange] = useNodesState(safeInitialNodes)
     const [edges, setLocalEdges, onEdgesChange] = useEdgesState(safeInitialEdges)
     const [showGenerateDialog, setShowGenerateDialog] = useState(false)
-    const [isChatOpen, setIsChatOpen] = useState(false)
 
     // Constraint violation snackbar state
     const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
@@ -144,11 +138,6 @@ function AgentflowCanvas({
         registerOnFlowChange(onFlowChange)
         return () => registerOnFlowChange(undefined)
     }, [registerOnFlowChange, onFlowChange])
-
-    // Sync flowId into context so features like TestFlowButton can read state.chatflow.id
-    useEffect(() => {
-        setChatflow(flowId ? { id: flowId } : null)
-    }, [flowId, setChatflow])
 
     // Sync local ReactFlow state to context (when user interacts with canvas)
     useEffect(() => {
@@ -298,16 +287,14 @@ function AgentflowCanvas({
                                 gap: 8
                             }}
                         >
-                            <TestFlowButton onOpenChange={setIsChatOpen} />
-                            {!isChatOpen && (
-                                <ValidationFeedback
-                                    nodes={nodes as FlowNode[]}
-                                    edges={edges as FlowEdge[]}
-                                    availableNodes={availableNodes}
-                                    setNodes={setLocalNodes as React.Dispatch<React.SetStateAction<FlowNode[]>>}
-                                />
-                            )}
-                            {!isChatOpen && canvasActions}
+                            <TestFlowButton />
+                            <ValidationFeedback
+                                nodes={nodes as FlowNode[]}
+                                edges={edges as FlowEdge[]}
+                                availableNodes={availableNodes}
+                                setNodes={setLocalNodes as React.Dispatch<React.SetStateAction<FlowNode[]>>}
+                            />
+                            {canvasActions}
                         </div>
                     )}
 
@@ -387,7 +374,6 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
         token,
         requestInterceptor,
         initialFlow,
-        flowId,
         components,
         onFlowChange,
         onSave,
@@ -416,7 +402,6 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
                 <AgentflowCanvasWithRef
                     ref={ref}
                     initialFlow={initialFlow}
-                    flowId={flowId}
                     readOnly={readOnly}
                     onFlowChange={onFlowChange}
                     onSave={onSave}
@@ -440,7 +425,6 @@ const AgentflowCanvasWithRef = forwardRef<
     AgentFlowInstance,
     {
         initialFlow?: FlowData
-        flowId?: string
         readOnly?: boolean
         onFlowChange?: FlowDataCallback
         onSave?: FlowDataCallback

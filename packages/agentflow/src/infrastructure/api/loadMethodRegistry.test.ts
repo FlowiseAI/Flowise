@@ -9,8 +9,7 @@ const mockApis: ApiServices = {
         updateChatflow: jest.fn(),
         deleteChatflow: jest.fn(),
         generateAgentflow: jest.fn(),
-        getChatModels: jest.fn(),
-        abortMessage: jest.fn()
+        getChatModels: jest.fn()
     },
     chatModelsApi: {
         getChatModels: jest.fn()

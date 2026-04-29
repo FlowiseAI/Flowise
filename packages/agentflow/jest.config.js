@@ -14,7 +14,6 @@ const baseConfig = {
     moduleNameMapper: {
         '\\.(css|less|scss|sass)$': '<rootDir>/src/__mocks__/styleMock.js',
         '\\.svg$': '<rootDir>/src/__mocks__/styleMock.js',
-        '\\.(png|jpg|jpeg|gif|webp|ico)$': '<rootDir>/src/__mocks__/fileMock.js',
         '^@/(.*)$': '<rootDir>/src/$1',
         '^@test-utils/(.*)$': '<rootDir>/src/__test_utils__/$1',
         // TipTap + lowlight ship ESM-only — Jest (CJS) cannot import them,
@@ -22,11 +21,6 @@ const baseConfig = {
         '^@tiptap/(.+)$': '<rootDir>/src/__mocks__/@tiptap/$1.ts',
         '^lowlight$': '<rootDir>/src/__mocks__/lowlight.ts',
         '^tippy\\.js$': '<rootDir>/src/__mocks__/tippy.js.ts',
-        // uuid ships ESM-only in browser context — redirect to deterministic CJS stub
-        '^uuid$': '<rootDir>/src/__mocks__/uuid.ts',
-        // react-markdown and remark-gfm ship ESM-only — redirect to lightweight CJS stubs
-        '^react-markdown$': '<rootDir>/src/__mocks__/react-markdown.tsx',
-        '^remark-gfm$': '<rootDir>/src/__mocks__/remark-gfm.ts',
         // Bypass React.lazy wrappers — resolve Foo.lazy → Foo so tests render synchronously
         '(.*)\\.lazy$': '$1'
     }

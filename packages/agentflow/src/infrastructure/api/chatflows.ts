@@ -83,13 +83,6 @@ export function bindChatflowsApi(client: AxiosInstance) {
         /**
          * Get available chat models for generation
          */
-        /**
-         * Abort an in-progress prediction for a chatflow session
-         */
-        abortMessage: async (chatflowId: string, chatId: string): Promise<void> => {
-            await client.put(`/chatmessage/abort/${chatflowId}/${chatId}`)
-        },
-
         getChatModels: async (): Promise<
             Array<{
                 name: string

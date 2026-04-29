@@ -1,12 +1,12 @@
 // Canvas Feature - Public API
 // Container components (with state/logic)
-import { AgentFlowEdge, AgentFlowNode, IterationNode, StickyNote, TestFlowButton } from './containers'
+import { AgentFlowEdge, AgentFlowNode, IterationNode, StickyNote } from './containers'
 
 import './canvas.css'
 
 // Presentational components
 export type { AgentflowHeaderProps } from './components'
-export { AgentflowHeader, ConnectionLine, createHeaderProps } from './components'
+export { AgentflowHeader, ConnectionLine, createHeaderProps, TestFlowButton } from './components'
 
 // Hooks
 export { useDragAndDrop, useFlowHandlers, useFlowNodes } from './hooks'
@@ -23,9 +23,7 @@ export const edgeTypes = {
 }
 
 // Re-export container components
-export { AgentFlowEdge, AgentFlowNode, IterationNode, StickyNote, TestFlowButton }
-export type { TestFlowButtonProps, TestFlowDialogProps } from './containers'
-export { TestFlowDialog } from './containers'
+export { AgentFlowEdge, AgentFlowNode, IterationNode, StickyNote }
 
 // Utilities and styled components
 export { getBuiltInAnthropicToolIcon, getBuiltInGeminiToolIcon, getBuiltInOpenAIToolIcon, renderNodeIcon } from './nodeIcons'
