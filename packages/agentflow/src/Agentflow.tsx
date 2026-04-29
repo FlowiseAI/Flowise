@@ -94,6 +94,7 @@ function AgentflowCanvas({
     const [nodes, setLocalNodes, onNodesChange] = useNodesState(safeInitialNodes)
     const [edges, setLocalEdges, onEdgesChange] = useEdgesState(safeInitialEdges)
     const [showGenerateDialog, setShowGenerateDialog] = useState(false)
+    const [isChatOpen, setIsChatOpen] = useState(false)
 
     // Constraint violation snackbar state
     const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
@@ -297,14 +298,16 @@ function AgentflowCanvas({
                                 gap: 8
                             }}
                         >
-                            <TestFlowButton />
-                            <ValidationFeedback
-                                nodes={nodes as FlowNode[]}
-                                edges={edges as FlowEdge[]}
-                                availableNodes={availableNodes}
-                                setNodes={setLocalNodes as React.Dispatch<React.SetStateAction<FlowNode[]>>}
-                            />
-                            {canvasActions}
+                            <TestFlowButton onOpenChange={setIsChatOpen} />
+                            {!isChatOpen && (
+                                <ValidationFeedback
+                                    nodes={nodes as FlowNode[]}
+                                    edges={edges as FlowEdge[]}
+                                    availableNodes={availableNodes}
+                                    setNodes={setLocalNodes as React.Dispatch<React.SetStateAction<FlowNode[]>>}
+                                />
+                            )}
+                            {!isChatOpen && canvasActions}
                         </div>
                     )}
 

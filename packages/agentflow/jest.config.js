@@ -14,6 +14,7 @@ const baseConfig = {
     moduleNameMapper: {
         '\\.(css|less|scss|sass)$': '<rootDir>/src/__mocks__/styleMock.js',
         '\\.svg$': '<rootDir>/src/__mocks__/styleMock.js',
+        '\\.(png|jpg|jpeg|gif|webp|ico)$': '<rootDir>/src/__mocks__/fileMock.js',
         '^@/(.*)$': '<rootDir>/src/$1',
         '^@test-utils/(.*)$': '<rootDir>/src/__test_utils__/$1',
         // TipTap + lowlight ship ESM-only — Jest (CJS) cannot import them,

@@ -2,25 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
-import {
-    Box,
-    Button,
-    Chip,
-    CircularProgress,
-    Dialog,
-    DialogContent,
-    DialogTitle,
-    IconButton,
-    InputAdornment,
-    OutlinedInput,
-    Paper,
-    Typography
-} from '@mui/material'
+import { Box, Button, Chip, CircularProgress, IconButton, InputAdornment, OutlinedInput, Paper, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconPlayerStop, IconRefresh, IconSend, IconX } from '@tabler/icons-react'
+import { IconPlayerStop, IconSend } from '@tabler/icons-react'
 import remarkGfm from 'remark-gfm'
 import { v4 as uuidv4 } from 'uuid'
 
+import accountPNG from '@/assets/images/account.png'
+import robotPNG from '@/assets/images/robot.png'
 import type { ExecutionStatus } from '@/core/types'
 import { useAgentflowContext, useApiContext } from '@/infrastructure/store'
 
@@ -66,7 +55,6 @@ interface ExecutionDataItem {
 export interface TestFlowDialogProps {
     chatflowId: string
     open: boolean
-    onClose: () => void
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -76,7 +64,7 @@ const HISTORY_LIMIT = 10
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function TestFlowDialog({ chatflowId, open, onClose }: TestFlowDialogProps) {
+export function TestFlowDialog({ chatflowId, open }: TestFlowDialogProps) {
     const theme = useTheme()
     const { setNodeExecutionStatus, clearExecutionState } = useAgentflowContext()
     const { apiBaseUrl, token, chatflowsApi, executionsApi } = useApiContext()
@@ -99,6 +87,10 @@ export function TestFlowDialog({ chatflowId, open, onClose }: TestFlowDialogProp
     useEffect(() => {
         scrollToBottom()
     }, [messages, scrollToBottom])
+
+    useEffect(() => {
+        if (!open) abortControllerRef.current?.abort()
+    }, [open])
 
     // ── Load chat history on open ─────────────────────────────────────────────
 
@@ -154,23 +146,6 @@ export function TestFlowDialog({ chatflowId, open, onClose }: TestFlowDialogProp
     }, [open, chatflowId, executionsApi, historyLoaded])
 
     // ── Actions ───────────────────────────────────────────────────────────────
-
-    const handleClear = useCallback(() => {
-        abortControllerRef.current?.abort()
-        chatIdRef.current = uuidv4()
-        setMessages([{ id: uuidv4(), type: 'bot', text: WELCOME_MESSAGE }])
-        setUserInput('')
-        setLoading(false)
-        setFollowUpPrompts([])
-        setHistoryLoaded(false)
-        clearExecutionState()
-        setTimeout(() => inputRef.current?.focus(), 50)
-    }, [clearExecutionState])
-
-    const handleClose = useCallback(() => {
-        abortControllerRef.current?.abort()
-        onClose()
-    }, [onClose])
 
     const handleStop = useCallback(async () => {
         abortControllerRef.current?.abort()
@@ -390,28 +365,8 @@ export function TestFlowDialog({ chatflowId, open, onClose }: TestFlowDialogProp
     // ── Render ────────────────────────────────────────────────────────────────
 
     return (
-        <Dialog
-            open={open}
-            onClose={handleClose}
-            fullWidth
-            maxWidth='sm'
-            PaperProps={{ sx: { height: '70vh', maxHeight: '70vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' } }}
-        >
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5, px: 2 }}>
-                <Typography variant='h4' component='span'>
-                    Test Flow
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 0.5 }}>
-                    <IconButton size='small' onClick={handleClear} title='Clear chat'>
-                        <IconRefresh size={18} />
-                    </IconButton>
-                    <IconButton size='small' onClick={handleClose} title='Close'>
-                        <IconX size={18} />
-                    </IconButton>
-                </Box>
-            </DialogTitle>
-
-            <DialogContent
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+            <Box
                 sx={{
                     flex: 1,
                     overflowY: 'auto',
@@ -422,13 +377,30 @@ export function TestFlowDialog({ chatflowId, open, onClose }: TestFlowDialogProp
                 }}
             >
                 {messages.map((msg) => (
-                    <Box key={msg.id} sx={{ display: 'flex', justifyContent: msg.type === 'user' ? 'flex-end' : 'flex-start' }}>
+                    <Box
+                        key={msg.id}
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'flex-end',
+                            gap: 1,
+                            justifyContent: msg.type === 'user' ? 'flex-end' : 'flex-start'
+                        }}
+                    >
+                        {msg.type === 'bot' && (
+                            <img
+                                src={robotPNG}
+                                alt='AI'
+                                width='30'
+                                height='30'
+                                style={{ borderRadius: '1rem', flexShrink: 0, marginBottom: '0.25rem' }}
+                            />
+                        )}
                         <Paper
                             elevation={0}
                             sx={{
                                 px: 2,
                                 py: 1,
-                                maxWidth: '80%',
+                                maxWidth: '75%',
                                 backgroundColor: msg.error
                                     ? theme.palette.error.light
                                     : msg.type === 'user'
@@ -469,6 +441,15 @@ export function TestFlowDialog({ chatflowId, open, onClose }: TestFlowDialogProp
                                 </Box>
                             )}
                         </Paper>
+                        {msg.type === 'user' && (
+                            <img
+                                src={accountPNG}
+                                alt='Me'
+                                width='30'
+                                height='30'
+                                style={{ borderRadius: '1rem', flexShrink: 0, marginBottom: '0.25rem' }}
+                            />
+                        )}
                     </Box>
                 ))}
 
@@ -491,7 +472,7 @@ export function TestFlowDialog({ chatflowId, open, onClose }: TestFlowDialogProp
                 )}
 
                 <div ref={bottomRef} />
-            </DialogContent>
+            </Box>
 
             <Box sx={{ p: 2, pt: 1, borderTop: `1px solid ${theme.palette.divider}` }}>
                 <OutlinedInput
@@ -520,6 +501,6 @@ export function TestFlowDialog({ chatflowId, open, onClose }: TestFlowDialogProp
                     }
                 />
             </Box>
-        </Dialog>
+        </Box>
     )
 }

@@ -41,10 +41,10 @@ const mockFetchEventSource = fetchEventSource as jest.Mock
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function renderDialog(open = true, onClose = jest.fn()) {
+function renderDialog(open = true) {
     return render(
         <ThemeProvider theme={createTheme()}>
-            <TestFlowDialog chatflowId='flow-123' open={open} onClose={onClose} />
+            <TestFlowDialog chatflowId='flow-123' open={open} />
         </ThemeProvider>
     )
 }
@@ -100,21 +100,9 @@ describe('TestFlowDialog', () => {
             expect(screen.getByText('Hi there! How can I help?')).toBeInTheDocument()
         })
 
-        it('renders the dialog title', () => {
-            renderDialog()
-            expect(screen.getByText('Test Flow')).toBeInTheDocument()
-        })
-
-        it('renders input placeholder and clear/close buttons', () => {
+        it('renders input placeholder', () => {
             renderDialog()
             expect(screen.getByPlaceholderText('Type a message...')).toBeInTheDocument()
-            expect(screen.getByTitle('Clear chat')).toBeInTheDocument()
-            expect(screen.getByTitle('Close')).toBeInTheDocument()
-        })
-
-        it('does not render dialog content when open is false', () => {
-            renderDialog(false)
-            expect(screen.queryByText('Test Flow')).not.toBeInTheDocument()
         })
     })
 
@@ -387,38 +375,6 @@ describe('TestFlowDialog', () => {
 
             await waitFor(() => expect(screen.getByText('What is AI?')).toBeInTheDocument())
             expect(screen.getByText('AI stands for Artificial Intelligence.')).toBeInTheDocument()
-        })
-    })
-
-    describe('clear chat', () => {
-        it('resets messages to welcome text on clear', async () => {
-            mockFetchEventSource.mockResolvedValue(undefined)
-            renderDialog()
-            const input = screen.getByPlaceholderText('Type a message...')
-
-            fireEvent.change(input, { target: { value: 'Hi' } })
-            fireEvent.keyDown(input, { key: 'Enter', shiftKey: false })
-            await waitFor(() => expect(screen.getByText('Hi')).toBeInTheDocument())
-
-            act(() => fireEvent.click(screen.getByTitle('Clear chat')))
-
-            expect(screen.queryByText('Hi')).not.toBeInTheDocument()
-            expect(screen.getByText('Hi there! How can I help?')).toBeInTheDocument()
-        })
-
-        it('calls clearExecutionState on clear', () => {
-            renderDialog()
-            act(() => fireEvent.click(screen.getByTitle('Clear chat')))
-            expect(mockClearExecutionState).toHaveBeenCalled()
-        })
-    })
-
-    describe('close button', () => {
-        it('calls onClose when close button is clicked', () => {
-            const onClose = jest.fn()
-            renderDialog(true, onClose)
-            fireEvent.click(screen.getByTitle('Close'))
-            expect(onClose).toHaveBeenCalled()
         })
     })
 })
