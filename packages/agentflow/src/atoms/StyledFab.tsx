@@ -10,8 +10,8 @@ export interface StyledFabProps extends FabProps {
 }
 
 /**
- * Styled floating action button with hover effects
- * Supports gradient background for special actions like Generate
+ * Styled floating action button with hover effects.
+ * Supports gradient background for special actions like Generate.
  */
 export const StyledFab: ComponentType<StyledFabProps> = styled(Fab, {
     shouldForwardProp: (prop) => prop !== 'gradient'

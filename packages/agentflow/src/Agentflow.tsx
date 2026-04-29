@@ -4,6 +4,8 @@ import ReactFlow, { Background, Controls, MiniMap, ReactFlowProvider, useEdgesSt
 import { Alert, Snackbar } from '@mui/material'
 import { IconSparkles } from '@tabler/icons-react'
 
+import { StyledFab } from '@/atoms'
+
 import { tokens } from './core/theme'
 import type { AgentFlowInstance, AgentflowProps, FlowData, FlowDataCallback, FlowEdge, FlowNode } from './core/types'
 import { initNode, resolveNodeType } from './core/utils'
@@ -22,7 +24,7 @@ import {
 import { ValidationFeedback } from './features/canvas/components'
 import { GenerateFlowDialog } from './features/generator'
 import { EditNodeDialog } from './features/node-editor'
-import { AddNodesDrawer, StyledFab } from './features/node-palette'
+import { AddNodesDrawer } from './features/node-palette'
 import { useAgentflowContext, useConfigContext } from './infrastructure/store'
 import { AgentflowProvider } from './AgentflowProvider'
 import { useAgentflow } from './useAgentflow'
