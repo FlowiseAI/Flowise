@@ -371,6 +371,11 @@ describe('validateCustomReadCSVFunction', () => {
             expect(result.valid).toBe(true)
         })
 
+        it('should allow spaces around keyword equals', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, sep = ';', header = 0)")
+            expect(result.valid).toBe(true)
+        })
+
         it('should allow statement separator characters inside string literals', () => {
             const result = validateCustomReadCSVFunction("read_csv(csv_data, sep=';', lineterminator='\\n')")
             expect(result.valid).toBe(true)
@@ -378,6 +383,11 @@ describe('validateCustomReadCSVFunction', () => {
 
         it('should allow literal lists, tuples, and dictionaries for read_csv options', () => {
             const result = validateCustomReadCSVFunction("read_csv(csv_data, usecols=['Name', 'Age'], na_values={'Age': ['NA', '']})")
+            expect(result.valid).toBe(true)
+        })
+
+        it('should allow spaces around dictionary colons and a trailing dictionary comma', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, na_values={'Age' : ['NA'],})")
             expect(result.valid).toBe(true)
         })
 
@@ -440,6 +450,12 @@ describe('validateCustomReadCSVFunction', () => {
 
         it('should block duplicate filepath_or_buffer when source is named', () => {
             const result = validateCustomReadCSVFunction("read_csv(filepath_or_buffer=csv_data, filepath_or_buffer='other.csv')")
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('duplicated')
+        })
+
+        it('should block filepath_or_buffer override when source is positional', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, filepath_or_buffer='other.csv')")
             expect(result.valid).toBe(false)
             expect(result.reason).toContain('duplicated')
         })

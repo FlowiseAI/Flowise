@@ -139,9 +139,29 @@ function splitTopLevel(code: string, delimiter: string): string[] | undefined {
 }
 
 function findTopLevelCharacter(code: string, character: string): number {
-    const parts = splitTopLevel(code, character)
-    if (!parts || parts.length < 2) return -1
-    return parts[0].length
+    const bracketStack: string[] = []
+
+    for (let i = 0; i < code.length; i += 1) {
+        const char = code[i]
+
+        if (char === "'" || char === '"') {
+            const nextIndex = skipQuotedString(code, i)
+            if (nextIndex < 0) return -1
+            i = nextIndex - 1
+            continue
+        }
+
+        const expectedClosing = expectedClosingBracket(char)
+        if (expectedClosing) {
+            bracketStack.push(expectedClosing)
+        } else if (char === ')' || char === ']' || char === '}') {
+            if (bracketStack.pop() !== char) return -1
+        } else if (char === character && bracketStack.length === 0) {
+            return i
+        }
+    }
+
+    return -1
 }
 
 function containsStatementSeparatorOutsideString(code: string): boolean {
@@ -217,7 +237,9 @@ function isSafeReadCSVLiteral(code: string): boolean {
         const entries = inner ? splitTopLevel(inner, ',') : []
         if (!entries) return false
 
-        return entries.every((entry) => {
+        return entries.every((entry, index) => {
+            if (!entry && index === entries.length - 1) return true
+
             const colonIndex = findTopLevelCharacter(entry, ':')
             if (colonIndex < 0) return false
 
@@ -252,7 +274,7 @@ function validateReadCSVArguments(args: string): PythonCodeValidationResult {
         }
     }
 
-    const seenKeywords = new Set(sourceKeyword ? [sourceKeyword] : [])
+    const seenKeywords = new Set(['filepath_or_buffer'])
     for (const arg of remainingArgs) {
         if (!arg) {
             return { valid: false, reason: 'read_csv() options must not contain empty arguments' }
