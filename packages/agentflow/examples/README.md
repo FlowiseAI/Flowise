@@ -122,14 +122,30 @@ Full integration with a running Flowise instance. Requires `VITE_FLOW_ID` for th
 
 ### Additional Examples
 
-| Example                 | File                            | Description                                                                          |
-| ----------------------- | ------------------------------- | ------------------------------------------------------------------------------------ |
-| **Multi-Node Flow**     | `MultiNodeFlow.tsx`             | Complete translation agent flow with multiple connected nodes showing gradient edges |
-| **Dark Mode**           | `DarkModeExample.tsx`           | Theme toggle demonstrating light/dark mode support                                   |
-| **Status Indicators**   | `StatusIndicatorsExample.tsx`   | Node execution states (running, finished, error, stopped) with animated loader       |
-| **Custom UI**           | `CustomUIExample.tsx`           | Custom header and node palette using render props                                    |
-| **All Node Types**      | `AllNodeTypesExample.tsx`       | Visual catalog of all 15 available node types with colors and icons                  |
-| **Filtered Components** | `FilteredComponentsExample.tsx` | Restricting available nodes with preset configurations                               |
+| Example                 | File                            | Description                                                                              |
+| ----------------------- | ------------------------------- | ---------------------------------------------------------------------------------------- |
+| **Multi-Node Flow**     | `MultiNodeFlow.tsx`             | Complete translation agent flow with multiple connected nodes showing gradient edges     |
+| **Dark Mode**           | `DarkModeExample.tsx`           | Theme toggle demonstrating light/dark mode support                                       |
+| **Status Indicators**   | `StatusIndicatorsExample.tsx`   | Node execution states (running, finished, error, stopped) with animated loader           |
+| **Custom Node**         | `CustomNodeExample.tsx`         | Node with self-contained InputParam definitions and show/hide field visibility           |
+| **Custom UI**           | `CustomUIExample.tsx`           | Custom header and node palette using render props                                        |
+| **All Node Types**      | `AllNodeTypesExample.tsx`       | Visual catalog of all 15 available node types with colors and icons                      |
+| **Filtered Components** | `FilteredComponentsExample.tsx` | Restricting available nodes with preset configurations                                   |
+| **Validation Actions**  | `ValidationActionsExample.tsx`  | Validation button, error display, and custom `canvasActions` alongside built-in controls |
+
+### Feature Coverage
+
+| Feature                                        | Demonstrated In                |
+| ---------------------------------------------- | ------------------------------ |
+| Variable usage (`{{variable}}` syntax, picker) | Custom Node                    |
+| Async options (models, tools, credentials)     | Basic Usage (with running API) |
+| Flow execution status indicators               | Status Indicators              |
+| Field visibility (show/hide conditions)        | Custom Node                    |
+| State management (dirty tracking, callbacks)   | Basic Usage                    |
+| Dark/light mode theming                        | Dark Mode                      |
+| Custom header and palette via render props     | Custom UI                      |
+| Restricting node types with `components` prop  | Filtered Components            |
+| Validation actions and custom `canvasActions`  | Validation Actions             |
 
 ## Switching Examples
 

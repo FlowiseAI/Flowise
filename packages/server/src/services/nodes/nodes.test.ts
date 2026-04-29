@@ -1,4 +1,4 @@
-import { filterNodeByClient } from './index'
+import { filterNodeByClient } from './filterNodeByClient'
 import type { INode } from 'flowise-components'
 
 const makeNode = (overrides: Partial<INode> = {}): INode =>

@@ -41,12 +41,12 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
             }
         },
         typography: {
-            h4: { fontSize: '1rem', fontWeight: 600 },
-            h5: { fontSize: '0.875rem', fontWeight: 600 },
-            h6: { fontSize: '0.75rem', fontWeight: 500 },
-            subtitle1: { fontSize: '0.875rem', fontWeight: 500 },
-            body1: { fontSize: '0.875rem', fontWeight: 400 },
-            body2: { fontSize: '0.75rem', fontWeight: 400 }
+            h4: { fontSize: tokens.typography.fontSize.lg, fontWeight: tokens.typography.fontWeight.semibold },
+            h5: { fontSize: tokens.typography.fontSize.md, fontWeight: tokens.typography.fontWeight.medium },
+            h6: { fontSize: tokens.typography.fontSize.sm, fontWeight: tokens.typography.fontWeight.medium },
+            subtitle1: { fontSize: tokens.typography.fontSize.md, fontWeight: tokens.typography.fontWeight.medium },
+            body1: { fontSize: tokens.typography.fontSize.md, fontWeight: tokens.typography.fontWeight.regular },
+            body2: { fontSize: tokens.typography.fontSize.sm, fontWeight: tokens.typography.fontWeight.regular }
         },
         components: {
             MuiPaper: {
@@ -62,7 +62,39 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
             MuiOutlinedInput: {
                 styleOverrides: {
                     root: {
-                        backgroundColor: tokens.colors.background.input[mode]
+                        backgroundColor: tokens.colors.background.input[mode],
+                        '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: tokens.colors.border.input[mode]
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: tokens.colors.border.hover[mode]
+                        }
+                    },
+                    input: {
+                        fontWeight: tokens.typography.fontWeight.medium
+                    }
+                }
+            },
+            MuiListItemButton: {
+                styleOverrides: {
+                    root: {
+                        '&.Mui-selected': {
+                            color: isDarkMode ? '#fff' : tokens.colors.palette.secondary.dark,
+                            backgroundColor: isDarkMode
+                                ? tokens.colors.background.listItemSelected.dark
+                                : tokens.colors.palette.secondary.light,
+                            '&:hover': {
+                                backgroundColor: isDarkMode
+                                    ? tokens.colors.background.listItemSelected.dark
+                                    : tokens.colors.palette.secondary.light
+                            }
+                        },
+                        '&:hover': {
+                            color: isDarkMode ? '#fff' : tokens.colors.palette.secondary.dark,
+                            backgroundColor: isDarkMode
+                                ? tokens.colors.background.listItemSelected.dark
+                                : tokens.colors.palette.secondary.light
+                        }
                     }
                 }
             },

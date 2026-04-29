@@ -312,7 +312,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
             await chatmessageApi.deleteChatmessage(chatflowid, obj)
             enqueueSnackbar({
-                message: 'Succesfully deleted messages',
+                message: 'Successfully deleted messages',
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -430,8 +430,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                 await chatmessageApi.deleteChatmessage(chatflowid, obj)
                 const description =
                     chatmsg.sessionId && chatmsg.memoryType
-                        ? `Succesfully cleared session id: ${chatmsg.sessionId} from ${chatmsg.memoryType}`
-                        : `Succesfully cleared messages`
+                        ? `Successfully cleared session id: ${chatmsg.sessionId} from ${chatmsg.memoryType}`
+                        : `Successfully cleared messages`
                 enqueueSnackbar({
                     message: description,
                     options: {

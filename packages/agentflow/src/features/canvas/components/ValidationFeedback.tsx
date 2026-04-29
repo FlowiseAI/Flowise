@@ -175,7 +175,7 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
                             }}
                         >
                             <Box sx={{ p: 2 }}>
-                                <Typography variant='h6' sx={{ mt: 1, mb: 2, fontWeight: 600 }}>
+                                <Typography variant='h6' sx={{ mt: 1, mb: 2, fontWeight: tokens.typography.fontWeight.semibold }}>
                                     Checklist ({results.reduce((sum, r) => sum + r.issues.length, 0)})
                                 </Typography>
 
@@ -195,7 +195,9 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
                                             >
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                                     {getNodeIcon(item)}
-                                                    <Typography sx={{ fontWeight: 500 }}>{item.label || item.name}</Typography>
+                                                    <Typography sx={{ fontWeight: tokens.typography.fontWeight.medium }}>
+                                                        {item.label || item.name}
+                                                    </Typography>
                                                 </Box>
 
                                                 {item.issues.map((issue, issueIndex) => (
@@ -235,7 +237,11 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
                                                 alt='Illustration of a checklist with no items, indicating no issues found'
                                             />
                                             {hasValidated ? (
-                                                <Typography variant='body2' color='success.main' sx={{ mt: 2, fontWeight: 500 }}>
+                                                <Typography
+                                                    variant='body2'
+                                                    color='success.main'
+                                                    sx={{ mt: 2, fontWeight: tokens.typography.fontWeight.medium }}
+                                                >
                                                     No issues found in your flow!
                                                 </Typography>
                                             ) : (

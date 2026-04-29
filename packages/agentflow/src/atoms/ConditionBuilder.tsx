@@ -171,13 +171,13 @@ export function ConditionBuilder({
                 </Typography>
             </Box>
 
-            <Box sx={{ px: 2 }}>
+            <Box sx={{ px: 2, pb: 2 }}>
                 <Button
                     fullWidth
                     size='small'
                     variant='outlined'
                     disabled={disabled}
-                    sx={{ borderRadius: '16px', mt: 2 }}
+                    sx={{ borderRadius: '16px', mt: 1 }}
                     startIcon={<IconPlus />}
                     onClick={handleAddItem}
                 >
