@@ -6,7 +6,7 @@
  * - FINISHED: Green checkmark
  * - ERROR: Red exclamation (hover for error message)
  * - STOPPED/TERMINATED: Stop icons
- * - WAITING_FOR_INPUT: Blue question mark (new)
+ * - WAITING_FOR_INPUT: Stop icon
  */
 
 import { useRef } from 'react'

@@ -37,6 +37,8 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     const { openNodeEditor } = useOpenNodeEditor()
 
     const nodeExecution = executionState?.nodeStates[data.id]
+    const status = nodeExecution?.status ?? data.status
+    const error = nodeExecution?.error ?? data.error
 
     const [isHovered, setIsHovered] = useState(false)
     const [warningMessage, setWarningMessage] = useState('')
@@ -90,7 +92,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                 }}
                 border={false}
             >
-                <NodeStatusIndicator status={nodeExecution?.status} error={nodeExecution?.error} />
+                <NodeStatusIndicator status={status} error={error} />
                 <NodeWarningIndicator message={warningMessage} />
 
                 <Box sx={{ width: '100%' }}>
