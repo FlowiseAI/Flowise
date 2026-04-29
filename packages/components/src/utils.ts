@@ -14,6 +14,8 @@ import { AIMessage, AIMessageChunk, HumanMessage, BaseMessage } from '@langchain
 import { Runnable, type RunnableConfig } from '@langchain/core/runnables'
 import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from './storageUtils'
+import { mapMimeTypeToExt } from './mime'
+export { mapMimeTypeToExt }
 import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
 import { customGet } from '../nodes/sequentialagents/commonUtils'
 import { TextSplitter } from '@langchain/textsplitters'
@@ -1134,120 +1136,6 @@ export const mapMimeTypeToInputField = (mimeType: string) => {
             return 'yamlFile'
         default:
             return 'txtFile'
-    }
-}
-
-/**
- * Map MimeType to Extension
- * @param {string} mimeType
- * @returns {string}
- */
-export const mapMimeTypeToExt = (mimeType: string) => {
-    switch (mimeType) {
-        case 'text/plain':
-            return 'txt'
-        case 'text/html':
-            return 'html'
-        case 'text/css':
-            return 'css'
-        case 'text/javascript':
-        case 'application/javascript':
-            return 'js'
-        case 'text/xml':
-        case 'application/xml':
-            return 'xml'
-        case 'text/markdown':
-        case 'text/x-markdown':
-            return 'md'
-        case 'application/pdf':
-            return 'pdf'
-        case 'application/json':
-            return 'json'
-        case 'text/csv':
-            return 'csv'
-        case 'application/json-lines':
-        case 'application/jsonl':
-        case 'text/jsonl':
-            return 'jsonl'
-        // YAML types
-        case 'application/vnd.yaml':
-        case 'application/x-yaml':
-        case 'text/vnd.yaml':
-        case 'text/x-yaml':
-        case 'text/yaml':
-            return 'yaml'
-        // SQL types
-        case 'application/sql':
-        case 'text/x-sql':
-            return 'sql'
-        // Document types
-        case 'application/msword':
-            return 'doc'
-        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-            return 'docx'
-        case 'application/vnd.ms-excel':
-            return 'xls'
-        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-            return 'xlsx'
-        case 'application/vnd.ms-powerpoint':
-            return 'ppt'
-        case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
-            return 'pptx'
-        case 'application/rtf':
-            return 'rtf'
-        // Image types
-        case 'image/jpeg':
-        case 'image/jpg':
-            return 'jpg'
-        case 'image/png':
-            return 'png'
-        case 'image/gif':
-            return 'gif'
-        case 'image/webp':
-            return 'webp'
-        case 'image/svg+xml':
-            return 'svg'
-        case 'image/bmp':
-            return 'bmp'
-        case 'image/tiff':
-        case 'image/tif':
-            return 'tiff'
-        case 'image/x-icon':
-        case 'image/vnd.microsoft.icon':
-            return 'ico'
-        case 'image/avif':
-            return 'avif'
-        // Audio types
-        case 'audio/webm':
-            return 'webm'
-        case 'audio/mp4':
-        case 'audio/x-m4a':
-            return 'm4a'
-        case 'audio/mpeg':
-        case 'audio/mp3':
-            return 'mp3'
-        case 'audio/ogg':
-        case 'audio/oga':
-            return 'ogg'
-        case 'audio/wav':
-        case 'audio/wave':
-        case 'audio/x-wav':
-            return 'wav'
-        case 'audio/aac':
-            return 'aac'
-        case 'audio/flac':
-            return 'flac'
-        // Video types
-        case 'video/mp4':
-            return 'mp4'
-        case 'video/webm':
-            return 'webm'
-        case 'video/quicktime':
-            return 'mov'
-        case 'video/x-msvideo':
-            return 'avi'
-        default:
-            return ''
     }
 }
 

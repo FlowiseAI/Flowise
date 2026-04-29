@@ -18,25 +18,13 @@ import {
     IMessageAdditionalKwargs
 } from './Interface.Agentflow'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters, mapMimeTypeToInputField } from '../../src/utils'
+import { getMimeType } from '../../src/mime'
 import { sanitizeFileName } from '../../src/validator'
 import fetch from 'node-fetch'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp']
-
-const MIME_TYPES: Record<string, string> = {
-    png: 'image/png',
-    jpg: 'image/jpeg',
-    jpeg: 'image/jpeg',
-    gif: 'image/gif',
-    pdf: 'application/pdf',
-    txt: 'text/plain',
-    csv: 'text/csv',
-    json: 'application/json',
-    html: 'text/html',
-    xml: 'application/xml'
-}
 
 const ARTIFACT_TYPES: Record<string, string> = {
     png: 'png',
@@ -464,8 +452,7 @@ export const getPastChatHistoryImageMessages = async (
 
 /** Returns the MIME type for a filename based on its extension. */
 export const getMimeTypeFromFilename = (filename: string): string => {
-    const extension = filename.toLowerCase().split('.').pop()
-    return MIME_TYPES[extension || ''] || 'application/octet-stream'
+    return getMimeType(filename)
 }
 
 /** Returns the artifact type (for UI rendering) based on a filename's extension. */
