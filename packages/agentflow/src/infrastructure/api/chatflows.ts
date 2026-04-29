@@ -90,6 +90,15 @@ export function bindChatflowsApi(client: AxiosInstance) {
             await client.put(`/chatmessage/abort/${chatflowId}/${chatId}`)
         },
 
+        /**
+         * Delete all internal chat messages for a chatflow session.
+         * AGENTFLOW flows write to both the ChatMessage and Execution tables,
+         * so clearing a session requires deleting from both.
+         */
+        deleteChatMessages: async (chatflowId: string, chatId: string): Promise<void> => {
+            await client.delete(`/chatmessage/${chatflowId}`, { params: { chatId, chatType: 'INTERNAL' } })
+        },
+
         getChatModels: async (): Promise<
             Array<{
                 name: string

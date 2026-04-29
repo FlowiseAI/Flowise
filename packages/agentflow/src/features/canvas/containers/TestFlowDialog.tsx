@@ -55,6 +55,8 @@ interface ExecutionDataItem {
 export interface TestFlowDialogProps {
     chatflowId: string
     open: boolean
+    chatId?: string
+    onChatIdChange?: (id: string) => void
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -64,7 +66,7 @@ const HISTORY_LIMIT = 10
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function TestFlowDialog({ chatflowId, open }: TestFlowDialogProps) {
+export function TestFlowDialog({ chatflowId, open, chatId: initialChatId, onChatIdChange }: TestFlowDialogProps) {
     const theme = useTheme()
     const { setNodeExecutionStatus, clearExecutionState } = useAgentflowContext()
     const { apiBaseUrl, token, chatflowsApi, executionsApi } = useApiContext()
@@ -75,7 +77,7 @@ export function TestFlowDialog({ chatflowId, open }: TestFlowDialogProps) {
     const [followUpPrompts, setFollowUpPrompts] = useState<string[]>([])
     const [historyLoaded, setHistoryLoaded] = useState(false)
 
-    const chatIdRef = useRef(uuidv4())
+    const chatIdRef = useRef(initialChatId ?? uuidv4())
     const bottomRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
     const abortControllerRef = useRef<AbortController | null>(null)
@@ -97,15 +99,21 @@ export function TestFlowDialog({ chatflowId, open }: TestFlowDialogProps) {
     useEffect(() => {
         if (!open || historyLoaded) return
 
+        let cancelled = false
+
         async function loadHistory() {
             try {
                 const page = await executionsApi.getAllExecutions({ agentflowId: chatflowId, limit: HISTORY_LIMIT })
+                if (cancelled) return
                 const executions = page.data
                 if (!executions?.length) return
 
                 // Restore the most recent session's chatId so the user continues it
                 const latestSessionId = executions[0]?.sessionId
-                if (latestSessionId) chatIdRef.current = latestSessionId
+                if (latestSessionId) {
+                    chatIdRef.current = latestSessionId
+                    onChatIdChange?.(latestSessionId)
+                }
 
                 const historyMessages: ChatMessage[] = []
                 // executions arrive newest-first; reverse to show oldest first
@@ -138,11 +146,14 @@ export function TestFlowDialog({ chatflowId, open }: TestFlowDialogProps) {
             } catch {
                 // history load is best-effort
             } finally {
-                setHistoryLoaded(true)
+                if (!cancelled) setHistoryLoaded(true)
             }
         }
 
         void loadHistory()
+        return () => {
+            cancelled = true
+        }
     }, [open, chatflowId, executionsApi, historyLoaded])
 
     // ── Actions ───────────────────────────────────────────────────────────────
@@ -295,7 +306,10 @@ export function TestFlowDialog({ chatflowId, open }: TestFlowDialogProps) {
 
                             case 'metadata': {
                                 const meta = payload.data as { chatId?: string; followUpPrompts?: string; chatMessageId?: string }
-                                if (meta?.chatId) chatIdRef.current = meta.chatId
+                                if (meta?.chatId) {
+                                    chatIdRef.current = meta.chatId
+                                    onChatIdChange?.(meta.chatId)
+                                }
                                 if (meta?.followUpPrompts) {
                                     try {
                                         const parsed: unknown = JSON.parse(meta.followUpPrompts)
