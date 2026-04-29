@@ -23,6 +23,8 @@ import zodToJsonSchema from 'zod-to-json-schema'
 import { z } from 'zod'
 import { PlanningTool, Todo } from './planning/PlanningTool'
 import { buildSystemPrompt } from './context/SystemPromptBuilder'
+import { createBackend, filesystemEnabled } from './sandbox/factory'
+import { buildFsTools } from './sandbox/tools/fs'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
 import { randomBytes } from 'crypto'
@@ -1035,6 +1037,13 @@ class SmartAgent_Agentflow implements INode {
                 toolNode: { label: 'Planning', name: 'write_todos' }
             })
 
+            const sandboxEnabled = filesystemEnabled()
+            if (sandboxEnabled) {
+                const backend = await createBackend()
+                const fsTools = buildFsTools(backend)
+                toolsInstance.push(...(fsTools as unknown as Tool[]))
+            }
+
             if (llmNodeInstance && toolsInstance.length > 0) {
                 if (llmNodeInstance.bindTools === undefined) {
                     throw new Error(`Agent needs to have a function calling capable models.`)
@@ -1076,7 +1085,7 @@ class SmartAgent_Agentflow implements INode {
             const systemPrompt = buildSystemPrompt({
                 todoListPrompt: planner.getSystemPrompt(),
                 skillsEnabled: false, // TODO: wire to node input
-                filesystemEnabled: false, // TODO: wire to node input
+                filesystemEnabled: sandboxEnabled,
                 subagentEnabled: false, // TODO: wire to node input
                 asyncSubagentEnabled: false, // TODO: wire to node input
                 userSystemPrompt: userSystemParts.join('\n\n') || undefined

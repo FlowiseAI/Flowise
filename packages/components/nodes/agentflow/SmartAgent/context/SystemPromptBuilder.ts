@@ -39,7 +39,18 @@ const SKILLS_PROMPT = `## Skills
 
 // Part 4: Filesystem tool prompt
 const FILESYSTEM_TOOL_PROMPT = `## Filesystem Tools
-// TODO: ls, read_file, write_file usage guidance`
+
+You have access to a sandbox filesystem. All paths must be absolute.
+
+**Path conventions:**
+- \`/workspace/\` — working area for files you create or process during this task
+- \`/artifacts/\` — outputs intended to be surfaced to the user (reports, generated files, etc.)
+
+// TODO: Temporary demo instructions for read_file + write_file only. Later stages will replace this with
+// complete tool coverage (ls, edit_file, glob, grep) and richer path/usage guidance.
+**Available tools:**
+- \`read_file\` — read a text file; supports \`offset\` and \`limit\` for pagination of large files
+- \`write_file\` — create a new text file; **create-only** — errors if the file already exists`
 
 // Part 5: Subagent prompt
 const SUBAGENT_PROMPT = `## Subagent Delegation
