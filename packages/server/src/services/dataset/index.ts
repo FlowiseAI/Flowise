@@ -239,11 +239,18 @@ const deleteDataset = async (id: string, workspaceId: string) => {
         const appServer = getRunningExpressApp()
         const result = await appServer.AppDataSource.getRepository(Dataset).delete({ id: id, workspaceId: workspaceId })
 
-        // delete all rows for this dataset
+        if ((result.affected ?? 0) === 0) {
+            // Same response whether the id is missing or belongs to another workspace (no enumeration).
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Dataset not found')
+        }
+
         await appServer.AppDataSource.getRepository(DatasetRow).delete({ datasetId: id })
 
         return result
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: datasetService.deleteDataset - ${getErrorMessage(error)}`)
     }
 }
