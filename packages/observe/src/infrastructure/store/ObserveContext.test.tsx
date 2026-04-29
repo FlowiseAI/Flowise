@@ -45,5 +45,10 @@ describe('ObserveContext', () => {
             const { result } = renderHook(() => useObserveConfig(), { wrapper: wrapper(true) })
             expect(result.current.isDarkMode).toBe(true)
         })
+
+        it('exposes apiBaseUrl from the provider', () => {
+            const { result } = renderHook(() => useObserveConfig(), { wrapper: wrapper() })
+            expect(result.current.apiBaseUrl).toBe('http://localhost:3000')
+        })
     })
 })

@@ -47,12 +47,18 @@ export function useExecutionTree(executionDataJson: string | null): ExecutionTre
         }
 
         function buildNode(n: NodeExecutionData): ExecutionTreeNode {
+            // The runtime never emits `name` at the top level (per
+            // `IAgentflowExecutedData`); Agent/LLM/etc. put their type
+            // identifier on `data.name`, so the fallback chain is required.
+            const dataName = n.data?.name
+            const resolvedName = n.name ?? (typeof dataName === 'string' ? dataName : undefined) ?? n.nodeId.split('_')[0]
+
             const treeNode: ExecutionTreeNode = {
                 id: `${n.nodeId}-${n.iterationIndex ?? 0}`,
                 nodeId: n.nodeId,
                 nodeLabel: n.nodeLabel,
                 status: n.status,
-                name: n.name,
+                name: resolvedName,
                 iterationIndex: n.iterationIndex,
                 children: [],
                 raw: n
@@ -69,6 +75,7 @@ export function useExecutionTree(executionDataJson: string | null): ExecutionTre
                         nodeId: `${n.nodeId}-iteration-${iterIdx}`,
                         nodeLabel: `Iteration #${iterIdx + 1}`,
                         status: groupChildren[groupChildren.length - 1]?.status ?? 'FINISHED',
+                        name: '',
                         isVirtualNode: true,
                         iterationIndex: iterIdx,
                         children: groupChildren.map(buildNode)

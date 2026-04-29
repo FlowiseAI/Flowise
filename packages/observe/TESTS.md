@@ -28,6 +28,14 @@ Feature-level hooks that orchestrate polling and UI state. Test when adding feat
 
 Presentational components that are mostly JSX. Only add tests if the component contains meaningful business logic. Pure layout/display components do not need tests.
 
+**Currently classified as Tier 3 (no `coverageThreshold` entry):**
+
+-   `ExecutionDetail.tsx` — orchestration shell wiring `useExecutionPoll` + `useExecutionTree` + `useResizableSidebar` + `<ExecutionTreeSidebar>` + `<NodeExecutionDetail>`. The drag-resize logic was lifted to `useResizableSidebar` (testable in isolation); the recursive tree renderer was lifted to `<ExecutionTreeSidebar>`. What remains is composition.
+-   `ExecutionTreeSidebar.tsx` — recursive list rendering with one click branch (skip-on-virtual-node). Add tests if the tree gains filtering, search, or non-trivial expand/collapse behavior.
+-   `ExecutionsListTable.tsx`, `ExecutionsViewer.tsx` — data-table + outer composition shells.
+
+If any of these grows real branching logic (filter predicates, sort comparators, debounced handlers), promote it to Tier 2 by adding a `coverageThreshold` entry in `jest.config.js` and writing the corresponding tests.
+
 ## Writing Tests
 
 ### File Extension Convention
@@ -75,6 +83,50 @@ jest.mock('@/infrastructure/store', () => ({
 ### Custom Jest Environment
 
 `src/__test_utils__/jest-environment-jsdom.js` intercepts `require('canvas')` and returns a mock before jsdom tries to load the native binary. This prevents build failures in environments without native canvas compilation.
+
+## Best Practices
+
+> The same content lives in the `dev-implement-jira` skill so it's discoverable cross-package. Keep both copies in sync when editing.
+
+### Test behavior, not implementation
+
+Assert on what a consumer of the unit observes — return values, rendered output, calls made to dependencies — not on internal state or which private helper ran. A refactor that preserves behavior should not break tests.
+
+### Use Arrange-Act-Assert structure
+
+Group each test into three blocks: set up inputs and mocks, invoke the unit under test, then assert. Keeping the steps visually distinct makes failures easier to diagnose.
+
+### One concept per test
+
+Each `it(...)` should verify a single behavior. Multiple low-level `expect` calls are fine if they describe one concept (e.g. one rendered tree shape), but unrelated assertions belong in separate tests so a failure points to a single cause.
+
+### Write descriptive test names
+
+Name tests by scenario and expected outcome: `it('returns empty tree when execution has no nodes')`, not `it('works')`. Prefer `describe` blocks per function or component, with `it` names that read as full sentences.
+
+### Keep tests independent and deterministic
+
+Reset state between tests — call `jest.clearAllMocks()` in `beforeEach` and avoid module-level mutable variables. No test should depend on execution order. Avoid real timers, real network, or `Date.now()` without `jest.useFakeTimers()`.
+
+### Mock at boundaries, not internals
+
+Mock external dependencies (axios, the API client, browser globals) and let internal modules run as written. Over-mocking internal collaborators couples tests to structure and hides integration bugs.
+
+### Cover meaningful edge cases
+
+For data transforms and hooks, add tests for empty input, single-element input, error/loading states, and any branch in the code. Coverage percentage is a floor — a 100%-covered function with only happy-path tests still has gaps.
+
+### Prefer `userEvent` over `fireEvent`
+
+When testing components, `@testing-library/user-event` simulates real interaction sequences (focus, keystrokes, click order). Use `fireEvent` only for events `userEvent` cannot synthesize.
+
+### Query by accessible role and text
+
+`getByRole`, `getByLabelText`, and `getByText` produce tests that double as accessibility checks. Reach for `getByTestId` only when no semantic query works.
+
+### Keep test data minimal
+
+Build fixtures with the smallest fields needed to exercise the behavior. Use factory helpers (or inline object literals) and override only the fields the test cares about — extraneous data hides what the test is actually asserting.
 
 ## Configuration
 
