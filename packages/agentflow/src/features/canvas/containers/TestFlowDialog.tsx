@@ -215,11 +215,14 @@ export function TestFlowDialog({ chatflowId, open, onClose }: TestFlowDialogProp
             const controller = new AbortController()
             abortControllerRef.current = controller
 
-            const headers: Record<string, string> = {
-                'Content-Type': 'application/json',
-                'x-request-from': 'internal'
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+            if (token) {
+                // API key auth: server validates via Authorization header
+                headers['Authorization'] = `Bearer ${token}`
+            } else {
+                // Session cookie auth: server validates the JWT cookie
+                headers['x-request-from'] = 'internal'
             }
-            if (token) headers['Authorization'] = `Bearer ${token}`
 
             let botMsgAdded = false
             let nonStreamHandled = false
