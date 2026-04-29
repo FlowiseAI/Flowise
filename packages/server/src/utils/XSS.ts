@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import sanitizeHtml from 'sanitize-html'
 import { extractChatflowId, isPublicChatflowRequest, isTTSGenerateRequest, validateChatflowDomain } from './domainValidation'
+import logger from './logger'
 
 export function sanitizeMiddleware(req: Request, res: Response, next: NextFunction): void {
     // decoding is necessary as the url is encoded by the browser
@@ -68,12 +69,26 @@ function parseAllowedOrigins(allowedOrigins: string): string[] {
         .filter((origin) => origin.length > 0)
 }
 
+export function validateCorsConfig(): void {
+    if (getAllowedCorsOrigins() === '*' && getAllowCredentials()) {
+        logger.warn(
+            '[CORS] Unsafe configuration detected: CORS_ORIGINS=* cannot be combined with ' +
+                'CORS_ALLOW_CREDENTIALS=true. Access-Control-Allow-Credentials has been forced to false. ' +
+                'To allow credentialed cross-origin requests, set CORS_ORIGINS to an explicit comma-separated ' +
+                'list of trusted origins instead of *.'
+        )
+    }
+}
+
 export function getCorsOptions(): any {
     return (req: any, callback: (err: Error | null, options?: any) => void) => {
+        const allowedOrigins = getAllowedCorsOrigins()
+        const requestedCredentials = getAllowCredentials()
+        const credentials = allowedOrigins === '*' ? false : requestedCredentials
+
         const corsOptions = {
-            credentials: getAllowCredentials(),
+            credentials,
             origin: async (origin: string | undefined, originCallback: (err: Error | null, allow?: boolean) => void) => {
-                const allowedOrigins = getAllowedCorsOrigins()
                 const isPublicChatflowReq = isPublicChatflowRequest(req.url)
                 const isTTSReq = isTTSGenerateRequest(req.url)
                 const allowedList = parseAllowedOrigins(allowedOrigins)
