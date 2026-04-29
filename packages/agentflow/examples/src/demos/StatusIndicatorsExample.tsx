@@ -9,7 +9,7 @@
  * - WAITING_FOR_INPUT: Stop icon
  */
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
 import type { AgentFlowInstance, ExecutionStatus, FlowData } from '@flowiseai/agentflow'
 import { Agentflow } from '@flowiseai/agentflow'
@@ -135,6 +135,7 @@ const initialFlow: FlowData = {
 
 export function StatusIndicatorsExample() {
     const agentflowRef = useRef<AgentFlowInstance>(null)
+    const [isDarkMode, setIsDarkMode] = useState(false)
 
     const simulateExecution = () => {
         const ref = agentflowRef.current
@@ -214,6 +215,19 @@ export function StatusIndicatorsExample() {
                 >
                     Reset
                 </button>
+                <button
+                    onClick={() => setIsDarkMode((d) => !d)}
+                    style={{
+                        padding: '8px 16px',
+                        background: isDarkMode ? '#444' : '#212121',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                </button>
                 <span style={{ color: '#666', fontSize: '14px' }}>Hover over error nodes to see error messages</span>
             </div>
 
@@ -226,6 +240,7 @@ export function StatusIndicatorsExample() {
                     initialFlow={initialFlow}
                     showDefaultHeader={false}
                     readOnly={true}
+                    isDarkMode={isDarkMode}
                 />
             </div>
         </div>
