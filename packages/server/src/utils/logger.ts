@@ -58,14 +58,13 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
     const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/', '/api/v1/ping']
 
     if (/\/api\/v1\//i.test(req.url) && !unwantedLogURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
-        // Body, query, and headers are intentionally NOT logged: they routinely contain
-        // passwords, reset tokens, and session cookies. Use targeted instrumentation or
-        // an APM tool when you need request payloads.
+        const email = (req.body as any)?.email ?? (req.body as any)?.user?.email
         const requestMetadata: any = {
             request: {
                 method: req.method,
                 url: req.url,
-                params: req.params
+                params: req.params,
+                ...(typeof email === 'string' ? { email } : {})
             }
         }
 
