@@ -60,6 +60,46 @@ describe('isPathTraversal', () => {
     })
 })
 
+describe('FLOWISE_ALLOWED_FOLDER_PATHS allows specific absolute paths', () => {
+    beforeEach(() => {
+        process.env.FLOWISE_ALLOWED_FOLDER_PATHS = '/data/documents,/mnt/shared'
+    })
+    afterEach(() => {
+        delete process.env.FLOWISE_ALLOWED_FOLDER_PATHS
+    })
+
+    it.each([
+        ['exact allowed path', '/data/documents'],
+        ['subdirectory of allowed path', '/data/documents/reports'],
+        ['deeply nested subdirectory', '/data/documents/2024/q1/report.pdf'],
+        ['second allowed path', '/mnt/shared'],
+        ['subdirectory of second allowed path', '/mnt/shared/uploads']
+    ])('should return false for %s when within an allowed base path', (_desc, input) => {
+        expect(isPathTraversal(input)).toBe(false)
+    })
+
+    it.each([
+        ['path outside allowed list', '/etc/passwd'],
+        ['path that is a prefix but not a child', '/data/documents2'],
+        ['path with traversal into allowed dir', '/data/documents/../../../etc/passwd']
+    ])('should still return true for %s even with allowed paths configured', (_desc, input) => {
+        expect(isPathTraversal(input)).toBe(true)
+    })
+})
+
+describe('FLOWISE_ALLOWED_FOLDER_PATHS with trailing slash normalisation', () => {
+    beforeEach(() => {
+        process.env.FLOWISE_ALLOWED_FOLDER_PATHS = '/data/documents/'
+    })
+    afterEach(() => {
+        delete process.env.FLOWISE_ALLOWED_FOLDER_PATHS
+    })
+
+    it('should allow a subdirectory of a path configured with trailing slash', () => {
+        expect(isPathTraversal('/data/documents/file.txt')).toBe(false)
+    })
+})
+
 describe('isUnsafeFilePath', () => {
     describe('PATH_TRAVERSAL_SAFETY=false bypasses all checks', () => {
         beforeEach(() => {
