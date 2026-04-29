@@ -3,7 +3,8 @@ import PropTypes from 'prop-types'
 import { Box, Chip } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
-const DAYS_OF_MONTH = Array.from({ length: 31 }, (_, i) => i + 1)
+const LAST_DAY_TOKEN = 'L'
+const DAYS_OF_MONTH = [...Array.from({ length: 31 }, (_, i) => String(i + 1)), LAST_DAY_TOKEN]
 
 export const MonthDaysPicker = ({ value, onChange, disabled = false }) => {
     const theme = useTheme()
@@ -19,10 +20,18 @@ export const MonthDaysPicker = ({ value, onChange, disabled = false }) => {
         return []
     }
 
-    const [selected, setSelected] = useState(parseValue(value))
+    // Sort numeric days ascending, keep "L" (last day) at the end.
+    const sortDays = (arr) =>
+        [...arr].sort((a, b) => {
+            if (a === LAST_DAY_TOKEN) return 1
+            if (b === LAST_DAY_TOKEN) return -1
+            return Number(a) - Number(b)
+        })
+
+    const [selected, setSelected] = useState(sortDays(parseValue(value)))
 
     useEffect(() => {
-        setSelected(parseValue(value))
+        setSelected(sortDays(parseValue(value)))
     }, [value])
 
     const toggle = (day) => {
@@ -34,9 +43,39 @@ export const MonthDaysPicker = ({ value, onChange, disabled = false }) => {
         } else {
             next = [...selected, dayStr]
         }
-        next.sort((a, b) => Number(a) - Number(b))
+        next = sortDays(next)
         setSelected(next)
         onChange(next.join(','))
+    }
+
+    const renderChip = (valueToken, label) => {
+        const isSelected = selected.includes(valueToken)
+        const isLastDay = valueToken === LAST_DAY_TOKEN
+        return (
+            <Chip
+                key={valueToken}
+                label={label}
+                size='small'
+                disabled={disabled}
+                onClick={() => toggle(valueToken)}
+                sx={{
+                    cursor: disabled ? 'default' : 'pointer',
+                    minWidth: 32,
+                    gridColumn: isLastDay ? 'span 2' : 'span 1',
+                    fontWeight: isSelected ? 600 : 400,
+                    borderWidth: '1.5px',
+                    borderStyle: 'solid',
+                    borderColor: isSelected ? theme.palette.primary.main : theme.palette.grey[400],
+                    backgroundColor: isSelected ? theme.palette.primary.main + '20' : 'transparent',
+                    color: isSelected ? theme.palette.primary.main : theme.palette.text.primary,
+                    '&:hover': disabled
+                        ? {}
+                        : {
+                              backgroundColor: isSelected ? theme.palette.primary.main + '35' : theme.palette.grey[200]
+                          }
+                }}
+            />
+        )
     }
 
     return (
@@ -48,34 +87,7 @@ export const MonthDaysPicker = ({ value, onChange, disabled = false }) => {
                 gap: 0.5
             }}
         >
-            {DAYS_OF_MONTH.map((day) => {
-                const dayStr = String(day)
-                const isSelected = selected.includes(dayStr)
-                return (
-                    <Chip
-                        key={day}
-                        label={day}
-                        size='small'
-                        disabled={disabled}
-                        onClick={() => toggle(day)}
-                        sx={{
-                            cursor: disabled ? 'default' : 'pointer',
-                            minWidth: 32,
-                            fontWeight: isSelected ? 600 : 400,
-                            borderWidth: '1.5px',
-                            borderStyle: 'solid',
-                            borderColor: isSelected ? theme.palette.primary.main : theme.palette.grey[400],
-                            backgroundColor: isSelected ? theme.palette.primary.main + '20' : 'transparent',
-                            color: isSelected ? theme.palette.primary.main : theme.palette.text.primary,
-                            '&:hover': disabled
-                                ? {}
-                                : {
-                                      backgroundColor: isSelected ? theme.palette.primary.main + '35' : theme.palette.grey[200]
-                                  }
-                        }}
-                    />
-                )
-            })}
+            {DAYS_OF_MONTH.map((day) => renderChip(day, day === LAST_DAY_TOKEN ? 'Last Day' : day))}
         </Box>
     )
 }

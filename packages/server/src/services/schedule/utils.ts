@@ -57,12 +57,14 @@ export const validateCronExpression = (
         return n >= min && n <= max
     }
 
-    // Validate a single cron field: supports *, numbers, ranges (n-m), steps (*/s, n/s, n-m/s), and comma-separated lists
-    const validateCronField = (field: string, min: number, max: number): boolean => {
+    // Validate a single cron field: supports *, numbers, ranges (n-m), steps (*/s, n/s, n-m/s), and comma-separated lists.
+    // When `allowL` is true, also accepts the standalone `L` token (used for the day-of-month field to mean "last day of month").
+    const validateCronField = (field: string, min: number, max: number, allowL: boolean = false): boolean => {
         const parts = field.split(',')
         if (parts.some((p) => p === '')) return false // catches leading/trailing/consecutive commas
 
         for (const part of parts) {
+            if (allowL && part === 'L') continue
             const slashIdx = part.indexOf('/')
             if (slashIdx !== -1) {
                 const base = part.slice(0, slashIdx)
@@ -90,8 +92,10 @@ export const validateCronExpression = (
 
     // For 6-field cron, prepend an extra seconds range (same as minutes: 0-59)
     const ranges: Array<[number, number]> = fields.length === 6 ? [[0, 59], ...fieldRanges] : fieldRanges
+    // Day-of-month is at position 2 (5-field) or 3 (6-field). Allow `L` only there.
+    const domIndex = fields.length === 6 ? 3 : 2
     for (let i = 0; i < fields.length; i++) {
-        if (!validateCronField(fields[i], ranges[i][0], ranges[i][1])) {
+        if (!validateCronField(fields[i], ranges[i][0], ranges[i][1], i === domIndex)) {
             return { valid: false, error: `Invalid cron field at position ${i + 1}: "${fields[i]}"` }
         }
     }
@@ -194,6 +198,23 @@ function _matchCronField(field: string, value: number, min: number): boolean {
     return false
 }
 
+/**
+ * Day-of-month matcher that additionally supports the `L` token, which fires only on the
+ * last day of the current month. Other parts (numbers, ranges, lists, steps) fall through
+ * to `_matchCronField`.
+ */
+function _matchDomField(field: string, dom: number, lastDay: number): boolean {
+    if (field === '*') return true
+    for (const part of field.split(',')) {
+        if (part === 'L') {
+            if (dom === lastDay) return true
+            continue
+        }
+        if (_matchCronField(part, dom, 1)) return true
+    }
+    return false
+}
+
 interface _ParsedCronFields {
     minuteField: string
     hourField: string
@@ -220,7 +241,7 @@ function _parseCronFields(expression: string): _ParsedCronFields {
  * Both `parsed` and `fmt` should be created once outside any hot loop.
  */
 function _cronMatchesParsed(parsed: _ParsedCronFields, date: Date, fmt: Intl.DateTimeFormat): boolean {
-    let minute: number, hour: number, dom: number, month: number, dow: number
+    let minute: number, hour: number, dom: number, month: number, dow: number, year: number
     try {
         const parts = fmt.formatToParts(date)
         const get = (type: string) => parseInt(parts.find((p) => p.type === type)?.value ?? '0', 10)
@@ -229,6 +250,7 @@ function _cronMatchesParsed(parsed: _ParsedCronFields, date: Date, fmt: Intl.Dat
         hour = get('hour') % 24
         dom = get('day')
         month = get('month')
+        year = get('year')
         dow = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(weekdayStr)
         if (dow === -1) dow = date.getUTCDay()
     } catch {
@@ -236,13 +258,17 @@ function _cronMatchesParsed(parsed: _ParsedCronFields, date: Date, fmt: Intl.Dat
         hour = date.getUTCHours()
         dom = date.getUTCDate()
         month = date.getUTCMonth() + 1
+        year = date.getUTCFullYear()
         dow = date.getUTCDay()
     }
+    // Last day of the (TZ-local) month: `new Date(year, month, 0)` rolls to the last day of `month`
+    // because day 0 of the next month equals the last day of the current month.
+    const lastDay = new Date(year, month, 0).getDate()
     const dowMatches = _matchCronField(parsed.dowField, dow, 0) || (dow === 0 && _matchCronField(parsed.dowField, 7, 0))
     return (
         _matchCronField(parsed.minuteField, minute, 0) &&
         _matchCronField(parsed.hourField, hour, 0) &&
-        _matchCronField(parsed.domField, dom, 1) &&
+        _matchDomField(parsed.domField, dom, lastDay) &&
         _matchCronField(parsed.monthField, month, 1) &&
         dowMatches
     )
@@ -324,6 +350,97 @@ export const computeNextRunAt = (cronExpression: string, timezone: string = 'UTC
     return null
 }
 
+// ─── node-cron compatibility helpers (`L` token) ──────────────────────────────
+
+/**
+ * `node-cron` does not understand the `L` token (last day of month). To stay
+ * compatible across both BullMQ (cron-parser, supports `L`) and node-cron
+ * scheduling backends, expand any standalone `L` part in the day-of-month
+ * field to the candidate range `28-31`, while leaving the rest of the
+ * expression untouched.
+ *
+ * The expanded expression is *only* meant to be handed to `node-cron`; the
+ * original (un-expanded) expression should still be used for any actual
+ * "does this date match?" decision via {@link cronDomMatchesNow}.
+ *
+ * @returns `{ expression, hasL }` — `expression` is the expanded cron string
+ * (or the input verbatim if there was nothing to expand); `hasL` indicates
+ * whether the input contained `L` and therefore needs runtime DOM filtering.
+ */
+export const expandCronLForNodeCron = (cronExpression: string): { expression: string; hasL: boolean } => {
+    const fields = cronExpression.trim().split(/\s+/)
+    if (fields.length !== 5 && fields.length !== 6) {
+        return { expression: cronExpression, hasL: false }
+    }
+    const domIdx = fields.length === 6 ? 3 : 2
+    const domField = fields[domIdx]
+    const parts = domField.split(',')
+    const hasL = parts.includes('L')
+    if (!hasL) return { expression: cronExpression, hasL: false }
+
+    // L expands to `28-31`, so drop any user-specified parts that are already
+    // covered by that range to avoid redundant entries like `31,28-31`.
+    // Ranges/steps that aren't fully inside [28, 31] are left untouched —
+    // node-cron will simply union them with the appended `28-31` part.
+    const kept: string[] = []
+    for (const p of parts) {
+        if (p === 'L') continue
+        if (/^\d+$/.test(p)) {
+            const n = parseInt(p, 10)
+            if (n >= 28 && n <= 31) continue
+        } else {
+            const rangeMatch = /^(\d+)-(\d+)$/.exec(p)
+            if (rangeMatch) {
+                const a = parseInt(rangeMatch[1], 10)
+                const b = parseInt(rangeMatch[2], 10)
+                if (a >= 28 && b <= 31) continue
+            }
+        }
+        kept.push(p)
+    }
+    kept.push('28-31')
+    fields[domIdx] = kept.join(',')
+    return { expression: fields.join(' '), hasL: true }
+}
+
+/**
+ * Verify that the given `date`'s day-of-month (interpreted in `timezone`)
+ * satisfies the day-of-month field of the *original* cron expression,
+ * including the `L` token. Used to filter false-positive fires from
+ * `node-cron` after expanding `L` → `28-31` via {@link expandCronLForNodeCron}.
+ *
+ * Returns `true` when the DOM matches (fire is legitimate) or when the
+ * original expression contains no `L` (no filtering needed).
+ */
+export const cronDomMatchesNow = (cronExpression: string, date: Date = new Date(), timezone: string = 'UTC'): boolean => {
+    const parsed = _parseCronFields(cronExpression)
+
+    // Extract DOM, month, year in the schedule's timezone so leap-year and
+    // DST month boundaries are honoured.
+    let dom: number, month: number, year: number
+    try {
+        const fmt = new Intl.DateTimeFormat('en-US', {
+            timeZone: timezone,
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric'
+        })
+        const parts = fmt.formatToParts(date)
+        const get = (type: string) => parseInt(parts.find((p) => p.type === type)?.value ?? '0', 10)
+        dom = get('day')
+        month = get('month')
+        year = get('year')
+    } catch {
+        dom = date.getUTCDate()
+        month = date.getUTCMonth() + 1
+        year = date.getUTCFullYear()
+    }
+
+    // Day 0 of next month == last day of current month.
+    const lastDay = new Date(year, month, 0).getDate()
+    return _matchDomField(parsed.domField, dom, lastDay)
+}
+
 // ─── Visual Picker helpers ────────────────────────────────────────────────────
 
 export interface VisualPickerInput {
@@ -395,9 +512,10 @@ export const validateVisualPickerFields = (input: VisualPickerInput): { valid: b
             .map((d) => d.trim())
             .filter((d) => d !== '')
         for (const d of days) {
+            if (d === 'L') continue // "Last Day of month" token
             const n = Number(d)
             if (isNaN(n) || !Number.isInteger(n) || n < 1 || n > 31) {
-                return { valid: false, error: `Invalid day of month value: ${d} (expected 1-31)` }
+                return { valid: false, error: `Invalid day of month value: ${d} (expected 1-31 or L)` }
             }
         }
     }

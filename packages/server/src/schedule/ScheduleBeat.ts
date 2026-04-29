@@ -16,6 +16,7 @@ import { ScheduleQueue } from '../queue/ScheduleQueue'
 import { QueueManager } from '../queue/QueueManager'
 import { executeScheduleJob } from './ScheduleExecutor'
 import scheduleService from '../services/schedule'
+import { expandCronLForNodeCron, cronDomMatchesNow } from '../services/schedule/utils'
 import { MODE } from '../Interface'
 import logger from '../utils/logger'
 import cron, { ScheduledTask } from 'node-cron'
@@ -161,20 +162,35 @@ export class ScheduleBeat {
 
     /**
      * Register (or re-register) a node-cron job for a schedule record.
+     *
+     * `node-cron` does not support the `L` (last day of month) token, while BullMQ /
+     * cron-parser does. To keep both backends in sync we expand `L` → `28-31` for
+     * node-cron's parser and add a runtime DOM filter so candidate days only
+     * actually fire when they really are the last day of the current month.
      */
     private _upsertCronJob(record: ScheduleRecord): void {
         this._removeCronJob(record.id)
 
         const tz = record.timezone ?? 'UTC'
 
-        if (!cron.validate(record.cronExpression)) {
+        const { expression: nodeCronExpression, hasL } = expandCronLForNodeCron(record.cronExpression)
+
+        if (!cron.validate(nodeCronExpression)) {
             logger.warn(`[ScheduleBeat]: Invalid cron expression for schedule ${record.id}: "${record.cronExpression}", skipping`)
             return
         }
 
         const task = cron.schedule(
-            record.cronExpression,
+            nodeCronExpression,
             () => {
+                // When the original expression used `L`, only fire on a real match
+                // (i.e. today's DOM in `tz` actually satisfies the original DOM field).
+                if (hasL && !cronDomMatchesNow(record.cronExpression, new Date(), tz)) {
+                    logger.debug(
+                        `[ScheduleBeat]: Skipping cron fire for schedule ${record.id} because today does not match original DOM field with L token`
+                    )
+                    return
+                }
                 this._onCronFire(record.id).catch((err) => {
                     logger.error(`[ScheduleBeat]: Error firing schedule ${record.id}: ${err}`)
                 })
@@ -183,7 +199,10 @@ export class ScheduleBeat {
         )
 
         this.cronJobs.set(record.id, task)
-        logger.debug(`[ScheduleBeat]: Registered cron job for schedule ${record.id} (${record.cronExpression} ${tz})`)
+        logger.debug(
+            `[ScheduleBeat]: Registered cron job for schedule ${record.id} ` +
+                `(${record.cronExpression}${hasL ? ` → ${nodeCronExpression}` : ''} ${tz})`
+        )
     }
 
     /**

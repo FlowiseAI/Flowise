@@ -427,6 +427,88 @@ describe('_upsertCronJob', () => {
         expect(onCronFire).toHaveBeenCalledWith('rec-1')
         onCronFire.mockRestore()
     })
+
+    // ── `L` (last day of month) compatibility with node-cron ───────────
+
+    it('expands `L` in DOM field to `28-31` before handing the cron expression to node-cron', () => {
+        const beat = ScheduleBeat.getInstance()
+        ;(beat as any)._upsertCronJob(makeRecord({ cronExpression: '0 9 L * *' }))
+
+        // node-cron is the one that does not understand L; it must receive the expanded expression.
+        expect(mockCronValidate).toHaveBeenCalledWith('0 9 28-31 * *')
+        expect(mockCronSchedule).toHaveBeenCalledWith('0 9 28-31 * *', expect.any(Function), { timezone: 'UTC' })
+    })
+
+    it('expands `L` correctly inside a comma-separated DOM list', () => {
+        const beat = ScheduleBeat.getInstance()
+        ;(beat as any)._upsertCronJob(makeRecord({ cronExpression: '0 9 1,15,L * *' }))
+
+        expect(mockCronSchedule).toHaveBeenCalledWith('0 9 1,15,28-31 * *', expect.any(Function), { timezone: 'UTC' })
+    })
+
+    it('expands `L` correctly when the last day of the month is specified and L special character', () => {
+        const beat = ScheduleBeat.getInstance()
+        ;(beat as any)._upsertCronJob(makeRecord({ cronExpression: '0 9 31,L * *' }))
+
+        // L should be expanded to 28-31 even if 31 is already present, to ensure the runtime filter logic works correctly.
+        expect(mockCronSchedule).toHaveBeenCalledWith('0 9 28-31 * *', expect.any(Function), { timezone: 'UTC' })
+    })
+
+    it('skips firing on candidate days that are not actually the last day of the month', () => {
+        const beat = ScheduleBeat.getInstance()
+        const onCronFire = jest.spyOn(beat as any, '_onCronFire').mockResolvedValue(undefined)
+
+        // Register an L-based cron. node-cron will fire on 28/29/30/31 every month;
+        // ScheduleBeat must filter out the spurious days.
+        ;(beat as any)._upsertCronJob(makeRecord({ cronExpression: '0 9 L * *' }))
+        const cronCallback = mockCronSchedule.mock.calls[0][1] as () => void
+
+        // Pretend node-cron fired on Jan 30 2025 — Jan has 31 days, so this is NOT the last day.
+        jest.useFakeTimers().setSystemTime(new Date('2025-01-30T09:00:00Z'))
+        cronCallback()
+        expect(onCronFire).not.toHaveBeenCalled()
+
+        // Now Jan 31 2025 — the actual last day.
+        jest.setSystemTime(new Date('2025-01-31T09:00:00Z'))
+        cronCallback()
+        expect(onCronFire).toHaveBeenCalledWith('rec-1')
+
+        jest.useRealTimers()
+        onCronFire.mockRestore()
+    })
+
+    it('does not apply runtime DOM filtering when the original expression has no L', () => {
+        const beat = ScheduleBeat.getInstance()
+        const onCronFire = jest.spyOn(beat as any, '_onCronFire').mockResolvedValue(undefined)
+
+        ;(beat as any)._upsertCronJob(makeRecord({ cronExpression: '0 9 * * 1-5' }))
+        const cronCallback = mockCronSchedule.mock.calls[0][1] as () => void
+
+        // Any date should fire because there is no DOM filter to reject it.
+        jest.useFakeTimers().setSystemTime(new Date('2025-01-30T09:00:00Z'))
+        cronCallback()
+        expect(onCronFire).toHaveBeenCalledWith('rec-1')
+
+        jest.useRealTimers()
+        onCronFire.mockRestore()
+    })
+
+    it('passes the schedule timezone through to the runtime DOM filter', () => {
+        const beat = ScheduleBeat.getInstance()
+        const onCronFire = jest.spyOn(beat as any, '_onCronFire').mockResolvedValue(undefined)
+
+        ;(beat as any)._upsertCronJob(makeRecord({ cronExpression: '0 9 L * *', timezone: 'America/New_York' }))
+        expect(mockCronSchedule).toHaveBeenCalledWith('0 9 28-31 * *', expect.any(Function), { timezone: 'America/New_York' })
+        const cronCallback = mockCronSchedule.mock.calls[0][1] as () => void
+
+        // 2025-02-01T03:00:00Z is Jan 31 22:00 in America/New_York → last day in the schedule's tz
+        jest.useFakeTimers().setSystemTime(new Date('2025-02-01T03:00:00Z'))
+        cronCallback()
+        expect(onCronFire).toHaveBeenCalledWith('rec-1')
+
+        jest.useRealTimers()
+        onCronFire.mockRestore()
+    })
 })
 
 // ─── _removeCronJob ───────────────────────────────────────────────────────────
