@@ -338,6 +338,7 @@ export function E2eExample() {
                             apiBaseUrl={apiBaseUrl}
                             token={token ?? undefined}
                             initialFlow={loadedFlow}
+                            flowId={activeChatflowId}
                             onFlowChange={handleFlowChange}
                             onSave={handleSave}
                             canvasActions={canvasActions}

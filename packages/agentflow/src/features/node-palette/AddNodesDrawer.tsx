@@ -20,14 +20,13 @@ import {
 import { useTheme } from '@mui/material/styles'
 import { IconMinus, IconPlus, IconSearch, IconX } from '@tabler/icons-react'
 
-import { MainCard } from '@/atoms'
+import { MainCard, StyledFab } from '@/atoms'
 import { tokens } from '@/core/theme/tokens'
 import type { NodeDataSchema } from '@/core/types'
 import { useApiContext } from '@/infrastructure/store'
 
 import { NodeListItem } from './NodeListItem'
 import { debounce, groupNodesByCategory, searchNodes } from './search'
-import { StyledFab } from './StyledFab'
 import { useDrawerMaxHeight } from './useDrawerMaxHeight'
 
 export interface AddNodesDrawerProps {
