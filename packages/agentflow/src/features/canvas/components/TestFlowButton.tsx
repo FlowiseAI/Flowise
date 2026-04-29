@@ -5,6 +5,8 @@ import { IconMessage } from '@tabler/icons-react'
 import { StyledFab } from '@/atoms'
 import { useAgentflowContext } from '@/infrastructure/store'
 
+import { TestFlowDialog } from './TestFlowDialog'
+
 export interface TestFlowButtonProps {
     /** Called when the dialog requests to be closed (e.g. after clearing chat) */
     onDialogClose?: () => void
@@ -23,7 +25,7 @@ export function TestFlowButton({ onDialogClose }: TestFlowButtonProps) {
 
     const handleOpen = () => setOpen(true)
 
-    const _handleClose = () => {
+    const handleClose = () => {
         setOpen(false)
         clearExecutionState()
         onDialogClose?.()
@@ -35,12 +37,7 @@ export function TestFlowButton({ onDialogClose }: TestFlowButtonProps) {
                 <IconMessage />
             </StyledFab>
 
-            {/* TestFlowDialog will be rendered here in Step 9 */}
-            {open && (
-                <div data-testid='test-flow-dialog-placeholder' style={{ display: 'none' }}>
-                    {/* chatflowId={state.chatflow.id} onClose={handleClose} */}
-                </div>
-            )}
+            <TestFlowDialog chatflowId={state.chatflow.id} open={open} onClose={handleClose} />
         </>
     )
 }

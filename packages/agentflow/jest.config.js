@@ -21,6 +21,8 @@ const baseConfig = {
         '^@tiptap/(.+)$': '<rootDir>/src/__mocks__/@tiptap/$1.ts',
         '^lowlight$': '<rootDir>/src/__mocks__/lowlight.ts',
         '^tippy\\.js$': '<rootDir>/src/__mocks__/tippy.js.ts',
+        // uuid ships ESM-only in browser context — redirect to deterministic CJS stub
+        '^uuid$': '<rootDir>/src/__mocks__/uuid.ts',
         // Bypass React.lazy wrappers — resolve Foo.lazy → Foo so tests render synchronously
         '(.*)\\.lazy$': '$1'
     }
