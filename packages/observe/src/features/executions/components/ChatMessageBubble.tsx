@@ -10,8 +10,6 @@ import { getRoleColors } from './roleColors'
 import { ToolAccordionList } from './ToolAccordionList'
 import { UsedToolChips } from './UsedToolChips'
 
-const MESSAGE_JSON_MAX_HEIGHT = 400
-
 interface ChatMessageBubbleProps {
     message: ChatMessage
     isDarkMode: boolean
@@ -68,9 +66,7 @@ export function ChatMessageBubble({ message, isDarkMode, sx, availableTools, api
                     )}
                 </Stack>
             )}
-            {!hideContent && (
-                <NodeContentRenderer value={message.content} isDarkMode={isDarkMode} jsonMaxHeight={MESSAGE_JSON_MAX_HEIGHT} />
-            )}
+            {!hideContent && <NodeContentRenderer value={message.content} isDarkMode={isDarkMode} />}
         </Box>
     )
 }

@@ -55,6 +55,34 @@ describe('JsonBlock', () => {
         expect(text).toContain('true')
         expect(text).toContain('null')
     })
+
+    describe('maxHeight (PARITY: legacy JSONViewer default)', () => {
+        // MUI's `sx` resolves to emotion class names, not inline styles, so
+        // jsdom can't read the computed pixel value directly. Instead we
+        // compare the generated className against an explicit-value control:
+        // identical class → identical sx → identical maxHeight.
+        const containerClass = (ui: ReactElement) => (renderWithTheme(ui).container.firstChild as HTMLElement).className
+
+        it('applies the 400 default when no maxHeight is provided', () => {
+            const defaultClass = containerClass(<JsonBlock value={{ k: 1 }} isDarkMode={false} />)
+            const explicit400 = containerClass(<JsonBlock value={{ k: 1 }} isDarkMode={false} maxHeight={400} />)
+            expect(defaultClass).toBe(explicit400)
+        })
+
+        it('emits a different class when an explicit maxHeight overrides the default', () => {
+            const defaultClass = containerClass(<JsonBlock value={{ k: 1 }} isDarkMode={false} />)
+            const overridden = containerClass(<JsonBlock value={{ k: 1 }} isDarkMode={false} maxHeight={200} />)
+            expect(overridden).not.toBe(defaultClass)
+        })
+
+        it('accepts string maxHeight values', () => {
+            // String values like "50vh" would be common for responsive layouts.
+            // Just confirm it doesn't crash and produces a stable class.
+            const a = containerClass(<JsonBlock value={{ k: 1 }} isDarkMode={false} maxHeight='50vh' />)
+            const b = containerClass(<JsonBlock value={{ k: 1 }} isDarkMode={false} maxHeight='50vh' />)
+            expect(a).toBe(b)
+        })
+    })
 })
 
 describe('JsonPrimitive', () => {

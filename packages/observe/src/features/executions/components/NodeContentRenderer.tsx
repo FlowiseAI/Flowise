@@ -25,14 +25,12 @@ export interface NodeContentRendererProps {
      */
     parsePrimitiveAsJson?: boolean
     /**
-     * Caps the height of the bordered JSON viewer. Matches legacy JSONViewer's
-     * default of 400 — long HTTP / form payloads scroll inside the frame
-     * instead of pushing the rest of the panel off-screen.
+     * Override the bordered JSON viewer's max height. Defaults to JsonBlock's
+     * value (400) — set this only when the embedding context (e.g. a
+     * compact list cell) needs a smaller cap.
      */
     jsonMaxHeight?: number | string
 }
-
-const DEFAULT_JSON_MAX_HEIGHT = 400
 
 // react-markdown v9 dropped the `inline` prop — we infer block vs inline by
 // inspecting `className` (language-*) and `children` (newlines).
@@ -83,12 +81,7 @@ function MarkdownCode({ className, children, isDarkMode, ...rest }: MarkdownCode
  * malformed HTML fragments which crash the rehype-raw HTML tokenizer. Without
  * it, ReactMarkdown safely escapes HTML as text.
  */
-export function NodeContentRenderer({
-    value,
-    isDarkMode,
-    parsePrimitiveAsJson = true,
-    jsonMaxHeight = DEFAULT_JSON_MAX_HEIGHT
-}: NodeContentRendererProps) {
+export function NodeContentRenderer({ value, isDarkMode, parsePrimitiveAsJson = true, jsonMaxHeight }: NodeContentRendererProps) {
     if (value === null || value === undefined) {
         return (
             <Typography variant='body2' color='text.secondary' sx={{ fontStyle: 'italic' }}>

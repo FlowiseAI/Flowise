@@ -114,6 +114,23 @@ describe('NodeContentRenderer', () => {
             renderWithTheme(<NodeContentRenderer value='42' isDarkMode={false} parsePrimitiveAsJson={false} />)
             expect(screen.getByText('42')).toBeInTheDocument()
         })
+
+        it('forwards jsonMaxHeight to JsonBlock (different class vs default)', () => {
+            // jsonMaxHeight is a thin pass-through onto JsonBlock's sx, which
+            // resolves to an emotion className. A non-default value must
+            // produce a different class — proving the prop wires through.
+            const findJsonBox = (root: HTMLElement): HTMLElement | null =>
+                Array.from(root.querySelectorAll('[class*="MuiBox-root"]')).find((el) => el.querySelector('pre')) as HTMLElement | null
+
+            const defaultRender = renderWithTheme(<NodeContentRenderer value={{ k: 1 }} isDarkMode={false} />)
+            const overriddenRender = renderWithTheme(<NodeContentRenderer value={{ k: 1 }} isDarkMode={false} jsonMaxHeight={123} />)
+
+            const defaultBox = findJsonBox(defaultRender.container as HTMLElement)
+            const overriddenBox = findJsonBox(overriddenRender.container as HTMLElement)
+            expect(defaultBox).toBeTruthy()
+            expect(overriddenBox).toBeTruthy()
+            expect(overriddenBox!.className).not.toBe(defaultBox!.className)
+        })
     })
 
     describe('plain primitives', () => {

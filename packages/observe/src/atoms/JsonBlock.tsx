@@ -45,16 +45,21 @@ interface JsonBlockProps {
     maxHeight?: number | string
 }
 
+// PARITY: legacy JSONViewer.jsx defaults to maxHeight: '400px' so long
+// HTTP / form / tool payloads scroll inside the bordered frame instead of
+// pushing the rest of the panel off-screen.
+const DEFAULT_MAX_HEIGHT = 400
+
 /**
  * Flat syntax-highlighted JSON pre-block. Used for inline (non-raw) JSON
  * content — Input/Output bubbles for HTTP/form/structured nodes. The
  * interactive tree-view `flowise-react-json-view` is reserved for the Raw view
  * where collapse/expand is useful.
  */
-export function JsonBlock({ value, isDarkMode, maxHeight }: JsonBlockProps) {
+export function JsonBlock({ value, isDarkMode, maxHeight = DEFAULT_MAX_HEIGHT }: JsonBlockProps) {
     const json = JSON.stringify(value, null, 2)
     return (
-        <Box sx={maxHeight !== undefined ? { ...containerSx, maxHeight } : containerSx}>
+        <Box sx={{ ...containerSx, maxHeight }}>
             <Box component='pre' sx={preBaseSx}>
                 {renderTokens(tokenizeJson(json), isDarkMode)}
             </Box>
