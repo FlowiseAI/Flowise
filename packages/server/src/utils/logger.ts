@@ -54,18 +54,71 @@ requestLogger = createLogger({
     transports: [...(process.env.DEBUG && process.env.DEBUG === 'true' ? [new transports.Console()] : []), ...requestTransports]
 })
 
+function getSensitiveBodyFields(): string[] {
+    if (!process.env.LOG_SANITIZE_BODY_FIELDS) return []
+    return (process.env.LOG_SANITIZE_BODY_FIELDS as string)
+        .toLowerCase()
+        .split(',')
+        .map((f) => f.trim())
+}
+
+function getSensitiveHeaderFields(): string[] {
+    if (!process.env.LOG_SANITIZE_HEADER_FIELDS) return []
+    return (process.env.LOG_SANITIZE_HEADER_FIELDS as string)
+        .toLowerCase()
+        .split(',')
+        .map((f) => f.trim())
+}
+
+function sanitizeObject(obj: any): any {
+    if (!obj || typeof obj !== 'object') return obj
+
+    const sensitiveFields = getSensitiveBodyFields()
+    const sanitized = Array.isArray(obj) ? [...obj] : { ...obj }
+    Object.keys(sanitized).forEach((key) => {
+        const lowerKey = key.toLowerCase()
+        if (sensitiveFields.includes(lowerKey)) {
+            sanitized[key] = '********'
+        } else if (typeof sanitized[key] === 'string') {
+            if (sanitized[key].includes('@') && sanitized[key].includes('.')) {
+                sanitized[key] = sanitized[key].replace(/([^@\s]+)@([^@\s]+)/g, '**********')
+            }
+        }
+    })
+
+    return sanitized
+}
+
 export function expressRequestLogger(req: Request, res: Response, next: NextFunction): void {
     const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/', '/api/v1/ping']
 
     if (/\/api\/v1\//i.test(req.url) && !unwantedLogURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
-        const email = (req.body as any)?.email ?? (req.body as any)?.user?.email
+        const isDebugLevel = logger.level === 'debug' || process.env.DEBUG === 'true'
+
         const requestMetadata: any = {
             request: {
                 method: req.method,
                 url: req.url,
-                params: req.params,
-                ...(typeof email === 'string' ? { email } : {})
+                params: req.params
             }
+        }
+
+        // Only include headers, body, and query if log level is debug
+        if (isDebugLevel) {
+            const sanitizedBody = sanitizeObject(req.body)
+            const sanitizedQuery = sanitizeObject(req.query)
+            const sanitizedHeaders = { ...req.headers }
+
+            const sensitiveHeaders = getSensitiveHeaderFields()
+            sensitiveHeaders.forEach((header) => {
+                if (sanitizedHeaders[header]) {
+                    sanitizedHeaders[header] = '********'
+                }
+            })
+
+            requestMetadata.request.body = sanitizedBody
+            requestMetadata.request.query = sanitizedQuery
+            requestMetadata.request.headers = sanitizedHeaders
         }
 
         const getRequestEmoji = (method: string) => {
@@ -80,11 +133,15 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
             return requetsEmojis[method] || '?'
         }
 
+        // Intentionally omit `requestMetadata` from these calls: it carries body, query,
+        // and headers (including passwords, reset tokens, and session cookies) that must
+        // not reach log files. The sanitization helpers above are kept in place so this
+        // can be patched later once they are made safe.
         if (req.method !== 'GET') {
-            requestLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`, requestMetadata)
+            requestLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
             logger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
         } else {
-            requestLogger.http(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`, requestMetadata)
+            requestLogger.http(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
         }
     }
 
