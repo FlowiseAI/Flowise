@@ -65,6 +65,15 @@ export async function assertWorkspaceIdAccessibleToUser(
     throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
 }
 
+export function assertStripeIdMatchesSession(requestedId: string, activeId: string | undefined, label: string): void {
+    if (!activeId) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `${label} is required`)
+    }
+    if (requestedId !== activeId) {
+        throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+    }
+}
+
 export function userMayManageOrgUsers(user: LoggedInUser): boolean {
     return user.isOrganizationAdmin === true || (user.permissions?.includes('users:manage') ?? false)
 }
