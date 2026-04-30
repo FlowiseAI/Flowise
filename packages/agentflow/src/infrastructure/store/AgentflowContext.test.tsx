@@ -222,6 +222,95 @@ describe('AgentflowContext', () => {
             expect(result.current.state.edges).toHaveLength(1)
             expect(result.current.state.edges[0].id).toBe('edge-3-4')
         })
+
+        it('should remove child nodes when an iteration node is deleted', () => {
+            const initialFlow: FlowData = {
+                nodes: [
+                    makeFlowNode('iteration-1', { type: 'iteration' }),
+                    makeFlowNode('child-1', { parentNode: 'iteration-1', extent: 'parent' }),
+                    makeFlowNode('child-2', { parentNode: 'iteration-1', extent: 'parent' }),
+                    makeFlowNode('other-1')
+                ],
+                edges: []
+            }
+
+            const { result } = renderHook(() => useAgentflowContext(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            expect(result.current.state.nodes).toHaveLength(4)
+
+            act(() => {
+                result.current.deleteNode('iteration-1')
+            })
+
+            const remainingIds = result.current.state.nodes.map((n) => n.id)
+            expect(remainingIds).toEqual(['other-1'])
+            expect(remainingIds).not.toContain('iteration-1')
+            expect(remainingIds).not.toContain('child-1')
+            expect(remainingIds).not.toContain('child-2')
+        })
+
+        it('should remove edges connected to child nodes when an iteration node is deleted', () => {
+            const initialFlow: FlowData = {
+                nodes: [
+                    makeFlowNode('iteration-1', { type: 'iteration' }),
+                    makeFlowNode('child-1', { parentNode: 'iteration-1', extent: 'parent' }),
+                    makeFlowNode('child-2', { parentNode: 'iteration-1', extent: 'parent' }),
+                    makeFlowNode('upstream-1'),
+                    makeFlowNode('downstream-1')
+                ],
+                edges: [
+                    makeEdge('upstream-1', 'iteration-1', { id: 'edge-in' }),
+                    makeEdge('child-1', 'child-2', { id: 'edge-inner' }),
+                    makeEdge('iteration-1', 'downstream-1', { id: 'edge-out' }),
+                    makeEdge('upstream-1', 'downstream-1', { id: 'edge-unrelated' })
+                ]
+            }
+
+            const { result } = renderHook(() => useAgentflowContext(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            expect(result.current.state.edges).toHaveLength(4)
+
+            act(() => {
+                result.current.deleteNode('iteration-1')
+            })
+
+            const remainingEdgeIds = result.current.state.edges.map((e) => e.id)
+            expect(remainingEdgeIds).toEqual(['edge-unrelated'])
+            expect(remainingEdgeIds).not.toContain('edge-in')
+            expect(remainingEdgeIds).not.toContain('edge-inner')
+            expect(remainingEdgeIds).not.toContain('edge-out')
+        })
+
+        it('should recursively remove nested children when an iteration node is deleted', () => {
+            const initialFlow: FlowData = {
+                nodes: [
+                    makeFlowNode('iteration-1', { type: 'iteration' }),
+                    makeFlowNode('child-1', { parentNode: 'iteration-1', extent: 'parent' }),
+                    makeFlowNode('iteration-2', { parentNode: 'iteration-1', extent: 'parent', type: 'iteration' }),
+                    makeFlowNode('grandchild-1', { parentNode: 'iteration-2', extent: 'parent' }),
+                    makeFlowNode('other-1')
+                ],
+                edges: [makeEdge('grandchild-1', 'child-1', { id: 'edge-grand' })]
+            }
+
+            const { result } = renderHook(() => useAgentflowContext(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            expect(result.current.state.nodes).toHaveLength(5)
+
+            act(() => {
+                result.current.deleteNode('iteration-1')
+            })
+
+            const remainingIds = result.current.state.nodes.map((n) => n.id)
+            expect(remainingIds).toEqual(['other-1'])
+            expect(result.current.state.edges).toHaveLength(0)
+        })
     })
 
     describe('duplicateNode', () => {
