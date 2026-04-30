@@ -28,9 +28,10 @@ export function useObserveApi(): ObserveApiContextValue {
 
 interface ObserveConfigContextValue {
     isDarkMode: boolean
+    apiBaseUrl: string
 }
 
-const ObserveConfigContext = createContext<ObserveConfigContextValue>({ isDarkMode: false })
+const ObserveConfigContext = createContext<ObserveConfigContextValue>({ isDarkMode: false, apiBaseUrl: '' })
 
 export function useObserveConfig(): ObserveConfigContextValue {
     return useContext(ObserveConfigContext)
@@ -56,7 +57,7 @@ export function ObserveProvider({ apiBaseUrl, token, requestInterceptor, isDarkM
         return { executions: createExecutionsApi(client) }
     }, [apiBaseUrl, token, requestInterceptor])
 
-    const config = useMemo(() => ({ isDarkMode }), [isDarkMode])
+    const config = useMemo(() => ({ isDarkMode, apiBaseUrl }), [isDarkMode, apiBaseUrl])
 
     return (
         <ThemeProvider theme={theme}>

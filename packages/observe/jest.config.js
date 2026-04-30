@@ -31,11 +31,30 @@ module.exports = {
     ],
     coverageReporters: ['text', 'text-summary', 'lcov'],
     coverageDirectory: 'coverage',
-    coverageThreshold: {
-        './src/features/executions/hooks/': { branches: 80, functions: 80, lines: 80, statements: 80 },
-        './src/infrastructure/api/executions.ts': { branches: 80, functions: 80, lines: 80, statements: 80 },
-        './src/infrastructure/store/ObserveContext.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 }
-    },
+    coverageThreshold: (() => {
+        const FLOOR = { branches: 80, functions: 80, lines: 80, statements: 80 }
+        return {
+            // Folder-level — every file under these paths has direct tests
+            // (atoms/StatusIndicator is partially covered but the folder
+            // aggregate stays well above the floor).
+            './src/atoms/': FLOOR,
+            './src/core/primitives/': FLOOR,
+            './src/core/theme/': FLOOR,
+            './src/core/utils/': FLOOR,
+            './src/features/executions/hooks/': FLOOR,
+            './src/infrastructure/store/': FLOOR,
+
+            // Tested subset of components — extglob excludes the untested
+            // orchestrators (ExecutionDetail / ExecutionsListTable /
+            // ExecutionsViewer). Promote this to the folder level once those
+            // land tests.
+            './src/features/executions/components/!(ExecutionDetail|ExecutionsListTable|ExecutionsViewer).{ts,tsx}': FLOOR,
+
+            // executions.ts has direct tests; client.ts is exercised only
+            // indirectly through executions.ts so it's not threshold-gated.
+            './src/infrastructure/api/executions.ts': FLOOR
+        }
+    })(),
     projects: [
         {
             ...baseConfig,

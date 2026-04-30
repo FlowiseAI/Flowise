@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 
-import { Box, Chip, CircularProgress, Divider, IconButton, Stack, Tooltip, Typography } from '@mui/material'
+import { Box, Chip, CircularProgress, IconButton, Stack, Tooltip, Typography, useMediaQuery } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconCopy, IconRefresh } from '@tabler/icons-react'
 
@@ -9,12 +9,15 @@ import type { ExecutionDetailProps, ExecutionState, ExecutionTreeNode } from '@/
 
 import { useExecutionPoll } from '../hooks/useExecutionPoll'
 import { useExecutionTree } from '../hooks/useExecutionTree'
+import { useResizableSidebar } from '../hooks/useResizableSidebar'
 
+import { ExecutionTreeSidebar } from './ExecutionTreeSidebar'
 import { NodeExecutionDetail } from './NodeExecutionDetail'
 
-const MIN_SIDEBAR_WIDTH = 240
+const MIN_SIDEBAR_WIDTH = 180
 const MAX_SIDEBAR_WIDTH = 480
-const DEFAULT_SIDEBAR_WIDTH = 300
+const DEFAULT_SIDEBAR_WIDTH_WIDE = 300
+const DEFAULT_SIDEBAR_WIDTH_NARROW = 220
 
 /**
  * Full execution detail view: resizable tree sidebar (left) + node detail panel (right).
@@ -28,46 +31,23 @@ export function ExecutionDetail({
     onAgentflowClick
 }: ExecutionDetailProps) {
     const theme = useTheme()
+    const isNarrowViewport = useMediaQuery(theme.breakpoints.down('lg'))
+    const defaultSidebarWidth = isNarrowViewport ? DEFAULT_SIDEBAR_WIDTH_NARROW : DEFAULT_SIDEBAR_WIDTH_WIDE
     const { execution, isLoading, error, refresh } = useExecutionPoll({ executionId, pollInterval })
     const tree = useExecutionTree(execution?.executionData ?? null)
     const [selectedNode, setSelectedNode] = useState<ExecutionTreeNode | null>(null)
-    const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH)
+    const { width: sidebarWidth, onMouseDown: onSidebarHandleMouseDown } = useResizableSidebar({
+        defaultWidth: defaultSidebarWidth,
+        minWidth: MIN_SIDEBAR_WIDTH,
+        maxWidth: MAX_SIDEBAR_WIDTH
+    })
     const [copied, setCopied] = useState(false)
-    const isDragging = useRef(false)
-    const dragStartX = useRef(0)
-    const dragStartWidth = useRef(DEFAULT_SIDEBAR_WIDTH)
-
-    const handleMouseDown = (e: React.MouseEvent) => {
-        isDragging.current = true
-        dragStartX.current = e.clientX
-        dragStartWidth.current = sidebarWidth
-        document.addEventListener('mousemove', handleMouseMove)
-        document.addEventListener('mouseup', handleMouseUp)
-    }
-
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-        if (!isDragging.current) return
-        const delta = e.clientX - dragStartX.current
-        const newWidth = Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, dragStartWidth.current + delta))
-        setSidebarWidth(newWidth)
-    }, [])
-
-    const handleMouseUp = useCallback(() => {
-        isDragging.current = false
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-    }, [handleMouseMove])
-
-    useEffect(() => {
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove)
-            document.removeEventListener('mouseup', handleMouseUp)
-        }
-    }, [handleMouseMove, handleMouseUp])
 
     const copyId = () => {
         if (navigator.clipboard) {
-            navigator.clipboard.writeText(executionId)
+            navigator.clipboard.writeText(executionId).catch((err) => {
+                console.warn('[Observe] Clipboard copy failed:', err)
+            })
             setCopied(true)
             setTimeout(() => setCopied(false), 2000)
         }
@@ -130,22 +110,13 @@ export function ExecutionDetail({
 
             {/* Split pane */}
             <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-                {/* Tree sidebar */}
                 <Box sx={{ width: sidebarWidth, flexShrink: 0, overflow: 'auto', borderRight: `1px solid ${theme.palette.divider}` }}>
-                    {tree.length === 0 ? (
-                        <Box sx={{ p: 2 }}>
-                            <Typography variant='body2' color='text.secondary'>
-                                No execution steps recorded.
-                            </Typography>
-                        </Box>
-                    ) : (
-                        <TreeNodeList nodes={tree} selectedId={selectedNode?.id ?? null} onSelect={setSelectedNode} depth={0} />
-                    )}
+                    <ExecutionTreeSidebar tree={tree} selectedId={selectedNode?.id ?? null} onSelect={setSelectedNode} />
                 </Box>
 
                 {/* Drag handle */}
                 <Box
-                    onMouseDown={handleMouseDown}
+                    onMouseDown={onSidebarHandleMouseDown}
                     sx={{
                         width: 4,
                         cursor: 'col-resize',
@@ -174,82 +145,5 @@ export function ExecutionDetail({
                 </Box>
             </Box>
         </Box>
-    )
-}
-
-// ============================================================================
-// Tree rendering — recursive node list
-// ============================================================================
-
-interface TreeNodeListProps {
-    nodes: ExecutionTreeNode[]
-    selectedId: string | null
-    onSelect: (node: ExecutionTreeNode) => void
-    depth: number
-}
-
-function TreeNodeList({ nodes, selectedId, onSelect, depth }: TreeNodeListProps) {
-    return (
-        <>
-            {nodes.map((node) => (
-                <TreeNodeItem key={node.id} node={node} selectedId={selectedId} onSelect={onSelect} depth={depth} />
-            ))}
-        </>
-    )
-}
-
-interface TreeNodeItemProps {
-    node: ExecutionTreeNode
-    selectedId: string | null
-    onSelect: (node: ExecutionTreeNode) => void
-    depth: number
-}
-
-function TreeNodeItem({ node, selectedId, onSelect, depth }: TreeNodeItemProps) {
-    const theme = useTheme()
-    const [expanded, setExpanded] = useState(true)
-    const isSelected = node.id === selectedId
-    const hasChildren = node.children.length > 0
-
-    return (
-        <>
-            <Box
-                onClick={() => {
-                    if (!node.isVirtualNode) onSelect(node)
-                    if (hasChildren) setExpanded((v) => !v)
-                }}
-                sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    pl: 1.5 + depth * 1.5,
-                    pr: 1.5,
-                    py: 0.75,
-                    cursor: node.isVirtualNode ? 'default' : 'pointer',
-                    backgroundColor: isSelected ? theme.palette.action.selected : 'transparent',
-                    '&:hover': { backgroundColor: theme.palette.action.hover },
-                    borderBottom: `1px solid ${theme.palette.divider}`
-                }}
-            >
-                {node.isVirtualNode ? (
-                    <Typography variant='caption' color='text.secondary' sx={{ fontStyle: 'italic' }}>
-                        {node.nodeLabel}
-                    </Typography>
-                ) : (
-                    <>
-                        <StatusIndicator state={node.status as ExecutionState} size={12} />
-                        <Typography variant='body2' sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {node.nodeLabel}
-                        </Typography>
-                    </>
-                )}
-            </Box>
-            {hasChildren && expanded && (
-                <>
-                    <Divider />
-                    <TreeNodeList nodes={node.children} selectedId={selectedId} onSelect={onSelect} depth={depth + 1} />
-                </>
-            )}
-        </>
     )
 }

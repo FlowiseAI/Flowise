@@ -247,7 +247,7 @@ export function ExecutionsViewer({
                 anchor='right'
                 open={!!drawerExecution}
                 onClose={() => setDrawerExecution(null)}
-                PaperProps={{ sx: { width: { xs: '100vw', sm: '70vw', md: '60vw' } } }}
+                PaperProps={{ sx: { width: { xs: '100vw', sm: '90vw', md: '85vw', lg: '80vw' } } }}
             >
                 {drawerExecution && (
                     <ExecutionDetail
