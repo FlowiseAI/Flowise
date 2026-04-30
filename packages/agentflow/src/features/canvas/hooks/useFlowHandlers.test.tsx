@@ -180,6 +180,44 @@ describe('useFlowHandlers', () => {
             expect(onFlowChange).not.toHaveBeenCalled()
             expect(mockSetDirty).not.toHaveBeenCalled()
         })
+
+        it('should set zIndex on edge when both nodes share the same parentNode', () => {
+            nodes = [makeFlowNode('child_a', { parentNode: 'iter_0' }), makeFlowNode('child_b', { parentNode: 'iter_0' })]
+            const { result } = renderUseFlowHandlers()
+
+            act(() => {
+                result.current.handleConnect({ source: 'child_a', target: 'child_b', sourceHandle: null, targetHandle: null })
+            })
+
+            expect(onFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    edges: expect.arrayContaining([expect.objectContaining({ zIndex: 9999 })])
+                })
+            )
+        })
+
+        it('should not set zIndex when nodes have different parents', () => {
+            nodes = [makeFlowNode('child_a', { parentNode: 'iter_0' }), makeFlowNode('child_b', { parentNode: 'iter_1' })]
+            const { result } = renderUseFlowHandlers()
+
+            act(() => {
+                result.current.handleConnect({ source: 'child_a', target: 'child_b', sourceHandle: null, targetHandle: null })
+            })
+
+            const edge = (onFlowChange.mock.calls[0][0] as any).edges[0]
+            expect(edge.zIndex).toBeUndefined()
+        })
+
+        it('should not set zIndex when nodes are not inside any iteration group', () => {
+            const { result } = renderUseFlowHandlers()
+
+            act(() => {
+                result.current.handleConnect({ source: 'a', target: 'b', sourceHandle: null, targetHandle: null })
+            })
+
+            const edge = (onFlowChange.mock.calls[0][0] as any).edges[0]
+            expect(edge.zIndex).toBeUndefined()
+        })
     })
 
     describe('handleNodesChange', () => {
