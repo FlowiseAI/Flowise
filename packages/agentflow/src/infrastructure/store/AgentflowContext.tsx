@@ -7,10 +7,12 @@ import { getDefaultValueForType } from '@/core/primitives'
 import type {
     AgentflowAction,
     AgentflowState,
+    ExecutionStatus,
     FlowConfig,
     FlowData,
     FlowDataCallback,
     FlowEdge,
+    FlowExecutionState,
     FlowNode,
     InputParam,
     NodeData
@@ -87,6 +89,12 @@ export interface AgentflowContextValue {
 
     // Register onFlowChange callback (called by AgentflowCanvas)
     registerOnFlowChange: (callback: FlowDataCallback | undefined) => void
+
+    // Execution operations
+    executionState: FlowExecutionState | null
+    startExecution: (executionId: string) => void
+    setNodeExecutionStatus: (nodeId: string, status: ExecutionStatus, error?: string) => void
+    clearExecutionState: () => void
 }
 
 const AgentflowContext = createContext<AgentflowContextValue | null>(null)
@@ -324,6 +332,19 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         dispatch({ type: 'RESET' })
     }, [])
 
+    // Execution operations
+    const startExecution = useCallback((executionId: string) => {
+        dispatch({ type: 'START_EXECUTION', payload: executionId })
+    }, [])
+
+    const setNodeExecutionStatus = useCallback((nodeId: string, status: ExecutionStatus, error?: string) => {
+        dispatch({ type: 'SET_NODE_EXECUTION_STATUS', nodeId, status, error })
+    }, [])
+
+    const clearExecutionState = useCallback(() => {
+        dispatch({ type: 'CLEAR_EXECUTION_STATE' })
+    }, [])
+
     const value: AgentflowContextValue = {
         state,
         dispatch,
@@ -344,7 +365,11 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         getFlowStateKeys,
         reset,
         registerLocalStateSetters,
-        registerOnFlowChange
+        registerOnFlowChange,
+        executionState: state.executionState,
+        startExecution,
+        setNodeExecutionStatus,
+        clearExecutionState
     }
 
     return <AgentflowContext.Provider value={value}>{children}</AgentflowContext.Provider>

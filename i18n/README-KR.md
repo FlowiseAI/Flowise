@@ -19,7 +19,7 @@
 
 ## ⚡빠른 시작 가이드
 
-18.15.0 버전 이상의 [NodeJS](https://nodejs.org/en/download) 다운로드 및 설치
+20.0.0 버전 이상의 [NodeJS](https://nodejs.org/en/download) 다운로드 및 설치
 
 1. Flowise 설치
     ```bash

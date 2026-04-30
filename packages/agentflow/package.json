@@ -83,7 +83,7 @@
         "@uiw/codemirror-theme-sublime": "^4.21.0",
         "@uiw/codemirror-theme-vscode": "^4.21.0",
         "@uiw/react-codemirror": "^4.21.0",
-        "axios": "^1.7.2",
+        "axios": "1.15.0",
         "dompurify": "^3.2.6",
         "flowise-react-json-view": "^1.21.7",
         "html-react-parser": "^3.0.16",

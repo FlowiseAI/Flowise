@@ -394,3 +394,27 @@ import { useObserveApi } from '../../infrastructure/store/ObserveContext'
 | Logic/Types | camelCase.ts                | `execution.ts`, `observe.ts` |
 | API module  | camelCase.ts                | `executions.ts`              |
 | Styles      | kebab-case (co-located)     | `executions.css`             |
+
+### Theme Token Ordering
+
+Inside `core/theme/tokens.ts`, all maps are ordered alphanumerically: `baseColors`, top-level `tokens` groups, subgroups, and keys (e.g. `gray50 < gray75 < gray100 < gray200`). Each `{ dark, light }` / `{ dark, light, main }` pair follows the same rule. Keep new entries in order so diffs stay small.
+
+### Type Location Rule
+
+Domain types live in `core/types/`, **not** alongside their primary component, when they cross any of these boundaries:
+
+-   Imported by a hook (`features/*/hooks/*`)
+-   Imported by another component in a different file
+-   Used in a public API exported via `src/index.ts`
+
+Component-internal types (props interfaces, file-private shapes used only inside the file that defines the component) stay co-located. The rule prevents the inversion where a hook reaches "upward" into a sibling component file just to read a type.
+
+Props interfaces (e.g. `ChatMessageBubbleProps`) are **always** file-local — never lift them to `core/types/` even if another component would re-use one. Re-using a props interface across components is a code smell on its own; the right fix is a shared underlying type, not a shared props interface.
+
+Predicates that narrow into a `core/types/` shape (e.g. `isChatMessageArray(value): value is ChatMessage[]`) live in `core/utils/` next to other domain-aware helpers — never in `atoms/` (atoms cannot import from `core/utils`, only from `core/primitives`).
+
+Example layout:
+
+-   `core/types/nodeDetail.ts` — `ChatMessage`, `ConditionEntry`, `AvailableToolEntry`, `UsedToolEntry`, `UsedToolRef`, `ToolNodeRef`, `NormalizedToolCall`
+-   `core/utils/guards.ts` — `isChatMessageArray`, `isConditionArray`, `isAvailableToolArray`, `isUsedToolArray`
+-   `core/utils/tools.ts` — `resolveTool`, `extractToolCalls` (consumed by `ChatMessageBubble` + `ToolAccordionList`)
