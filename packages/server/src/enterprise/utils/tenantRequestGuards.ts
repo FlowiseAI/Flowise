@@ -65,11 +65,8 @@ export async function assertWorkspaceIdAccessibleToUser(
     throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
 }
 
-export function assertStripeIdMatchesSession(requestedId: string, activeId: string | undefined, label: string): void {
-    if (!activeId) {
-        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `${label} is required`)
-    }
-    if (requestedId !== activeId) {
+export function assertStripeIdMatchesSession(requestedId: string, activeId: string | undefined): void {
+    if (!activeId || requestedId !== activeId) {
         throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
     }
 }

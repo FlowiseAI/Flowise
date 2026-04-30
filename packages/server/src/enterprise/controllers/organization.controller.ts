@@ -63,7 +63,7 @@ export class OrganizationController {
             if (!subscriptionId) {
                 return res.status(400).json({ error: 'Subscription ID is required' })
             }
-            assertStripeIdMatchesSession(subscriptionId as string, req.user?.activeOrganizationSubscriptionId, 'Subscription ID')
+            assertStripeIdMatchesSession(subscriptionId as string, req.user?.activeOrganizationSubscriptionId)
             const organizationUserservice = new OrganizationUserService()
             const totalOrgUsers = await organizationUserservice.readOrgUsersCountByOrgId(req.user?.activeOrganizationId as string)
 
@@ -82,7 +82,7 @@ export class OrganizationController {
             if (!customerId) {
                 return res.status(400).json({ error: 'Customer ID is required' })
             }
-            assertStripeIdMatchesSession(customerId as string, req.user?.activeOrganizationCustomerId, 'Customer ID')
+            assertStripeIdMatchesSession(customerId as string, req.user?.activeOrganizationCustomerId)
             const identityManager = getRunningExpressApp().identityManager
             const result = await identityManager.getCustomerWithDefaultSource(customerId as string)
 
@@ -101,7 +101,7 @@ export class OrganizationController {
             if (quantity === undefined) {
                 return res.status(400).json({ error: 'Quantity is required' })
             }
-            assertStripeIdMatchesSession(subscriptionId as string, req.user?.activeOrganizationSubscriptionId, 'Subscription ID')
+            assertStripeIdMatchesSession(subscriptionId as string, req.user?.activeOrganizationSubscriptionId)
             const identityManager = getRunningExpressApp().identityManager
             const result = await identityManager.getAdditionalSeatsProration(subscriptionId as string, parseInt(quantity as string))
 
@@ -120,7 +120,7 @@ export class OrganizationController {
             if (!newPlanId) {
                 return res.status(400).json({ error: 'New plan ID is required' })
             }
-            assertStripeIdMatchesSession(subscriptionId as string, req.user?.activeOrganizationSubscriptionId, 'Subscription ID')
+            assertStripeIdMatchesSession(subscriptionId as string, req.user?.activeOrganizationSubscriptionId)
             const identityManager = getRunningExpressApp().identityManager
             const result = await identityManager.getPlanProration(subscriptionId as string, newPlanId as string)
 
@@ -142,7 +142,7 @@ export class OrganizationController {
             if (!prorationDate) {
                 return res.status(400).json({ error: 'Proration date is required' })
             }
-            assertStripeIdMatchesSession(subscriptionId, req.user?.activeOrganizationSubscriptionId, 'Subscription ID')
+            assertStripeIdMatchesSession(subscriptionId, req.user?.activeOrganizationSubscriptionId)
             const identityManager = getRunningExpressApp().identityManager
             const result = await identityManager.updateAdditionalSeats(subscriptionId, quantity, prorationDate)
 
@@ -164,7 +164,7 @@ export class OrganizationController {
             if (!prorationDate) {
                 return res.status(400).json({ error: 'Proration date is required' })
             }
-            assertStripeIdMatchesSession(subscriptionId, req.user?.activeOrganizationSubscriptionId, 'Subscription ID')
+            assertStripeIdMatchesSession(subscriptionId, req.user?.activeOrganizationSubscriptionId)
             const identityManager = getRunningExpressApp().identityManager
             const result = await identityManager.updateSubscriptionPlan(req, subscriptionId, newPlanId, prorationDate)
 
