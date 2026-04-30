@@ -4,7 +4,7 @@ import { Box, Typography } from '@mui/material'
 
 import { tokens } from '@/core/theme/tokens'
 import type { NodeData } from '@/core/types'
-import { useApiContext, useConfigContext } from '@/infrastructure/store'
+import { useAgentflowContext, useApiContext, useConfigContext } from '@/infrastructure/store'
 
 import { NodeIcon } from '../components/NodeIcon'
 import { NodeInputHandle } from '../components/NodeInputHandle'
@@ -32,8 +32,13 @@ export interface AgentFlowNodeProps {
 function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     const { isDarkMode } = useConfigContext()
     const { apiBaseUrl } = useApiContext()
+    const { executionState } = useAgentflowContext()
     const ref = useRef<HTMLDivElement>(null)
     const { openNodeEditor } = useOpenNodeEditor()
+
+    const nodeExecution = executionState?.nodeStates[data.id]
+    const status = nodeExecution?.status ?? data.status
+    const error = nodeExecution?.error ?? data.error
 
     const [isHovered, setIsHovered] = useState(false)
     const [warningMessage, setWarningMessage] = useState('')
@@ -87,7 +92,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                 }}
                 border={false}
             >
-                <NodeStatusIndicator status={data.status} error={data.error} />
+                <NodeStatusIndicator status={status} error={error} />
                 <NodeWarningIndicator message={warningMessage} />
 
                 <Box sx={{ width: '100%' }}>

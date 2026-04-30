@@ -1,11 +1,43 @@
 /**
- * Design Tokens for @flowiseai/observe
- * Shared with @flowiseai/agentflow — kept in sync manually until a @flowiseai/core package is introduced.
+ * Design Tokens for @flowiseai/observe.
+ *
+ * Base palette and node type colors below are duplicated in
+ * packages/agentflow/src/core/theme/tokens.ts — keep in sync until
+ * extracted to packages/shared-ui in FLOWISE-628. Each package
+ * extends the shared base with its own specifics (agentflow: ReactFlow,
+ * syntax highlight; observe: observe-specific semantics).
  */
 
+// Raw palette: each entry is named after the COLOR it represents, not the
+// function it serves. Functional mappings live in the `tokens.colors.*`
+// groups below (semantic, palette, nodes, metrics, jsonViewer, ...).
 const baseColors = {
-    white: '#fff',
+    amber: '#ffe57f',
+    aqua: '#4DDBBB',
     black: '#000',
+    blue: '#2196f3',
+    brightGreen: '#00e676',
+    brightYellow: '#fee440',
+    coral: '#FF7F7F',
+    cornflowerBlue: '#569cd6',
+    cream: '#fefcbf',
+    cyan: '#4DD0E1',
+    darkBrown: '#744210',
+    darkGray100: '#1a1a1a',
+    darkGray200: '#1a1a2e',
+    darkGray300: '#252525',
+    darkGray400: '#2d2d2d',
+    darkGray500: '#404040',
+    darkGray600: '#525252',
+    darkGray700: '#555',
+    darkGray800: '#aaa',
+    darkGreen: '#008000',
+    darkOrange: '#ff8c00',
+    darkPurple: '#5e35b1',
+    darkRed: '#c62828',
+    gold: '#c49331',
+    goldAmber: '#ffc107',
+    goldenYellow: '#FFB938',
     gray50: '#fafafa',
     gray75: '#f5f5f5',
     gray100: '#f8f9fa',
@@ -16,112 +48,111 @@ const baseColors = {
     gray600: '#757575',
     gray700: '#666',
     gray800: '#333',
-    darkGray100: '#1a1a1a',
-    darkGray200: '#1a1a2e',
-    darkGray300: '#252525',
-    darkGray400: '#2d2d2d',
-    darkGray500: '#404040',
-    darkGray600: '#525252',
-    darkGray700: '#555',
-    darkGray800: '#aaa',
-    success: '#4caf50',
-    error: '#f44336',
-    warning: '#ff9800',
-    warningBg: '#fefcbf',
-    warningText: '#744210',
-    info: '#2196f3',
-    primaryLight: '#e3f2fd',
-    primaryMain: '#2196f3',
-    primaryDark: '#1e88e5',
-    secondaryLight: '#ede7f6',
-    secondaryMain: '#673ab7',
-    secondaryDark: '#5e35b1',
-    successLight: '#cdf5d8',
-    successMain: '#00e676',
-    successDark: '#00c853',
-    errorLight: '#f3d2d2',
-    errorMain: '#f44336',
-    errorDark: '#c62828',
-    warningLight: '#fff8e1',
-    warningMain: '#ffe57f',
-    warningDark: '#ffc107',
-    // Node type colors — used in execution tree status indicators
-    nodeCondition: '#FFB938',
-    nodeStart: '#7EE787',
-    nodeLlm: '#64B5F6',
-    nodeAgent: '#4DD0E1',
-    nodeHumanInput: '#6E6EFD',
-    nodeLoop: '#FFA07A',
-    nodeDirectReply: '#4DDBBB',
-    nodeCustomFunction: '#E4B7FF',
-    nodeTool: '#d4a373',
-    nodeRetriever: '#b8bedd',
-    nodeConditionAgent: '#ff8fab',
-    nodeStickyNote: '#fee440',
-    nodeHttp: '#FF7F7F',
-    nodeIteration: '#9C89B8',
-    nodeExecuteFlow: '#a3b18a'
+    green: '#4caf50',
+    iceBlue: '#9cdcfe',
+    keyOrange: '#ff5733',
+    lavender: '#E4B7FF',
+    lightSalmon: '#FFA07A',
+    lilac: '#b8bedd',
+    magenta: '#ff00ff',
+    mauve: '#9C89B8',
+    mediumBlue: '#1e88e5',
+    mintGreen: '#7EE787',
+    mistGray: '#d4d4d4',
+    mossGreen: '#b5cea8',
+    orange: '#ff9800',
+    paleAmber: '#fff8e1',
+    paleBlue: '#e3f2fd',
+    paleGreen: '#cdf5d8',
+    palePurple: '#ede7f6',
+    paleRed: '#f3d2d2',
+    periwinkle: '#6E6EFD',
+    pink: '#ff8fab',
+    purple: '#673ab7',
+    red: '#f44336',
+    sage: '#a3b18a',
+    skyBlue: '#64B5F6',
+    tan: '#d4a373',
+    vividBlue: '#0000ff',
+    vividGreen: '#00c853',
+    white: '#fff'
 } as const
 
 export const tokens = {
+    borderRadius: { lg: 12, md: 8, round: '50%', sm: 4 },
     colors: {
-        nodes: {
-            condition: baseColors.nodeCondition,
-            start: baseColors.nodeStart,
-            llm: baseColors.nodeLlm,
-            agent: baseColors.nodeAgent,
-            humanInput: baseColors.nodeHumanInput,
-            loop: baseColors.nodeLoop,
-            directReply: baseColors.nodeDirectReply,
-            customFunction: baseColors.nodeCustomFunction,
-            tool: baseColors.nodeTool,
-            retriever: baseColors.nodeRetriever,
-            conditionAgent: baseColors.nodeConditionAgent,
-            stickyNote: baseColors.nodeStickyNote,
-            http: baseColors.nodeHttp,
-            iteration: baseColors.nodeIteration,
-            executeFlow: baseColors.nodeExecuteFlow
-        },
         background: {
-            canvas: { light: baseColors.gray100, dark: baseColors.darkGray100 },
-            card: { light: baseColors.white, dark: baseColors.darkGray400 },
-            cardHover: { light: baseColors.gray75, dark: baseColors.darkGray500 },
-            sidebar: { light: baseColors.gray50, dark: baseColors.darkGray300 }
+            canvas: { dark: baseColors.darkGray100, light: baseColors.gray100 },
+            card: { dark: baseColors.darkGray400, light: baseColors.white },
+            cardHover: { dark: baseColors.darkGray500, light: baseColors.gray75 },
+            sidebar: { dark: baseColors.darkGray300, light: baseColors.gray50 }
         },
         border: {
-            default: { light: baseColors.gray300, dark: baseColors.darkGray500 },
-            hover: { light: baseColors.gray400, dark: baseColors.darkGray600 }
+            default: { dark: baseColors.darkGray500, light: baseColors.gray300 },
+            hover: { dark: baseColors.darkGray600, light: baseColors.gray400 }
         },
-        text: {
-            primary: { light: baseColors.gray800, dark: baseColors.white },
-            secondary: { light: baseColors.gray700, dark: baseColors.gray500 },
-            tertiary: { light: baseColors.gray600, dark: baseColors.gray500 }
+        // Light = CSS named colors, dark = VS Code Dark+.
+        jsonViewer: {
+            boolean: { dark: baseColors.cornflowerBlue, light: baseColors.vividBlue },
+            key: { dark: baseColors.keyOrange, light: baseColors.keyOrange },
+            null: { dark: baseColors.mistGray, light: baseColors.magenta },
+            number: { dark: baseColors.mossGreen, light: baseColors.darkOrange },
+            string: { dark: baseColors.iceBlue, light: baseColors.darkGreen }
+        },
+        // Cost chip background. Time + tokens chips use MUI's secondary/primary
+        // palette directly via `color='secondary'` / `color='primary'`, no token
+        // needed. Cost gold isn't in the standard MUI palette so it lives here.
+        metrics: {
+            cost: baseColors.gold
+        },
+        nodes: {
+            agent: baseColors.cyan,
+            condition: baseColors.goldenYellow,
+            conditionAgent: baseColors.pink,
+            customFunction: baseColors.lavender,
+            directReply: baseColors.aqua,
+            executeFlow: baseColors.sage,
+            http: baseColors.coral,
+            humanInput: baseColors.periwinkle,
+            iteration: baseColors.mauve,
+            llm: baseColors.skyBlue,
+            loop: baseColors.lightSalmon,
+            retriever: baseColors.lilac,
+            start: baseColors.mintGreen,
+            stickyNote: baseColors.brightYellow,
+            tool: baseColors.tan
         },
         palette: {
-            primary: { light: baseColors.primaryLight, main: baseColors.primaryMain, dark: baseColors.primaryDark },
-            secondary: { light: baseColors.secondaryLight, main: baseColors.secondaryMain, dark: baseColors.secondaryDark },
-            success: { light: baseColors.successLight, main: baseColors.successMain, dark: baseColors.successDark },
-            error: { light: baseColors.errorLight, main: baseColors.errorMain, dark: baseColors.errorDark },
-            warning: { light: baseColors.warningLight, main: baseColors.warningMain, dark: baseColors.warningDark }
+            error: { dark: baseColors.darkRed, light: baseColors.paleRed, main: baseColors.red },
+            primary: { dark: baseColors.mediumBlue, light: baseColors.paleBlue, main: baseColors.blue },
+            secondary: { dark: baseColors.darkPurple, light: baseColors.palePurple, main: baseColors.purple },
+            success: { dark: baseColors.vividGreen, light: baseColors.paleGreen, main: baseColors.brightGreen },
+            warning: { dark: baseColors.goldAmber, light: baseColors.paleAmber, main: baseColors.amber }
         },
         semantic: {
-            success: baseColors.success,
-            error: baseColors.error,
-            warning: baseColors.warning,
-            warningBg: baseColors.warningBg,
-            warningText: baseColors.warningText,
-            info: baseColors.info
+            error: baseColors.red,
+            info: baseColors.blue,
+            success: baseColors.green,
+            warning: baseColors.orange,
+            warningBg: baseColors.cream,
+            warningText: baseColors.darkBrown
+        },
+        text: {
+            // Light-mode greys match legacy Berry — pure #333 reads too heavy
+            // next to Inter's lower x-height.
+            primary: { dark: baseColors.white, light: baseColors.gray700 },
+            secondary: { dark: baseColors.gray500, light: baseColors.gray500 },
+            tertiary: { dark: baseColors.gray500, light: baseColors.gray600 }
         }
     },
-    spacing: { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24 },
     shadows: {
         card: '0 2px 8px rgba(0, 0, 0, 0.1)',
         toolbar: {
-            light: '0 2px 14px 0 rgb(32 40 45 / 8%)',
-            dark: '0 2px 14px 0 rgb(0 0 0 / 20%)'
+            dark: '0 2px 14px 0 rgb(0 0 0 / 20%)',
+            light: '0 2px 14px 0 rgb(32 40 45 / 8%)'
         }
     },
-    borderRadius: { sm: 4, md: 8, lg: 12, round: '50%' }
+    spacing: { lg: 16, md: 12, sm: 8, xl: 20, xs: 4, xxl: 24 }
 } as const
 
 export type Tokens = typeof tokens
