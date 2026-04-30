@@ -28,7 +28,10 @@ function IterationNodeComponent({ data }: IterationNodeProps) {
     const theme = useTheme()
     const { isDarkMode } = useConfigContext()
     const { apiBaseUrl } = useApiContext()
-    const { state } = useAgentflowContext()
+    const { state, executionState } = useAgentflowContext()
+    const nodeExecution = executionState?.nodeStates[data.id]
+    const status = nodeExecution?.status ?? data.status
+    const error = nodeExecution?.error ?? data.error
     const ref = useRef<HTMLDivElement>(null)
     const reactFlowWrapper = useRef<HTMLDivElement>(null)
     const updateNodeInternals = useUpdateNodeInternals()
@@ -129,7 +132,7 @@ function IterationNodeComponent({ data }: IterationNodeProps) {
                 }}
                 border={false}
             >
-                <NodeStatusIndicator status={data.status} error={data.error} />
+                <NodeStatusIndicator status={status} error={error} />
 
                 <Box sx={{ width: '100%' }}>
                     <NodeInputHandle nodeId={data.id} nodeColor={nodeColor} hidden={data.hideInput} />
