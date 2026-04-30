@@ -1,5 +1,5 @@
-// Overlaps with mapMimeTypeToExt (src/utils.ts), S3File.ts, GoogleDrive.ts, agentflow/utils.ts.
-// TODO: consolidate into shared packages/components/src/mime.ts.
+// Other files that also uses MIME (src/utils.ts), S3File.ts, GoogleDrive.ts, agentflow/utils.ts.
+// Which allows for possible consolidation
 const MIME_MAP: Record<string, string> = {
     // text
     '.ts': 'text/typescript',
@@ -83,7 +83,9 @@ const TEXT_MIME_EXACT = new Set([
 ])
 
 export function getMimeType(filePath: string): string {
-    const ext = filePath.slice(filePath.lastIndexOf('.')).toLowerCase()
+    const dot = filePath.lastIndexOf('.')
+    if (dot === -1) return 'application/octet-stream'
+    const ext = filePath.slice(dot).toLowerCase()
     return MIME_MAP[ext] ?? 'application/octet-stream'
 }
 
