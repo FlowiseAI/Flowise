@@ -14,14 +14,7 @@ jest.mock('../api', () => ({
     bindToolsApi: jest.fn(() => ({ getAllTools: jest.fn() })),
     bindCredentialsApi: jest.fn(() => ({ getAllCredentials: jest.fn() })),
     bindStoresApi: jest.fn(() => ({ getStores: jest.fn(), getVectorStores: jest.fn() })),
-    bindEmbeddingsApi: jest.fn(() => ({ getEmbeddings: jest.fn() })),
-    bindExecutionsApi: jest.fn(() => ({
-        getAllExecutions: jest.fn(),
-        getExecutionById: jest.fn(),
-        getExecutionByIdPublic: jest.fn(),
-        deleteExecutions: jest.fn(),
-        updateExecution: jest.fn()
-    }))
+    bindEmbeddingsApi: jest.fn(() => ({ getEmbeddings: jest.fn() }))
 }))
 
 const {

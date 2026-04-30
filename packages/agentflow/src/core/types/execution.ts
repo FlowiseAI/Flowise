@@ -17,15 +17,3 @@ export interface FlowExecutionState {
     status: ExecutionStatus
     nodeStates: Record<string, NodeExecutionState>
 }
-
-export interface Execution {
-    id: string
-    chatflowId: string
-    agentflowId?: string
-    sessionId?: string
-    status: ExecutionStatus
-    state?: string
-    executionData?: string
-    createdDate: string
-    stoppedDate?: string
-}

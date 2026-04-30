@@ -10,7 +10,6 @@ import {
     bindChatModelsApi,
     bindCredentialsApi,
     bindEmbeddingsApi,
-    bindExecutionsApi,
     bindNodesApi,
     bindStoresApi,
     bindToolsApi,
@@ -18,7 +17,6 @@ import {
     type ChatModelsApi,
     type CredentialsApi,
     type EmbeddingsApi,
-    type ExecutionsApi,
     type NodesApi,
     type StoresApi,
     type ToolsApi
@@ -34,7 +32,6 @@ interface ApiContextValue {
     credentialsApi: CredentialsApi
     storesApi: StoresApi
     embeddingsApi: EmbeddingsApi
-    executionsApi: ExecutionsApi
 }
 
 const ApiContext = createContext<ApiContextValue | null>(null)
@@ -62,7 +59,6 @@ export function ApiProvider({ apiBaseUrl, token, requestInterceptor, children }:
         const credentialsApi = bindCredentialsApi(client)
         const storesApi = bindStoresApi(client)
         const embeddingsApi = bindEmbeddingsApi(client)
-        const executionsApi = bindExecutionsApi(client)
 
         return {
             client,
@@ -73,8 +69,7 @@ export function ApiProvider({ apiBaseUrl, token, requestInterceptor, children }:
             toolsApi,
             credentialsApi,
             storesApi,
-            embeddingsApi,
-            executionsApi
+            embeddingsApi
         }
     }, [apiBaseUrl, token])
 
