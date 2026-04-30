@@ -1,4 +1,4 @@
-import { BackendProtocol, DEFAULT_READ_LIMIT, FileData, FilesUpdate, ReadResult, WriteResult } from '../protocol'
+import { BackendProtocol, DEFAULT_READ_LIMIT, FileData, FilesUpdate, ReadResult, WriteResult } from '../BackendProtocol'
 import { getMimeType, isTextMimeType, paginateLines } from '../utils'
 
 type FileStore = Record<string, FileData>

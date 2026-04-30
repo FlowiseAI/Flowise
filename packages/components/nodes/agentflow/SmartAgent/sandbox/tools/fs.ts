@@ -1,6 +1,6 @@
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { z } from 'zod'
-import { BackendProtocol } from '../protocol'
+import { BackendProtocol } from '../BackendProtocol'
 import { formatWithLineNumbers } from '../utils'
 
 export function buildFsTools(backend: BackendProtocol): DynamicStructuredTool[] {

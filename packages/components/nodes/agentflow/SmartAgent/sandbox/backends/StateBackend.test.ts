@@ -1,5 +1,5 @@
-import { StateBackend } from './state'
-import { FileData } from '../protocol'
+import { StateBackend } from './StateBackend'
+import { FileData } from '../BackendProtocol'
 
 describe('StateBackend', () => {
     it('write + read round-trip returns the written content', async () => {

@@ -1,5 +1,5 @@
-import { BackendProtocol, FileData } from './protocol'
-import { StateBackend } from './backends/state'
+import { BackendProtocol, FileData } from './BackendProtocol'
+import { StateBackend } from './backends/StateBackend'
 
 type FileStore = Record<string, FileData>
 
