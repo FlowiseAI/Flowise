@@ -127,15 +127,43 @@ export function evaluateParamVisibility(param: InputParam, inputValues: Record<s
     return true
 }
 
+function inputValuesWithDeclaredDefaults(params: InputParam[], inputValues: Record<string, unknown>): Record<string, unknown> {
+    const merged: Record<string, unknown> = { ...inputValues }
+    for (const param of params) {
+        if (param.default === undefined) continue
+        if (merged[param.name] === undefined) {
+            merged[param.name] = param.default
+        }
+    }
+    return merged
+}
+
 /**
  * Evaluate visibility for all params, returning new param objects with computed `display`.
  * Does not mutate the originals.
  */
 export function evaluateFieldVisibility(params: InputParam[], inputValues: Record<string, unknown>, arrayIndex?: number): InputParam[] {
+    const effectiveInputs = inputValuesWithDeclaredDefaults(params, inputValues)
     return params.map((param) => ({
         ...param,
-        display: evaluateParamVisibility(param, inputValues, arrayIndex)
+        display: evaluateParamVisibility(param, effectiveInputs, arrayIndex)
     }))
+}
+
+export function applyVisibleFieldDefaults(
+    params: InputParam[],
+    inputValues: Record<string, unknown>,
+    arrayIndex?: number
+): Record<string, unknown> {
+    const effectiveInputs = inputValuesWithDeclaredDefaults(params, inputValues)
+    const result: Record<string, unknown> = { ...inputValues }
+    for (const param of params) {
+        if (param.default === undefined) continue
+        if (result[param.name] !== undefined) continue
+        if (!evaluateParamVisibility(param, effectiveInputs, arrayIndex)) continue
+        result[param.name] = param.default
+    }
+    return result
 }
 
 /**
@@ -146,9 +174,10 @@ export function stripHiddenFieldValues(
     inputValues: Record<string, unknown>,
     arrayIndex?: number
 ): Record<string, unknown> {
+    const effectiveInputs = inputValuesWithDeclaredDefaults(params, inputValues)
     const result: Record<string, unknown> = { ...inputValues }
     for (const param of params) {
-        if (!evaluateParamVisibility(param, inputValues, arrayIndex)) {
+        if (!evaluateParamVisibility(param, effectiveInputs, arrayIndex)) {
             delete result[param.name]
         }
     }

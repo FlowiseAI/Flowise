@@ -119,6 +119,30 @@ const StyledTableRow = styled(TableRow)(({ theme, clickable }) => ({
 const relTime = (date) => (date ? moment(date).fromNow() : '—')
 const fmtDate = (date) => (date ? moment(date).format('YYYY-MM-DD HH:mm:ss') : '—')
 
+// Formats a date in the given IANA timezone using Intl (no moment-timezone dependency).
+// Falls back to local-time formatting if the timezone is invalid or omitted.
+const fmtDateInTz = (date, timezone) => {
+    if (!date) return '—'
+    const d = new Date(date)
+    if (isNaN(d.getTime())) return '—'
+    try {
+        const fmt = new Intl.DateTimeFormat('en-CA', {
+            timeZone: timezone || undefined,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        })
+        // en-CA produces "YYYY-MM-DD, HH:mm:ss" — strip the comma for a cleaner timestamp.
+        return fmt.format(d).replace(',', '')
+    } catch {
+        return fmtDate(date)
+    }
+}
+
 const fmtNextRun = (date) => {
     if (!date) return { text: '—', overdue: false }
     const m = moment(date)
@@ -516,17 +540,28 @@ const ScheduleHistoryDrawer = ({ open, chatflowid, onClose }) => {
                                     return <Typography variant='body2'>—</Typography>
                                 }
                                 const { text, overdue } = fmtNextRun(nextRunAt)
+                                const tz = record?.timezone || 'UTC'
+                                const exactInTz = fmtDateInTz(nextRunAt, tz)
+                                const exactLocal = fmtDate(nextRunAt)
                                 return (
                                     <Tooltip
                                         title={
                                             overdue
-                                                ? `Expected: ${fmtDate(nextRunAt)} — scheduler may be lagging or the next fire is imminent`
-                                                : fmtDate(nextRunAt)
+                                                ? `Expected: ${exactInTz} (${tz}) — scheduler may be lagging or the next fire is imminent`
+                                                : `Local time: ${exactLocal}`
                                         }
                                     >
-                                        <Typography variant='body2' sx={{ color: overdue ? 'warning.main' : 'text.primary' }}>
-                                            {text}
-                                        </Typography>
+                                        <Box>
+                                            <Typography variant='body2' sx={{ color: overdue ? 'warning.main' : 'text.primary' }}>
+                                                {text}
+                                            </Typography>
+                                            <Typography
+                                                variant='caption'
+                                                sx={{ color: 'text.secondary', display: 'block', lineHeight: 1.2 }}
+                                            >
+                                                {exactInTz} <span style={{ opacity: 0.7 }}>({tz})</span>
+                                            </Typography>
+                                        </Box>
                                     </Tooltip>
                                 )
                             })()}

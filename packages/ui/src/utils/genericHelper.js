@@ -1281,8 +1281,21 @@ const _showHideOperation = (nodeData, inputParam, displayType, index) => {
     })
 }
 
+const _inputsWithDeclaredDefaults = (params, inputs) => {
+    const merged = { ...(inputs ?? {}) }
+    for (let i = 0; i < params.length; i += 1) {
+        const param = params[i]
+        if (!param || param.default === undefined) continue
+        if (merged[param.name] === undefined) {
+            merged[param.name] = param.default
+        }
+    }
+    return merged
+}
+
 export const showHideInputs = (nodeData, inputType, overrideParams, arrayIndex) => {
     const params = overrideParams ?? nodeData[inputType] ?? []
+    const effectiveNodeData = { ...nodeData, inputs: _inputsWithDeclaredDefaults(params, nodeData.inputs) }
 
     for (let i = 0; i < params.length; i += 1) {
         const inputParam = params[i]
@@ -1291,10 +1304,10 @@ export const showHideInputs = (nodeData, inputType, overrideParams, arrayIndex) 
         inputParam.display = true
 
         if (inputParam.show) {
-            _showHideOperation(nodeData, inputParam, 'show', arrayIndex)
+            _showHideOperation(effectiveNodeData, inputParam, 'show', arrayIndex)
         }
         if (inputParam.hide) {
-            _showHideOperation(nodeData, inputParam, 'hide', arrayIndex)
+            _showHideOperation(effectiveNodeData, inputParam, 'hide', arrayIndex)
         }
     }
 
@@ -1307,4 +1320,17 @@ export const showHideInputParams = (nodeData) => {
 
 export const showHideInputAnchors = (nodeData) => {
     return showHideInputs(nodeData, 'inputAnchors')
+}
+
+export const applyVisibleInputDefaults = (params, inputs) => {
+    const result = { ...(inputs ?? {}) }
+    const evaluated = showHideInputs({ inputs: result }, null, params)
+    for (let i = 0; i < evaluated.length; i += 1) {
+        const param = evaluated[i]
+        if (!param || param.default === undefined) continue
+        if (param.display === false) continue
+        if (result[param.name] !== undefined) continue
+        result[param.name] = param.default
+    }
+    return result
 }
