@@ -133,10 +133,6 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
             return requetsEmojis[method] || '?'
         }
 
-        // Intentionally omit `requestMetadata` from these calls: it carries body, query,
-        // and headers (including passwords, reset tokens, and session cookies) that must
-        // not reach log files. The sanitization helpers above are kept in place so this
-        // can be patched later once they are made safe.
         if (req.method !== 'GET') {
             requestLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
             logger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
