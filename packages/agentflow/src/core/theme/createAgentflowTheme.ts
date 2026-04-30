@@ -100,6 +100,11 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
             },
             MuiAutocomplete: {
                 styleOverrides: {
+                    paper: {
+                        boxShadow:
+                            '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
+                        borderRadius: '10px'
+                    },
                     option: {
                         '&:hover': {
                             background: isDarkMode ? `${tokens.colors.background.optionHover.dark} !important` : undefined
