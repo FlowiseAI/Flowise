@@ -2,6 +2,8 @@
 // Node & Edge Data Types
 // ============================================================================
 
+import type { ExecutionStatus } from './execution'
+
 /**
  * Shared metadata between GET /api/v1/nodes payloads and canvas {@link NodeData}.
  * Excludes `inputs` (API: schema array vs canvas: value map) and other API-only or canvas-only fields.
@@ -41,7 +43,7 @@ export interface NodeData extends NodeDefinitionBase {
     inputParams?: InputParam[] // Parameter definitions
     inputs?: Record<string, unknown> // Actual values entered by users
     // Status properties
-    status?: 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'STOPPED' | 'TERMINATED'
+    status?: ExecutionStatus
     error?: string
     warning?: string
     hint?: string
