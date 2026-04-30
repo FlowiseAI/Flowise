@@ -1244,8 +1244,9 @@ const executeNode = async ({
                     flowData: JSON.stringify(iterationFlowData)
                 }
 
-                // Initialize array to collect results from iterations
-                const iterationResults: string[] = []
+                const iterationResults: string[] = [] // all results including errors, kept for observability
+                const successfulIterationResults: string[] = [] // successful results only; used for content and streaming
+                let successfulCount = 0 // number of successful results; drives newline separator between streamed items
 
                 // Execute sub-flow for each item in the iteration array
                 for (let i = 0; i < results.input.iterationInput.length; i++) {
@@ -1291,9 +1292,16 @@ const executeNode = async ({
                             productId
                         })
 
-                        // Store the result
                         if (subFlowResult?.text) {
                             iterationResults.push(subFlowResult.text)
+                            successfulIterationResults.push(subFlowResult.text)
+                            // Stream each result as it completes rather than batching at the end.
+                            // Sub-flows run with isRecursive=true, so inner nodes (e.g. DirectReply)
+                            // never reach isLastNode=true and never call streamTokenEvent themselves.
+                            if (isLastNode && sseStreamer) {
+                                sseStreamer.streamTokenEvent(chatId, (successfulCount > 0 ? '\n' : '') + subFlowResult.text)
+                            }
+                            successfulCount++
                         }
 
                         // Add executed data from sub-flow to main execution data with appropriate iteration context
@@ -1349,11 +1357,10 @@ const executeNode = async ({
                     }
                 }
 
-                // Update the output with combined results
                 results.output = {
                     ...(results.output || {}),
-                    iterationResults,
-                    content: iterationResults.join('\n')
+                    iterationResults, // full record (errors included) for observability
+                    content: successfulIterationResults.join('\n') // successful only — matches what was streamed and saved to chat history
                 }
 
                 logger.debug(`  📊 Completed all iterations. Total results: ${iterationResults.length}`)
