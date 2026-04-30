@@ -34,6 +34,8 @@ export type {
     Tool,
     // Context
     ConfigContextValue,
+    // Execution
+    ExecutionStatus,
     // Flow data
     EdgeData,
     FlowConfig,

@@ -11,7 +11,8 @@ import {
     IMessage,
     IServerSideEventStreamer,
     convertChatHistoryToText,
-    generateFollowUpPrompts
+    generateFollowUpPrompts,
+    tracingEnvEnabled
 } from 'flowise-components'
 import {
     IncomingAgentflowInput,
@@ -1894,7 +1895,7 @@ export const executeAgentFlow = async ({
     let parentTraceIds: ICommonObject | undefined
 
     try {
-        if (chatflow.analytic) {
+        if (chatflow.analytic || tracingEnvEnabled()) {
             // Override config analytics
             let analyticInputs: ICommonObject = {}
             if (overrideConfig?.analytics && Object.keys(overrideConfig.analytics).length > 0) {
@@ -1912,11 +1913,13 @@ export const executeAgentFlow = async ({
                 chatId
             })
             await analyticHandlers.init()
-            const flowName = chatflow.name || 'Agentflow'
-            parentTraceIds = await analyticHandlers.onChainStart(
-                flowName,
-                form && Object.keys(form).length > 0 ? JSON.stringify(form) : question || ''
-            )
+            if (analyticHandlers?.hasActiveProviders()) {
+                const flowName = chatflow.name || 'Agentflow'
+                parentTraceIds = await analyticHandlers.onChainStart(
+                    flowName,
+                    form && Object.keys(form).length > 0 ? JSON.stringify(form) : question || ''
+                )
+            }
         }
     } catch (error) {
         logger.error(`[server]: Error initializing analytic handlers: ${getErrorMessage(error)}`)

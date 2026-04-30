@@ -12,7 +12,7 @@ const createInternalPrediction = async (req: Request, res: Response, next: NextF
     try {
         const workspaceId = req.user?.activeWorkspaceId
 
-        const chatflow = await chatflowService.getChatflowById(req.params.id, workspaceId)
+        const chatflow = await chatflowService.getChatflowByIdForWorkspace(req.params.id, workspaceId)
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${req.params.id} not found`)
         }

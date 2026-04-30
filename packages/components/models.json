@@ -1276,6 +1276,18 @@
             "name": "chatOpenAI",
             "models": [
                 {
+                    "label": "gpt-5.5",
+                    "name": "gpt-5.5",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-5.5-pro",
+                    "name": "gpt-5.5-pro",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00018
+                },
+                {
                     "label": "gpt-5.4",
                     "name": "gpt-5.4",
                     "input_cost": 0.0000025,
@@ -1550,6 +1562,18 @@
         {
             "name": "chatOpenAI_LlamaIndex",
             "models": [
+                {
+                    "label": "gpt-5.5",
+                    "name": "gpt-5.5",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-5.5-pro",
+                    "name": "gpt-5.5-pro",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00018
+                },
                 {
                     "label": "gpt-4o",
                     "name": "gpt-4o",

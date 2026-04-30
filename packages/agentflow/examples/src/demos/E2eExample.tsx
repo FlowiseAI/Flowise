@@ -306,7 +306,14 @@ export function E2eExample() {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            {showTestRun && activeChatflowId && <TestRunDialog agentflowId={activeChatflowId} onClose={() => setShowTestRun(false)} />}
+            {showTestRun && activeChatflowId && (
+                <TestRunDialog
+                    agentflowId={activeChatflowId}
+                    onClose={() => setShowTestRun(false)}
+                    onRunStart={() => agentflowRef.current?.clearExecutionState()}
+                    onNodeStatusChange={(nodeId, status, error) => agentflowRef.current?.setNodeExecutionStatus(nodeId, status, error)}
+                />
+            )}
             {pendingSaveFlow && (
                 <SaveToDbDialog
                     flow={pendingSaveFlow}

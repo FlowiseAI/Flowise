@@ -453,11 +453,22 @@ const getAllEvaluations = async (workspaceId: string, page: number = -1, limit: 
 const deleteEvaluation = async (id: string, activeWorkspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
-        await appServer.AppDataSource.getRepository(Evaluation).delete({ id: id })
+        const evaluationRepo = appServer.AppDataSource.getRepository(Evaluation)
+        const existing = await evaluationRepo.findOneBy({
+            id,
+            workspaceId: activeWorkspaceId
+        })
+        if (!existing) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Evaluation ${id} not found`)
+        }
         await appServer.AppDataSource.getRepository(EvaluationRun).delete({ evaluationId: id })
-        const results = await appServer.AppDataSource.getRepository(Evaluation).findBy(getWorkspaceSearchOptions(activeWorkspaceId))
+        await evaluationRepo.delete({ id, workspaceId: activeWorkspaceId })
+        const results = await evaluationRepo.findBy(getWorkspaceSearchOptions(activeWorkspaceId))
         return results
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: EvalsService.deleteEvaluation - ${getErrorMessage(error)}`
