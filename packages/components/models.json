@@ -2626,5 +2626,47 @@
                 }
             ]
         }
+    ],
+    "reranker": [
+        {
+            "name": "voyageAIRerankRetriever",
+            "models": [
+                {
+                    "label": "rerank-2.5",
+                    "name": "rerank-2.5",
+                    "description": "Latest general-purpose reranker with top relevance quality."
+                },
+                {
+                    "label": "rerank-2.5-lite",
+                    "name": "rerank-2.5-lite",
+                    "description": "Lightweight version of rerank-2.5, optimized for latency and cost."
+                },
+                {
+                    "label": "rerank-2",
+                    "name": "rerank-2",
+                    "description": "General-purpose reranker model."
+                },
+                {
+                    "label": "rerank-2-lite",
+                    "name": "rerank-2-lite",
+                    "description": "Lightweight version of rerank-2, optimized for latency and cost."
+                },
+                {
+                    "label": "rerank-1",
+                    "name": "rerank-1",
+                    "description": "Legacy general-purpose reranker. Kept for backward compatibility."
+                },
+                {
+                    "label": "rerank-lite-2",
+                    "name": "rerank-lite-2",
+                    "description": "Legacy lightweight reranker. Kept for backward compatibility."
+                },
+                {
+                    "label": "rerank-lite-1",
+                    "name": "rerank-lite-1",
+                    "description": "Legacy lightweight reranker. Kept for backward compatibility."
+                }
+            ]
+        }
     ]
 }

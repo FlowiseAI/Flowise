@@ -3,7 +3,8 @@ import { VectorStoreRetriever } from '@langchain/core/vectorstores'
 import { ContextualCompressionRetriever } from '@langchain/classic/retrievers/contextual_compression'
 import { VoyageAIRerank } from './VoyageAIRerank'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 
 class VoyageAIRerankRetriever_Retrievers implements INode {
     label: string
@@ -43,37 +44,8 @@ class VoyageAIRerankRetriever_Retrievers implements INode {
             {
                 label: 'Model Name',
                 name: 'model',
-                type: 'options',
-                options: [
-                    {
-                        label: 'rerank-2.5',
-                        name: 'rerank-2.5'
-                    },
-                    {
-                        label: 'rerank-2.5-lite',
-                        name: 'rerank-2.5-lite'
-                    },
-                    {
-                        label: 'rerank-2',
-                        name: 'rerank-2'
-                    },
-                    {
-                        label: 'rerank-2-lite',
-                        name: 'rerank-2-lite'
-                    },
-                    {
-                        label: 'rerank-1',
-                        name: 'rerank-1'
-                    },
-                    {
-                        label: 'rerank-lite-2',
-                        name: 'rerank-lite-2'
-                    },
-                    {
-                        label: 'rerank-lite-1',
-                        name: 'rerank-lite-1'
-                    }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'rerank-2.5',
                 optional: true
             },
@@ -114,6 +86,13 @@ class VoyageAIRerankRetriever_Retrievers implements INode {
                 baseClasses: ['string', 'json']
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.RERANKER, 'voyageAIRerankRetriever')
+        }
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
