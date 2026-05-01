@@ -61,6 +61,9 @@ const baseColors = {
     secondaryLight: '#ede7f6',
     secondaryMain: '#673ab7',
     secondaryDark: '#5e35b1',
+    darkSecondaryLight: '#454c59',
+    darkSecondaryMain: '#7c4dff',
+    darkSecondaryDark: '#ffffff',
 
     // MUI palette colors - success (green)
     successLight: '#cdf5d8',
@@ -153,9 +156,9 @@ export const tokens = {
                 dark: baseColors.primaryDark
             },
             secondary: {
-                light: baseColors.secondaryLight,
-                main: baseColors.secondaryMain,
-                dark: baseColors.secondaryDark
+                light: { light: baseColors.secondaryLight, dark: baseColors.darkSecondaryLight },
+                main: { light: baseColors.secondaryMain, dark: baseColors.darkSecondaryMain },
+                dark: { light: baseColors.secondaryDark, dark: baseColors.darkSecondaryDark }
             },
             success: {
                 light: baseColors.successLight,

@@ -1292,16 +1292,18 @@ const executeNode = async ({
                             productId
                         })
 
-                        if (subFlowResult?.text) {
-                            iterationResults.push(subFlowResult.text)
-                            successfulIterationResults.push(subFlowResult.text)
-                            // Stream each result as it completes rather than batching at the end.
-                            // Sub-flows run with isRecursive=true, so inner nodes (e.g. DirectReply)
-                            // never reach isLastNode=true and never call streamTokenEvent themselves.
-                            if (isLastNode && sseStreamer) {
-                                sseStreamer.streamTokenEvent(chatId, (successfulCount > 0 ? '\n' : '') + subFlowResult.text)
+                        if (subFlowResult) {
+                            iterationResults.push(subFlowResult.text || '')
+                            if (subFlowResult.text) {
+                                successfulIterationResults.push(subFlowResult.text)
+                                // Stream each result as it completes rather than batching at the end.
+                                // Sub-flows run with isRecursive=true, so inner nodes (e.g. DirectReply)
+                                // never reach isLastNode=true and never call streamTokenEvent themselves.
+                                if (isLastNode && sseStreamer) {
+                                    sseStreamer.streamTokenEvent(chatId, (successfulCount > 0 ? '\n' : '') + subFlowResult.text)
+                                }
+                                successfulCount++
                             }
-                            successfulCount++
                         }
 
                         // Add executed data from sub-flow to main execution data with appropriate iteration context
