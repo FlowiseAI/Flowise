@@ -225,8 +225,8 @@ export class BedrockImportedChat extends BaseChatModel implements IVisionChatMod
                     body: JSON.stringify(body)
                 })
             )
-            if (resp.body == null) throw new Error("Response body is undefined");
-            const decoded = JSON.parse(new TextDecoder().decode(resp.body));
+            if (resp.body == null) throw new Error('Response body is undefined')
+            const decoded = JSON.parse(new TextDecoder().decode(resp.body))
             return this.parseResponse(decoded)
         } catch (err) {
             throw this.normalizeError(err)
