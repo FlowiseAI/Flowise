@@ -273,7 +273,10 @@ describe('ExecutionDetail', () => {
             renderWithTheme(<ExecutionDetail executionId='exec-1' />)
             expect(screen.getByText('Copy ID')).toBeInTheDocument()
             await userEvent.click(screen.getByText('Copy ID'))
-            expect(screen.getByText('Copied!')).toBeInTheDocument()
+            // Scoped to the chip's role; `userEvent.click` opens the Tooltip
+            // popper (role='tooltip', also "Copied!"), so a plain `getByText`
+            // would match both elements.
+            expect(screen.getByRole('button', { name: 'Copied!' })).toBeInTheDocument()
         })
 
         it('logs a warning when the clipboard write rejects', async () => {
