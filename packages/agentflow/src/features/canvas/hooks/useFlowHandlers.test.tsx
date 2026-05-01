@@ -4,7 +4,7 @@ import { makeFlowEdge, makeFlowNode, makeNodeData } from '@test-utils/factories'
 import { act, renderHook } from '@testing-library/react'
 
 import { isValidConnectionAgentflowV2 } from '@/core'
-import type { FlowEdge, FlowNode, NodeData } from '@/core/types'
+import type { FlowData, FlowEdge, FlowNode, NodeData } from '@/core/types'
 import { checkNodePlacementConstraints } from '@/core/validation'
 
 import { useFlowHandlers } from './useFlowHandlers'
@@ -204,7 +204,7 @@ describe('useFlowHandlers', () => {
                 result.current.handleConnect({ source: 'child_a', target: 'child_b', sourceHandle: null, targetHandle: null })
             })
 
-            const edge = (onFlowChange.mock.calls[0][0] as any).edges[0]
+            const edge = (onFlowChange.mock.calls[0][0] as FlowData).edges[0]
             expect(edge.zIndex).toBeUndefined()
         })
 
@@ -215,7 +215,7 @@ describe('useFlowHandlers', () => {
                 result.current.handleConnect({ source: 'a', target: 'b', sourceHandle: null, targetHandle: null })
             })
 
-            const edge = (onFlowChange.mock.calls[0][0] as any).edges[0]
+            const edge = (onFlowChange.mock.calls[0][0] as FlowData).edges[0]
             expect(edge.zIndex).toBeUndefined()
         })
     })

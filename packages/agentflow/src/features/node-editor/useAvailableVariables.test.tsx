@@ -5,7 +5,7 @@ import { useAvailableVariables } from './useAvailableVariables'
 // --- Mocks ---
 
 const mockState = {
-    nodes: [] as Array<{ id: string; data: Record<string, unknown> }>,
+    nodes: [] as Array<{ id: string; extent?: string; parentNode?: string; data: Record<string, unknown> }>,
     edges: [] as Array<{ source: string; target: string }>
 }
 
@@ -160,7 +160,7 @@ describe('useAvailableVariables', () => {
                 parentNode: 'iter_0',
                 data: { id: 'child_0', name: 'directReplyAgentflow', label: 'Direct Reply' }
             }
-        ] as any
+        ]
 
         const { result } = renderHook(() => useAvailableVariables('child_0'))
 
@@ -187,7 +187,7 @@ describe('useAvailableVariables', () => {
                 parentNode: 'iter_0',
                 data: { id: 'child_0', name: 'directReplyAgentflow', label: 'Direct Reply' }
             }
-        ] as any
+        ]
 
         const { result } = renderHook(() => useAvailableVariables('child_0'))
 
