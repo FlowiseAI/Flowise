@@ -1386,10 +1386,10 @@ importers:
         specifier: ^16.0.0
         version: 16.4.5
       flowise-embed:
-        specifier: latest
+        specifier: ^3.1.5
         version: 3.1.5
       flowise-embed-react:
-        specifier: latest
+        specifier: ^3.1.5
         version: 3.1.5(@types/node@22.16.3)(flowise-embed@3.1.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       flowise-react-json-view:
         specifier: '*'
