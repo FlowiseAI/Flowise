@@ -160,7 +160,10 @@ export abstract class BaseCommand extends Command {
 
         // Document Loaders
         PUPPETEER_EXECUTABLE_FILE_PATH: Flags.string(),
-        PLAYWRIGHT_EXECUTABLE_FILE_PATH: Flags.string()
+        PLAYWRIGHT_EXECUTABLE_FILE_PATH: Flags.string(),
+
+        // Schedule
+        MIN_SCHEDULE_INTERVAL_SECONDS: Flags.string()
     }
 
     protected async stopProcess() {

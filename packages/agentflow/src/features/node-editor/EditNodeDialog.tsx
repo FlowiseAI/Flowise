@@ -7,7 +7,7 @@ import { IconCheck, IconInfoCircle, IconPencil, IconX } from '@tabler/icons-reac
 
 import { ConditionBuilder, MessagesInput, NodeInputHandler, ScenariosInput, StructuredOutputBuilder } from '@/atoms'
 import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
-import { buildDynamicOutputAnchors, evaluateFieldVisibility } from '@/core/utils'
+import { applyVisibleFieldDefaults, buildDynamicOutputAnchors, evaluateFieldVisibility } from '@/core/utils'
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 
 import { AsyncInput } from './AsyncInput'
@@ -103,10 +103,10 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
     const onCustomDataChange = ({ inputParam, newValue }: { inputParam: InputParam; newValue: unknown }) => {
         if (!data) return
 
-        const updatedInputValues = {
+        const updatedInputValues = applyVisibleFieldDefaults(inputParams, {
             ...data.inputs,
             [inputParam.name]: newValue
-        }
+        })
 
         const updatedParams = evaluateFieldVisibility(inputParams, updatedInputValues)
         setInputParams(updatedParams)

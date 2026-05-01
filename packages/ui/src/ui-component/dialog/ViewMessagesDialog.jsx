@@ -195,7 +195,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const [sourceDialogProps, setSourceDialogProps] = useState({})
     const [hardDeleteDialogOpen, setHardDeleteDialogOpen] = useState(false)
     const [hardDeleteDialogProps, setHardDeleteDialogProps] = useState({})
-    const [chatTypeFilter, setChatTypeFilter] = useState(['INTERNAL', 'EXTERNAL', 'MCP'])
+    const [chatTypeFilter, setChatTypeFilter] = useState(['INTERNAL', 'EXTERNAL', 'MCP', 'SCHEDULED'])
     const [feedbackTypeFilter, setFeedbackTypeFilter] = useState([])
     const [startDate, setStartDate] = useState(new Date(new Date().setMonth(new Date().getMonth() - 1)))
     const [endDate, setEndDate] = useState(new Date())
@@ -349,6 +349,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             return 'Evaluation'
         } else if (chatType === 'MCP') {
             return 'MCP'
+        } else if (chatType === 'SCHEDULED') {
+            return 'Scheduled'
         }
         return 'API/Embed'
     }
@@ -758,7 +760,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         return () => {
             setChatLogs([])
             setChatMessages([])
-            setChatTypeFilter(['INTERNAL', 'EXTERNAL', 'MCP'])
+            setChatTypeFilter(['INTERNAL', 'EXTERNAL', 'MCP', 'SCHEDULED'])
             setFeedbackTypeFilter([])
             setSelectedMessageIndex(0)
             setSelectedChatId('')
@@ -911,6 +913,10 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                     {
                                         label: 'MCP',
                                         name: 'MCP'
+                                    },
+                                    {
+                                        label: 'Scheduled',
+                                        name: 'SCHEDULED'
                                     },
                                     {
                                         label: 'Evaluations',
