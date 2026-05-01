@@ -835,9 +835,8 @@ const NodeInputHandler = ({
     }, [data.id, position, updateNodeInternals])
 
     const webhookMethod = data.inputs?.webhookMethod ?? 'POST'
-    const webhookUrl = chatflowId
-        ? `${webhookMethod} ${baseURL}/api/v1/webhook/${chatflowId}`
-        : 'Save the flow first to generate the webhook URL'
+    const webhookUrlBase = chatflowId ? `${baseURL}/api/v1/webhook/${chatflowId}` : null
+    const webhookUrl = webhookUrlBase ? `${webhookMethod} ${webhookUrlBase}` : 'Save the flow first to generate the webhook URL'
 
     return (
         <div ref={ref}>
@@ -1154,7 +1153,7 @@ const NodeInputHandler = ({
                                                 <IconButton
                                                     size='small'
                                                     onClick={() => {
-                                                        navigator.clipboard.writeText(webhookUrl).then(
+                                                        navigator.clipboard.writeText(webhookUrlBase).then(
                                                             () =>
                                                                 enqueueSnackbar({
                                                                     message: 'URL copied!',
