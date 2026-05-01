@@ -24,10 +24,14 @@ src/
 
 **"What it looks like."** Tiny, irreducible UI components with no business logic. Shared building blocks used across features.
 
+Example layout (illustrative — not exhaustive; check the directory for the current set):
+
 ```
 atoms/
-├── StatusIcon.tsx          # Execution / node status icon (INPROGRESS, FINISHED, ERROR…)
+├── StatusIndicator.tsx     # Execution / node status icon (INPROGRESS, FINISHED, ERROR…)
 ├── MetricsDisplay.tsx      # Token / cost / time metrics row
+├── NodeIcon.tsx            # AGENTFLOW_ICONS-driven avatar for a node type
+├── …                       # Other primitives as the SDK grows
 └── index.ts                # Central export
 ```
 
@@ -47,17 +51,23 @@ atoms/
 
 **"What it does."** Self-contained domain modules. Each feature owns its components, hooks, and feature-local utilities. Adding a new observability feature (evaluations, chat history, MALT) means adding a new directory here — it does not touch existing feature exports.
 
+Example layout (illustrative — not exhaustive; the `executions` feature currently has more sub-components and hooks than shown here):
+
 ```
 features/
 ├── executions/             # Execution viewer
 │   ├── components/
-│   │   ├── ExecutionsViewer.tsx      # Filterable list + pagination (global or scoped via agentflowId)
-│   │   ├── ExecutionDetail.tsx       # Resizable split-pane: tree + node detail
+│   │   ├── ExecutionsViewer.tsx      # Filterable list + pagination + resizable detail drawer
+│   │   ├── ExecutionDetail.tsx       # Resizable split-pane: tree sidebar + node detail
+│   │   ├── ExecutionTreeSidebar.tsx  # @mui/x-tree-view RichTreeView with custom slot
 │   │   ├── NodeExecutionDetail.tsx   # Step viewer: markdown/JSON/code/HTML renderers, HITL
-│   │   └── ExecutionsListTable.tsx   # Sortable/selectable MUI table
+│   │   ├── ExecutionsListTable.tsx   # Sortable/selectable MUI table
+│   │   └── …                         # Other components (chat bubbles, panels) as the feature grows
 │   ├── hooks/
 │   │   ├── useExecutionPoll.ts       # Auto-poll while INPROGRESS, stop on terminal state
-│   │   └── useExecutionTree.ts       # Build ExecutionTreeNode[] from flat NodeExecutionData[]
+│   │   ├── useExecutionTree.ts       # Build ExecutionTreeNode[] from flat NodeExecutionData[]
+│   │   ├── useResizableSidebar.ts    # Drag-to-resize width state (left- or right-anchored panels)
+│   │   └── …                         # Other feature-local hooks
 │   └── index.ts                      # Public API for this feature
 │
 └── (evaluations/)          # Future — GA
@@ -79,16 +89,26 @@ features/
 
 **"The Brain."** Framework-agnostic types, utilities, and the MUI theme factory. No React components, no API calls.
 
+Example layout (illustrative — not exhaustive; new sub-files land under `types/`, `primitives/`, and `utils/` as the SDK grows):
+
 ```
 core/
 ├── types/
 │   ├── execution.ts        # Execution, ExecutionState, NodeExecutionData,
 │   │                       # ExecutionTreeNode, HumanInputParams
-│   ├── observe.ts          # ObserveBaseProps (provider props), ExecutionsViewerProps,
+│   ├── observe.ts          # ObserveBaseProps, ExecutionsViewerProps,
 │   │                       # ExecutionDetailProps, ExecutionFilters
+│   ├── nodeDetail.ts       # ChatMessage, ConditionEntry, AvailableToolEntry, …
 │   └── index.ts
 │
 ├── primitives/             # Domain-free, safe to import from atoms/
+│   ├── agentflowIcons.ts   # AGENTFLOW_ICONS registry (icon + color per node type)
+│   ├── json.ts             # JSON tokenizer / safe parser
+│   └── index.ts
+│
+├── utils/                  # Domain-aware helpers — not importable from atoms/
+│   ├── guards.ts           # Type predicates over core/types/* shapes
+│   ├── tools.ts            # Tool-call extraction / resolution
 │   └── index.ts
 │
 └── theme/
@@ -118,6 +138,8 @@ When adding a utility, ask: _"Does this function need to know what an Execution 
 ### `infrastructure/` - External Services
 
 **"The Outside World."** API client factory and React context providers.
+
+Example layout (illustrative — not exhaustive; new API modules land under `api/` as features grow):
 
 ```
 infrastructure/
@@ -257,14 +279,12 @@ FINISHED | ERROR | TERMINATED | TIMEOUT | STOPPED → interval cleared immediate
 
 ### Execution Tree (`useExecutionTree`)
 
-`useExecutionTree` converts the flat `NodeExecutionData[]` stored as JSON in `execution.executionData` into a hierarchical `ExecutionTreeNode[]`:
+`useExecutionTree` converts the flat `NodeExecutionData[]` stored as JSON in `execution.executionData` into a hierarchical `ExecutionTreeNode[]`. Two parenting mechanisms run in sequence (mirrors legacy `ExecutionDetails.jsx` `buildTreeData`):
 
-1. Parse `executionData` JSON
-2. Separate top-level nodes (no `parentNodeId`) from iteration children
-3. Group children by `(parentNodeId, iterationIndex)`
-4. Insert virtual container nodes labeled `Iteration #N` with `isVirtualNode: true`
+1. **`previousNodeIds` parent→child** — each non-iteration node attaches to the most-recent prior instance of any node listed in its `previousNodeIds`. Nodes with empty / unmatched `previousNodeIds` become roots. The "most recent" rule disambiguates when the same `nodeId` runs more than once (e.g. inside a loop).
+2. **Iteration grouping** — children with `parentNodeId` + `iterationIndex` are bundled into virtual `Iteration #N` container nodes (`isVirtualNode: true`) under the iteration agent's most-recent instance, then linked to one another inside the iteration via the same `previousNodeIds` rule (restricted to same-iteration siblings).
 
-The tree is used by `ExecutionDetail` to render the sidebar node list.
+Tree-node ids are `${nodeId}_${arrayIndex}` so duplicate `nodeId`s remain addressable. The tree is consumed by `ExecutionTreeSidebar` (a `RichTreeView` slot) inside `ExecutionDetail`.
 
 ### HITL Callback — Opaque Consumer Contract
 
@@ -292,15 +312,15 @@ Tenant isolation is handled server-side by Flowise's `ExtendRequestContextMiddle
 Each module exposes only what's needed via its `index.ts`:
 
 ```typescript
-// features/executions/index.ts
-// ✅ Public API — components and types needed by index.ts
+// features/executions/index.ts (illustrative — re-export only what consumers need)
+// ✅ Public API
 export { ExecutionsViewer } from './components/ExecutionsViewer'
 export { ExecutionDetail } from './components/ExecutionDetail'
 export { NodeExecutionDetail } from './components/NodeExecutionDetail'
 export { useExecutionPoll } from './hooks/useExecutionPoll'
 export { useExecutionTree } from './hooks/useExecutionTree'
 
-// ❌ Internal sub-components and helpers stay private
+// ❌ Internal sub-components (e.g. ExecutionTreeSidebar, ChatMessageBubble) and helpers stay private
 ```
 
 ---
@@ -346,18 +366,20 @@ Adding evaluations, chat history, or MALT follows the same pattern:
 
 ## Root Files (`src/index.ts`)
 
-The barrel export exposes only the public surface:
+The barrel export exposes only the public surface. Example shape (illustrative — refer to `src/index.ts` for the current set):
 
 ```typescript
 // Components
-export { ExecutionsViewer } from './features/executions'
-export { ExecutionDetail } from './features/executions'
-export { NodeExecutionDetail } from './features/executions'
+export { ExecutionsViewer, ExecutionDetail, NodeExecutionDetail } from './features/executions'
 export { ObserveProvider } from './infrastructure/store'
+
+// Hooks (for consumers building custom UIs on top of observe infrastructure)
+export { useExecutionPoll, useExecutionTree } from './features/executions'
+export { useObserveApi, useObserveConfig } from './infrastructure/store'
 
 // Types
 export type { ExecutionsViewerProps, ExecutionDetailProps, ExecutionFilters } from './core/types'
-export type { Execution, ExecutionState, NodeExecutionData, HumanInputParams } from './core/types'
+export type { Execution, ExecutionState, NodeExecutionData, HumanInputParams, AgentflowRef } from './core/types'
 ```
 
 Everything else is internal implementation detail.

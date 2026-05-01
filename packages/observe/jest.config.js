@@ -45,10 +45,9 @@ module.exports = {
             './src/infrastructure/store/': FLOOR,
 
             // Tested subset of components — extglob excludes the untested
-            // orchestrators (ExecutionDetail / ExecutionsListTable /
-            // ExecutionsViewer). Promote this to the folder level once those
-            // land tests.
-            './src/features/executions/components/!(ExecutionDetail|ExecutionsListTable|ExecutionsViewer).{ts,tsx}': FLOOR,
+            // orchestrators (ExecutionsListTable / ExecutionsViewer). Promote
+            // this to the folder level once those land tests.
+            './src/features/executions/components/!(ExecutionsListTable|ExecutionsViewer).{ts,tsx}': FLOOR,
 
             // executions.ts has direct tests; client.ts is exercised only
             // indirectly through executions.ts so it's not threshold-gated.

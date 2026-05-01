@@ -76,7 +76,12 @@ export interface ExecutionTreeNode {
     id: string
     nodeId: string
     nodeLabel: string
-    status: ExecutionState
+    /**
+     * `ExecutionState` for real nodes; virtual iteration nodes additionally
+     * surface `'UNKNOWN'` when the rollup over their children falls through
+     * (legacy ExecutionDetails.jsx:438-446 parity).
+     */
+    status: ExecutionState | 'UNKNOWN'
     /**
      * Resolved node type name — `useExecutionTree` always populates this for
      * non-virtual nodes (falling back to `data.name` then `nodeId.split('_')[0]`).
