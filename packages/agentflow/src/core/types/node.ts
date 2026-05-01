@@ -2,6 +2,8 @@
 // Node & Edge Data Types
 // ============================================================================
 
+import type { ExecutionStatus } from './execution'
+
 /**
  * Shared metadata between GET /api/v1/nodes payloads and canvas {@link NodeData}.
  * Excludes `inputs` (API: schema array vs canvas: value map) and other API-only or canvas-only fields.
@@ -21,7 +23,8 @@ export interface NodeDefinitionBase {
     badge?: string
     tags?: string[]
     documentation?: string
-    credential?: { credentialNames?: string[]; label?: string; type?: string; optional?: boolean }
+    /** Schema object (from API) or credential ID string (set at runtime when user selects a credential). */
+    credential?: string | { credentialNames?: string[]; label?: string; type?: string; optional?: boolean }
     inputAnchors?: InputAnchor[]
     outputAnchors?: OutputAnchor[]
     selected?: boolean
@@ -40,7 +43,7 @@ export interface NodeData extends NodeDefinitionBase {
     inputParams?: InputParam[] // Parameter definitions
     inputs?: Record<string, unknown> // Actual values entered by users
     // Status properties
-    status?: 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'STOPPED' | 'TERMINATED'
+    status?: ExecutionStatus
     error?: string
     warning?: string
     hint?: string
@@ -89,6 +92,7 @@ export interface InputParam {
     rows?: number
     description?: string
     acceptVariable?: boolean
+    acceptNodeOutputAsVariable?: boolean
     additionalParams?: boolean
     show?: Record<string, unknown>
     hide?: Record<string, unknown>

@@ -7,6 +7,7 @@ import { ChatBedrockConverseInput, ChatBedrockConverse } from '@langchain/aws'
 import { BedrockChat } from './FlowiseAWSChatBedrock'
 import { validateEndpointHost, resolveBedrockModel, discoverInferenceProfiles, getStopSeqUnsupportedModels } from './utils'
 import { BedrockImportedChat, getImportedModelInfo, detectFormat } from './FlowiseAWSChatBedrockImported'
+import { supportsSamplingParams } from '../../../src/anthropicUtils'
 
 class AWSChatBedrock_ChatModels implements INode {
     label: string
@@ -181,7 +182,6 @@ class AWSChatBedrock_ChatModels implements INode {
         const useGlobalEndpoint = nodeData.inputs?.useGlobalEndpoint as boolean
         const endpointHost = (nodeData.inputs?.endpointHost as string)?.trim()
 
-        // Validate and sanitize endpointHost; auto-migrate ARNs placed here by mistake
         let sanitizedEndpointHost: string | undefined
         let endpointMigratedArn: string | undefined
         if (endpointHost) {
@@ -255,8 +255,14 @@ class AWSChatBedrock_ChatModels implements INode {
             region: iRegion,
             model: modelId,
             maxTokens: !isNaN(parseInt(iMax_tokens_to_sample, 10)) ? parseInt(iMax_tokens_to_sample, 10) : 200,
-            temperature: !isNaN(parseFloat(iTemperature)) ? parseFloat(iTemperature) : 0.7,
             streaming: streaming ?? true
+        }
+
+        // Newer Anthropic Claude models (Opus 4.7+) don't accept sampling
+        // parameters. AWS Bedrock surfaces those models with names like
+        // "anthropic.claude-opus-4-7-v1" or "us.anthropic.claude-opus-4-7-...".
+        if (supportsSamplingParams(modelId)) {
+            obj.temperature = !isNaN(parseFloat(iTemperature)) ? parseFloat(iTemperature) : 0.7
         }
 
         if (applicationInferenceProfile) {

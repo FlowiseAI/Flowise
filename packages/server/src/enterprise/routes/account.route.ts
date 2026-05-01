@@ -16,8 +16,6 @@ router.post(
     accountController.invite
 )
 
-router.post('/login', accountController.login)
-
 router.post('/logout', accountController.logout)
 
 router.post('/verify', accountController.verify)

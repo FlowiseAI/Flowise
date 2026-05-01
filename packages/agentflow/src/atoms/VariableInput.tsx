@@ -61,21 +61,21 @@ const StyledEditorContent = styled(EditorContent, {
             overflowY: rows ? 'auto' : 'hidden',
             overflowX: rows ? 'auto' : 'hidden',
             lineHeight: rows ? `${tokens.typography.rowHeightRem}em` : `${tokens.typography.singleLineLineHeightEm}em`,
-            fontWeight: 500,
-            color: disabled ? theme.palette.action.disabled : theme.palette.grey[900],
-            border: `1px solid ${theme.palette.grey[900]}25`,
+            fontSize: tokens.typography.fontSize.md,
+            fontWeight: tokens.typography.fontWeight.medium,
+            color: disabled ? theme.palette.action.disabled : theme.palette.text.primary,
+            border: `1px solid ${tokens.colors.border.input[mode]}`,
             borderRadius: '10px',
-            backgroundColor:
-                (theme.palette as { textBackground?: { main: string } }).textBackground?.main ?? theme.palette.background.paper,
+            backgroundColor: tokens.colors.background.input[mode],
             boxSizing: 'border-box',
             whiteSpace: rows ? 'pre-wrap' : 'nowrap',
 
             '&:hover': {
-                borderColor: disabled ? `${theme.palette.grey[900]}25` : theme.palette.text.primary,
+                borderColor: disabled ? tokens.colors.border.input[mode] : theme.palette.text.primary,
                 cursor: disabled ? 'default' : 'text'
             },
             '&:focus': {
-                borderColor: disabled ? `${theme.palette.grey[900]}25` : theme.palette.primary.main,
+                borderColor: disabled ? tokens.colors.border.input[mode] : theme.palette.primary.main,
                 outline: 'none'
             },
 
@@ -89,14 +89,13 @@ const StyledEditorContent = styled(EditorContent, {
                 height: 0
             },
 
-            // Mention (variable) chip styling — matches original UI green style
             '& .mention': {
-                backgroundColor: mode === 'dark' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.08)',
-                borderRadius: '4px',
-                padding: '1px 4px',
-                fontWeight: 600,
-                color: mode === 'dark' ? '#81c784' : '#2e7d32',
-                whiteSpace: 'nowrap'
+                backgroundColor: '#b3f0b8',
+                borderRadius: '0.4rem',
+                boxDecorationBreak: 'clone',
+                WebkitBoxDecorationBreak: 'clone',
+                color: '#0d7115',
+                padding: '0.1rem 0.3rem'
             },
 
             // Block element spacing
@@ -208,7 +207,7 @@ export function VariableInput({
                               return [
                                   'span',
                                   mergeAttributes(this.HTMLAttributes ?? {}, options.HTMLAttributes),
-                                  `${options.suggestion?.char ?? '{{'}${node.attrs.label ?? node.attrs.id}}}`
+                                  `${options.suggestion?.char ?? '{{'}${node.attrs.id ?? node.attrs.label}}}`
                               ]
                           },
                           suggestion: suggestionConfig,

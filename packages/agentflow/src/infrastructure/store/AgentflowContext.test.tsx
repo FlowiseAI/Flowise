@@ -3,7 +3,7 @@ import { ReactNode } from 'react'
 import { makeFlowEdge, makeFlowNode } from '@test-utils/factories'
 import { act, renderHook } from '@testing-library/react'
 
-import type { FlowData, FlowEdge, FlowNode } from '@/core/types'
+import type { ExecutionStatus, FlowData, FlowEdge, FlowNode } from '@/core/types'
 
 import { AgentflowStateProvider, useAgentflowContext } from './AgentflowContext'
 
@@ -1334,6 +1334,232 @@ describe('AgentflowContext', () => {
             expect(result.current.state.nodes.find((n) => n.id === 'node-1')).toBeDefined()
             expect(result.current.state.nodes.find((n) => n.id === 'node-2')?.data.label).toBe('Updated Node 2')
             expect(result.current.state.nodes.find((n) => n.id === 'Node 1_0')).toBeDefined()
+        })
+    })
+
+    describe('onFlowChange notifications', () => {
+        const mockOnFlowChange = jest.fn()
+
+        beforeEach(() => {
+            mockOnFlowChange.mockClear()
+        })
+
+        it('should call onFlowChange when deleteNode is called', () => {
+            const initialFlow: FlowData = {
+                nodes: [makeNode('node-1'), makeNode('node-2')],
+                edges: [makeEdge('node-1', 'node-2')]
+            }
+
+            const { result } = renderHook(() => useAgentflowContext(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            act(() => {
+                result.current.registerOnFlowChange(mockOnFlowChange)
+            })
+
+            act(() => {
+                result.current.deleteNode('node-2')
+            })
+
+            expect(mockOnFlowChange).toHaveBeenCalledTimes(1)
+            expect(mockOnFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    nodes: expect.arrayContaining([expect.objectContaining({ id: 'node-1' })]),
+                    edges: []
+                })
+            )
+            // Deleted node should not be in the callback payload
+            const callArgs = mockOnFlowChange.mock.calls[0][0]
+            expect(callArgs.nodes.find((n: FlowNode) => n.id === 'node-2')).toBeUndefined()
+        })
+
+        it('should call onFlowChange when deleteEdge is called', () => {
+            const initialFlow: FlowData = {
+                nodes: [makeNode('node-1'), makeNode('node-2')],
+                edges: [makeEdge('node-1', 'node-2'), makeEdge('node-2', 'node-1')]
+            }
+
+            const { result } = renderHook(() => useAgentflowContext(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            act(() => {
+                result.current.registerOnFlowChange(mockOnFlowChange)
+            })
+
+            act(() => {
+                result.current.deleteEdge('node-1-node-2')
+            })
+
+            expect(mockOnFlowChange).toHaveBeenCalledTimes(1)
+            expect(mockOnFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    nodes: expect.arrayContaining([expect.objectContaining({ id: 'node-1' }), expect.objectContaining({ id: 'node-2' })]),
+                    edges: [expect.objectContaining({ id: 'node-2-node-1' })]
+                })
+            )
+        })
+
+        it('should call onFlowChange when duplicateNode is called', () => {
+            const initialFlow: FlowData = {
+                nodes: [makeNode('node-1')],
+                edges: []
+            }
+
+            const { result } = renderHook(() => useAgentflowContext(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            act(() => {
+                result.current.registerOnFlowChange(mockOnFlowChange)
+            })
+
+            act(() => {
+                result.current.duplicateNode('node-1')
+            })
+
+            expect(mockOnFlowChange).toHaveBeenCalledTimes(1)
+            expect(mockOnFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    nodes: expect.arrayContaining([expect.objectContaining({ id: 'node-1' })]),
+                    edges: []
+                })
+            )
+            // Should have 2 nodes (original + duplicate)
+            const callArgs = mockOnFlowChange.mock.calls[0][0]
+            expect(callArgs.nodes).toHaveLength(2)
+        })
+    })
+
+    describe('execution operations', () => {
+        it('executionState should be null initially', () => {
+            const { result } = renderHook(() => useAgentflowContext(), { wrapper: createWrapper() })
+            expect(result.current.executionState).toBeNull()
+        })
+
+        it('startExecution should set executionState with INPROGRESS status and the given executionId', () => {
+            const { result } = renderHook(() => useAgentflowContext(), { wrapper: createWrapper() })
+
+            act(() => {
+                result.current.startExecution('exec-abc')
+            })
+
+            expect(result.current.executionState).toEqual({
+                executionId: 'exec-abc',
+                status: 'INPROGRESS',
+                nodeStates: {}
+            })
+        })
+
+        it('setNodeExecutionStatus should add the node to nodeStates', () => {
+            const { result } = renderHook(() => useAgentflowContext(), { wrapper: createWrapper() })
+
+            act(() => {
+                result.current.startExecution('exec-abc')
+            })
+
+            act(() => {
+                result.current.setNodeExecutionStatus('node-1', 'FINISHED')
+            })
+
+            expect(result.current.executionState?.nodeStates['node-1']).toEqual({
+                nodeId: 'node-1',
+                status: 'FINISHED',
+                error: undefined
+            })
+        })
+
+        it('setNodeExecutionStatus should record an error message when provided', () => {
+            const { result } = renderHook(() => useAgentflowContext(), { wrapper: createWrapper() })
+
+            act(() => {
+                result.current.startExecution('exec-abc')
+            })
+
+            act(() => {
+                result.current.setNodeExecutionStatus('node-1', 'ERROR', 'Timeout exceeded')
+            })
+
+            expect(result.current.executionState?.nodeStates['node-1']?.status).toBe('ERROR')
+            expect(result.current.executionState?.nodeStates['node-1']?.error).toBe('Timeout exceeded')
+        })
+
+        it('setNodeExecutionStatus should preserve other node states', () => {
+            const { result } = renderHook(() => useAgentflowContext(), { wrapper: createWrapper() })
+
+            act(() => {
+                result.current.startExecution('exec-abc')
+            })
+
+            act(() => {
+                result.current.setNodeExecutionStatus('node-1', 'FINISHED')
+            })
+
+            act(() => {
+                result.current.setNodeExecutionStatus('node-2', 'INPROGRESS')
+            })
+
+            expect(result.current.executionState?.nodeStates['node-1']?.status).toBe('FINISHED')
+            expect(result.current.executionState?.nodeStates['node-2']?.status).toBe('INPROGRESS')
+        })
+
+        it('clearExecutionState should reset executionState to null', () => {
+            const { result } = renderHook(() => useAgentflowContext(), { wrapper: createWrapper() })
+
+            act(() => {
+                result.current.startExecution('exec-abc')
+            })
+
+            expect(result.current.executionState).not.toBeNull()
+
+            act(() => {
+                result.current.clearExecutionState()
+            })
+
+            expect(result.current.executionState).toBeNull()
+        })
+
+        it('should support a full execution lifecycle across multiple nodes', () => {
+            const statuses: ExecutionStatus[] = ['INPROGRESS', 'FINISHED', 'ERROR']
+            const { result } = renderHook(() => useAgentflowContext(), { wrapper: createWrapper() })
+
+            act(() => {
+                result.current.startExecution('exec-lifecycle')
+            })
+
+            statuses.forEach((status, i) => {
+                act(() => {
+                    result.current.setNodeExecutionStatus(`node-${i}`, status)
+                })
+            })
+
+            expect(Object.keys(result.current.executionState?.nodeStates ?? {})).toHaveLength(3)
+            expect(result.current.executionState?.nodeStates['node-0']?.status).toBe('INPROGRESS')
+            expect(result.current.executionState?.nodeStates['node-1']?.status).toBe('FINISHED')
+            expect(result.current.executionState?.nodeStates['node-2']?.status).toBe('ERROR')
+
+            act(() => {
+                result.current.clearExecutionState()
+            })
+
+            expect(result.current.executionState).toBeNull()
+        })
+
+        it('startExecution should reset node states from a previous execution', () => {
+            const { result } = renderHook(() => useAgentflowContext(), { wrapper: createWrapper() })
+
+            act(() => {
+                result.current.startExecution('exec-first')
+                result.current.setNodeExecutionStatus('node-1', 'FINISHED')
+            })
+
+            act(() => {
+                result.current.startExecution('exec-second')
+            })
+
+            expect(result.current.executionState?.executionId).toBe('exec-second')
+            expect(result.current.executionState?.nodeStates).toEqual({})
         })
     })
 })

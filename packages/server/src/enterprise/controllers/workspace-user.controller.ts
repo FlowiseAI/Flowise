@@ -6,6 +6,12 @@ import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { WorkspaceUser } from '../database/entities/workspace-user.entity'
 import { WorkspaceUserService } from '../services/workspace-user.service'
+import {
+    assertQueryOrganizationMatchesActiveOrg,
+    assertWorkspaceIdAccessibleToUser,
+    getLoggedInUser,
+    userMayManageOrgUsers
+} from '../utils/tenantRequestGuards'
 
 export class WorkspaceUserController {
     public async create(req: Request, res: Response, next: NextFunction) {
@@ -21,6 +27,7 @@ export class WorkspaceUserController {
     public async read(req: Request, res: Response, next: NextFunction) {
         let queryRunner
         try {
+            const user = getLoggedInUser(req)
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             const query = req.query as Partial<WorkspaceUser & { organizationId: string | undefined }>
@@ -28,23 +35,39 @@ export class WorkspaceUserController {
 
             let workspaceUser: any
             if (query.workspaceId && query.userId) {
+                await assertWorkspaceIdAccessibleToUser(user, query.workspaceId, queryRunner)
                 workspaceUser = await workspaceUserService.readWorkspaceUserByWorkspaceIdUserId(
                     query.workspaceId,
                     query.userId,
                     queryRunner
                 )
             } else if (query.workspaceId) {
+                await assertWorkspaceIdAccessibleToUser(user, query.workspaceId, queryRunner)
                 workspaceUser = await workspaceUserService.readWorkspaceUserByWorkspaceId(query.workspaceId, queryRunner)
             } else if (query.organizationId && query.userId) {
+                assertQueryOrganizationMatchesActiveOrg(user, query.organizationId)
+                if (query.userId !== user.id && !userMayManageOrgUsers(user)) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
                 workspaceUser = await workspaceUserService.readWorkspaceUserByOrganizationIdUserId(
                     query.organizationId,
                     query.userId,
                     queryRunner
                 )
             } else if (query.userId) {
-                workspaceUser = await workspaceUserService.readWorkspaceUserByUserId(query.userId, queryRunner)
+                if (query.userId !== user.id && !userMayManageOrgUsers(user)) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
+                workspaceUser = await workspaceUserService.readWorkspaceUserByOrganizationIdUserId(
+                    user.activeOrganizationId,
+                    query.userId,
+                    queryRunner
+                )
             } else if (query.roleId) {
-                workspaceUser = await workspaceUserService.readWorkspaceUserByRoleId(query.roleId, queryRunner)
+                if (!userMayManageOrgUsers(user)) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
+                workspaceUser = await workspaceUserService.readWorkspaceUserByRoleId(query.roleId, queryRunner, user.activeOrganizationId)
             } else {
                 throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
             }
