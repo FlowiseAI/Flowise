@@ -1244,9 +1244,8 @@ const executeNode = async ({
                     flowData: JSON.stringify(iterationFlowData)
                 }
 
-                const iterationResults: string[] = [] // all results including errors, kept for observability
-                const successfulIterationResults: string[] = [] // successful results only; used for content and streaming
-                let successfulCount = 0 // number of successful results; drives newline separator between streamed items
+                const iterationResults: string[] = []
+                let successfulCount = 0 // drives newline separator between streamed items
 
                 // Execute sub-flow for each item in the iteration array
                 for (let i = 0; i < results.input.iterationInput.length; i++) {
@@ -1295,7 +1294,6 @@ const executeNode = async ({
                         if (subFlowResult) {
                             iterationResults.push(subFlowResult.text || '')
                             if (subFlowResult.text) {
-                                successfulIterationResults.push(subFlowResult.text)
                                 // Stream each result as it completes rather than batching at the end.
                                 // Sub-flows run with isRecursive=true, so inner nodes (e.g. DirectReply)
                                 // never reach isLastNode=true and never call streamTokenEvent themselves.
@@ -1361,8 +1359,8 @@ const executeNode = async ({
 
                 results.output = {
                     ...(results.output || {}),
-                    iterationResults, // full record (errors included) for observability
-                    content: successfulIterationResults.join('\n') // successful only — matches what was streamed and saved to chat history
+                    iterationResults,
+                    content: iterationResults.join('\n')
                 }
 
                 logger.debug(`  📊 Completed all iterations. Total results: ${iterationResults.length}`)
