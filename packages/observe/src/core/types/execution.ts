@@ -51,7 +51,11 @@ export interface NodeExecutionOutput {
 export interface NodeExecutionData {
     nodeLabel: string
     nodeId: string
-    /** Node output data — shape varies by node type */
+    /**
+     * Node payload — the runtime emits this as `{ input, output, state, error, ... }`.
+     * `data.output` carries `content`, `timeMetadata`, `usageMetadata`, etc.
+     * Shape varies by node type, hence `Record<string, unknown>`.
+     */
     data: Record<string, unknown>
     previousNodeIds: string[]
     status: ExecutionState
@@ -62,7 +66,6 @@ export interface NodeExecutionData {
     iterationContext?: Record<string, unknown>
     /** Parent node ID for iteration child nodes */
     parentNodeId?: string
-    output?: NodeExecutionOutput
 }
 
 // ============================================================================
@@ -74,7 +77,13 @@ export interface ExecutionTreeNode {
     nodeId: string
     nodeLabel: string
     status: ExecutionState
-    name?: string
+    /**
+     * Resolved node type name — `useExecutionTree` always populates this for
+     * non-virtual nodes (falling back to `data.name` then `nodeId.split('_')[0]`).
+     * Empty string for virtual iteration container nodes (consumers gate on
+     * `isVirtualNode` before reading).
+     */
+    name: string
     /** True for virtual iteration container nodes (not real execution nodes) */
     isVirtualNode?: boolean
     iterationIndex?: number

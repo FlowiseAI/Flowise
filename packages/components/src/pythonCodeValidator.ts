@@ -1,8 +1,15 @@
 /**
- * Validates LLM-generated Python code before execution in Pyodide to prevent
- * remote code execution (RCE). Only allows code that is safe for pandas
- * DataFrame operations. Rejects imports, exec/eval, file/system access, and
- * other dangerous constructs that could escape the intended DataFrame context.
+ * Validates Python code before execution in Pyodide to prevent remote code
+ * execution (RCE). Two entry points are provided:
+ *
+ *  - validateCustomReadCSVFunction  allowlist-based check for the user-supplied
+ *    "Custom Pandas Read_CSV Code" field; only a bare read_csv(...) call is
+ *    permitted.
+ *
+ *  - validatePythonCodeForDataFrame  denylist-based check for LLM-generated
+ *    DataFrame operation code.
+ *
+ * Both checks must pass before code is handed to pyodide.runPythonAsync().
  */
 
 export interface PythonCodeValidationResult {
@@ -55,7 +62,13 @@ const FORBIDDEN_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
     { pattern: /\bvars\s*\(/g, reason: 'vars()' },
     { pattern: /\bdir\s*\(/g, reason: 'dir()' },
     { pattern: /\b__dict__\b/g, reason: '__dict__ (attribute reflection)' },
-    { pattern: /\b__module__\b/g, reason: '__module__ (module reflection)' }
+    { pattern: /\b__module__\b/g, reason: '__module__ (module reflection)' },
+    // Unsafe deserialization — read_pickle() executes arbitrary Python objects
+    { pattern: /\bread_pickle\b/g, reason: 'read_pickle (unsafe deserialization / RCE)' },
+    { pattern: /\bpickle\b/g, reason: 'pickle module (unsafe deserialization)' },
+    { pattern: /\bmarshal\b/g, reason: 'marshal module (unsafe deserialization)' },
+    // Class definitions — used to synthesise file-like objects that smuggle pickle payloads
+    { pattern: /\bclass\s+\w/g, reason: 'class definition' }
 ]
 
 /**
@@ -71,4 +84,33 @@ export function validatePythonCodeForDataFrame(code: string): PythonCodeValidati
     }
 
     return { valid: true }
+}
+
+/**
+ * Strict allowlist validator for the user-supplied "Custom Pandas Read_CSV Code"
+ * field.  Only a single read_csv(...) call is permitted — no newlines, no
+ * semicolons, and no additional statements.  The denylist is also applied as a
+ * second layer of defence.
+ *
+ * Valid examples:  read_csv(csv_data)
+ *                  read_csv(csv_data, sep=';', header=0)
+ */
+export function validateCustomReadCSVFunction(code: string): PythonCodeValidationResult {
+    const trimmed = code.trim()
+
+    // Allowlist: must be a single read_csv() call
+    if (!trimmed.startsWith('read_csv(')) {
+        return { valid: false, reason: 'Custom read_csv code must start with read_csv(' }
+    }
+
+    // No newlines or semicolons — prevents class definitions and multi-statement payloads
+    if (/[\n\r;]/.test(trimmed)) {
+        return {
+            valid: false,
+            reason: 'Custom read_csv code must be a single function call with no newlines or semicolons'
+        }
+    }
+
+    // Apply the denylist as a second layer
+    return validatePythonCodeForDataFrame(trimmed)
 }

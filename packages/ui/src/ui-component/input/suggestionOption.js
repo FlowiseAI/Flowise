@@ -138,11 +138,17 @@ export const suggestionOptions = (
         }))
 
         const startAgentflowNode = nodes.find((node) => node.data.name === 'startAgentflow')
-        const { formInputTypes, webhookQueryParams, webhookBodyParams, webhookHeaderParams } = startAgentflowNode?.data?.inputs ?? {}
+        const { webhookQueryParams, webhookBodyParams, webhookHeaderParams } = startAgentflowNode?.data?.inputs ?? {}
+        const startInputType = startAgentflowNode?.data?.inputs?.startInputType
+        const scheduleInputMode = startAgentflowNode?.data?.inputs?.scheduleInputMode
+        const activeFormInputTypes =
+            startInputType === 'scheduleInput' && scheduleInputMode === 'form'
+                ? startAgentflowNode?.data?.inputs?.scheduleFormInputTypes
+                : startAgentflowNode?.data?.inputs?.formInputTypes
 
         let formItems = []
-        if (formInputTypes) {
-            formItems = formInputTypes.map((input) => ({
+        if (activeFormInputTypes) {
+            formItems = (activeFormInputTypes || []).map((input) => ({
                 id: `$form.${input.name}`,
                 mentionLabel: `$form.${input.name}`,
                 description: `Form Input: ${input.label}`,

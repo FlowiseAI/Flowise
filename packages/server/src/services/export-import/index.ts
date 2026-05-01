@@ -951,6 +951,8 @@ const getChatType = (chatType?: ChatType): string => {
             return 'API/Embed'
         case ChatType.MCP:
             return 'MCP'
+        case ChatType.SCHEDULED:
+            return 'Scheduled'
     }
 }
 

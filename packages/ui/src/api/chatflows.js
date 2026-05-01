@@ -23,7 +23,16 @@ const getHasChatflowChanged = (id, lastUpdatedDateTime) => client.get(`/chatflow
 const generateAgentflow = (body) => client.post(`/agentflowv2-generator/generate`, body)
 
 const setWebhookSecret = (id) => client.post(`/chatflows/${id}/webhook-secret`)
+
 const clearWebhookSecret = (id) => client.delete(`/chatflows/${id}/webhook-secret`)
+
+const getScheduleStatus = (id) => client.get(`/chatflows/${id}/schedule/status`)
+
+const toggleScheduleEnabled = (id, enabled) => client.patch(`/chatflows/${id}/schedule/enabled`, { enabled })
+
+const getScheduleTriggerLogs = (id, params) => client.get(`/chatflows/${id}/schedule/trigger-logs`, { params })
+
+const deleteScheduleTriggerLogs = (id, logIds) => client.delete(`/chatflows/${id}/schedule/trigger-logs`, { data: { logIds } })
 
 export default {
     getAllChatflows,
@@ -38,5 +47,9 @@ export default {
     getHasChatflowChanged,
     generateAgentflow,
     setWebhookSecret,
-    clearWebhookSecret
+    clearWebhookSecret,
+    getScheduleStatus,
+    toggleScheduleEnabled,
+    getScheduleTriggerLogs,
+    deleteScheduleTriggerLogs
 }
