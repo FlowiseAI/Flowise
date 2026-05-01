@@ -279,7 +279,7 @@ describe('ExecutionDetail', () => {
             expect(screen.getByRole('button', { name: 'Copied!' })).toBeInTheDocument()
         })
 
-        it('logs a warning when the clipboard write rejects', async () => {
+        it('logs a warning and leaves the chip on "Copy ID" when the clipboard write rejects', async () => {
             const writeText = jest.fn().mockRejectedValue(new Error('denied'))
             Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })
             const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {})
@@ -291,6 +291,9 @@ describe('ExecutionDetail', () => {
             // Wait a microtask for the rejected promise to flush.
             await act(async () => {})
             expect(consoleWarn).toHaveBeenCalledWith('[Observe] Clipboard copy failed:', expect.any(Error))
+            // The chip must NOT flash "Copied!" when the write fails.
+            expect(screen.queryByRole('button', { name: 'Copied!' })).not.toBeInTheDocument()
+            expect(screen.getByText('Copy ID')).toBeInTheDocument()
             consoleWarn.mockRestore()
         })
 

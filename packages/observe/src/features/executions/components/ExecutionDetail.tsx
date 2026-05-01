@@ -98,12 +98,13 @@ export function ExecutionDetail({
     }, [copied])
 
     const copyId = () => {
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(executionId).catch((err) => {
+        if (!navigator.clipboard) return
+        navigator.clipboard
+            .writeText(executionId)
+            .then(() => setCopied(true))
+            .catch((err) => {
                 console.warn('[Observe] Clipboard copy failed:', err)
             })
-            setCopied(true)
-        }
     }
 
     if (isLoading) {
