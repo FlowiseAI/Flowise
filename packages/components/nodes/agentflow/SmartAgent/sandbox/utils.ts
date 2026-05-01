@@ -93,9 +93,11 @@ export function isTextMimeType(mimeType: string): boolean {
     return TEXT_MIME_PREFIXES.some((p) => mimeType.startsWith(p)) || TEXT_MIME_EXACT.has(mimeType)
 }
 
-export function paginateLines(text: string, offset: number, limit: number): string {
+export function paginateLines(text: string, offset: number, limit: number): { content: string; truncated: boolean } {
     const lines = text.split('\n')
-    return lines.slice(offset, offset + limit).join('\n')
+    const truncated = lines.length > offset + limit
+
+    return { content: lines.slice(offset, offset + limit).join('\n'), truncated }
 }
 
 export function escapeRegex(s: string): string {

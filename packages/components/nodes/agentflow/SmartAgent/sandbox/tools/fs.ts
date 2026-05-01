@@ -1,9 +1,9 @@
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { z } from 'zod'
-import { BackendProtocol } from '../BackendProtocol'
+import { BackendProtocol, FilesUpdate } from '../BackendProtocol'
 import { formatWithLineNumbers } from '../utils'
 
-export function buildFsTools(backend: BackendProtocol): DynamicStructuredTool[] {
+export function buildFsTools(backend: BackendProtocol, onFilesUpdate?: (update: FilesUpdate) => void): DynamicStructuredTool[] {
     const readFileTool = new DynamicStructuredTool({
         name: 'read_file',
         description: 'Read a text file from the sandbox filesystem. Returns file contents with line numbers.',
@@ -31,9 +31,73 @@ export function buildFsTools(backend: BackendProtocol): DynamicStructuredTool[] 
         func: async ({ file_path, content }) => {
             const result = await backend.write(file_path, content)
             if ('error' in result) return `Error: ${result.error}`
+            if (result.filesUpdate) onFilesUpdate?.(result.filesUpdate)
             return `Successfully wrote ${result.path}`
         }
     })
 
-    return [readFileTool, writeFileTool]
+    const editFileTool = new DynamicStructuredTool({
+        name: 'edit_file',
+        description:
+            'Edit an existing text file by replacing a specific string. Fails if the string appears more than once unless replace_all is true.',
+        schema: z.object({
+            file_path: z.string().describe('Absolute path of the file to edit (e.g. /workspace/hello.txt)'),
+            old_str: z.string().describe('Exact string to find and replace'),
+            new_str: z.string().describe('String to replace it with'),
+            replace_all: z.boolean().optional().describe('Replace every occurrence instead of requiring exactly one (default false)')
+        }),
+        func: async ({ file_path, old_str, new_str, replace_all }) => {
+            const result = await backend.edit(file_path, old_str, new_str, replace_all ?? false)
+            if ('error' in result) return `Error: ${result.error}`
+            if (result.filesUpdate) onFilesUpdate?.(result.filesUpdate)
+            return `Edited ${result.path} (${result.occurrences} replacement${result.occurrences === 1 ? '' : 's'})`
+        }
+    })
+
+    const listFilesTool = new DynamicStructuredTool({
+        name: 'list_files',
+        description: 'List files and directories at a given path in the sandbox filesystem.',
+        schema: z.object({
+            dir_path: z.string().describe('Absolute directory path to list (e.g. /workspace or /)')
+        }),
+        func: async ({ dir_path }) => {
+            const result = await backend.ls(dir_path)
+            if ('error' in result) return `Error: ${result.error}`
+            if (!result.files.length) return `(empty directory)`
+            return result.files.map((f) => `${f.isDirectory ? 'd' : 'f'}  ${f.path}${f.isDirectory ? '/' : ''}  ${f.size}b`).join('\n')
+        }
+    })
+
+    const globFilesTool = new DynamicStructuredTool({
+        name: 'glob_files',
+        description: 'Find files matching a glob pattern (e.g. **/*.ts) within a base directory.',
+        schema: z.object({
+            pattern: z.string().describe('Glob pattern (e.g. **/*.ts, *.txt)'),
+            base_path: z.string().optional().describe('Base directory to search from (default /)')
+        }),
+        func: async ({ pattern, base_path }) => {
+            const result = await backend.glob(pattern, base_path ?? '/')
+            if ('error' in result) return `Error: ${result.error}`
+            if (!result.files.length) return `No files matched pattern "${pattern}"`
+            return result.files.map((f) => f.path).join('\n')
+        }
+    })
+
+    const grepFilesTool = new DynamicStructuredTool({
+        name: 'grep_files',
+        description: 'Search file contents for a regex pattern. Returns matching lines with file path and line number.',
+        schema: z.object({
+            pattern: z.string().describe('Regex pattern to search for (e.g. "function|const")'),
+            dir_path: z.string().optional().describe('Directory to search in (default /). Pass null to search all files.'),
+            glob: z.string().optional().describe('Optional glob to filter filenames (e.g. *.ts)')
+        }),
+        func: async ({ pattern, dir_path, glob }) => {
+            const result = await backend.grep(pattern, dir_path ?? '/', glob ?? null)
+            if ('error' in result) return `Error: ${result.error}`
+            if (!result.matches.length) return `No matches for "${pattern}"`
+            return result.matches.map((m) => `${m.path}:${m.line}  ${m.content}`).join('\n')
+        }
+    })
+
+    return [readFileTool, writeFileTool, editFileTool, listFilesTool, globFilesTool, grepFilesTool]
 }

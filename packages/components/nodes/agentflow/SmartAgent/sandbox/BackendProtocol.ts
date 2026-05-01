@@ -24,7 +24,10 @@ export interface GrepMatch {
 }
 
 export type LsResult = { files: FileInfo[] } | { error: string }
-export type ReadResult = { content: string; mimeType: string } | { content: Uint8Array; mimeType: string } | { error: string }
+export type ReadResult =
+    | { content: string; mimeType: string; truncated: boolean }
+    | { content: Uint8Array; mimeType: string }
+    | { error: string }
 export type ReadRawResult = { data: FileData } | { error: string }
 export type WriteResult = { path: string; filesUpdate: FilesUpdate | null } | { error: string }
 export type EditResult = { path: string; occurrences: number; filesUpdate: FilesUpdate | null } | { error: string }

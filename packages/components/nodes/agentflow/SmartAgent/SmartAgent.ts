@@ -25,6 +25,7 @@ import { PlanningTool, Todo } from './planning/PlanningTool'
 import { buildSystemPrompt } from './context/SystemPromptBuilder'
 import { createBackend } from './sandbox/factory'
 import { buildFsTools } from './sandbox/tools/fs'
+import { FileData } from './sandbox/BackendProtocol'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
 import { randomBytes } from 'crypto'
@@ -1037,8 +1038,28 @@ class SmartAgent_Agentflow implements INode {
                 toolNode: { label: 'Planning', name: 'write_todos' }
             })
 
-            const backend = await createBackend()
-            const fsTools = buildFsTools(backend)
+            // For StateBackend, runtimeState.files is the persisted snapshot — saved into executionData by the
+            // agentflow engine when startPersistState=true.
+            const runtimeState = options.agentflowRuntime?.state as ICommonObject | undefined
+            const initialFiles = (runtimeState?.files as Record<string, FileData> | undefined) ?? {}
+            const backend = await createBackend(initialFiles)
+            const fsTools = buildFsTools(backend, (update) => {
+                if (!runtimeState) return
+
+                // keep runtimeState.files in sync with the backend after each mutation
+                const existing = (runtimeState.files as Record<string, FileData> | undefined) ?? {}
+                const merged = { ...existing }
+                for (const [path, data] of Object.entries(update)) {
+                    if (data === null) {
+                        delete merged[path]
+                    } else {
+                        merged[path] = data
+                    }
+                }
+
+                runtimeState.files = merged
+            })
+
             toolsInstance.push(...(fsTools as unknown as Tool[]))
 
             if (llmNodeInstance && toolsInstance.length > 0) {

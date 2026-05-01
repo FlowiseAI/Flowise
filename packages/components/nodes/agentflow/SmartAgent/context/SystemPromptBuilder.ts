@@ -46,11 +46,18 @@ You have access to a sandbox filesystem. All paths must be absolute.
 - \`/workspace/\` — working area for files you create or process during this task
 - \`/artifacts/\` — outputs intended to be surfaced to the user (reports, generated files, etc.)
 
-// TODO: Temporary demo instructions for read_file + write_file only. Later stages will replace this with
-// complete tool coverage (ls, edit_file, glob, grep) and richer path/usage guidance.
 **Available tools:**
 - \`read_file\` — read a text file; supports \`offset\` and \`limit\` for pagination of large files
-- \`write_file\` — create a new text file; **create-only** — errors if the file already exists`
+- \`write_file\` — create a new text file; **create-only** — errors if the file already exists
+- \`edit_file\` — replace a specific string in an existing file; errors if the string appears more than once unless \`replace_all\` is true
+- \`list_files\` — list files and directories at a given path
+- \`glob_files\` — find files matching a glob pattern (e.g. \`**/*.ts\`) within a base directory
+- \`grep_files\` — search file contents for a regex pattern; returns matching lines with file path and line number
+
+**Usage guidance:**
+- Prefer \`edit_file\` over re-writing a whole file when making targeted changes — it's faster and less error-prone.
+- Use \`glob_files\` to discover files before reading them; use \`grep_files\` to locate specific content across many files.
+- Large files: use \`offset\` + \`limit\` on \`read_file\` to paginate rather than reading the entire file at once.`
 
 // Part 5: Subagent prompt
 const SUBAGENT_PROMPT = `## Subagent Delegation

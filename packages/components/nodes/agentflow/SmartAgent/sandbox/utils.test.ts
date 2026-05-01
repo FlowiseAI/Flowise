@@ -30,13 +30,16 @@ describe('isTextMimeType', () => {
 describe('paginateLines', () => {
     const text = 'line1\nline2\nline3\nline4\nline5'
     it('returns first N lines from offset 0', () => {
-        expect(paginateLines(text, 0, 3)).toBe('line1\nline2\nline3')
+        expect(paginateLines(text, 0, 3)).toEqual({ content: 'line1\nline2\nline3', truncated: true })
     })
     it('returns slice from non-zero offset', () => {
-        expect(paginateLines(text, 2, 2)).toBe('line3\nline4')
+        expect(paginateLines(text, 2, 2)).toEqual({ content: 'line3\nline4', truncated: true })
     })
     it('returns remaining lines if limit exceeds length', () => {
-        expect(paginateLines(text, 4, 100)).toBe('line5')
+        expect(paginateLines(text, 4, 100)).toEqual({ content: 'line5', truncated: false })
+    })
+    it('sets truncated false when all lines fit', () => {
+        expect(paginateLines(text, 0, 100)).toEqual({ content: text, truncated: false })
     })
 })
 
