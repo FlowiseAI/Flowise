@@ -48,7 +48,7 @@ export function Dropdown({
 }: DropdownProps) {
     const theme = useTheme()
 
-    const resolvedValue = value ?? 'choose an option'
+    const resolvedValue = value ?? ''
     const findMatchingOption = (val: string) => options.find((option) => option.name === val) ?? null
 
     return (
@@ -61,11 +61,11 @@ export function Dropdown({
                 size='small'
                 loading={loading}
                 options={options}
-                value={findMatchingOption(resolvedValue)}
+                value={findMatchingOption(resolvedValue) ?? (freeSolo ? resolvedValue : null)}
                 getOptionLabel={(option) => (typeof option === 'string' ? option : option.label)}
-                isOptionEqualToValue={(option, val) => option.name === val.name}
+                isOptionEqualToValue={(option, val) => (typeof val === 'string' ? option.name === val : option.name === val.name)}
                 onChange={(_e, selection) => {
-                    const newValue = selection && typeof selection !== 'string' ? selection.name : ''
+                    const newValue = typeof selection === 'string' ? selection : selection?.name ?? ''
                     onSelect(newValue)
                 }}
                 PopperComponent={StyledPopper}

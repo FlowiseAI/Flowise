@@ -123,7 +123,13 @@ function LoadingEndAdornment({ loading, original }: { loading: boolean; original
 }
 
 /** Dropdown for listPreviousNodes — reads ancestor nodes from flow state, no server call. */
-function PreviousNodesDropdown({ value, disabled, onChange, nodeId }: Pick<AsyncInputProps, 'value' | 'disabled' | 'onChange' | 'nodeId'>) {
+function PreviousNodesDropdown({
+    value,
+    disabled,
+    onChange,
+    nodeId,
+    freeSolo
+}: Pick<AsyncInputProps, 'value' | 'disabled' | 'onChange' | 'nodeId'> & { freeSolo?: boolean }) {
     const options = useFlowAncestorNodeOptions(nodeId)
     const stringValue = typeof value === 'string' ? value : ''
 
@@ -133,14 +139,15 @@ function PreviousNodesDropdown({ value, disabled, onChange, nodeId }: Pick<Async
     })
 
     // Clear stored value if the selected node no longer exists in the flow.
+    // Skipped when freeSolo=true — the value may be a user-typed string not in the options list.
     // onChange is accessed via ref so an unstable parent callback can't retrigger this effect.
     useEffect(() => {
-        if (stringValue && !options.some((o) => o.name === stringValue)) {
+        if (!freeSolo && stringValue && !options.some((o) => o.name === stringValue)) {
             onChangeRef.current('')
         }
-    }, [stringValue, options])
+    }, [freeSolo, stringValue, options])
 
-    return <Dropdown value={stringValue} options={options} onSelect={onChange} disabled={disabled} />
+    return <Dropdown value={stringValue} options={options} onSelect={onChange} disabled={disabled} freeSolo={freeSolo} />
 }
 
 function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, nodeId, inputValues }: AsyncInputProps) {
@@ -188,6 +195,7 @@ function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, no
                             onChange(v)
                         }}
                         nodeId={nodeId}
+                        freeSolo={inputParam.freeSolo}
                     />
                 ) : (
                     <AsyncOptionsDropdown
