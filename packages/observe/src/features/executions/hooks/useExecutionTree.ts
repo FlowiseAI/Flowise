@@ -71,6 +71,9 @@ export function useExecutionTree(executionDataJson: string | null): ExecutionTre
         const uniqueId = (nodeId: string, index: number) => `${nodeId}_${index}`
         const isIterationChild = (n: NodeExecutionData) => Boolean(n.parentNodeId) && n.iterationIndex !== undefined
 
+        // `nodeId` → ascending array indices. Read in reverse to find the most-recent occurrence < currentIndex.
+        const indicesByNodeId = new Map<string, number[]>()
+
         nodes.forEach((n, index) => {
             // The runtime never emits `name` at the top level (per
             // `IAgentflowExecutedData`); Agent/LLM/etc. put their type
@@ -89,6 +92,8 @@ export function useExecutionTree(executionDataJson: string | null): ExecutionTre
                 raw: n
             })
             executionIndexById.set(id, index)
+            if (!indicesByNodeId.has(n.nodeId)) indicesByNodeId.set(n.nodeId, [])
+            indicesByNodeId.get(n.nodeId)!.push(index)
         })
 
         const iterationGroups = new Map<string, Map<number, number[]>>() // parentNodeId -> iterIdx -> [array index, ...]
@@ -125,9 +130,8 @@ export function useExecutionTree(executionDataJson: string | null): ExecutionTre
             })
         })
 
-        // Find the most recent ancestor among `previousNodeIds`. Optionally
-        // restrict the search to nodes within the same iteration (for sub-tree
-        // building inside virtual iteration containers).
+        // Most recent ancestor index whose nodeId is in `previousNodeIds`.
+        // With sameIterationOnly, restrict to nodes in the same iteration.
         const findAncestor = (
             n: NodeExecutionData,
             currentIndex: number,
@@ -137,10 +141,13 @@ export function useExecutionTree(executionDataJson: string | null): ExecutionTre
             let bestIndex = -1
             let bestNodeId: string | null = null
             for (const prevId of n.previousNodeIds) {
-                for (let i = 0; i < currentIndex; i++) {
-                    const candidate = nodes[i]
-                    if (candidate.nodeId !== prevId) continue
+                const indices = indicesByNodeId.get(prevId)
+                if (!indices) continue
+                for (let j = indices.length - 1; j >= 0; j--) {
+                    const i = indices[j]
+                    if (i >= currentIndex) continue
                     if (sameIterationOnly) {
+                        const candidate = nodes[i]
                         if (candidate.parentNodeId !== n.parentNodeId) continue
                         if (candidate.iterationIndex !== n.iterationIndex) continue
                     }
@@ -148,6 +155,7 @@ export function useExecutionTree(executionDataJson: string | null): ExecutionTre
                         bestIndex = i
                         bestNodeId = prevId
                     }
+                    break
                 }
             }
             return bestIndex >= 0 && bestNodeId ? { index: bestIndex, nodeId: bestNodeId } : null
@@ -173,14 +181,10 @@ export function useExecutionTree(executionDataJson: string | null): ExecutionTre
         // Second pass: attach virtual iteration nodes to the iteration agent's
         // most recent instance.
         iterationGroups.forEach((byIdx, parentNodeId) => {
-            let latestParentIndex = -1
-            for (let i = nodes.length - 1; i >= 0; i--) {
-                if (nodes[i].nodeId === parentNodeId) {
-                    latestParentIndex = i
-                    break
-                }
-            }
-            const parent = latestParentIndex >= 0 ? treeNodes.get(uniqueId(parentNodeId, latestParentIndex)) : undefined
+            const parentIndices = indicesByNodeId.get(parentNodeId)
+            if (!parentIndices || parentIndices.length === 0) return
+            const latestParentIndex = parentIndices[parentIndices.length - 1]
+            const parent = treeNodes.get(uniqueId(parentNodeId, latestParentIndex))
             if (!parent) return
             Array.from(byIdx.keys())
                 .sort((a, b) => a - b)

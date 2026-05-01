@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { forwardRef, useMemo } from 'react'
 
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import ErrorIcon from '@mui/icons-material/Error'
@@ -58,6 +58,9 @@ function indexTree(nodes: ExecutionTreeNode[], out: Map<string, ExecutionTreeNod
  * icons on the right, virtual iteration nodes use the iteration icon.
  */
 export function ExecutionTreeSidebar({ tree, selectedId, onSelect, expandedIds, onExpandedChange }: ExecutionTreeSidebarProps) {
+    // Declared before the early return so the hook count stays stable across renders.
+    const indexed = useMemo(() => indexTree(tree), [tree])
+
     if (tree.length === 0) {
         return (
             <Box sx={{ p: 2 }}>
@@ -68,7 +71,6 @@ export function ExecutionTreeSidebar({ tree, selectedId, onSelect, expandedIds, 
         )
     }
 
-    const indexed = indexTree(tree)
     // PARITY: virtual iteration container nodes are not selectable in legacy.
     const handleSelect = (_: unknown, itemId: string | null) => {
         if (!itemId) return

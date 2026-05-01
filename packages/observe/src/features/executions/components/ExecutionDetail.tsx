@@ -91,13 +91,18 @@ export function ExecutionDetail({
 
     const formattedUpdatedDate = useMemo(() => formatUpdatedDate(execution?.updatedDate), [execution?.updatedDate])
 
+    useEffect(() => {
+        if (!copied) return
+        const timer = setTimeout(() => setCopied(false), 2000)
+        return () => clearTimeout(timer)
+    }, [copied])
+
     const copyId = () => {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(executionId).catch((err) => {
                 console.warn('[Observe] Clipboard copy failed:', err)
             })
             setCopied(true)
-            setTimeout(() => setCopied(false), 2000)
         }
     }
 

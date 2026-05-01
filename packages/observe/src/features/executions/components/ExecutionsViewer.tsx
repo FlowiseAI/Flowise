@@ -286,6 +286,8 @@ export function ExecutionsViewer({
 
                 {drawerExecution && (
                     <ExecutionDetail
+                        // Reset internal state when the user switches rows without closing the drawer.
+                        key={drawerExecution.id}
                         executionId={drawerExecution.id}
                         pollInterval={pollInterval}
                         onHumanInput={onHumanInput}
