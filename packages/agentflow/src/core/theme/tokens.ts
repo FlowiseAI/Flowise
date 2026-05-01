@@ -288,7 +288,11 @@ export const tokens = {
     // All values sit below the Canvas Kit modal overlay (30–50).
     zIndex: {
         canvasButton: 10, // FABs and button containers
-        canvasPanel: 20 // Open panels/poppers anchored to buttons
+        canvasPanel: 20, // Open panels/poppers anchored to buttons
+        // ReactFlow renders group/parent nodes at an elevated stacking context; edges drawn
+        // between children inside an iteration group must exceed that context to stay visible
+        // above the group body. 9999 is the conventional ReactFlow ceiling for this use case.
+        iterationEdge: 9999
     }
 } as const
 

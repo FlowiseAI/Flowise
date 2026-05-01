@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react'
 import { addEdge, applyEdgeChanges, applyNodeChanges, Connection, EdgeChange, Node, NodeChange } from 'reactflow'
 
 import { getNodeColor, getUniqueNodeId, getUniqueNodeLabel, initNode, isValidConnectionAgentflowV2, resolveNodeType } from '@/core'
+import { tokens } from '@/core/theme/tokens'
 import type { FlowDataCallback, FlowEdge, FlowNode, NodeDataSchema } from '@/core/types'
 import { checkNodePlacementConstraints } from '@/core/validation'
 import { useAgentflowContext } from '@/infrastructure/store'
@@ -78,7 +79,7 @@ export function useFlowHandlers({
             const newEdge = {
                 ...params,
                 type: 'agentflowEdge',
-                ...(isWithinIterationNode && { zIndex: 9999 }),
+                ...(isWithinIterationNode && { zIndex: tokens.zIndex.iterationEdge }),
                 data: {
                     sourceColor,
                     targetColor,
