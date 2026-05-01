@@ -43,6 +43,19 @@ describe('StateBackend — write/read', () => {
         }
     })
 
+    it('write of Uint8Array to a text-mimeType path is decoded to a string on read', async () => {
+        const backend = new StateBackend()
+        const bytes = new TextEncoder().encode('hi from bytes')
+        await backend.write('/workspace/decoded.txt', bytes)
+        const result = await backend.read('/workspace/decoded.txt')
+        expect('content' in result).toBe(true)
+        if ('content' in result) {
+            expect(typeof result.content).toBe('string')
+            expect(result.content).toBe('hi from bytes')
+            expect(result.mimeType).toBe('text/plain')
+        }
+    })
+
     it('constructor accepts initialFiles and makes them readable', async () => {
         const now = Date.now()
         const initialFiles: Record<string, FileData> = {

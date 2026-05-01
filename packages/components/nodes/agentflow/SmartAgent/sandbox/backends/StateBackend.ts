@@ -13,7 +13,7 @@ import {
     ReadResult,
     WriteResult
 } from '../BackendProtocol'
-import { escapeRegex, getMimeType, globToRegex, isTextMimeType, paginateLines } from '../utils'
+import { escapeRegex, getMimeType, globToRegex, isTextMimeType, normalizeContent, paginateLines } from '../utils'
 
 type FileStore = Record<string, FileData>
 
@@ -21,7 +21,10 @@ export class StateBackend implements BackendProtocol {
     protected files: FileStore
 
     constructor(initialFiles: FileStore = {}) {
-        this.files = { ...initialFiles }
+        this.files = {}
+        for (const [path, data] of Object.entries(initialFiles)) {
+            this.files[path] = { ...data, content: normalizeContent(data.content, data.mimeType) }
+        }
     }
 
     async write(filePath: string, content: string | Uint8Array): Promise<WriteResult> {
@@ -30,7 +33,7 @@ export class StateBackend implements BackendProtocol {
         }
         const mimeType = getMimeType(filePath)
         const now = Date.now()
-        const data: FileData = { content, mimeType, created_at: now, modified_at: now }
+        const data: FileData = { content: normalizeContent(content, mimeType), mimeType, created_at: now, modified_at: now }
         this.files[filePath] = data
         const filesUpdate: FilesUpdate = { [filePath]: data }
 

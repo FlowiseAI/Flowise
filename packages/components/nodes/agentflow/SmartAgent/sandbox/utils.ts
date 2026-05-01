@@ -93,6 +93,15 @@ export function isTextMimeType(mimeType: string): boolean {
     return TEXT_MIME_PREFIXES.some((p) => mimeType.startsWith(p)) || TEXT_MIME_EXACT.has(mimeType)
 }
 
+// Coerce content to match its mimeType so backends can rely on
+// "text mimeType ⇒ string content, binary mimeType ⇒ Uint8Array content" as an invariant.
+export function normalizeContent(content: string | Uint8Array, mimeType: string): string | Uint8Array {
+    if (isTextMimeType(mimeType)) {
+        return typeof content === 'string' ? content : new TextDecoder().decode(content)
+    }
+    return content instanceof Uint8Array ? content : new TextEncoder().encode(content)
+}
+
 export function paginateLines(text: string, offset: number, limit: number): { content: string; truncated: boolean } {
     const lines = text.split('\n')
     const truncated = lines.length > offset + limit

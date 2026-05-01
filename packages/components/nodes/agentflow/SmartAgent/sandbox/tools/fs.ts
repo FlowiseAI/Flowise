@@ -42,7 +42,7 @@ export function buildFsTools(backend: BackendProtocol, onFilesUpdate?: (update: 
             'Edit an existing text file by replacing a specific string. Fails if the string appears more than once unless replace_all is true.',
         schema: z.object({
             file_path: z.string().describe('Absolute path of the file to edit (e.g. /workspace/hello.txt)'),
-            old_str: z.string().describe('Exact string to find and replace'),
+            old_str: z.string().min(1).describe('Exact string to find and replace'),
             new_str: z.string().describe('String to replace it with'),
             replace_all: z.boolean().optional().describe('Replace every occurrence instead of requiring exactly one (default false)')
         }),
@@ -87,7 +87,7 @@ export function buildFsTools(backend: BackendProtocol, onFilesUpdate?: (update: 
         name: 'grep_files',
         description: 'Search file contents for a regex pattern. Returns matching lines with file path and line number.',
         schema: z.object({
-            pattern: z.string().describe('Regex pattern to search for (e.g. "function|const")'),
+            pattern: z.string().min(1).describe('Regex pattern to search for (e.g. "function|const")'),
             dir_path: z.string().optional().describe('Directory to search in (default /). Pass null to search all files.'),
             glob: z.string().optional().describe('Optional glob to filter filenames (e.g. *.ts)')
         }),
