@@ -1357,6 +1357,7 @@ const executeNode = async ({
                     }
                 }
 
+                // Update the output with combined results
                 results.output = {
                     ...(results.output || {}),
                     iterationResults,
