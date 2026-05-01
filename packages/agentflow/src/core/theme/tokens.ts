@@ -7,6 +7,11 @@
  * Architecture:
  * 1. Base colors - Primitive color values (single source of truth)
  * 2. Semantic colors - Referenced from base colors for consistency
+ *
+ * Base palette and node type colors are duplicated in
+ * packages/observe/src/core/theme/tokens.ts — keep in sync until
+ * extracted to packages/shared-ui in FLOWISE-628. Agentflow extends
+ * the shared base with ReactFlow + syntax highlight tokens, which stay here.
  */
 
 // Base primitive colors - define once, reference everywhere
