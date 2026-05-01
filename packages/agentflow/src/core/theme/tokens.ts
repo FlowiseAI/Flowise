@@ -66,6 +66,9 @@ const baseColors = {
     secondaryLight: '#ede7f6',
     secondaryMain: '#673ab7',
     secondaryDark: '#5e35b1',
+    darkSecondaryLight: '#454c59',
+    darkSecondaryMain: '#7c4dff',
+    darkSecondaryDark: '#ffffff',
 
     // MUI palette colors - success (green)
     successLight: '#cdf5d8',
@@ -158,9 +161,9 @@ export const tokens = {
                 dark: baseColors.primaryDark
             },
             secondary: {
-                light: baseColors.secondaryLight,
-                main: baseColors.secondaryMain,
-                dark: baseColors.secondaryDark
+                light: { light: baseColors.secondaryLight, dark: baseColors.darkSecondaryLight },
+                main: { light: baseColors.secondaryMain, dark: baseColors.darkSecondaryMain },
+                dark: { light: baseColors.secondaryDark, dark: baseColors.darkSecondaryDark }
             },
             success: {
                 light: baseColors.successLight,
@@ -285,7 +288,11 @@ export const tokens = {
     // All values sit below the Canvas Kit modal overlay (30–50).
     zIndex: {
         canvasButton: 10, // FABs and button containers
-        canvasPanel: 20 // Open panels/poppers anchored to buttons
+        canvasPanel: 20, // Open panels/poppers anchored to buttons
+        // ReactFlow renders group/parent nodes at an elevated stacking context; edges drawn
+        // between children inside an iteration group must exceed that context to stay visible
+        // above the group body. 9999 is the conventional ReactFlow ceiling for this use case.
+        iterationEdge: 9999
     }
 } as const
 

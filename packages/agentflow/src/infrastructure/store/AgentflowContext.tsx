@@ -181,8 +181,19 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     // Node operations
     const deleteNode = useCallback(
         (nodeId: string) => {
-            const newNodes = state.nodes.filter((node) => node.id !== nodeId)
-            const newEdges = state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
+            const toDelete = new Set<string>([nodeId])
+            const collectDescendants = (parentId: string) => {
+                state.nodes
+                    .filter((n) => n.parentNode === parentId)
+                    .forEach((child) => {
+                        toDelete.add(child.id)
+                        collectDescendants(child.id)
+                    })
+            }
+            collectDescendants(nodeId)
+
+            const newNodes = state.nodes.filter((node) => !toDelete.has(node.id))
+            const newEdges = state.edges.filter((edge) => !toDelete.has(edge.source) && !toDelete.has(edge.target))
             syncStateUpdate({ nodes: newNodes, edges: newEdges })
 
             // Notify parent of flow change so the deletion is persisted
