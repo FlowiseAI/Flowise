@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import type { AgentFlowInstance, FlowData, FlowNode, ValidationResult } from './core/types'
+import type { AgentFlowInstance, ExecutionStatus, FlowData, FlowNode, ValidationResult } from './core/types'
 import { validateFlow } from './core/validation'
 import { useAgentflowContext } from './infrastructure/store'
 
@@ -36,7 +36,7 @@ import { useAgentflowContext } from './infrastructure/store'
  * ```
  */
 export function useAgentflow(): AgentFlowInstance {
-    const { state, setNodes, setEdges, setDirty, getFlowData } = useAgentflowContext()
+    const { state, setNodes, setEdges, setDirty, getFlowData, setNodeExecutionStatus, clearExecutionState } = useAgentflowContext()
 
     const { nodes, edges, reactFlowInstance } = state
 
@@ -103,6 +103,23 @@ export function useAgentflow(): AgentFlowInstance {
         setDirty(true)
     }, [setNodes, setEdges, setDirty])
 
+    /**
+     * Update a single node's execution status badge
+     */
+    const setNodeExecutionStatusMethod = useCallback(
+        (nodeId: string, status: ExecutionStatus, error?: string): void => {
+            setNodeExecutionStatus(nodeId, status, error)
+        },
+        [setNodeExecutionStatus]
+    )
+
+    /**
+     * Remove all execution status badges from nodes
+     */
+    const clearExecutionStateMethod = useCallback((): void => {
+        clearExecutionState()
+    }, [clearExecutionState])
+
     // Return memoized instance
     return useMemo<AgentFlowInstance>(
         () => ({
@@ -112,9 +129,11 @@ export function useAgentflow(): AgentFlowInstance {
             fitView,
             getReactFlowInstance,
             addNode,
-            clear
+            clear,
+            setNodeExecutionStatus: setNodeExecutionStatusMethod,
+            clearExecutionState: clearExecutionStateMethod
         }),
-        [getFlow, toJSON, validate, fitView, getReactFlowInstance, addNode, clear]
+        [getFlow, toJSON, validate, fitView, getReactFlowInstance, addNode, clear, setNodeExecutionStatusMethod, clearExecutionStateMethod]
     )
 }
 

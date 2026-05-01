@@ -1,28 +1,28 @@
+import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
+import { Sandbox } from '@e2b/code-interpreter'
+import { DocumentLoader } from '@langchain/classic/document_loaders/base'
+import { Document } from '@langchain/core/documents'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { AIMessage, AIMessageChunk, BaseMessage, HumanMessage } from '@langchain/core/messages'
+import { Runnable, type RunnableConfig } from '@langchain/core/runnables'
+import { TextSplitter } from '@langchain/textsplitters'
 import axios from 'axios'
 import { load } from 'cheerio'
+import { AES, enc } from 'crypto-js'
 import * as fs from 'fs'
-import * as path from 'path'
 import { JSDOM } from 'jsdom'
-import { z } from 'zod/v3'
-import { cloneDeep, omit, get } from 'lodash'
+import JSON5 from 'json5'
+import { cloneDeep, get, omit } from 'lodash'
+import * as path from 'path'
 import TurndownService from 'turndown'
 import { DataSource, Equal } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IFileUpload, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
-import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AES, enc } from 'crypto-js'
-import { AIMessage, AIMessageChunk, HumanMessage, BaseMessage } from '@langchain/core/messages'
-import { Runnable, type RunnableConfig } from '@langchain/core/runnables'
-import { Document } from '@langchain/core/documents'
-import { getFileFromStorage } from './storageUtils'
-import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
-import { customGet } from '../nodes/sequentialagents/commonUtils'
-import { TextSplitter } from '@langchain/textsplitters'
-import { DocumentLoader } from '@langchain/classic/document_loaders/base'
 import { NodeVM } from 'vm2'
-import { Sandbox } from '@e2b/code-interpreter'
-import { secureFetch, checkDenyList, secureAxiosRequest } from './httpSecurity'
-import JSON5 from 'json5'
 import zodToJsonSchema, { type JsonSchema7Type } from 'zod-to-json-schema'
+import { z } from 'zod/v3'
+import { customGet } from '../nodes/sequentialagents/commonUtils'
+import { checkDenyList, secureAxiosRequest, secureFetch } from './httpSecurity'
+import { ICommonObject, IDatabaseEntity, IFileUpload, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
+import { getFileFromStorage } from './storageUtils'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -1784,7 +1784,13 @@ export const executeJavaScriptCode = async (
         }
 
         // Merge with custom nodeVMOptions if provided
-        const finalNodeVMOptions = { ...defaultNodeVMOptions, ...nodeVMOptions }
+        const finalNodeVMOptions = {
+            ...defaultNodeVMOptions,
+            ...nodeVMOptions,
+            require: defaultNodeVMOptions.require,
+            eval: false,
+            wasm: false
+        }
 
         const vm = new NodeVM(finalNodeVMOptions)
 

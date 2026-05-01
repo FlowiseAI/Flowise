@@ -147,6 +147,44 @@ describe('useExecutionTree', () => {
         })
     })
 
+    describe('resolved node name (drives icon lookup)', () => {
+        it('uses the top-level n.name when present', () => {
+            const node = baseNode({ nodeId: 'agentAgentflow_0', name: 'agentAgentflow' })
+            const { result } = renderHook(() => useExecutionTree(toJson([node])))
+            expect(result.current[0].name).toBe('agentAgentflow')
+        })
+
+        it('falls back to data.name when n.name is absent (runtime never emits n.name)', () => {
+            // Per IAgentflowExecutedData, the runtime emits the type identifier
+            // at `data.name`, not the top level. The detail header + tree icons
+            // both rely on this fallback to look up the right AGENTFLOW_ICONS entry.
+            const node = baseNode({ nodeId: 'llmAgentflow_0', data: { name: 'llmAgentflow' } })
+            const { result } = renderHook(() => useExecutionTree(toJson([node])))
+            expect(result.current[0].name).toBe('llmAgentflow')
+        })
+
+        it('falls back to nodeId.split("_")[0] when neither name source is present', () => {
+            const node = baseNode({ nodeId: 'startAgentflow_42' })
+            const { result } = renderHook(() => useExecutionTree(toJson([node])))
+            expect(result.current[0].name).toBe('startAgentflow')
+        })
+
+        it('prefers n.name over data.name when both are present', () => {
+            const node = baseNode({ nodeId: 'x_0', name: 'fromTop', data: { name: 'fromData' } })
+            const { result } = renderHook(() => useExecutionTree(toJson([node])))
+            expect(result.current[0].name).toBe('fromTop')
+        })
+
+        it('ignores a non-string data.name value', () => {
+            // If the runtime payload is malformed (e.g. data.name accidentally
+            // set to an object), we must not pass that through as a name —
+            // the nodeId fallback must kick in instead.
+            const node = baseNode({ nodeId: 'fallback_0', data: { name: { nested: 'oops' } } })
+            const { result } = renderHook(() => useExecutionTree(toJson([node])))
+            expect(result.current[0].name).toBe('fallback')
+        })
+    })
+
     describe('raw node reference', () => {
         it('attaches the original NodeExecutionData as raw on leaf nodes', () => {
             const node = baseNode({ nodeId: 'n1', nodeLabel: 'Step' })

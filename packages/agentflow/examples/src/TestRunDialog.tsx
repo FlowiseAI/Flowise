@@ -2,11 +2,13 @@
  * TestRunDialog
  *
  * Sends a test question to POST /api/v1/internal-prediction/{agentflowId}
- * and displays the response, letting users verify the flow runs correctly.
+ * using SSE streaming and displays the response, letting users verify the flow runs correctly.
+ * Fires onNodeStatusChange for each nextAgentFlow SSE event so the canvas can show live badges.
  */
 
 import { useState } from 'react'
 
+import type { ExecutionStatus } from '@flowiseai/agentflow'
 import MarkdownIt from 'markdown-it'
 
 import { apiBaseUrl, token } from './config'
@@ -16,9 +18,11 @@ const md = new MarkdownIt({ linkify: true, breaks: true })
 interface TestRunDialogProps {
     agentflowId: string
     onClose: () => void
+    onRunStart?: () => void
+    onNodeStatusChange?: (nodeId: string, status: ExecutionStatus, error?: string) => void
 }
 
-export function TestRunDialog({ agentflowId, onClose }: TestRunDialogProps) {
+export function TestRunDialog({ agentflowId, onClose, onRunStart, onNodeStatusChange }: TestRunDialogProps) {
     const [question, setQuestion] = useState('')
     const [running, setRunning] = useState(false)
     const [result, setResult] = useState<string | null>(null)
@@ -32,17 +36,47 @@ export function TestRunDialog({ agentflowId, onClose }: TestRunDialogProps) {
         setRunning(true)
         setResult(null)
         setError(null)
+        onRunStart?.()
+
+        const chatId = crypto.randomUUID()
+
         try {
             const res = await fetch(`${apiBaseUrl}/api/v1/internal-prediction/${agentflowId}`, {
                 method: 'POST',
                 headers: authHeaders,
                 credentials: token ? 'omit' : 'include',
-                body: JSON.stringify({ question: question.trim(), streaming: false })
+                body: JSON.stringify({ question: question.trim(), streaming: true, chatId })
             })
             if (!res.ok) throw new Error(`HTTP ${res.status}`)
-            const data = await res.json()
-            // Response shape: { text, question, chatId, ... }
-            setResult(typeof data.text === 'string' ? data.text : JSON.stringify(data, null, 2))
+
+            const reader = res.body!.getReader()
+            const decoder = new TextDecoder()
+            let buffer = ''
+            let accumulatedText = ''
+
+            for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
+                buffer += decoder.decode(chunk.value, { stream: true })
+                const parts = buffer.split('\n\n')
+                buffer = parts.pop() ?? ''
+
+                for (const part of parts) {
+                    const dataLine = part.split('\n').find((l) => l.startsWith('data:'))
+                    if (!dataLine) continue
+                    try {
+                        const parsed = JSON.parse(dataLine.slice(5))
+                        if (parsed.event === 'nextAgentFlow') {
+                            onNodeStatusChange?.(parsed.data.nodeId, parsed.data.status, parsed.data.error)
+                        } else if (parsed.event === 'token') {
+                            accumulatedText += parsed.data
+                            setResult(accumulatedText)
+                        } else if (parsed.event === 'error') {
+                            setError(parsed.data)
+                        }
+                    } catch {
+                        // ignore malformed chunks
+                    }
+                }
+            }
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Request failed')
         } finally {

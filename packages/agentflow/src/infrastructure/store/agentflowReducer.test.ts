@@ -15,7 +15,8 @@ const initialState: AgentflowState = {
     isDirty: false,
     reactFlowInstance: null,
     editingNodeId: null,
-    editDialogProps: null
+    editDialogProps: null,
+    executionState: null
 }
 
 describe('normalizeNodes', () => {
@@ -131,7 +132,8 @@ describe('agentflowReducer', () => {
             isDirty: true,
             reactFlowInstance: null,
             editingNodeId: null,
-            editDialogProps: null
+            editDialogProps: null,
+            executionState: null
         }
         const result = agentflowReducer(dirtyState, { type: 'RESET' })
         expect(result.nodes).toEqual([])
@@ -151,5 +153,117 @@ describe('agentflowReducer', () => {
         agentflowReducer(state, { type: 'SET_NODES', payload: newNodes })
         expect(state.nodes).toHaveLength(1)
         expect(state.nodes[0].id).toBe('a')
+    })
+
+    it('START_EXECUTION should set executionId, INPROGRESS status, and empty nodeStates', () => {
+        const result = agentflowReducer(initialState, { type: 'START_EXECUTION', payload: 'exec-123' })
+        expect(result.executionState).toEqual({
+            executionId: 'exec-123',
+            status: 'INPROGRESS',
+            nodeStates: {}
+        })
+    })
+
+    it('START_EXECUTION should replace existing execution state', () => {
+        const state: AgentflowState = {
+            ...initialState,
+            executionState: {
+                executionId: 'old-exec',
+                status: 'FINISHED',
+                nodeStates: { 'node-1': { nodeId: 'node-1', status: 'FINISHED' } }
+            }
+        }
+        const result = agentflowReducer(state, { type: 'START_EXECUTION', payload: 'new-exec' })
+        expect(result.executionState?.executionId).toBe('new-exec')
+        expect(result.executionState?.status).toBe('INPROGRESS')
+        expect(result.executionState?.nodeStates).toEqual({})
+    })
+
+    it('SET_NODE_EXECUTION_STATUS should add a node state entry', () => {
+        const state: AgentflowState = {
+            ...initialState,
+            executionState: { executionId: 'exec-123', status: 'INPROGRESS', nodeStates: {} }
+        }
+        const result = agentflowReducer(state, {
+            type: 'SET_NODE_EXECUTION_STATUS',
+            nodeId: 'node-1',
+            status: 'FINISHED'
+        })
+        expect(result.executionState?.nodeStates['node-1']).toEqual({
+            nodeId: 'node-1',
+            status: 'FINISHED',
+            error: undefined
+        })
+    })
+
+    it('SET_NODE_EXECUTION_STATUS should include error message when provided', () => {
+        const state: AgentflowState = {
+            ...initialState,
+            executionState: { executionId: 'exec-123', status: 'INPROGRESS', nodeStates: {} }
+        }
+        const result = agentflowReducer(state, {
+            type: 'SET_NODE_EXECUTION_STATUS',
+            nodeId: 'node-1',
+            status: 'ERROR',
+            error: 'Something went wrong'
+        })
+        expect(result.executionState?.nodeStates['node-1']).toEqual({
+            nodeId: 'node-1',
+            status: 'ERROR',
+            error: 'Something went wrong'
+        })
+    })
+
+    it('SET_NODE_EXECUTION_STATUS should update an existing node state', () => {
+        const state: AgentflowState = {
+            ...initialState,
+            executionState: {
+                executionId: 'exec-123',
+                status: 'INPROGRESS',
+                nodeStates: { 'node-1': { nodeId: 'node-1', status: 'INPROGRESS' } }
+            }
+        }
+        const result = agentflowReducer(state, {
+            type: 'SET_NODE_EXECUTION_STATUS',
+            nodeId: 'node-1',
+            status: 'FINISHED'
+        })
+        expect(result.executionState?.nodeStates['node-1']?.status).toBe('FINISHED')
+    })
+
+    it('SET_NODE_EXECUTION_STATUS should preserve other node states', () => {
+        const state: AgentflowState = {
+            ...initialState,
+            executionState: {
+                executionId: 'exec-123',
+                status: 'INPROGRESS',
+                nodeStates: { 'node-1': { nodeId: 'node-1', status: 'FINISHED' } }
+            }
+        }
+        const result = agentflowReducer(state, {
+            type: 'SET_NODE_EXECUTION_STATUS',
+            nodeId: 'node-2',
+            status: 'INPROGRESS'
+        })
+        expect(result.executionState?.nodeStates['node-1']?.status).toBe('FINISHED')
+        expect(result.executionState?.nodeStates['node-2']?.status).toBe('INPROGRESS')
+    })
+
+    it('CLEAR_EXECUTION_STATE should set executionState to null', () => {
+        const state: AgentflowState = {
+            ...initialState,
+            executionState: {
+                executionId: 'exec-123',
+                status: 'FINISHED',
+                nodeStates: { 'node-1': { nodeId: 'node-1', status: 'FINISHED' } }
+            }
+        }
+        const result = agentflowReducer(state, { type: 'CLEAR_EXECUTION_STATE' })
+        expect(result.executionState).toBeNull()
+    })
+
+    it('CLEAR_EXECUTION_STATE when already null should remain null', () => {
+        const result = agentflowReducer(initialState, { type: 'CLEAR_EXECUTION_STATE' })
+        expect(result.executionState).toBeNull()
     })
 })

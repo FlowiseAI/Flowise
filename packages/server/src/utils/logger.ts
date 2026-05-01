@@ -134,10 +134,10 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
         }
 
         if (req.method !== 'GET') {
-            requestLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`, requestMetadata)
+            requestLogger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
             logger.info(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
         } else {
-            requestLogger.http(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`, requestMetadata)
+            requestLogger.http(`${getRequestEmoji(req.method)} ${req.method} ${req.url}`)
         }
     }
 
