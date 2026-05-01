@@ -33,6 +33,16 @@ describe('useDrawerWidths', () => {
             const { result } = renderHook(() => useDrawerWidths(undefined))
             expect(result.current.defaultWidth).toBe(400)
         })
+
+        it('caps minWidth to maxWidth on tiny viewports so the drawer never exceeds the screen', () => {
+            // On a 300px wide viewport the 400px floor would otherwise produce
+            // minWidth > maxWidth, pushing the drawer past the right edge.
+            setViewport(300)
+            const { result } = renderHook(() => useDrawerWidths(undefined))
+            expect(result.current.maxWidth).toBe(300)
+            expect(result.current.minWidth).toBe(300)
+            expect(result.current.defaultWidth).toBe(300)
+        })
     })
 
     describe('with consumer overrides', () => {

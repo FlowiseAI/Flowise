@@ -44,8 +44,9 @@ export function useDrawerWidths(overrides: DrawerWidthOverrides | undefined): Re
     const dwMax = overrides?.maxWidth
     return useMemo(() => {
         const viewportWidth = typeof window === 'undefined' ? undefined : window.innerWidth
-        const minWidth = dwMin ?? MIN_DRAWER_WIDTH_PX
         const maxWidth = dwMax ?? viewportWidth ?? SSR_MAX_WIDTH_FALLBACK_PX
+        // Cap min to max so a sub-400px viewport doesn't invert the bounds.
+        const minWidth = Math.min(dwMin ?? MIN_DRAWER_WIDTH_PX, maxWidth)
         const raw =
             dwDefault ??
             (viewportWidth !== undefined ? Math.max(minWidth, viewportWidth - DRAWER_LEFT_GAP_PX) : SSR_DEFAULT_WIDTH_FALLBACK_PX)
