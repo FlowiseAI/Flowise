@@ -15,7 +15,8 @@ export function buildFsTools(backend: BackendProtocol, onFilesUpdate?: (update: 
         func: async ({ file_path, offset, limit }) => {
             const result = await backend.read(file_path, offset, limit)
             if ('error' in result) return `Error: ${result.error}`
-            if (result.content instanceof Uint8Array) return 'Error: binary files not supported in demo slice'
+            // TODO: Support binary files local and statebackend are completed
+            if (result.content instanceof Uint8Array) return 'Error: binary files not supported yet'
             return formatWithLineNumbers(result.content, offset ?? 0)
         }
     })
