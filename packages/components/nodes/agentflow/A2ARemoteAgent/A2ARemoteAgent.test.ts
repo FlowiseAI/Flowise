@@ -146,6 +146,10 @@ function makeResponse(overrides: Record<string, any> = {}) {
     }
 }
 
+function silenceConsole(method: 'error' | 'warn'): jest.SpyInstance {
+    return jest.spyOn(console, method).mockImplementation(() => {})
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -255,11 +259,17 @@ describe('A2ARemoteAgent_Agentflow', () => {
 
         it('5: error from remote throws with descriptive message', async () => {
             mockSendMessage.mockRejectedValue(new Error('A2A Agent error [-32600]: Invalid Request'))
+            const consoleErrorSpy = silenceConsole('error')
 
-            const nodeData = makeNodeData()
-            const options = makeOptions()
+            try {
+                const nodeData = makeNodeData()
+                const options = makeOptions()
 
-            await expect(node.run(nodeData, '', options)).rejects.toThrow('A2A Agent error [-32600]: Invalid Request')
+                await expect(node.run(nodeData, '', options)).rejects.toThrow('A2A Agent error [-32600]: Invalid Request')
+                expect(consoleErrorSpy).toHaveBeenCalledWith('A2ARemoteAgent Error:', expect.any(Error))
+            } finally {
+                consoleErrorSpy.mockRestore()
+            }
         })
 
         it('6: message is passed through to sendMessage (template resolution by engine)', async () => {
@@ -434,11 +444,17 @@ describe('A2ARemoteAgent_Agentflow', () => {
                 { type: 'failed', data: { message: 'Remote agent crashed' } }
             ]
             mockSendMessageStream.mockReturnValue(makeStreamEvents(events))
+            const consoleErrorSpy = silenceConsole('error')
 
-            const nodeData = makeNodeData({ streaming: true })
-            const options = makeOptions()
+            try {
+                const nodeData = makeNodeData({ streaming: true })
+                const options = makeOptions()
 
-            await expect(node.run(nodeData, '', options)).rejects.toThrow('A2A Agent error: Remote agent crashed')
+                await expect(node.run(nodeData, '', options)).rejects.toThrow('A2A Agent error: Remote agent crashed')
+                expect(consoleErrorSpy).toHaveBeenCalledWith('A2ARemoteAgent Error:', expect.any(Error))
+            } finally {
+                consoleErrorSpy.mockRestore()
+            }
         })
 
         it('accumulates response text from multiple artifact events', async () => {
@@ -799,11 +815,11 @@ describe('A2ARemoteAgent_Agentflow', () => {
 
     describe('constructor', () => {
         it('has correct metadata', () => {
-            expect(node.label).toBe('A2A Remote Agent')
+            expect(node.label).toBe('A2A External Agent')
             expect(node.name).toBe('a2aRemoteAgentAgentflow')
             expect(node.type).toBe('A2ARemoteAgent')
             expect(node.category).toBe('Agent Flows')
-            expect(node.color).toBe('#7C4DFF')
+            expect(node.color).toBe('#83C5BE')
             expect(node.baseClasses).toEqual(['A2ARemoteAgent'])
         })
     })
@@ -957,52 +973,77 @@ describe('A2ARemoteAgent_Agentflow', () => {
             mockSendMessage
                 .mockRejectedValueOnce(new MockA2ATaskNotFoundError('Task not found'))
                 .mockResolvedValueOnce(makeResponse({ responseText: 'Fresh start response' }))
+            const consoleWarnSpy = silenceConsole('warn')
 
-            const nodeData = makeNodeData()
-            const options = makeOptions({
-                agentflowRuntime: {
-                    state: { a2a_taskId: 'stale-task', a2a_contextId: 'stale-ctx' },
-                    chatHistory: []
-                }
-            })
+            try {
+                const nodeData = makeNodeData()
+                const options = makeOptions({
+                    agentflowRuntime: {
+                        state: { a2a_taskId: 'stale-task', a2a_contextId: 'stale-ctx' },
+                        chatHistory: []
+                    }
+                })
 
-            const result = await node.run(nodeData, '', options)
+                const result = await node.run(nodeData, '', options)
 
-            expect(mockSendMessage).toHaveBeenCalledTimes(2)
-            expect(mockSendMessage).toHaveBeenNthCalledWith(1, 'Hello remote agent', {
-                skillId: 'echo',
-                taskId: 'stale-task',
-                contextId: 'stale-ctx'
-            })
-            expect(mockSendMessage).toHaveBeenNthCalledWith(2, 'Hello remote agent', { skillId: 'echo' })
-            expect(result.output.content).toBe('Fresh start response')
+                expect(mockSendMessage).toHaveBeenCalledTimes(2)
+                expect(mockSendMessage).toHaveBeenNthCalledWith(1, 'Hello remote agent', {
+                    skillId: 'echo',
+                    taskId: 'stale-task',
+                    contextId: 'stale-ctx'
+                })
+                expect(mockSendMessage).toHaveBeenNthCalledWith(2, 'Hello remote agent', { skillId: 'echo' })
+                expect(result.output.content).toBe('Fresh start response')
+                expect(consoleWarnSpy).toHaveBeenCalledWith(
+                    '[A2ARemoteAgent] Stale taskId/contextId detected, retrying as new conversation'
+                )
+            } finally {
+                consoleWarnSpy.mockRestore()
+            }
         })
 
         it('11-F #4: stale taskId retry that also fails throws the error', async () => {
             mockSendMessage
                 .mockRejectedValueOnce(new MockA2ATaskNotFoundError('Task not found'))
                 .mockRejectedValueOnce(new Error('Second failure'))
+            const consoleWarnSpy = silenceConsole('warn')
+            const consoleErrorSpy = silenceConsole('error')
 
-            const nodeData = makeNodeData()
-            const options = makeOptions({
-                agentflowRuntime: {
-                    state: { a2a_taskId: 'stale-task', a2a_contextId: 'stale-ctx' },
-                    chatHistory: []
-                }
-            })
+            try {
+                const nodeData = makeNodeData()
+                const options = makeOptions({
+                    agentflowRuntime: {
+                        state: { a2a_taskId: 'stale-task', a2a_contextId: 'stale-ctx' },
+                        chatHistory: []
+                    }
+                })
 
-            await expect(node.run(nodeData, '', options)).rejects.toThrow('Second failure')
-            expect(mockSendMessage).toHaveBeenCalledTimes(2)
+                await expect(node.run(nodeData, '', options)).rejects.toThrow('Second failure')
+                expect(mockSendMessage).toHaveBeenCalledTimes(2)
+                expect(consoleWarnSpy).toHaveBeenCalledWith(
+                    '[A2ARemoteAgent] Stale taskId/contextId detected, retrying as new conversation'
+                )
+                expect(consoleErrorSpy).toHaveBeenCalledWith('A2ARemoteAgent Error:', expect.any(Error))
+            } finally {
+                consoleWarnSpy.mockRestore()
+                consoleErrorSpy.mockRestore()
+            }
         })
 
         it('TaskNotFoundError without stored IDs is propagated, not retried', async () => {
             mockSendMessage.mockRejectedValueOnce(new MockA2ATaskNotFoundError('Task not found'))
+            const consoleErrorSpy = silenceConsole('error')
 
-            const nodeData = makeNodeData()
-            const options = makeOptions()
+            try {
+                const nodeData = makeNodeData()
+                const options = makeOptions()
 
-            await expect(node.run(nodeData, '', options)).rejects.toThrow('Task not found')
-            expect(mockSendMessage).toHaveBeenCalledTimes(1)
+                await expect(node.run(nodeData, '', options)).rejects.toThrow('Task not found')
+                expect(mockSendMessage).toHaveBeenCalledTimes(1)
+                expect(consoleErrorSpy).toHaveBeenCalledWith('A2ARemoteAgent Error:', expect.any(MockA2ATaskNotFoundError))
+            } finally {
+                consoleErrorSpy.mockRestore()
+            }
         })
 
         it('does not pass taskId/contextId when no stored multi-turn state exists', async () => {
@@ -1079,27 +1120,39 @@ describe('A2ARemoteAgent_Agentflow', () => {
 
         it('A2AAbortError from the wrapper surfaces as an AbortError, not a generic error', async () => {
             mockSendMessage.mockRejectedValue(new MockA2AAbortError())
+            const consoleWarnSpy = silenceConsole('warn')
 
-            const nodeData = makeNodeData()
-            const options = makeOptions({ abortController: new AbortController() })
+            try {
+                const nodeData = makeNodeData()
+                const options = makeOptions({ abortController: new AbortController() })
 
-            await expect(node.run(nodeData, '', options)).rejects.toMatchObject({
-                name: 'AbortError',
-                message: 'A2A request aborted'
-            })
+                await expect(node.run(nodeData, '', options)).rejects.toMatchObject({
+                    name: 'AbortError',
+                    message: 'A2A request aborted'
+                })
+                expect(consoleWarnSpy).toHaveBeenCalledWith('[A2ARemoteAgent] Request aborted by user')
+            } finally {
+                consoleWarnSpy.mockRestore()
+            }
         })
 
         it('aborted abortController causes generic errors to be re-thrown as AbortError', async () => {
             const abortController = new AbortController()
             abortController.abort()
             mockSendMessage.mockRejectedValue(new Error('Some downstream error'))
+            const consoleWarnSpy = silenceConsole('warn')
 
-            const nodeData = makeNodeData()
-            const options = makeOptions({ abortController })
+            try {
+                const nodeData = makeNodeData()
+                const options = makeOptions({ abortController })
 
-            await expect(node.run(nodeData, '', options)).rejects.toMatchObject({
-                name: 'AbortError'
-            })
+                await expect(node.run(nodeData, '', options)).rejects.toMatchObject({
+                    name: 'AbortError'
+                })
+                expect(consoleWarnSpy).toHaveBeenCalledWith('[A2ARemoteAgent] Request aborted by user')
+            } finally {
+                consoleWarnSpy.mockRestore()
+            }
         })
 
         it('streaming abort mid-iteration throws A2AAbortError-derived AbortError', async () => {
@@ -1113,13 +1166,19 @@ describe('A2ARemoteAgent_Agentflow', () => {
                 }
             }
             mockSendMessageStream.mockReturnValue(abortAfterFirst())
+            const consoleWarnSpy = silenceConsole('warn')
 
-            const nodeData = makeNodeData({ streaming: true })
-            const options = makeOptions({ abortController })
+            try {
+                const nodeData = makeNodeData({ streaming: true })
+                const options = makeOptions({ abortController })
 
-            await expect(node.run(nodeData, '', options)).rejects.toMatchObject({
-                name: 'AbortError'
-            })
+                await expect(node.run(nodeData, '', options)).rejects.toMatchObject({
+                    name: 'AbortError'
+                })
+                expect(consoleWarnSpy).toHaveBeenCalledWith('[A2ARemoteAgent] Request aborted by user')
+            } finally {
+                consoleWarnSpy.mockRestore()
+            }
         })
 
         it('streaming completes normally when no abort is requested', async () => {

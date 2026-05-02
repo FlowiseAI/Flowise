@@ -164,14 +164,20 @@ describe('A2AAgentTool', () => {
     // ------------------------------------------------------------------
     it('func() surfaces remote agent errors as tool-error responses', async () => {
         mockSendMessage.mockRejectedValue(new Error('remote agent exploded'))
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
-        const node = new A2AAgentTool()
-        const tool = await node.init(makeNodeData(), '', baseOptions)
+        try {
+            const node = new A2AAgentTool()
+            const tool = await node.init(makeNodeData(), '', baseOptions)
 
-        const result = await tool.func('Hi')
+            const result = await tool.func('Hi')
 
-        expect(result).toContain('Error calling A2A agent')
-        expect(result).toContain('remote agent exploded')
+            expect(result).toContain('Error calling A2A agent')
+            expect(result).toContain('remote agent exploded')
+            expect(consoleErrorSpy).toHaveBeenCalledWith('[A2AAgentTool] Error calling A2A agent:', expect.any(Error))
+        } finally {
+            consoleErrorSpy.mockRestore()
+        }
     })
 
     // ------------------------------------------------------------------
