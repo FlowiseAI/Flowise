@@ -69,16 +69,15 @@ export function useExecutionTree(executionDataJson: string | null): ExecutionTre
         const executionIndexById = new Map<string, number>()
 
         const uniqueId = (nodeId: string, index: number) => `${nodeId}_${index}`
-        const isIterationChild = (n: NodeExecutionData) => Boolean(n.parentNodeId) && n.iterationIndex !== undefined
+        const isIterationChild = (n: NodeExecutionData) => Boolean(n.data.parentNodeId) && n.data.iterationIndex !== undefined
 
         // `nodeId` → ascending array indices. Read in reverse to find the most-recent occurrence < currentIndex.
         const indicesByNodeId = new Map<string, number[]>()
 
         nodes.forEach((n, index) => {
-            // The runtime never emits `name` at the top level (per
-            // `IAgentflowExecutedData`); Agent/LLM/etc. put their type
-            // identifier on `data.name`, so the fallback chain is required.
-            const dataName = n.data?.name
+            // The runtime emits the type identifier on `data.name`; `n.name` is
+            // a tolerated fallback for non-runtime producers (tests, wrappers).
+            const dataName = n.data.name
             const resolvedName = n.name ?? (typeof dataName === 'string' ? dataName : undefined) ?? n.nodeId.split('_')[0]
             const id = uniqueId(n.nodeId, index)
             treeNodes.set(id, {
@@ -87,7 +86,7 @@ export function useExecutionTree(executionDataJson: string | null): ExecutionTre
                 nodeLabel: n.nodeLabel,
                 status: n.status,
                 name: resolvedName,
-                iterationIndex: n.iterationIndex,
+                iterationIndex: n.data.iterationIndex,
                 children: [],
                 raw: n
             })
@@ -98,9 +97,8 @@ export function useExecutionTree(executionDataJson: string | null): ExecutionTre
 
         const iterationGroups = new Map<string, Map<number, number[]>>() // parentNodeId -> iterIdx -> [array index, ...]
         nodes.forEach((n, index) => {
-            if (!isIterationChild(n)) return
-            const parentNodeId = n.parentNodeId!
-            const iterIdx = n.iterationIndex!
+            const { parentNodeId, iterationIndex: iterIdx } = n.data
+            if (!parentNodeId || iterIdx === undefined) return
             if (!iterationGroups.has(parentNodeId)) iterationGroups.set(parentNodeId, new Map())
             const byIdx = iterationGroups.get(parentNodeId)!
             if (!byIdx.has(iterIdx)) byIdx.set(iterIdx, [])
@@ -148,8 +146,8 @@ export function useExecutionTree(executionDataJson: string | null): ExecutionTre
                     if (i >= currentIndex) continue
                     if (sameIterationOnly) {
                         const candidate = nodes[i]
-                        if (candidate.parentNodeId !== n.parentNodeId) continue
-                        if (candidate.iterationIndex !== n.iterationIndex) continue
+                        if (candidate.data.parentNodeId !== n.data.parentNodeId) continue
+                        if (candidate.data.iterationIndex !== n.data.iterationIndex) continue
                     }
                     if (i > bestIndex) {
                         bestIndex = i

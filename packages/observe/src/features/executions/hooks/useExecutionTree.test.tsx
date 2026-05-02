@@ -17,6 +17,14 @@ const baseNode = (overrides: Partial<NodeExecutionData> = {}): NodeExecutionData
     ...overrides
 })
 
+const iterChild = (overrides: Partial<NodeExecutionData> & { parentNodeId?: string; iterationIndex?: number } = {}): NodeExecutionData => {
+    const { parentNodeId, iterationIndex, data, ...rest } = overrides
+    return baseNode({
+        ...rest,
+        data: { ...(data ?? {}), parentNodeId, iterationIndex }
+    })
+}
+
 describe('useExecutionTree', () => {
     describe('degenerate inputs', () => {
         it('returns [] for null', () => {
@@ -134,7 +142,7 @@ describe('useExecutionTree', () => {
     describe('iteration grouping', () => {
         it('inserts a virtual container node for iteration children', () => {
             const parent = baseNode({ nodeId: 'loop', nodeLabel: 'Loop' })
-            const child = baseNode({ nodeId: 'step', nodeLabel: 'Step', parentNodeId: 'loop', iterationIndex: 0 })
+            const child = iterChild({ nodeId: 'step', nodeLabel: 'Step', parentNodeId: 'loop', iterationIndex: 0 })
             const { result } = renderHook(() => useExecutionTree(toJson([parent, child])))
 
             expect(result.current).toHaveLength(1)
@@ -156,9 +164,9 @@ describe('useExecutionTree', () => {
 
         it('groups children by iterationIndex into separate virtual nodes', () => {
             const parent = baseNode({ nodeId: 'loop', nodeLabel: 'Loop' })
-            const iter0a = baseNode({ nodeId: 'step-a', parentNodeId: 'loop', iterationIndex: 0 })
-            const iter0b = baseNode({ nodeId: 'step-b', parentNodeId: 'loop', iterationIndex: 0 })
-            const iter1a = baseNode({ nodeId: 'step-c', parentNodeId: 'loop', iterationIndex: 1 })
+            const iter0a = iterChild({ nodeId: 'step-a', parentNodeId: 'loop', iterationIndex: 0 })
+            const iter0b = iterChild({ nodeId: 'step-b', parentNodeId: 'loop', iterationIndex: 0 })
+            const iter1a = iterChild({ nodeId: 'step-c', parentNodeId: 'loop', iterationIndex: 1 })
             const { result } = renderHook(() => useExecutionTree(toJson([parent, iter0a, iter0b, iter1a])))
 
             const children = result.current[0].children
@@ -171,9 +179,9 @@ describe('useExecutionTree', () => {
 
         it('sorts virtual nodes by iterationIndex ascending', () => {
             const parent = baseNode({ nodeId: 'loop' })
-            const iter2 = baseNode({ nodeId: 'c', parentNodeId: 'loop', iterationIndex: 2 })
-            const iter0 = baseNode({ nodeId: 'a', parentNodeId: 'loop', iterationIndex: 0 })
-            const iter1 = baseNode({ nodeId: 'b', parentNodeId: 'loop', iterationIndex: 1 })
+            const iter2 = iterChild({ nodeId: 'c', parentNodeId: 'loop', iterationIndex: 2 })
+            const iter0 = iterChild({ nodeId: 'a', parentNodeId: 'loop', iterationIndex: 0 })
+            const iter1 = iterChild({ nodeId: 'b', parentNodeId: 'loop', iterationIndex: 1 })
             const { result } = renderHook(() => useExecutionTree(toJson([parent, iter2, iter0, iter1])))
 
             const indices = result.current[0].children.map((c) => c.iterationIndex)
@@ -182,8 +190,8 @@ describe('useExecutionTree', () => {
 
         it('rolls up virtual node status to ERROR when any child errored', () => {
             const parent = baseNode({ nodeId: 'loop' })
-            const child1 = baseNode({ nodeId: 'c1', parentNodeId: 'loop', iterationIndex: 0, status: 'FINISHED' })
-            const child2 = baseNode({ nodeId: 'c2', parentNodeId: 'loop', iterationIndex: 0, status: 'ERROR' })
+            const child1 = iterChild({ nodeId: 'c1', parentNodeId: 'loop', iterationIndex: 0, status: 'FINISHED' })
+            const child2 = iterChild({ nodeId: 'c2', parentNodeId: 'loop', iterationIndex: 0, status: 'ERROR' })
             const { result } = renderHook(() => useExecutionTree(toJson([parent, child1, child2])))
 
             expect(result.current[0].children[0].status).toBe('ERROR')
@@ -191,8 +199,8 @@ describe('useExecutionTree', () => {
 
         it('rolls up to INPROGRESS when any child is in-flight (and none errored)', () => {
             const parent = baseNode({ nodeId: 'loop' })
-            const child1 = baseNode({ nodeId: 'c1', parentNodeId: 'loop', iterationIndex: 0, status: 'INPROGRESS' })
-            const child2 = baseNode({ nodeId: 'c2', parentNodeId: 'loop', iterationIndex: 0, status: 'FINISHED' })
+            const child1 = iterChild({ nodeId: 'c1', parentNodeId: 'loop', iterationIndex: 0, status: 'INPROGRESS' })
+            const child2 = iterChild({ nodeId: 'c2', parentNodeId: 'loop', iterationIndex: 0, status: 'FINISHED' })
             const { result } = renderHook(() => useExecutionTree(toJson([parent, child1, child2])))
 
             expect(result.current[0].children[0].status).toBe('INPROGRESS')
@@ -200,8 +208,8 @@ describe('useExecutionTree', () => {
 
         it('rolls up to FINISHED only when all children finished', () => {
             const parent = baseNode({ nodeId: 'loop' })
-            const child1 = baseNode({ nodeId: 'c1', parentNodeId: 'loop', iterationIndex: 0, status: 'FINISHED' })
-            const child2 = baseNode({ nodeId: 'c2', parentNodeId: 'loop', iterationIndex: 0, status: 'FINISHED' })
+            const child1 = iterChild({ nodeId: 'c1', parentNodeId: 'loop', iterationIndex: 0, status: 'FINISHED' })
+            const child2 = iterChild({ nodeId: 'c2', parentNodeId: 'loop', iterationIndex: 0, status: 'FINISHED' })
             const { result } = renderHook(() => useExecutionTree(toJson([parent, child1, child2])))
 
             expect(result.current[0].children[0].status).toBe('FINISHED')
@@ -210,8 +218,8 @@ describe('useExecutionTree', () => {
         it('falls back to UNKNOWN when children mix non-error, non-in-flight, non-finished states (legacy parity)', () => {
             const parent = baseNode({ nodeId: 'loop' })
             // Mix STOPPED + TIMEOUT — neither triggers ERROR / INPROGRESS, and "every === FINISHED" is false.
-            const child1 = baseNode({ nodeId: 'c1', parentNodeId: 'loop', iterationIndex: 0, status: 'STOPPED' })
-            const child2 = baseNode({ nodeId: 'c2', parentNodeId: 'loop', iterationIndex: 0, status: 'TIMEOUT' })
+            const child1 = iterChild({ nodeId: 'c1', parentNodeId: 'loop', iterationIndex: 0, status: 'STOPPED' })
+            const child2 = iterChild({ nodeId: 'c2', parentNodeId: 'loop', iterationIndex: 0, status: 'TIMEOUT' })
             const { result } = renderHook(() => useExecutionTree(toJson([parent, child1, child2])))
 
             expect(result.current[0].children[0].status).toBe('UNKNOWN')
@@ -223,7 +231,7 @@ describe('useExecutionTree', () => {
             // Without iterationIndex, the node falls back to previousNodeIds
             // / root behavior — it does NOT join an iteration group.
             const parent = baseNode({ nodeId: 'loop' })
-            const orphan = baseNode({ nodeId: 'c1', parentNodeId: 'loop' })
+            const orphan = iterChild({ nodeId: 'c1', parentNodeId: 'loop' })
             const { result } = renderHook(() => useExecutionTree(toJson([parent, orphan])))
 
             // Both are roots; no virtual iteration container is synthesized.
@@ -233,7 +241,7 @@ describe('useExecutionTree', () => {
 
         it('does not include iteration children as top-level nodes', () => {
             const parent = baseNode({ nodeId: 'loop' })
-            const child = baseNode({ nodeId: 'child', parentNodeId: 'loop', iterationIndex: 0 })
+            const child = iterChild({ nodeId: 'child', parentNodeId: 'loop', iterationIndex: 0 })
             const { result } = renderHook(() => useExecutionTree(toJson([parent, child])))
 
             expect(result.current).toHaveLength(1)
@@ -249,9 +257,9 @@ describe('useExecutionTree', () => {
         // iteration entirely).
         it('chains iteration-internal siblings via previousNodeIds within the same iteration', () => {
             const loop = baseNode({ nodeId: 'loop' })
-            const a = baseNode({ nodeId: 'a', parentNodeId: 'loop', iterationIndex: 0 })
-            const b = baseNode({ nodeId: 'b', parentNodeId: 'loop', iterationIndex: 0, previousNodeIds: ['a'] })
-            const c = baseNode({ nodeId: 'c', parentNodeId: 'loop', iterationIndex: 0, previousNodeIds: ['b'] })
+            const a = iterChild({ nodeId: 'a', parentNodeId: 'loop', iterationIndex: 0 })
+            const b = iterChild({ nodeId: 'b', parentNodeId: 'loop', iterationIndex: 0, previousNodeIds: ['a'] })
+            const c = iterChild({ nodeId: 'c', parentNodeId: 'loop', iterationIndex: 0, previousNodeIds: ['b'] })
             const { result } = renderHook(() => useExecutionTree(toJson([loop, a, b, c])))
 
             // Tree: loop -> [iter#0]
@@ -275,10 +283,10 @@ describe('useExecutionTree', () => {
             // must restrict the match to iteration #1, otherwise iter#1's
             // node would dangle as a child of iter#0.
             const loop = baseNode({ nodeId: 'loop' })
-            const iter0a = baseNode({ nodeId: 'a', parentNodeId: 'loop', iterationIndex: 0 })
-            const iter0b = baseNode({ nodeId: 'b', parentNodeId: 'loop', iterationIndex: 0, previousNodeIds: ['a'] })
-            const iter1a = baseNode({ nodeId: 'a', parentNodeId: 'loop', iterationIndex: 1 })
-            const iter1b = baseNode({ nodeId: 'b', parentNodeId: 'loop', iterationIndex: 1, previousNodeIds: ['a'] })
+            const iter0a = iterChild({ nodeId: 'a', parentNodeId: 'loop', iterationIndex: 0 })
+            const iter0b = iterChild({ nodeId: 'b', parentNodeId: 'loop', iterationIndex: 0, previousNodeIds: ['a'] })
+            const iter1a = iterChild({ nodeId: 'a', parentNodeId: 'loop', iterationIndex: 1 })
+            const iter1b = iterChild({ nodeId: 'b', parentNodeId: 'loop', iterationIndex: 1, previousNodeIds: ['a'] })
             const { result } = renderHook(() => useExecutionTree(toJson([loop, iter0a, iter0b, iter1a, iter1b])))
 
             const virtuals = result.current[0].children
@@ -307,13 +315,43 @@ describe('useExecutionTree', () => {
             // container directly — preserving legacy behavior.
             const loop = baseNode({ nodeId: 'loop' })
             const outside = baseNode({ nodeId: 'outside' })
-            const inside = baseNode({ nodeId: 'inside', parentNodeId: 'loop', iterationIndex: 0, previousNodeIds: ['outside'] })
+            const inside = iterChild({ nodeId: 'inside', parentNodeId: 'loop', iterationIndex: 0, previousNodeIds: ['outside'] })
             const { result } = renderHook(() => useExecutionTree(toJson([loop, outside, inside])))
 
             const virtualNode = result.current.find((n) => n.nodeId === 'loop')!.children[0]
             expect(virtualNode.isVirtualNode).toBe(true)
             expect(virtualNode.children).toHaveLength(1)
             expect(virtualNode.children[0].nodeId).toBe('inside')
+        })
+
+        it('reads parentNodeId/iterationIndex from data (runtime payload shape, not top-level)', () => {
+            const start = baseNode({ nodeId: 'start' })
+            const llm = baseNode({ nodeId: 'llm', previousNodeIds: ['start'] })
+            const loop = baseNode({ nodeId: 'loop', previousNodeIds: ['llm'] })
+            const iter0Agent = iterChild({ nodeId: 'agent', parentNodeId: 'loop', iterationIndex: 0 })
+            const iter0Reply = iterChild({ nodeId: 'reply', parentNodeId: 'loop', iterationIndex: 0, previousNodeIds: ['agent'] })
+            const iter1Agent = iterChild({ nodeId: 'agent', parentNodeId: 'loop', iterationIndex: 1 })
+            const iter1Reply = iterChild({ nodeId: 'reply', parentNodeId: 'loop', iterationIndex: 1, previousNodeIds: ['agent'] })
+            const iter2Agent = iterChild({ nodeId: 'agent', parentNodeId: 'loop', iterationIndex: 2 })
+            const iter2Reply = iterChild({ nodeId: 'reply', parentNodeId: 'loop', iterationIndex: 2, previousNodeIds: ['agent'] })
+            const { result } = renderHook(() =>
+                useExecutionTree(toJson([start, llm, loop, iter0Agent, iter0Reply, iter1Agent, iter1Reply, iter2Agent, iter2Reply]))
+            )
+
+            expect(result.current).toHaveLength(1)
+            const llmNode = result.current[0].children[0]
+            const loopNode = llmNode.children[0]
+            expect(loopNode.nodeId).toBe('loop')
+            expect(loopNode.children).toHaveLength(3)
+
+            loopNode.children.forEach((virtual, i) => {
+                expect(virtual.isVirtualNode).toBe(true)
+                expect(virtual.iterationIndex).toBe(i)
+                expect(virtual.children).toHaveLength(1)
+                expect(virtual.children[0].nodeId).toBe('agent')
+                expect(virtual.children[0].children).toHaveLength(1)
+                expect(virtual.children[0].children[0].nodeId).toBe('reply')
+            })
         })
     })
 
@@ -349,7 +387,8 @@ describe('useExecutionTree', () => {
             // If the runtime payload is malformed (e.g. data.name accidentally
             // set to an object), we must not pass that through as a name —
             // the nodeId fallback must kick in instead.
-            const node = baseNode({ nodeId: 'fallback_0', data: { name: { nested: 'oops' } } })
+            // Cast through unknown — the test deliberately violates the typed contract.
+            const node = baseNode({ nodeId: 'fallback_0', data: { name: { nested: 'oops' } as unknown as string } })
             const { result } = renderHook(() => useExecutionTree(toJson([node])))
             expect(result.current[0].name).toBe('fallback')
         })
@@ -364,11 +403,11 @@ describe('useExecutionTree', () => {
             // An iteration-agent node hanging off `start` …
             const iterAgent = baseNode({ nodeId: 'loop', previousNodeIds: ['start'] })
             // … with one iteration child …
-            const iterChild = baseNode({ nodeId: 'inside', parentNodeId: 'loop', iterationIndex: 0 })
+            const iterationChild = iterChild({ nodeId: 'inside', parentNodeId: 'loop', iterationIndex: 0 })
             // … plus a plain sibling under `start` that records execution AFTER the iteration.
             // (`previousNodeIds: ['start']` means it would attach to start as a sibling of `loop`.)
             const sibling = baseNode({ nodeId: 'after', previousNodeIds: ['start'] })
-            const { result } = renderHook(() => useExecutionTree(toJson([start, iterAgent, iterChild, sibling])))
+            const { result } = renderHook(() => useExecutionTree(toJson([start, iterAgent, iterationChild, sibling])))
 
             const startNode = result.current[0]
             // Children of `start`: `loop` (which holds the virtual iteration node) and `after`.
@@ -428,7 +467,7 @@ describe('useExecutionTree', () => {
 
         it('does not set raw on virtual iteration container nodes', () => {
             const parent = baseNode({ nodeId: 'loop' })
-            const child = baseNode({ nodeId: 'c', parentNodeId: 'loop', iterationIndex: 0 })
+            const child = iterChild({ nodeId: 'c', parentNodeId: 'loop', iterationIndex: 0 })
             const { result } = renderHook(() => useExecutionTree(toJson([parent, child])))
 
             const virtualNode = result.current[0].children[0]

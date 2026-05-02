@@ -71,11 +71,10 @@ export function ExecutionTreeSidebar({ tree, selectedId, onSelect, expandedIds, 
         )
     }
 
-    // PARITY: virtual iteration container nodes are not selectable in legacy.
     const handleSelect = (_: unknown, itemId: string | null) => {
         if (!itemId) return
         const node = indexed.get(itemId)
-        if (!node || node.isVirtualNode) return
+        if (!node) return
         onSelect(node)
     }
 

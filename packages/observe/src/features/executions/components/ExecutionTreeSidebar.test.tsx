@@ -191,7 +191,7 @@ describe('ExecutionTreeSidebar', () => {
     })
 
     describe('selection', () => {
-        it('fires onSelect with the clicked node (skipping virtual nodes)', async () => {
+        it('fires onSelect for real and virtual nodes — legacy parity', async () => {
             const onSelect = jest.fn()
             const tree = [
                 makeNode({ id: 'real', nodeId: 'real', nodeLabel: 'Real' }),
@@ -211,9 +211,9 @@ describe('ExecutionTreeSidebar', () => {
             expect(onSelect).toHaveBeenCalledTimes(1)
             expect(onSelect.mock.calls[0][0].nodeId).toBe('real')
 
-            // Clicking the virtual row must NOT call onSelect.
             await userEvent.click(screen.getByText('Iteration #0'))
-            expect(onSelect).toHaveBeenCalledTimes(1)
+            expect(onSelect).toHaveBeenCalledTimes(2)
+            expect(onSelect.mock.calls[1][0].nodeId).toBe('iter-0')
         })
     })
 

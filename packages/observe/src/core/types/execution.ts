@@ -48,24 +48,25 @@ export interface NodeExecutionOutput {
     [key: string]: unknown
 }
 
+// Iteration metadata (`parentNodeId`, `iterationIndex`, `iterationContext`) is
+// nested in `data`, not at the top level — matches the runtime emission in
+// `packages/server/src/utils/buildAgentflow.ts`.
+export interface NodeExecutionDataPayload {
+    name?: string
+    parentNodeId?: string
+    /** 0-based */
+    iterationIndex?: number
+    iterationContext?: Record<string, unknown>
+    [key: string]: unknown
+}
+
 export interface NodeExecutionData {
     nodeLabel: string
     nodeId: string
-    /**
-     * Node payload — the runtime emits this as `{ input, output, state, error, ... }`.
-     * `data.output` carries `content`, `timeMetadata`, `usageMetadata`, etc.
-     * Shape varies by node type, hence `Record<string, unknown>`.
-     */
-    data: Record<string, unknown>
+    data: NodeExecutionDataPayload
     previousNodeIds: string[]
     status: ExecutionState
-    /** Node type name — used for icon lookup */
     name?: string
-    /** Index within an iteration group (0-based) */
-    iterationIndex?: number
-    iterationContext?: Record<string, unknown>
-    /** Parent node ID for iteration child nodes */
-    parentNodeId?: string
 }
 
 // ============================================================================
