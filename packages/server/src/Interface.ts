@@ -32,7 +32,8 @@ export enum ChatType {
     EXTERNAL = 'EXTERNAL',
     EVALUATION = 'EVALUATION',
     MCP = 'MCP',
-    SCHEDULED = 'SCHEDULED'
+    SCHEDULED = 'SCHEDULED',
+    WEBHOOK = 'WEBHOOK'
 }
 
 export enum ChatMessageRatingType {

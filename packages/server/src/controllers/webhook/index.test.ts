@@ -1,10 +1,18 @@
 import { StatusCodes } from 'http-status-codes'
 import { Request, Response, NextFunction } from 'express'
+import { ChatType } from '../../Interface'
 
 const mockValidateWebhookChatflow = jest.fn()
 const mockBuildChatflow = jest.fn()
 const mockDispatchCallback = jest.fn()
 const mockCheckDenyList = jest.fn()
+const mockCheckIfChatflowIsValidForStreaming = jest.fn()
+const mockSseStreamer = {
+    addExternalClient: jest.fn(),
+    streamMetadataEvent: jest.fn(),
+    streamErrorEvent: jest.fn(),
+    removeClient: jest.fn()
+}
 
 jest.mock('../../services/webhook', () => ({
     __esModule: true,
@@ -13,6 +21,10 @@ jest.mock('../../services/webhook', () => ({
 jest.mock('../../services/predictions', () => ({
     __esModule: true,
     default: { buildChatflow: mockBuildChatflow }
+}))
+jest.mock('../../services/chatflows', () => ({
+    __esModule: true,
+    default: { checkIfChatflowIsValidForStreaming: mockCheckIfChatflowIsValidForStreaming }
 }))
 jest.mock('../../utils/rateLimit', () => ({
     RateLimiterManager: {
@@ -24,10 +36,17 @@ jest.mock('../../utils/rateLimit', () => ({
 jest.mock('../../utils/callbackDispatcher', () => ({
     dispatchCallback: mockDispatchCallback
 }))
+jest.mock('../../utils/getRunningExpressApp', () => ({
+    getRunningExpressApp: () => ({ sseStreamer: mockSseStreamer })
+}))
 jest.mock('flowise-components', () => ({
     checkDenyList: (url: string) => mockCheckDenyList(url)
 }))
 jest.mock('uuid', () => ({ v4: () => 'generated-uuid' }))
+jest.mock('../../utils/logger', () => ({
+    __esModule: true,
+    default: { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() }
+}))
 
 import webhookController from './index'
 
@@ -54,8 +73,8 @@ const mockNext = (): NextFunction => jest.fn()
 describe('createWebhook', () => {
     beforeEach(() => {
         jest.clearAllMocks()
-        // Default: no callback config on Start node
-        mockValidateWebhookChatflow.mockResolvedValue({})
+        // Default: synchronous response mode
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'sync' as const })
     })
 
     it('calls next with PRECONDITION_FAILED when id is missing', async () => {
@@ -100,7 +119,8 @@ describe('createWebhook', () => {
                         query: expect.any(Object)
                     }
                 }
-            })
+            }),
+            ChatType.WEBHOOK
         )
     })
 
@@ -126,7 +146,8 @@ describe('createWebhook', () => {
                         query: { page: '2' }
                     }
                 }
-            })
+            }),
+            ChatType.WEBHOOK
         )
     })
 
@@ -216,14 +237,15 @@ describe('createWebhook', () => {
                     chatId: 'abc123',
                     webhook: expect.any(Object)
                 })
-            })
+            }),
+            ChatType.WEBHOOK
         )
     })
 
     // --- Async callback (FLOWISE-367) ---
 
     it('returns 202 immediately when callbackUrl is configured on Start node', async () => {
-        mockValidateWebhookChatflow.mockResolvedValue({ callbackUrl: 'https://cb.example.com' })
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const, callbackUrl: 'https://cb.example.com' })
         mockBuildChatflow.mockResolvedValue({ text: 'done' })
         mockDispatchCallback.mockResolvedValue(undefined)
         jest.spyOn(global, 'setImmediate').mockImplementation((fn: any) => fn())
@@ -240,7 +262,7 @@ describe('createWebhook', () => {
     })
 
     it('returns 202 with chatId from body when already provided', async () => {
-        mockValidateWebhookChatflow.mockResolvedValue({ callbackUrl: 'https://cb.example.com' })
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const, callbackUrl: 'https://cb.example.com' })
         mockBuildChatflow.mockResolvedValue({ text: 'done' })
         mockDispatchCallback.mockResolvedValue(undefined)
         jest.spyOn(global, 'setImmediate').mockImplementation((fn: any) => fn())
@@ -257,7 +279,7 @@ describe('createWebhook', () => {
     })
 
     it('generates a chatId when not in body and callback URL is present', async () => {
-        mockValidateWebhookChatflow.mockResolvedValue({ callbackUrl: 'https://cb.example.com' })
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const, callbackUrl: 'https://cb.example.com' })
         mockBuildChatflow.mockResolvedValue({ text: 'done' })
         mockDispatchCallback.mockResolvedValue(undefined)
         jest.spyOn(global, 'setImmediate').mockImplementation((fn: any) => fn())
@@ -272,7 +294,7 @@ describe('createWebhook', () => {
     })
 
     it('dispatches SUCCESS callback when flow completes without action', async () => {
-        mockValidateWebhookChatflow.mockResolvedValue({ callbackUrl: 'https://cb.example.com' })
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const, callbackUrl: 'https://cb.example.com' })
         const apiResponse = { text: 'hello', executionId: 'exec-1' }
         mockBuildChatflow.mockResolvedValue(apiResponse)
         mockDispatchCallback.mockResolvedValue(undefined)
@@ -291,7 +313,7 @@ describe('createWebhook', () => {
     })
 
     it('dispatches STOPPED callback when flow has action (HITL pause)', async () => {
-        mockValidateWebhookChatflow.mockResolvedValue({ callbackUrl: 'https://cb.example.com' })
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const, callbackUrl: 'https://cb.example.com' })
         const action = { id: 'act-1', mapping: { approve: 'Proceed', reject: 'Reject' }, elements: [] }
         const apiResponse = { text: 'waiting', executionId: 'exec-2', action }
         mockBuildChatflow.mockResolvedValue(apiResponse)
@@ -315,7 +337,7 @@ describe('createWebhook', () => {
     })
 
     it('dispatches ERROR callback when flow throws', async () => {
-        mockValidateWebhookChatflow.mockResolvedValue({ callbackUrl: 'https://cb.example.com' })
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const, callbackUrl: 'https://cb.example.com' })
         mockBuildChatflow.mockRejectedValue(new Error('flow exploded'))
         mockDispatchCallback.mockResolvedValue(undefined)
         jest.spyOn(global, 'setImmediate').mockImplementation((fn: any) => fn())
@@ -333,7 +355,11 @@ describe('createWebhook', () => {
     })
 
     it('uses callbackSecret from Start node config when signing', async () => {
-        mockValidateWebhookChatflow.mockResolvedValue({ callbackUrl: 'https://cb.example.com', callbackSecret: 'node-secret' })
+        mockValidateWebhookChatflow.mockResolvedValue({
+            responseMode: 'async' as const,
+            callbackUrl: 'https://cb.example.com',
+            callbackSecret: 'node-secret'
+        })
         mockBuildChatflow.mockResolvedValue({ text: 'done' })
         mockDispatchCallback.mockResolvedValue(undefined)
         jest.spyOn(global, 'setImmediate').mockImplementation((fn: any) => fn())
@@ -347,7 +373,10 @@ describe('createWebhook', () => {
     })
 
     it('uses callbackUrl from Start node config when no header is present', async () => {
-        mockValidateWebhookChatflow.mockResolvedValue({ callbackUrl: 'https://node-configured.example.com/cb' })
+        mockValidateWebhookChatflow.mockResolvedValue({
+            responseMode: 'async' as const,
+            callbackUrl: 'https://node-configured.example.com/cb'
+        })
         mockBuildChatflow.mockResolvedValue({ text: 'done' })
         mockDispatchCallback.mockResolvedValue(undefined)
         jest.spyOn(global, 'setImmediate').mockImplementation((fn: any) => fn())
@@ -362,7 +391,10 @@ describe('createWebhook', () => {
     })
 
     it('calls next with BAD_REQUEST when callbackUrl is denied by SSRF policy', async () => {
-        mockValidateWebhookChatflow.mockResolvedValue({ callbackUrl: 'http://169.254.169.254/latest/meta-data/' })
+        mockValidateWebhookChatflow.mockResolvedValue({
+            responseMode: 'async' as const,
+            callbackUrl: 'http://169.254.169.254/latest/meta-data/'
+        })
         mockCheckDenyList.mockRejectedValue(new Error('Access to this host is denied by policy.'))
         const req = mockReq()
         const res = mockRes()
@@ -375,7 +407,7 @@ describe('createWebhook', () => {
     })
 
     it('calls next with BAD_REQUEST when node callbackUrl is not a valid http/https URL', async () => {
-        mockValidateWebhookChatflow.mockResolvedValue({ callbackUrl: 'ftp://bad.example.com' })
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const, callbackUrl: 'ftp://bad.example.com' })
         const req = mockReq()
         const res = mockRes()
         const next = mockNext()
@@ -386,7 +418,7 @@ describe('createWebhook', () => {
         expect(mockBuildChatflow).not.toHaveBeenCalled()
     })
 
-    it('falls back to synchronous response when no callbackUrl is configured', async () => {
+    it('returns synchronous JSON response when responseMode is sync', async () => {
         const apiResult = { text: 'sync result' }
         mockBuildChatflow.mockResolvedValue(apiResult)
 
@@ -399,5 +431,145 @@ describe('createWebhook', () => {
         expect(res.status).not.toHaveBeenCalledWith(202)
         expect(res.json).toHaveBeenCalledWith(apiResult)
         expect(mockDispatchCallback).not.toHaveBeenCalled()
+    })
+
+    // --- Fire-and-forget mode (async on, no callback URL) ---
+
+    it('returns 202 immediately in fire-and-forget mode (async on, no callback URL)', async () => {
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const })
+        mockBuildChatflow.mockResolvedValue({ text: 'done' })
+
+        const req = mockReq()
+        const res = mockRes()
+        const next = mockNext()
+
+        await webhookController.createWebhook(req, res, next)
+
+        expect(res.status).toHaveBeenCalledWith(202)
+        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'PROCESSING' }))
+    })
+
+    it('does not dispatch a callback in fire-and-forget mode even on success', async () => {
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const })
+        mockBuildChatflow.mockResolvedValue({ text: 'done' })
+
+        const req = mockReq()
+        const res = mockRes()
+        const next = mockNext()
+
+        await webhookController.createWebhook(req, res, next)
+        // setImmediate hasn't fired yet — flush microtasks
+        await new Promise((r) => setImmediate(r))
+        await new Promise((r) => setImmediate(r))
+
+        expect(mockDispatchCallback).not.toHaveBeenCalled()
+    })
+
+    it('still runs the flow in fire-and-forget mode (does not skip buildChatflow)', async () => {
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const })
+        mockBuildChatflow.mockResolvedValue({ text: 'done' })
+
+        const req = mockReq()
+        const res = mockRes()
+        const next = mockNext()
+
+        await webhookController.createWebhook(req, res, next)
+        await new Promise((r) => setImmediate(r))
+        await new Promise((r) => setImmediate(r))
+
+        expect(mockBuildChatflow).toHaveBeenCalled()
+    })
+
+    it('does not validate URL or hit deny list when async is on without a callback URL', async () => {
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const })
+        mockBuildChatflow.mockResolvedValue({ text: 'done' })
+
+        const req = mockReq()
+        const res = mockRes()
+        const next = mockNext()
+
+        await webhookController.createWebhook(req, res, next)
+
+        expect(mockCheckDenyList).not.toHaveBeenCalled()
+        expect(next).not.toHaveBeenCalled()
+    })
+
+    // --- Streaming response mode (SSE) ---
+
+    it('opens an SSE stream when responseMode is stream and chatflow is streamable', async () => {
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'stream' as const })
+        mockCheckIfChatflowIsValidForStreaming.mockResolvedValue({ isStreaming: true })
+        mockBuildChatflow.mockResolvedValue({ chatId: 'generated-uuid', text: 'streamed' })
+
+        const req = mockReq()
+        const res = mockRes()
+        // flushHeaders/setHeader aren't on the default mockRes — stub them.
+        ;(res as any).setHeader = jest.fn()
+        ;(res as any).flushHeaders = jest.fn()
+        const next = mockNext()
+
+        await webhookController.createWebhook(req, res, next)
+
+        expect((res as any).setHeader).toHaveBeenCalledWith('Content-Type', 'text/event-stream')
+        expect((res as any).flushHeaders).toHaveBeenCalled()
+        expect(mockSseStreamer.addExternalClient).toHaveBeenCalledWith('generated-uuid', res)
+        expect(mockBuildChatflow).toHaveBeenCalled()
+        expect(mockSseStreamer.streamMetadataEvent).toHaveBeenCalled()
+        expect(mockSseStreamer.removeClient).toHaveBeenCalledWith('generated-uuid')
+    })
+
+    it('sets streaming=true on req.body before invoking buildChatflow in stream mode', async () => {
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'stream' as const })
+        mockCheckIfChatflowIsValidForStreaming.mockResolvedValue({ isStreaming: true })
+        mockBuildChatflow.mockResolvedValue({})
+
+        const req = mockReq()
+        const res = mockRes()
+        ;(res as any).setHeader = jest.fn()
+        ;(res as any).flushHeaders = jest.fn()
+        const next = mockNext()
+
+        await webhookController.createWebhook(req, res, next)
+
+        expect(mockBuildChatflow).toHaveBeenCalledWith(
+            expect.objectContaining({ body: expect.objectContaining({ streaming: true }) }),
+            ChatType.WEBHOOK
+        )
+    })
+
+    it('emits an error event and closes the stream when buildChatflow rejects', async () => {
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'stream' as const })
+        mockCheckIfChatflowIsValidForStreaming.mockResolvedValue({ isStreaming: true })
+        mockBuildChatflow.mockRejectedValue(new Error('flow blew up'))
+
+        const req = mockReq()
+        const res = mockRes()
+        ;(res as any).setHeader = jest.fn()
+        ;(res as any).flushHeaders = jest.fn()
+        const next = mockNext()
+
+        await webhookController.createWebhook(req, res, next)
+
+        expect(mockSseStreamer.streamErrorEvent).toHaveBeenCalledWith('generated-uuid', expect.stringContaining('flow blew up'))
+        expect(mockSseStreamer.removeClient).toHaveBeenCalledWith('generated-uuid')
+        // next() must NOT be called — headers were already flushed; calling it would attempt a second response.
+        expect(next).not.toHaveBeenCalled()
+    })
+
+    it('falls back to synchronous JSON when responseMode is stream but chatflow is not streamable', async () => {
+        mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'stream' as const })
+        mockCheckIfChatflowIsValidForStreaming.mockResolvedValue({ isStreaming: false })
+        mockBuildChatflow.mockResolvedValue({ text: 'sync fallback' })
+
+        const req = mockReq()
+        const res = mockRes()
+        ;(res as any).setHeader = jest.fn()
+        ;(res as any).flushHeaders = jest.fn()
+        const next = mockNext()
+
+        await webhookController.createWebhook(req, res, next)
+
+        expect(mockSseStreamer.addExternalClient).not.toHaveBeenCalled()
+        expect(res.json).toHaveBeenCalledWith({ text: 'sync fallback' })
     })
 })

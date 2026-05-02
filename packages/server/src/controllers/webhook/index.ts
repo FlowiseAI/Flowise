@@ -3,11 +3,15 @@ import { StatusCodes } from 'http-status-codes'
 import { v4 as uuidv4 } from 'uuid'
 import { RateLimiterManager } from '../../utils/rateLimit'
 import predictionsServices from '../../services/predictions'
+import chatflowsService from '../../services/chatflows'
 import webhookService from '../../services/webhook'
+import { ChatType } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { checkDenyList } from 'flowise-components'
 import { dispatchCallback } from '../../utils/callbackDispatcher'
 import { getErrorMessage } from '../../errors/utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import logger from '../../utils/logger'
 
 const createWebhook = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -31,7 +35,7 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
 
         const isResume = body?.humanInput != null
 
-        const { callbackUrl: nodeCallbackUrl, callbackSecret } = await webhookService.validateWebhookChatflow(
+        const { responseMode, callbackUrl, callbackSecret } = await webhookService.validateWebhookChatflow(
             req.params.id,
             workspaceId,
             body,
@@ -41,8 +45,6 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
             (req as any).rawBody,
             isResume ? { skipFieldValidation: true } : undefined
         )
-
-        const callbackUrl: string | undefined = nodeCallbackUrl
 
         // Namespace the webhook payload so $webhook.body.*, $webhook.headers.*, $webhook.query.* can coexist
         req.body = {
@@ -58,13 +60,49 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
         if (bodyChatId != null) req.body.chatId = bodyChatId
         if (sessionId != null) req.body.sessionId = sessionId
 
-        if (callbackUrl) {
-            try {
-                const parsed = new URL(callbackUrl)
-                if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error()
-                await checkDenyList(callbackUrl)
-            } catch {
-                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid callbackUrl: must be a valid and safe http or https URL`)
+        if (responseMode === 'stream') {
+            // Streaming mode: open an SSE channel and let downstream nodes push events through sseStreamer
+            // Falls back to synchronous JSON if the chatflow has no streaming-capable end nodes
+            const streamable = await chatflowsService.checkIfChatflowIsValidForStreaming(req.params.id)
+            if (streamable?.isStreaming) {
+                const sseStreamer = getRunningExpressApp().sseStreamer
+                const chatId: string = (bodyChatId as string | undefined) ?? uuidv4()
+                req.body.chatId = chatId
+                req.body.streaming = true
+
+                res.setHeader('Content-Type', 'text/event-stream')
+                res.setHeader('Cache-Control', 'no-cache')
+                res.setHeader('Connection', 'keep-alive')
+                res.setHeader('X-Accel-Buffering', 'no')
+                res.flushHeaders()
+                sseStreamer.addExternalClient(chatId, res)
+
+                try {
+                    const apiResponse = await predictionsServices.buildChatflow(req, ChatType.WEBHOOK)
+                    sseStreamer.streamMetadataEvent(chatId, apiResponse)
+                } catch (err: any) {
+                    sseStreamer.streamErrorEvent(chatId, getErrorMessage(err))
+                } finally {
+                    sseStreamer.removeClient(chatId)
+                }
+                return
+            }
+        }
+
+        if (responseMode === 'async') {
+            // Validate the callback URL only when one was provided. Without a URL, the flow runs
+            // fire-and-forget — the 202 still goes out, but no callback is delivered when it finishes.
+            if (callbackUrl) {
+                try {
+                    const parsed = new URL(callbackUrl)
+                    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error()
+                    await checkDenyList(callbackUrl)
+                } catch {
+                    throw new InternalFlowiseError(
+                        StatusCodes.BAD_REQUEST,
+                        `Invalid callbackUrl: must be a valid and safe http or https URL`
+                    )
+                }
             }
 
             // Pre-assign chatId so the 202 response and the background execution share the same ID
@@ -75,7 +113,9 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
 
             setImmediate(async () => {
                 try {
-                    const apiResponse = await predictionsServices.buildChatflow(req)
+                    const apiResponse = await predictionsServices.buildChatflow(req, ChatType.WEBHOOK)
+
+                    if (!callbackUrl) return // fire-and-forget — no delivery
 
                     // apiResponse.action is the parsed humanInputAction — only present when flow is STOPPED (FLOWISE-387)
                     if (apiResponse.action) {
@@ -92,13 +132,17 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
                         await dispatchCallback(callbackUrl, { status: 'SUCCESS', chatId, data: apiResponse }, callbackSecret)
                     }
                 } catch (err: any) {
-                    await dispatchCallback(callbackUrl, { status: 'ERROR', chatId, error: getErrorMessage(err) }, callbackSecret)
+                    if (callbackUrl) {
+                        await dispatchCallback(callbackUrl, { status: 'ERROR', chatId, error: getErrorMessage(err) }, callbackSecret)
+                    } else {
+                        logger.error(`[webhookController] fire-and-forget execution failed for chatId=${chatId}: ${getErrorMessage(err)}`)
+                    }
                 }
             })
             return
         }
 
-        const apiResponse = await predictionsServices.buildChatflow(req)
+        const apiResponse = await predictionsServices.buildChatflow(req, ChatType.WEBHOOK)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

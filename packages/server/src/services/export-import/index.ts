@@ -953,6 +953,8 @@ const getChatType = (chatType?: ChatType): string => {
             return 'MCP'
         case ChatType.SCHEDULED:
             return 'Scheduled'
+        case ChatType.WEBHOOK:
+            return 'Webhook'
     }
 }
 

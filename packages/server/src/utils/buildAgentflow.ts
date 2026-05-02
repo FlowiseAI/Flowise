@@ -98,6 +98,27 @@ interface IAgentFlowRuntime {
     webhook?: Record<string, any>
 }
 
+/**
+ * Resolves {{ $webhook.body.* }}, {{ $webhook.headers.* }}, {{ $webhook.query.* }} references in a
+ * template string against an incoming webhook payload. Used to pre-resolve webhookDefaultInput
+ * before any node runs, so the Start node's run() and downstream finalInput see the same value.
+ * Unknown references are left as-is.
+ */
+const resolveWebhookRefs = (template: string, webhook: Record<string, any> | undefined | null): string => {
+    if (!template) return ''
+    if (!webhook) return template
+    return template.replace(/{{(.*?)}}/g, (match, ref) => {
+        const path = ref.trim()
+        if (!path.startsWith('$webhook.')) return match
+        // Block prototype-walking paths defensively — lodash.get follows __proto__/constructor/prototype.
+        const subPath = path.replace('$webhook.', '')
+        if (/(^|\.)(__proto__|constructor|prototype)(\.|$)/.test(subPath)) return match
+        const val = get(webhook, subPath)
+        if (val == null) return match
+        return Array.isArray(val) || (typeof val === 'object' && val !== null) ? JSON.stringify(val) : String(val)
+    })
+}
+
 interface IExecuteNodeParams {
     nodeId: string
     reactFlowNode: IReactFlowNode
@@ -1571,10 +1592,8 @@ export const executeAgentFlow = async ({
     const edges = parsedFlowData.edges
     const { graph, nodeDependencies } = constructGraphs(nodes, edges)
     const { graph: reversedGraph } = constructGraphs(nodes, edges, { isReversed: true })
-    const startInputType = nodes.find((node) => node.data.name === 'startAgentflow')?.data.inputs?.startInputType as
-        | 'chatInput'
-        | 'formInput'
-        | 'webhookTrigger'
+    const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
+    const startInputType = startNode?.data.inputs?.startInputType as 'chatInput' | 'formInput' | 'webhookTrigger'
     if (!startInputType && !isRecursive) {
         throw new Error('Start input type not found')
     }
@@ -1717,6 +1736,20 @@ export const executeAgentFlow = async ({
                 incomingInput.webhook = previousStartAgentOutput.webhook as Record<string, any>
             }
         }
+    }
+
+    if (startInputType === 'webhookTrigger' && !humanInput) {
+        const webhookInputMode = (startNode?.data?.inputs?.webhookInputMode as string) || 'text'
+        if (webhookInputMode === 'text') {
+            const template = (startNode?.data?.inputs?.webhookDefaultInput as string) || ''
+            incomingInput.question = resolveWebhookRefs(template, incomingInput.webhook) || ' '
+        } else if (webhookInputMode === 'none') {
+            incomingInput.question = ' '
+        }
+    }
+
+    if (incomingInput.webhook && Object.keys(incomingInput.webhook).length) {
+        agentflowRuntime.webhook = incomingInput.webhook
     }
 
     // If it is human input, find the last checkpoint and resume
@@ -2301,7 +2334,12 @@ export const executeAgentFlow = async ({
             finalUserInput = question || humanInput?.feedback || ' '
         }
     } else if (startInputType === 'webhookTrigger') {
-        finalUserInput = incomingInput.webhook ? JSON.stringify(incomingInput.webhook) : ' '
+        const webhookInputMode = (startNode?.data?.inputs?.webhookInputMode as string) || 'text'
+        if (webhookInputMode === 'payload') {
+            finalUserInput = incomingInput.webhook ? JSON.stringify(incomingInput.webhook) : ' '
+        } else {
+            finalUserInput = humanInput?.feedback || incomingInput.question || ' '
+        }
     }
 
     const userMessage: Omit<IChatMessage, 'id'> = {

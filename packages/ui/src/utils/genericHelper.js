@@ -347,6 +347,14 @@ export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNo
         initNewComponentNodeData.outputAnchors[0].options = newOptions
     }
 
+    // Recompute show/hide visibility against the merged inputs so conditional fields
+    if (initNewComponentNodeData.inputParams) {
+        initNewComponentNodeData.inputParams = showHideInputParams(initNewComponentNodeData)
+    }
+    if (initNewComponentNodeData.inputAnchors) {
+        initNewComponentNodeData.inputAnchors = showHideInputAnchors(initNewComponentNodeData)
+    }
+
     return initNewComponentNodeData
 }
 

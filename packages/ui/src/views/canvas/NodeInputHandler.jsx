@@ -20,7 +20,8 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions
+    DialogActions,
+    Alert
 } from '@mui/material'
 import IconAutoFixHigh from '@mui/icons-material/AutoFixHigh'
 import InputAdornment from '@mui/material/InputAdornment'
@@ -1174,7 +1175,9 @@ const NodeInputHandler = ({
                                                         )
                                                     }}
                                                 >
-                                                    <IconCopy size={16} />
+                                                    {/* Match the Start node's accent green (#7EE787) so the copy
+                                                        action reads as a "primary" action on this node. */}
+                                                    <IconCopy size={16} color='#7EE787' />
                                                 </IconButton>
                                             </Tooltip>
                                         </InputAdornment>
@@ -1187,15 +1190,34 @@ const NodeInputHandler = ({
                             <Box sx={{ mt: 1 }}>
                                 {!canvasChatflow?.webhookSecretConfigured && !webhookSecretPlaintext ? (
                                     // Not configured
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Typography variant='body2' sx={{ color: 'text.secondary', flexGrow: 1 }}>
-                                            No secret configured
-                                        </Typography>
-                                        {chatflowId && (
-                                            <Button size='small' variant='outlined' onClick={handleSetWebhookSecret}>
-                                                Generate Secret
-                                            </Button>
-                                        )}
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        <Alert
+                                            severity='warning'
+                                            variant='outlined'
+                                            sx={{
+                                                py: 0.5,
+                                                color: customization.isDarkMode ? 'rgba(255, 215, 130, 0.95)' : 'warning.dark',
+                                                borderColor: customization.isDarkMode ? 'rgba(255, 167, 38, 0.5)' : 'warning.light',
+                                                backgroundColor: customization.isDarkMode
+                                                    ? 'rgba(255, 167, 38, 0.08)'
+                                                    : 'rgba(255, 244, 229, 0.6)',
+                                                '& .MuiAlert-icon': {
+                                                    color: customization.isDarkMode ? 'rgba(255, 167, 38, 0.95)' : 'warning.main'
+                                                }
+                                            }}
+                                        >
+                                            Generate a secret below — without one, every incoming webhook request will be rejected.
+                                        </Alert>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Typography variant='body2' sx={{ color: 'text.secondary', flexGrow: 1 }}>
+                                                No secret configured
+                                            </Typography>
+                                            {chatflowId && (
+                                                <Button size='small' variant='outlined' onClick={handleSetWebhookSecret}>
+                                                    Generate Secret
+                                                </Button>
+                                            )}
+                                        </Box>
                                     </Box>
                                 ) : (
                                     // Configured — show masked or plaintext field with actions
