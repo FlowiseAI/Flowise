@@ -1,4 +1,5 @@
 import { removeInvalidImageMarkdown, convertRequireToImport, COMMONJS_REQUIRE_REGEX, IMPORT_EXTRACTION_REGEX } from './utils'
+import { buildAzureSpeechToTextUrl } from './speechToText'
 
 describe('removeInvalidImageMarkdown', () => {
     describe('strips non-http/https image markdown', () => {
@@ -227,5 +228,36 @@ describe('Import extraction regex (utils.ts line 1596 pattern)', () => {
 
     it('returns empty array when there are no imports', () => {
         expect(extractModules('console.log("hello")')).toEqual([])
+    })
+})
+
+describe('buildAzureSpeechToTextUrl', () => {
+    it('builds default regional URL', () => {
+        const url = buildAzureSpeechToTextUrl('eastus', '2024-05-15-preview')
+        expect(url).toBe(
+            'https://eastus.cognitiveservices.azure.com/speechtotext/transcriptions:transcribe?api-version=2024-05-15-preview'
+        )
+    })
+
+    it('uses custom baseUrl and appends api-version', () => {
+        const url = buildAzureSpeechToTextUrl(
+            'eastus',
+            '2024-05-15-preview',
+            'https://custom.example.com/speechtotext/transcriptions:transcribe/'
+        )
+        expect(url).toBe(
+            'https://custom.example.com/speechtotext/transcriptions:transcribe?api-version=2024-05-15-preview'
+        )
+    })
+
+    it('keeps existing api-version in custom baseUrl', () => {
+        const url = buildAzureSpeechToTextUrl(
+            'eastus',
+            '2024-05-15-preview',
+            'https://custom.example.com/speechtotext/transcriptions:transcribe?api-version=2023-10-01'
+        )
+        expect(url).toBe(
+            'https://custom.example.com/speechtotext/transcriptions:transcribe?api-version=2023-10-01'
+        )
     })
 })
