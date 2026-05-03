@@ -1111,6 +1111,9 @@ importers:
       nanoid:
         specifier: '3'
         version: 3.3.7
+      node-cron:
+        specifier: ^4.2.1
+        version: 4.2.1
       nodemailer:
         specifier: ^7.0.7
         version: 7.0.11
@@ -16061,6 +16064,10 @@ packages:
 
   node-cleanup@2.1.2:
     resolution: {integrity: sha512-qN8v/s2PAJwGUtr1/hYTpNKlD6Y9rc4p8KSmJXyGdYGZsDGKXrGThikLFP9OCHFeLeEpQzPwiAtdIvBLqm//Hw==}
+
+  node-cron@4.2.1:
+    resolution: {integrity: sha512-lgimEHPE/QDgFlywTd8yTR61ptugX3Qer29efeyWw2rv259HtGBNn1vZVmp8lB9uo9wC0t/AT4iGqXxia+CJFg==}
+    engines: {node: '>=6.0.0'}
 
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
@@ -41126,6 +41133,8 @@ snapshots:
   node-api-headers@1.1.0: {}
 
   node-cleanup@2.1.2: {}
+
+  node-cron@4.2.1: {}
 
   node-domexception@1.0.0: {}
 
