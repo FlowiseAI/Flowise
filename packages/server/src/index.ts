@@ -34,7 +34,7 @@ import { RateLimiterManager } from './utils/rateLimit'
 import { SSEStreamer } from './utils/SSEStreamer'
 import { Telemetry } from './utils/telemetry'
 import { validateAPIKey } from './utils/validateKey'
-import { getCorsOptions, getIframeSecurityHeaders, sanitizeMiddleware } from './utils/XSS'
+import { getCorsOptions, getIframeSecurityHeaders, sanitizeMiddleware, validateCorsConfig } from './utils/XSS'
 
 declare global {
     namespace Express {
@@ -187,6 +187,7 @@ export class App {
         this.app.set('trust proxy', trustProxy)
 
         // Allow access from specified domains
+        validateCorsConfig()
         this.app.use(cors(getCorsOptions()))
 
         // Parse cookies

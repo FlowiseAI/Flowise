@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import DragHandleIcon from '@mui/icons-material/DragHandle'
 import {
     Box,
     Button,
@@ -20,15 +21,19 @@ import {
     TextField,
     Typography
 } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { alpha, useTheme } from '@mui/material/styles'
 
 import type { Execution, ExecutionFilters, ExecutionState, ExecutionsViewerProps } from '@/core/types'
 import { useObserveApi } from '@/infrastructure/store'
+
+import { useDrawerWidths } from '../hooks/useDrawerWidths'
+import { useResizableSidebar } from '../hooks/useResizableSidebar'
 
 import { ExecutionDetail } from './ExecutionDetail'
 import { ExecutionsListTable } from './ExecutionsListTable'
 
 const DEFAULT_PAGE_SIZE = 12
+
 const EXECUTION_STATES: Array<ExecutionState | ''> = ['', 'INPROGRESS', 'FINISHED', 'ERROR', 'TERMINATED', 'TIMEOUT', 'STOPPED']
 
 /**
@@ -42,7 +47,8 @@ export function ExecutionsViewer({
     pollInterval = 3000,
     onHumanInput,
     onAgentflowClick,
-    initialFilters
+    initialFilters,
+    drawer
 }: ExecutionsViewerProps) {
     const theme = useTheme()
     const { executions: api } = useObserveApi()
@@ -72,6 +78,12 @@ export function ExecutionsViewer({
 
     // Detail drawer
     const [drawerExecution, setDrawerExecution] = useState<Execution | null>(null)
+    const drawerWidths = useDrawerWidths(drawer)
+    const { width: drawerWidth, onMouseDown: onDrawerHandleMouseDown } = useResizableSidebar({
+        ...drawerWidths,
+        // Right-anchored drawer: handle on the LEFT edge, drag-left grows.
+        inverted: true
+    })
 
     // Delete confirmation
     const [deleteTarget, setDeleteTarget] = useState<Execution | null>(null)
@@ -247,15 +259,43 @@ export function ExecutionsViewer({
                 anchor='right'
                 open={!!drawerExecution}
                 onClose={() => setDrawerExecution(null)}
-                PaperProps={{ sx: { width: { xs: '100vw', sm: '90vw', md: '85vw', lg: '80vw' } } }}
+                PaperProps={{ sx: { width: drawerWidth, overflow: 'hidden' } }}
             >
+                {/* Drag-handle on the LEFT edge — resizes the drawer (parity with legacy ExecutionDetails resizeHandle). */}
+                {/* No `role="button"` / `aria-label`: drag-only widgets can't be operated by keyboard, so screen readers shouldn't announce one. */}
+                <Box
+                    role='separator'
+                    aria-orientation='vertical'
+                    onMouseDown={onDrawerHandleMouseDown}
+                    sx={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: 8,
+                        cursor: 'ew-resize',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1,
+                        '&:hover': { background: alpha(theme.palette.text.primary, 0.05) }
+                    }}
+                >
+                    <DragHandleIcon sx={{ transform: 'rotate(90deg)', fontSize: 20, color: 'action.disabled' }} />
+                </Box>
+
                 {drawerExecution && (
                     <ExecutionDetail
+                        // Reset internal state when the user switches rows without closing the drawer.
+                        key={drawerExecution.id}
                         executionId={drawerExecution.id}
                         pollInterval={pollInterval}
                         onHumanInput={onHumanInput}
                         onAgentflowClick={onAgentflowClick}
                         onClose={() => setDrawerExecution(null)}
+                        // Seed the header chip with the agentflow info already on the row —
+                        // the server's getExecutionById doesn't perform the join, only getAllExecutions does.
+                        agentflow={drawerExecution.agentflow}
                     />
                 )}
             </Drawer>

@@ -68,6 +68,7 @@
         "react-dom": "^18.2.0"
     },
     "dependencies": {
+        "@mui/x-tree-view": "^7.25.0",
         "@tabler/icons-react": "^3.7.0",
         "axios": "1.15.0",
         "date-fns": "^3.6.0",
