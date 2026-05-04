@@ -173,7 +173,7 @@ describe('Loop node', () => {
         })
     })
 
-    describe('freeSolo – Loop Back To', () => {
+    describe('Loop Back To – node selection and stale-value clearing', () => {
         it('selecting an existing node option emits the node name (not empty string)', async () => {
             mockNodes = [
                 makeFlowNode('start_0', 'startAgentflow', 'Start'),
@@ -194,64 +194,33 @@ describe('Loop node', () => {
             expect(mockChange).not.toHaveBeenCalledWith('')
         })
 
-        it('preserves user-typed free-text value (does not emit empty string)', async () => {
-            mockNodes = [makeFlowNode('start_0', 'startAgentflow', 'Start'), makeFlowNode('loop_0', 'loopAgentflow', 'Loop')]
-            mockEdges = [makeEdge('start_0', 'loop_0')]
-
-            const mockChange = jest.fn()
-            render(<AsyncInput inputParam={loopBackToNode} value='' disabled={false} onChange={mockChange} nodeId='loop_0' />)
-
-            const input = screen.getByRole('combobox')
-            fireEvent.change(input, { target: { value: 'custom-node-id' } })
-            fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
-
-            await waitFor(() => {
-                const calls = mockChange.mock.calls
-                // Should have been called with the typed text, not discarded as ''
-                expect(calls.some(([v]) => v === 'custom-node-id')).toBe(true)
-            })
-            expect(mockChange).not.toHaveBeenCalledWith('')
-        })
-
-        it('does NOT clear a free-text value when options change (freeSolo guard)', async () => {
-            mockNodes = [makeFlowNode('start_0', 'startAgentflow', 'Start'), makeFlowNode('loop_0', 'loopAgentflow', 'Loop')]
-            mockEdges = [makeEdge('start_0', 'loop_0')]
-
-            const mockChange = jest.fn()
-            render(
-                <AsyncInput inputParam={loopBackToNode} value='my-custom-freetext' disabled={false} onChange={mockChange} nodeId='loop_0' />
-            )
-
-            // The stale-value effect runs after mount; with freeSolo=true it must not clear
-            await act(async () => {})
-            expect(mockChange).not.toHaveBeenCalledWith('')
-        })
-
-        it('still clears a stale option-based value when freeSolo is false', async () => {
-            // loop_0 has no ancestors, so options = []
+        it('clears a stale value when the referenced node is deleted from the flow', async () => {
+            // loop_0 has no ancestors (simulating the Agent node having been deleted)
             mockNodes = [makeFlowNode('loop_0', 'loopAgentflow', 'Loop')]
             mockEdges = []
 
             const mockChange = jest.fn()
             render(
                 <AsyncInput
-                    inputParam={{ ...loopBackToNode, freeSolo: false }}
-                    value='start_0-Start'
+                    inputParam={loopBackToNode}
+                    value='agentAgentflow_0-Agent'
                     disabled={false}
                     onChange={mockChange}
                     nodeId='loop_0'
                 />
             )
 
-            // 'start_0-Start' is not in the empty options list → should be cleared
+            // 'agentAgentflow_0-Agent' is no longer in options → should be cleared
             await waitFor(() => expect(mockChange).toHaveBeenCalledWith(''))
         })
 
-        it('does NOT clear a stale option-based value when freeSolo is true', async () => {
-            // When freeSolo=true, we cannot distinguish a free-typed value from a stale node
-            // reference without fragile heuristics — so we leave the value as-is.
-            mockNodes = [makeFlowNode('loop_0', 'loopAgentflow', 'Loop')]
-            mockEdges = []
+        it('does not clear value when the referenced node still exists', async () => {
+            mockNodes = [
+                makeFlowNode('start_0', 'startAgentflow', 'Start'),
+                makeFlowNode('agentAgentflow_0', 'agentAgentflow', 'Agent'),
+                makeFlowNode('loop_0', 'loopAgentflow', 'Loop')
+            ]
+            mockEdges = [makeEdge('start_0', 'agentAgentflow_0'), makeEdge('agentAgentflow_0', 'loop_0')]
 
             const mockChange = jest.fn()
             render(

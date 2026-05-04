@@ -139,13 +139,14 @@ function PreviousNodesDropdown({
     })
 
     // Clear stored value if the selected node no longer exists in the flow.
-    // Skipped when freeSolo=true — the value may be a user-typed string not in the options list.
+    // freeSolo does not gate this: PreviousNodesDropdown only stores node references,
+    // so a value not in options is always stale (never a valid free-typed string).
     // onChange is accessed via ref so an unstable parent callback can't retrigger this effect.
     useEffect(() => {
-        if (!freeSolo && stringValue && !options.some((o) => o.name === stringValue)) {
+        if (stringValue && !options.some((o) => o.name === stringValue)) {
             onChangeRef.current('')
         }
-    }, [freeSolo, stringValue, options])
+    }, [stringValue, options])
 
     return <Dropdown value={stringValue} options={options} onSelect={onChange} disabled={disabled} freeSolo={freeSolo} />
 }
