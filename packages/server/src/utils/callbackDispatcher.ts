@@ -1,5 +1,5 @@
-import axios from 'axios'
 import { createHmac } from 'crypto'
+import { secureAxiosRequest } from 'flowise-components'
 import logger from './logger'
 
 // Delays in ms before each attempt: attempt 1 is immediate, attempt 2 waits 3s, attempt 3 waits 6s
@@ -19,7 +19,7 @@ export async function dispatchCallback(url: string, payload: Record<string, unkn
             await new Promise((r) => setTimeout(r, RETRY_DELAYS[attempt]))
         }
         try {
-            await axios.post(url, body, { headers, timeout: 10000 })
+            await secureAxiosRequest({ method: 'POST', url, data: body, headers, timeout: 10000 })
             return
         } catch (err: any) {
             if (attempt === RETRY_DELAYS.length - 1) {

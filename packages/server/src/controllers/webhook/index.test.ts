@@ -5,7 +5,6 @@ import { ChatType } from '../../Interface'
 const mockValidateWebhookChatflow = jest.fn()
 const mockBuildChatflow = jest.fn()
 const mockDispatchCallback = jest.fn()
-const mockCheckDenyList = jest.fn()
 const mockCheckIfChatflowIsValidForStreaming = jest.fn()
 const mockSseStreamer = {
     addExternalClient: jest.fn(),
@@ -42,9 +41,6 @@ jest.mock('../../utils/getRunningExpressApp', () => ({
 const mockBindExecution = jest.fn()
 jest.mock('../../services/webhook-listener', () => ({
     getWebhookListenerRegistry: () => ({ bindExecution: mockBindExecution })
-}))
-jest.mock('flowise-components', () => ({
-    checkDenyList: (url: string) => mockCheckDenyList(url)
 }))
 jest.mock('uuid', () => ({ v4: () => 'generated-uuid' }))
 jest.mock('../../utils/logger', () => ({
@@ -156,6 +152,30 @@ describe('createWebhook', () => {
             }),
             ChatType.WEBHOOK
         )
+    })
+
+    it('redacts credential-bearing headers before they reach the flow', async () => {
+        mockBuildChatflow.mockResolvedValue({})
+
+        const req = mockReq({
+            body: { action: 'push' },
+            headers: {
+                'x-github-event': 'push',
+                authorization: 'Bearer leaked-token',
+                cookie: 'session=secret',
+                'x-api-key': 'apikey'
+            } as any
+        })
+        const res = mockRes()
+        const next = mockNext()
+
+        await webhookController.createWebhook(req, res, next)
+
+        const passedHeaders = (mockBuildChatflow.mock.calls[0][0] as any).body.webhook.headers
+        expect(passedHeaders.authorization).toBe('[REDACTED]')
+        expect(passedHeaders.cookie).toBe('[REDACTED]')
+        expect(passedHeaders['x-api-key']).toBe('[REDACTED]')
+        expect(passedHeaders['x-github-event']).toBe('push')
     })
 
     it('returns buildChatflow result as JSON response', async () => {
@@ -397,22 +417,6 @@ describe('createWebhook', () => {
         expect(mockDispatchCallback).toHaveBeenCalledWith('https://node-configured.example.com/cb', expect.any(Object), undefined)
     })
 
-    it('calls next with BAD_REQUEST when callbackUrl is denied by SSRF policy', async () => {
-        mockValidateWebhookChatflow.mockResolvedValue({
-            responseMode: 'async' as const,
-            callbackUrl: 'http://169.254.169.254/latest/meta-data/'
-        })
-        mockCheckDenyList.mockRejectedValue(new Error('Access to this host is denied by policy.'))
-        const req = mockReq()
-        const res = mockRes()
-        const next = mockNext()
-
-        await webhookController.createWebhook(req, res, next)
-
-        expect(next).toHaveBeenCalledWith(expect.objectContaining({ statusCode: StatusCodes.BAD_REQUEST }))
-        expect(mockBuildChatflow).not.toHaveBeenCalled()
-    })
-
     it('calls next with BAD_REQUEST when node callbackUrl is not a valid http/https URL', async () => {
         mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const, callbackUrl: 'ftp://bad.example.com' })
         const req = mockReq()
@@ -487,7 +491,7 @@ describe('createWebhook', () => {
         expect(mockBuildChatflow).toHaveBeenCalled()
     })
 
-    it('does not validate URL or hit deny list when async is on without a callback URL', async () => {
+    it('does not error on URL validation when async is on without a callback URL', async () => {
         mockValidateWebhookChatflow.mockResolvedValue({ responseMode: 'async' as const })
         mockBuildChatflow.mockResolvedValue({ text: 'done' })
 
@@ -497,7 +501,6 @@ describe('createWebhook', () => {
 
         await webhookController.createWebhook(req, res, next)
 
-        expect(mockCheckDenyList).not.toHaveBeenCalled()
         expect(next).not.toHaveBeenCalled()
     })
 

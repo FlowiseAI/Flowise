@@ -6,9 +6,9 @@ import predictionsServices from '../../services/predictions'
 import chatflowsService from '../../services/chatflows'
 import webhookService from '../../services/webhook'
 import { getWebhookListenerRegistry } from '../../services/webhook-listener'
+import { redactSensitiveHeaders } from 'flowise-components'
 import { ChatType } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { checkDenyList } from 'flowise-components'
 import { dispatchCallback } from '../../utils/callbackDispatcher'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -51,7 +51,7 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
         req.body = {
             webhook: {
                 body,
-                headers: req.headers,
+                headers: redactSensitiveHeaders(req.headers as Record<string, any>),
                 query: req.query
             }
         }
@@ -106,12 +106,8 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
                 try {
                     const parsed = new URL(callbackUrl)
                     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error()
-                    await checkDenyList(callbackUrl)
                 } catch {
-                    throw new InternalFlowiseError(
-                        StatusCodes.BAD_REQUEST,
-                        `Invalid callbackUrl: must be a valid and safe http or https URL`
-                    )
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid callbackUrl: must be a valid http or https URL`)
                 }
             }
 

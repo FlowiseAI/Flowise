@@ -15,7 +15,15 @@ import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServ
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import documentStoreService from '../../services/documentstore'
-import { constructGraphs, getAppVersion, getEndingNodes, getTelemetryFlowObj, isFlowValidForStream } from '../../utils'
+import {
+    constructGraphs,
+    decryptCredentialData,
+    encryptCredentialData,
+    getAppVersion,
+    getEndingNodes,
+    getTelemetryFlowObj,
+    isFlowValidForStream
+} from '../../utils'
 import { sanitizeAllowedUploadMimeTypesFromConfig } from '../../utils/fileValidation'
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
 import { sanitizeFlowDataForPublicEndpoint } from '../../utils/sanitizeFlowData'
@@ -623,10 +631,11 @@ const setWebhookSecret = async (chatflowId: string, workspaceId: string): Promis
         const repo = appServer.AppDataSource.getRepository(ChatFlow)
         const chatflow = await repo.findOne({ where: { id: chatflowId, workspaceId } })
         if (!chatflow) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
-        chatflow.webhookSecret = randomBytes(32).toString('hex')
+        const plaintext = randomBytes(32).toString('hex')
+        chatflow.webhookSecret = await encryptCredentialData({ secret: plaintext })
         chatflow.webhookSecretConfigured = true
         await repo.save(chatflow)
-        return { webhookSecret: chatflow.webhookSecret }
+        return { webhookSecret: plaintext }
     } catch (error) {
         if (error instanceof InternalFlowiseError) throw error
         throw new InternalFlowiseError(
@@ -663,7 +672,10 @@ const getWebhookSecret = async (chatflowId: string, workspaceId: string): Promis
             .where('chatflow.id = :id', { id: chatflowId })
             .andWhere('chatflow.workspaceId = :workspaceId', { workspaceId })
             .getOne()
-        return dbResponse?.webhookSecret ?? null
+        const stored = dbResponse?.webhookSecret
+        if (!stored) return null
+        const decrypted = await decryptCredentialData(stored)
+        return (decrypted?.secret as string | undefined) ?? null
     } catch (error) {
         if (error instanceof InternalFlowiseError) throw error
         throw new InternalFlowiseError(
