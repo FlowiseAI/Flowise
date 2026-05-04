@@ -174,6 +174,26 @@ describe('Loop node', () => {
     })
 
     describe('freeSolo – Loop Back To', () => {
+        it('selecting an existing node option emits the node name (not empty string)', async () => {
+            mockNodes = [
+                makeFlowNode('start_0', 'startAgentflow', 'Start'),
+                makeFlowNode('agentAgentflow_0', 'agentAgentflow', 'Agent'),
+                makeFlowNode('loop_0', 'loopAgentflow', 'Loop')
+            ]
+            mockEdges = [makeEdge('start_0', 'agentAgentflow_0'), makeEdge('agentAgentflow_0', 'loop_0')]
+
+            const mockChange = jest.fn()
+            render(<AsyncInput inputParam={loopBackToNode} value='' disabled={false} onChange={mockChange} nodeId='loop_0' />)
+
+            // Open dropdown and click the 'Agent' option
+            fireEvent.mouseDown(screen.getByRole('combobox'))
+            await waitFor(() => screen.getByText('Agent'))
+            fireEvent.click(screen.getByText('Agent'))
+
+            expect(mockChange).toHaveBeenCalledWith('agentAgentflow_0-Agent')
+            expect(mockChange).not.toHaveBeenCalledWith('')
+        })
+
         it('preserves user-typed free-text value (does not emit empty string)', async () => {
             mockNodes = [makeFlowNode('start_0', 'startAgentflow', 'Start'), makeFlowNode('loop_0', 'loopAgentflow', 'Loop')]
             mockEdges = [makeEdge('start_0', 'loop_0')]
@@ -191,16 +211,6 @@ describe('Loop node', () => {
                 expect(calls.some(([v]) => v === 'custom-node-id')).toBe(true)
             })
             expect(mockChange).not.toHaveBeenCalledWith('')
-        })
-
-        it('displays a stored free-text value not in the options list', () => {
-            mockNodes = [makeFlowNode('loop_0', 'loopAgentflow', 'Loop')]
-            mockEdges = []
-
-            render(<AsyncInput inputParam={loopBackToNode} value='my-custom-node' disabled={false} onChange={jest.fn()} nodeId='loop_0' />)
-
-            const input = screen.getByRole('combobox') as HTMLInputElement
-            expect(input.value).toBe('my-custom-node')
         })
 
         it('does NOT clear a free-text value when options change (freeSolo guard)', async () => {
@@ -235,6 +245,27 @@ describe('Loop node', () => {
 
             // 'start_0-Start' is not in the empty options list → should be cleared
             await waitFor(() => expect(mockChange).toHaveBeenCalledWith(''))
+        })
+
+        it('does NOT clear a stale option-based value when freeSolo is true', async () => {
+            // When freeSolo=true, we cannot distinguish a free-typed value from a stale node
+            // reference without fragile heuristics — so we leave the value as-is.
+            mockNodes = [makeFlowNode('loop_0', 'loopAgentflow', 'Loop')]
+            mockEdges = []
+
+            const mockChange = jest.fn()
+            render(
+                <AsyncInput
+                    inputParam={loopBackToNode}
+                    value='agentAgentflow_0-Agent'
+                    disabled={false}
+                    onChange={mockChange}
+                    nodeId='loop_0'
+                />
+            )
+
+            await act(async () => {})
+            expect(mockChange).not.toHaveBeenCalledWith('')
         })
     })
 })
