@@ -65,7 +65,10 @@ function AgentflowCanvas({
         setReactFlowInstance,
         closeEditDialog,
         registerLocalStateSetters,
-        registerOnFlowChange
+        registerOnFlowChange,
+        setComponentNodes,
+        syncNodes,
+        hasOutdatedNodes
     } = useAgentflowContext()
     const { isDarkMode } = useConfigContext()
     const agentflow = useAgentflow()
@@ -101,7 +104,13 @@ function AgentflowCanvas({
     }, [])
 
     // Load available nodes
-    const { availableNodes } = useFlowNodes()
+    const { availableNodes, isLoading: isNodesLoading } = useFlowNodes()
+
+    useEffect(() => {
+        if (!isNodesLoading && availableNodes.length > 0) {
+            setComponentNodes(availableNodes)
+        }
+    }, [availableNodes, isNodesLoading, setComponentNodes])
 
     // Auto-add Start node when creating a new (empty) canvas.
     // Only runs once: when availableNodes first loads and the canvas has no initial flow.
@@ -224,7 +233,9 @@ function AgentflowCanvas({
         state.isDirty,
         handleSave,
         agentflow.toJSON,
-        agentflow.validate
+        agentflow.validate,
+        syncNodes,
+        hasOutdatedNodes
     )
 
     // Palette props

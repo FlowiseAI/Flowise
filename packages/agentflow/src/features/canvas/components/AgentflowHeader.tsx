@@ -7,7 +7,7 @@ export interface AgentflowHeaderProps extends HeaderRenderProps {
 /**
  * Default header component for the Agentflow canvas
  */
-export function AgentflowHeader({ flowName, isDirty, readOnly, onSave }: AgentflowHeaderProps) {
+export function AgentflowHeader({ flowName, isDirty, readOnly, onSave, onSyncNodes, hasOutdatedNodes }: AgentflowHeaderProps) {
     return (
         <div className='agentflow-header'>
             <span className='agentflow-title'>
@@ -15,6 +15,7 @@ export function AgentflowHeader({ flowName, isDirty, readOnly, onSave }: Agentfl
                 {isDirty && ' *'}
             </span>
             <div className='agentflow-header-actions'>
+                {hasOutdatedNodes && !readOnly && <button onClick={onSyncNodes}>Sync Nodes</button>}
                 <button onClick={onSave} disabled={readOnly}>
                     Save
                 </button>
@@ -31,12 +32,16 @@ export function createHeaderProps(
     isDirty: boolean,
     onSave: () => void,
     toJSON: () => string,
-    validate: () => ValidationResult
+    validate: () => ValidationResult,
+    onSyncNodes: () => void,
+    hasOutdatedNodes: boolean
 ): HeaderRenderProps {
     return {
         flowName,
         isDirty,
         onSave,
+        onSyncNodes,
+        hasOutdatedNodes,
         onExport: () => {
             const json = toJSON()
             const blob = new Blob([json], { type: 'application/json' })

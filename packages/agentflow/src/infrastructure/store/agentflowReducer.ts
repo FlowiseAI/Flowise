@@ -1,4 +1,4 @@
-import type { AgentflowAction, AgentflowState, FlowNode } from '@/core/types'
+import type { AgentflowAction, AgentflowState, FlowNode, NodeDataSchema } from '@/core/types'
 
 // Node types that size to content; strip stored width/height so they stay content-sized
 const CONTENT_SIZED_NODE_TYPES = new Set(['agentFlow', 'stickyNote'])
@@ -21,7 +21,8 @@ export const initialState: AgentflowState = {
     reactFlowInstance: null,
     editingNodeId: null,
     editDialogProps: null,
-    executionState: null
+    executionState: null,
+    componentNodes: [] as NodeDataSchema[]
 }
 
 export function agentflowReducer(state: AgentflowState, action: AgentflowAction): AgentflowState {
@@ -77,6 +78,8 @@ export function agentflowReducer(state: AgentflowState, action: AgentflowAction)
             }
         case 'CLEAR_EXECUTION_STATE':
             return { ...state, executionState: null }
+        case 'SET_COMPONENT_NODES':
+            return { ...state, componentNodes: action.payload }
         default:
             return state
     }
