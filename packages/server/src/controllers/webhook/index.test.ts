@@ -39,6 +39,10 @@ jest.mock('../../utils/callbackDispatcher', () => ({
 jest.mock('../../utils/getRunningExpressApp', () => ({
     getRunningExpressApp: () => ({ sseStreamer: mockSseStreamer })
 }))
+const mockBindExecution = jest.fn()
+jest.mock('../../services/webhook-listener', () => ({
+    getWebhookListenerRegistry: () => ({ bindExecution: mockBindExecution })
+}))
 jest.mock('flowise-components', () => ({
     checkDenyList: (url: string) => mockCheckDenyList(url)
 }))
@@ -112,13 +116,16 @@ describe('createWebhook', () => {
 
         expect(mockBuildChatflow).toHaveBeenCalledWith(
             expect.objectContaining({
-                body: {
+                body: expect.objectContaining({
                     webhook: {
                         body: originalBody,
                         headers: expect.any(Object),
                         query: expect.any(Object)
-                    }
-                }
+                    },
+                    // Controller pre-assigns a chatId so all response modes share an executionChatId
+                    // and webhook-listener observers can be bound before the flow emits any events.
+                    chatId: expect.any(String)
+                })
             }),
             ChatType.WEBHOOK
         )
@@ -139,13 +146,13 @@ describe('createWebhook', () => {
 
         expect(mockBuildChatflow).toHaveBeenCalledWith(
             expect.objectContaining({
-                body: {
+                body: expect.objectContaining({
                     webhook: {
                         body: { action: 'push' },
                         headers: expect.objectContaining({ 'x-github-event': 'push' }),
                         query: { page: '2' }
                     }
-                }
+                })
             }),
             ChatType.WEBHOOK
         )
