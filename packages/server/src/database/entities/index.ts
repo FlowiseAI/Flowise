@@ -18,6 +18,7 @@ import { ApiKey } from './ApiKey'
 import { CustomTemplate } from './CustomTemplate'
 import { Execution } from './Execution'
 import { CustomMcpServer } from './CustomMcpServer'
+import { Skill } from './Skill'
 import { LoginActivity, WorkspaceShared, WorkspaceUsers } from '../../enterprise/database/entities/EnterpriseEntities'
 import { User } from '../../enterprise/database/entities/user.entity'
 import { Organization } from '../../enterprise/database/entities/organization.entity'
@@ -55,6 +56,7 @@ export const entities = {
     CustomTemplate,
     Execution,
     CustomMcpServer,
+    Skill,
     Organization,
     Role,
     OrganizationUser,

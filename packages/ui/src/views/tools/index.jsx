@@ -1,7 +1,8 @@
-import { useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
 
 // material-ui
-import { Box, Stack, ButtonGroup, Skeleton, ToggleButtonGroup, ToggleButton, Tabs, Tab } from '@mui/material'
+import { Alert, Box, Stack, ButtonGroup, Skeleton, ToggleButtonGroup, ToggleButton, Tabs, Tab } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -10,16 +11,22 @@ import ItemCard from '@/ui-component/cards/ItemCard'
 import MCPItemCard from '@/ui-component/cards/MCPItemCard'
 import ToolDialog from './ToolDialog'
 import CustomMcpServerDialog from './CustomMcpServerDialog'
+import SkillCard from '@/views/skills/SkillCard'
+import SkillCreateDialog from '@/views/skills/SkillCreateDialog'
+import SkillEditDialog from '@/views/skills/SkillEditDialog'
+import SkillEditorDrawer from '@/views/skills/SkillEditorDrawer'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 import { ToolsTable } from '@/ui-component/table/ToolsListTable'
 import { MCPServersTable } from '@/ui-component/table/MCPServersTable'
+import { SkillsTable } from '@/ui-component/table/SkillsTable'
 import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 
 // API
 import toolsApi from '@/api/tools'
 import customMcpServersApi from '@/api/custommcpservers'
+import skillsApi from '@/api/skills'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -54,6 +61,19 @@ const Tools = () => {
     const [mcpTotal, setMcpTotal] = useState(0)
     const [mcpCurrentPage, setMcpCurrentPage] = useState(1)
     const [mcpPageLimit, setMcpPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
+
+    // Skills state
+    const user = useSelector((state) => state.auth.user)
+    const workspaceId = user?.activeWorkspaceId || ''
+    const [skills, setSkills] = useState([])
+    const [skillsLoading, setSkillsLoading] = useState(true)
+    const [skillsError, setSkillsError] = useState('')
+    const [showSkillDialog, setShowSkillDialog] = useState(false)
+    const [skillDialogProps, setSkillDialogProps] = useState({ type: 'ADD' })
+    const [showSkillEditDialog, setShowSkillEditDialog] = useState(false)
+    const [skillEditDialogProps, setSkillEditDialogProps] = useState({})
+    const [editorOpen, setEditorOpen] = useState(false)
+    const [editorSkillId, setEditorSkillId] = useState(null)
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
@@ -189,6 +209,63 @@ const Tools = () => {
         }
     }
 
+    // Skill handlers
+    const refreshSkills = useCallback(async () => {
+        setSkillsLoading(true)
+        setSkillsError('')
+        try {
+            const resp = await skillsApi.listSkills()
+            const data = Array.isArray(resp.data) ? resp.data : resp.data?.data || []
+            setSkills(data)
+        } catch (err) {
+            const msg = typeof err?.response?.data === 'object' ? err.response.data.message : err?.response?.data || err?.message
+            setSkillsError(msg || 'Failed to load skills')
+        } finally {
+            setSkillsLoading(false)
+        }
+    }, [])
+
+    const addNewSkill = () => {
+        setSkillDialogProps({ type: 'ADD' })
+        setShowSkillDialog(true)
+    }
+
+    const editSkill = (skill) => {
+        setSkillEditDialogProps({ data: skill })
+        setShowSkillEditDialog(true)
+    }
+
+    const onSkillConfirm = (created) => {
+        setShowSkillDialog(false)
+        refreshSkills()
+        if (created?.id) {
+            setEditorSkillId(created.id)
+            setEditorOpen(true)
+        }
+    }
+
+    const onSkillEditConfirm = () => {
+        refreshSkills()
+    }
+
+    const onSkillDeleted = () => {
+        setShowSkillEditDialog(false)
+        refreshSkills()
+    }
+
+    const onSkillOpenEditor = (skill) => {
+        if (!skill?.id) return
+        setShowSkillEditDialog(false)
+        setEditorSkillId(skill.id)
+        setEditorOpen(true)
+    }
+
+    const onSkillEditorClose = () => {
+        setEditorOpen(false)
+        setEditorSkillId(null)
+        refreshSkills()
+    }
+
     const [search, setSearch] = useState('')
     const onSearchChange = (event) => {
         setSearch(event.target.value)
@@ -205,11 +282,23 @@ const Tools = () => {
         return data.name.toLowerCase().indexOf(s) > -1 || (data.serverUrl && data.serverUrl.toLowerCase().indexOf(s) > -1)
     }
 
+    function filterSkills(data) {
+        if (!search) return true
+        const s = search.toLowerCase()
+        return (
+            (data.name || '').toLowerCase().indexOf(s) > -1 ||
+            (data.description || '').toLowerCase().indexOf(s) > -1 ||
+            (data.slug || '').toLowerCase().indexOf(s) > -1
+        )
+    }
+
     useEffect(() => {
         if (tabValue === 0) {
             refresh(currentPage, pageLimit)
-        } else {
+        } else if (tabValue === 1) {
             refreshCustomMcp(mcpCurrentPage, mcpPageLimit)
+        } else if (tabValue === 2) {
+            refreshSkills()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tabValue])
@@ -316,6 +405,24 @@ const Tools = () => {
         </Box>
     )
 
+    const renderSkillsToolbar = () => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {viewToggle(skills.length === 0)}
+            <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                <StyledPermissionButton
+                    permissionId={'tools:create'}
+                    variant='contained'
+                    onClick={addNewSkill}
+                    disabled={!workspaceId}
+                    startIcon={<IconPlus />}
+                    sx={{ borderRadius: 2, height: 40 }}
+                >
+                    Create Skill
+                </StyledPermissionButton>
+            </ButtonGroup>
+        </Box>
+    )
+
     const renderCustomToolsTab = () => (
         <>
             {isLoading && (
@@ -389,6 +496,48 @@ const Tools = () => {
         </>
     )
 
+    const renderSkillsTab = () => {
+        const visibleSkills = skills.filter(filterSkills)
+
+        return (
+            <>
+                {skillsError && (
+                    <Alert severity='error' sx={{ mb: 2 }}>
+                        {skillsError}
+                    </Alert>
+                )}
+                {skillsLoading && (
+                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                        <Skeleton variant='rounded' height={160} />
+                        <Skeleton variant='rounded' height={160} />
+                        <Skeleton variant='rounded' height={160} />
+                    </Box>
+                )}
+                {!skillsLoading && visibleSkills.length > 0 && (
+                    <>
+                        {!view || view === 'card' ? (
+                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                {visibleSkills.map((s) => (
+                                    <SkillCard key={s.id} data={s} onClick={() => editSkill(s)} />
+                                ))}
+                            </Box>
+                        ) : (
+                            <SkillsTable data={visibleSkills} isLoading={skillsLoading} onSelect={editSkill} />
+                        )}
+                    </>
+                )}
+                {!skillsLoading && visibleSkills.length === 0 && (
+                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                        <Box sx={{ p: 2, height: 'auto' }}>
+                            <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
+                        </Box>
+                        <div>{search ? 'No skills match your search.' : 'No Skills Created Yet'}</div>
+                    </Stack>
+                )}
+            </>
+        )
+    }
+
     return (
         <>
             <MainCard>
@@ -399,7 +548,9 @@ const Tools = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder={tabValue === 0 ? 'Search Tools' : 'Search Custom MCP Servers'}
+                            searchPlaceholder={
+                                tabValue === 0 ? 'Search Tools' : tabValue === 1 ? 'Search Custom MCP Servers' : 'Search Skills'
+                            }
                             title='Tools'
                             description='External functions or APIs the agent can use to take action'
                         />
@@ -416,11 +567,19 @@ const Tools = () => {
                             <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)} aria-label='tools tabs'>
                                 <Tab label='Custom Tools' />
                                 <Tab label='Custom MCP Servers' />
+                                <Tab label='Skills' />
                             </Tabs>
-                            <Box sx={{ pb: 1 }}>{tabValue === 0 ? renderCustomToolsToolbar() : renderMcpServersToolbar()}</Box>
+                            <Box sx={{ pb: 1 }}>
+                                {tabValue === 0
+                                    ? renderCustomToolsToolbar()
+                                    : tabValue === 1
+                                    ? renderMcpServersToolbar()
+                                    : renderSkillsToolbar()}
+                            </Box>
                         </Box>
                         {tabValue === 0 && renderCustomToolsTab()}
                         {tabValue === 1 && renderMcpServersTab()}
+                        {tabValue === 2 && renderSkillsTab()}
                     </Stack>
                 )}
             </MainCard>
@@ -441,6 +600,21 @@ const Tools = () => {
                 onAuthorize={onAuthorize}
                 onCreated={onCustomMcpCreated}
             />
+            <SkillCreateDialog
+                show={showSkillDialog}
+                dialogProps={skillDialogProps}
+                onCancel={() => setShowSkillDialog(false)}
+                onConfirm={onSkillConfirm}
+            />
+            <SkillEditDialog
+                show={showSkillEditDialog}
+                dialogProps={skillEditDialogProps}
+                onCancel={() => setShowSkillEditDialog(false)}
+                onConfirm={onSkillEditConfirm}
+                onDelete={onSkillDeleted}
+                onOpenEditor={onSkillOpenEditor}
+            />
+            <SkillEditorDrawer open={editorOpen} workspaceId={workspaceId} skillId={editorSkillId} onClose={onSkillEditorClose} />
         </>
     )
 }

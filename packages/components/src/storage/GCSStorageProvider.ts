@@ -379,4 +379,67 @@ export class GCSStorageProvider extends BaseStorageProvider {
 
         return []
     }
+
+    // -------------------------------------------------------------------------
+    // Raw blob primitives. See IStorageProvider for semantics.
+    // -------------------------------------------------------------------------
+
+    private buildBlobKey(paths: string[]): string {
+        if (paths.length === 0) throw new Error('blob path is required')
+        const last = this.normalizePath(this.sanitizeFilename(paths[paths.length - 1]))
+        const prefix = paths.slice(0, -1).map((p) => this.normalizePath(p))
+        return [...prefix, last].join('/')
+    }
+
+    private isGCSNotFoundError(err: any): boolean {
+        if (!err) return false
+        const code = err.code ?? err.statusCode
+        return code === 404
+    }
+
+    async writeBlob(buffer: Buffer, mime: string, ...paths: string[]): Promise<void> {
+        const filePath = this.buildBlobKey(paths)
+        const file = this.bucket.file(filePath)
+        await new Promise<void>((resolve, reject) => {
+            const stream = mime ? file.createWriteStream({ contentType: mime }) : file.createWriteStream()
+            stream
+                .on('error', (err) => reject(err))
+                .on('finish', () => resolve())
+                .end(buffer)
+        })
+    }
+
+    async readBlob(...paths: string[]): Promise<Buffer | null> {
+        const filePath = this.buildBlobKey(paths)
+        try {
+            const [buffer] = await this.bucket.file(filePath).download()
+            return buffer
+        } catch (err: any) {
+            if (this.isGCSNotFoundError(err)) return null
+            throw err
+        }
+    }
+
+    async deleteBlob(...paths: string[]): Promise<void> {
+        const filePath = this.buildBlobKey(paths)
+        try {
+            await this.bucket.file(filePath).delete()
+        } catch (err: any) {
+            if (this.isGCSNotFoundError(err)) return
+            throw err
+        }
+    }
+
+    async deleteBlobFolder(...paths: string[]): Promise<void> {
+        if (paths.length === 0) return
+        const prefix = paths.map((p) => this.normalizePath(p)).join('/')
+        if (!prefix) return
+        await this.bucket.deleteFiles({ prefix: prefix.endsWith('/') ? prefix : prefix + '/', force: true })
+    }
+
+    async blobExists(...paths: string[]): Promise<boolean> {
+        const filePath = this.buildBlobKey(paths)
+        const [exists] = await this.bucket.file(filePath).exists()
+        return exists
+    }
 }

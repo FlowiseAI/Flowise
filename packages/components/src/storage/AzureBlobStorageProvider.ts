@@ -339,4 +339,75 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
 
         return []
     }
+
+    // -------------------------------------------------------------------------
+    // Raw blob primitives. See IStorageProvider for semantics.
+    // -------------------------------------------------------------------------
+
+    private buildBlobName(paths: string[]): string {
+        if (paths.length === 0) throw new Error('blob path is required')
+        const last = this.sanitizeFilename(paths[paths.length - 1])
+        const prefix = paths.slice(0, -1)
+        let blobName = [...prefix, last].join('/')
+        if (blobName.startsWith('/')) blobName = blobName.substring(1)
+        return blobName
+    }
+
+    private isAzureNotFoundError(err: any): boolean {
+        if (!err) return false
+        const status = err.statusCode ?? err.status
+        const code = err.code ?? err.errorCode ?? err.details?.errorCode
+        return status === 404 || code === 'BlobNotFound' || code === 'ContainerNotFound'
+    }
+
+    async writeBlob(buffer: Buffer, mime: string, ...paths: string[]): Promise<void> {
+        const blobName = this.buildBlobName(paths)
+        const blockBlobClient = this.containerClient.getBlockBlobClient(blobName)
+        await blockBlobClient.upload(buffer, buffer.length, mime ? { blobHTTPHeaders: { blobContentType: mime } } : undefined)
+    }
+
+    async readBlob(...paths: string[]): Promise<Buffer | null> {
+        const blobName = this.buildBlobName(paths)
+        try {
+            return await this.containerClient.getBlockBlobClient(blobName).downloadToBuffer()
+        } catch (err: any) {
+            if (this.isAzureNotFoundError(err)) return null
+            throw err
+        }
+    }
+
+    async deleteBlob(...paths: string[]): Promise<void> {
+        const blobName = this.buildBlobName(paths)
+        try {
+            await this.containerClient.getBlockBlobClient(blobName).deleteIfExists()
+        } catch (err: any) {
+            if (this.isAzureNotFoundError(err)) return
+            throw err
+        }
+    }
+
+    async deleteBlobFolder(...paths: string[]): Promise<void> {
+        if (paths.length === 0) return
+        let prefix = paths.join('/')
+        if (prefix.startsWith('/')) prefix = prefix.substring(1)
+        if (!prefix) return
+        const listPrefix = prefix.endsWith('/') ? prefix : prefix + '/'
+        for await (const blob of this.containerClient.listBlobsFlat({ prefix: listPrefix })) {
+            try {
+                await this.containerClient.deleteBlob(blob.name)
+            } catch (err: any) {
+                if (!this.isAzureNotFoundError(err)) throw err
+            }
+        }
+    }
+
+    async blobExists(...paths: string[]): Promise<boolean> {
+        const blobName = this.buildBlobName(paths)
+        try {
+            return await this.containerClient.getBlockBlobClient(blobName).exists()
+        } catch (err: any) {
+            if (this.isAzureNotFoundError(err)) return false
+            throw err
+        }
+    }
 }
