@@ -123,13 +123,7 @@ function LoadingEndAdornment({ loading, original }: { loading: boolean; original
 }
 
 /** Dropdown for listPreviousNodes — reads ancestor nodes from flow state, no server call. */
-function PreviousNodesDropdown({
-    value,
-    disabled,
-    onChange,
-    nodeId,
-    freeSolo
-}: Pick<AsyncInputProps, 'value' | 'disabled' | 'onChange' | 'nodeId'> & { freeSolo?: boolean }) {
+function PreviousNodesDropdown({ value, disabled, onChange, nodeId }: Pick<AsyncInputProps, 'value' | 'disabled' | 'onChange' | 'nodeId'>) {
     const options = useFlowAncestorNodeOptions(nodeId)
     const stringValue = typeof value === 'string' ? value : ''
 
@@ -139,8 +133,6 @@ function PreviousNodesDropdown({
     })
 
     // Clear stored value if the selected node no longer exists in the flow.
-    // freeSolo does not gate this: PreviousNodesDropdown only stores node references,
-    // so a value not in options is always stale (never a valid free-typed string).
     // onChange is accessed via ref so an unstable parent callback can't retrigger this effect.
     useEffect(() => {
         if (stringValue && !options.some((o) => o.name === stringValue)) {
@@ -148,7 +140,7 @@ function PreviousNodesDropdown({
         }
     }, [stringValue, options])
 
-    return <Dropdown value={stringValue} options={options} onSelect={onChange} disabled={disabled} freeSolo={freeSolo} />
+    return <Dropdown value={stringValue} options={options} onSelect={onChange} disabled={disabled} />
 }
 
 function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, nodeId, inputValues }: AsyncInputProps) {
@@ -196,7 +188,6 @@ function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, no
                             onChange(v)
                         }}
                         nodeId={nodeId}
-                        freeSolo={inputParam.freeSolo}
                     />
                 ) : (
                     <AsyncOptionsDropdown

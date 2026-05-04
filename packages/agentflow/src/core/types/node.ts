@@ -101,7 +101,6 @@ export interface InputParam {
     minItems?: number
     maxItems?: number // No agentflow nodes set this today — supported for forward-compat
     array?: InputParam[] // Sub-field definitions for array-type params
-    freeSolo?: boolean // When true, allows typing a custom value not in the options list
     loadMethod?: string // Registry key for async option loading (asyncOptions / asyncMultiOptions)
     loadConfig?: boolean // When true, renders a config accordion beneath the async dropdown for the selected component
     credentialNames?: string[] // If set, bypasses loadMethod and fetches matching credentials
