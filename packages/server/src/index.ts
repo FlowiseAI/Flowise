@@ -25,6 +25,7 @@ import { NodesPool } from './NodesPool'
 import { QueueManager } from './queue/QueueManager'
 import { ScheduleBeat } from './schedule/ScheduleBeat'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
+import { initWebhookListenerRegistry } from './services/webhook-listener'
 import flowiseApiV1Router from './routes'
 import { UsageCacheManager } from './UsageCacheManager'
 import { getEncryptionKey, getNodeModulesPackagePath } from './utils'
@@ -154,6 +155,9 @@ export class App {
                 this.redisSubscriber.startPeriodicCleanup()
                 logger.info('🔗 [server]: Redis event subscriber connected successfully')
             }
+
+            await initWebhookListenerRegistry(this.sseStreamer, this.redisSubscriber)
+            logger.info('📡 [server]: Webhook listener registry initialized successfully')
 
             // Init ScheduleBeat (works in both queue and non-queue mode)
             await ScheduleBeat.getInstance().init()

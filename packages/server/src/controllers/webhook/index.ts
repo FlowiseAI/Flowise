@@ -5,6 +5,7 @@ import { RateLimiterManager } from '../../utils/rateLimit'
 import predictionsServices from '../../services/predictions'
 import chatflowsService from '../../services/chatflows'
 import webhookService from '../../services/webhook'
+import { getWebhookListenerRegistry } from '../../services/webhook-listener'
 import { ChatType } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { checkDenyList } from 'flowise-components'
@@ -60,14 +61,23 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
         if (bodyChatId != null) req.body.chatId = bodyChatId
         if (sessionId != null) req.body.sessionId = sessionId
 
+        const executionChatId: string = (bodyChatId as string | undefined) ?? uuidv4()
+        req.body.chatId = executionChatId
+
+        // Mirror this execution's events to any UI panels currently listening to this flow.
+        try {
+            await getWebhookListenerRegistry().bindExecution(req.params.id, executionChatId)
+        } catch (err) {
+            logger.warn(`[webhookController] Failed to bind webhook listeners: ${getErrorMessage(err)}`)
+        }
+
         if (responseMode === 'stream') {
             // Streaming mode: open an SSE channel and let downstream nodes push events through sseStreamer
             // Falls back to synchronous JSON if the chatflow has no streaming-capable end nodes
             const streamable = await chatflowsService.checkIfChatflowIsValidForStreaming(req.params.id)
             if (streamable?.isStreaming) {
                 const sseStreamer = getRunningExpressApp().sseStreamer
-                const chatId: string = (bodyChatId as string | undefined) ?? uuidv4()
-                req.body.chatId = chatId
+                const chatId = executionChatId
                 req.body.streaming = true
 
                 res.setHeader('Content-Type', 'text/event-stream')
@@ -105,9 +115,8 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
                 }
             }
 
-            // Pre-assign chatId so the 202 response and the background execution share the same ID
-            const chatId: string = (bodyChatId as string | undefined) ?? uuidv4()
-            req.body.chatId = chatId
+            // 202 response and the background execution share the pre-assigned executionChatId
+            const chatId = executionChatId
 
             res.status(202).json({ chatId, status: 'PROCESSING' })
 
@@ -115,7 +124,10 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
                 try {
                     const apiResponse = await predictionsServices.buildChatflow(req, ChatType.WEBHOOK)
 
-                    if (!callbackUrl) return // fire-and-forget — no delivery
+                    if (!callbackUrl) {
+                        getRunningExpressApp().sseStreamer.removeClient(chatId)
+                        return // fire-and-forget — no delivery
+                    }
 
                     // apiResponse.action is the parsed humanInputAction — only present when flow is STOPPED (FLOWISE-387)
                     if (apiResponse.action) {
@@ -137,13 +149,20 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
                     } else {
                         logger.error(`[webhookController] fire-and-forget execution failed for chatId=${chatId}: ${getErrorMessage(err)}`)
                     }
+                } finally {
+                    // Notify webhook listeners that this execution is done; their SSE connections stay open.
+                    getRunningExpressApp().sseStreamer.removeClient(chatId)
                 }
             })
             return
         }
 
-        const apiResponse = await predictionsServices.buildChatflow(req, ChatType.WEBHOOK)
-        return res.json(apiResponse)
+        try {
+            const apiResponse = await predictionsServices.buildChatflow(req, ChatType.WEBHOOK)
+            return res.json(apiResponse)
+        } finally {
+            getRunningExpressApp().sseStreamer.removeClient(executionChatId)
+        }
     } catch (error) {
         next(error)
     }
