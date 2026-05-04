@@ -1,7 +1,8 @@
-import { mkdirSync, type Dirent, type Stats } from 'node:fs'
+import { createReadStream, mkdirSync, type Dirent, type Stats } from 'node:fs'
 import fs from 'node:fs/promises'
 import { homedir } from 'node:os'
 import path from 'node:path'
+import readline from 'node:readline'
 import {
     BackendProtocol,
     DEFAULT_READ_LIMIT,
@@ -19,17 +20,19 @@ import {
 import { escapeRegex, getMimeType, globToRegex, isTextMimeType, paginateLines } from '../utils'
 
 /**
- * Disk-backed `BackendProtocol` implementation for development.
+ * Disk-backed `BackendProtocol` implementation.
  *
- * Files live on the host filesystem under a configurable `rootPath`. Path
- * traversal (`../`) is rejected; deliberately-crafted symlinks pointing
- * outside `rootPath` are NOT detected (uses `fs.stat`). For strict
- * containment, wrap with `fs.realpath` checks — left out here for simplicity.
+ * Files live on the host filesystem under a configurable `rootPath` (defaults
+ * to `~/.flowise/sandbox`). Path traversal via `../` is rejected by
+ * `resolveSafe`. Symlinks under `rootPath` are followed (no `fs.realpath`
+ * check), so a symlink targeting a location outside `rootPath` would be
+ * reachable through this backend. No file-size or file-count caps are
+ * enforced.
  *
- * @remarks
- * **Dev-only.** No isolation from the host filesystem beyond `rootPath`.
- * Do not enable in production. The host process can read/write anything
- * under `rootPath` as the OS user running the app.
+ * Suitable for single-tenant deployments where the process user has no
+ * sensitive files outside `rootPath`. For untrusted or multi-tenant use,
+ * add symlink containment and size limits, or run inside a stronger
+ * isolation boundary (container, VM).
  */
 export class LocalBackend implements BackendProtocol {
     protected root: string
@@ -48,12 +51,6 @@ export class LocalBackend implements BackendProtocol {
         const abs = path.resolve(this.root, relative)
         if (abs !== this.root && !abs.startsWith(this.root + path.sep)) return null
         return abs
-    }
-
-    /** Convert an absolute on-disk path back to a virtual `/`-rooted POSIX path. */
-    protected toVirtual(abs: string): string {
-        const rel = path.relative(this.root, abs).split(path.sep).join('/')
-        return rel ? '/' + rel : '/'
     }
 
     async write(filePath: string, content: string | Uint8Array): Promise<WriteResult> {
@@ -231,14 +228,21 @@ export class LocalBackend implements BackendProtocol {
             if (!isTextMimeType(mimeType)) continue
             if (globRx && !globRx.test(entry.name)) continue
             scanned++
-            const content = await fs.readFile(entryAbs, 'utf8').catch(() => null)
-            if (content === null) continue
             const relative = path.relative(this.root, entryAbs).split(path.sep).join('/')
-            const lines = content.split('\n')
-            for (let i = 0; i < lines.length; i++) {
-                if (regex.test(lines[i])) {
-                    matches.push({ path: '/' + relative, line: i + 1, content: lines[i] })
+            try {
+                const rl = readline.createInterface({
+                    input: createReadStream(entryAbs, { encoding: 'utf8' }),
+                    crlfDelay: Infinity
+                })
+                let lineNum = 0
+                for await (const line of rl) {
+                    lineNum++
+                    if (regex.test(line)) {
+                        matches.push({ path: '/' + relative, line: lineNum, content: line })
+                    }
                 }
+            } catch {
+                continue
             }
         }
         return { matches, truncated }
