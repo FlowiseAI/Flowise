@@ -988,7 +988,7 @@ export const getVars = async (
     nodeData: INodeData,
     options: ICommonObject
 ) => {
-    if (!options.workspaceId) {
+    if (!options.workspaceId || options.skipVariables) {
         return []
     }
     const variables =
