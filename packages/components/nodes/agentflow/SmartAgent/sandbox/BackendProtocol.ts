@@ -48,3 +48,6 @@ export interface BackendProtocol {
 // paginate large text files so a single read can't blow the model's context window
 // (~500 lines ≈ a few thousand tokens). Matches Claude Code's Read tool default.
 export const DEFAULT_READ_LIMIT = 500
+
+// Cap on results returned by listing operations (glob, grep) across all backends.
+export const MAX_LIST_OBJECTS = 1_000
