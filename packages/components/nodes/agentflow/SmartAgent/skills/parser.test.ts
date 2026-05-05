@@ -33,3 +33,49 @@ body`
         }
     })
 })
+
+describe('parseFrontmatter — required field validation', () => {
+    it('rejects missing frontmatter block', () => {
+        const result = parseFrontmatter('# just a body, no frontmatter')
+        expect('message' in result).toBe(true)
+        if ('message' in result) expect(result.message).toMatch(/missing frontmatter/i)
+    })
+
+    it('rejects malformed YAML', () => {
+        const raw = `---\nname: foo\n  : : bad\n---\nbody`
+        const result = parseFrontmatter(raw)
+        expect('message' in result).toBe(true)
+        if ('message' in result) expect(result.message).toMatch(/invalid YAML/i)
+    })
+
+    it('rejects missing name', () => {
+        const raw = `---\ndescription: no name here\n---\nbody`
+        const result = parseFrontmatter(raw)
+        expect('field' in result && result.field).toBe('name')
+    })
+
+    it('rejects invalid name format (uppercase)', () => {
+        const raw = `---\nname: WebResearch\ndescription: x\n---\nbody`
+        const result = parseFrontmatter(raw)
+        expect('field' in result && result.field).toBe('name')
+    })
+
+    it('rejects invalid name format (spaces)', () => {
+        const raw = `---\nname: web research\ndescription: x\n---\nbody`
+        const result = parseFrontmatter(raw)
+        expect('field' in result && result.field).toBe('name')
+    })
+
+    it('rejects missing description', () => {
+        const raw = `---\nname: ok-name\n---\nbody`
+        const result = parseFrontmatter(raw)
+        expect('field' in result && result.field).toBe('description')
+    })
+
+    it('rejects oversized description (> 200 chars)', () => {
+        const desc = 'x'.repeat(201)
+        const raw = `---\nname: ok-name\ndescription: ${desc}\n---\nbody`
+        const result = parseFrontmatter(raw)
+        expect('field' in result && result.field).toBe('description')
+    })
+})
