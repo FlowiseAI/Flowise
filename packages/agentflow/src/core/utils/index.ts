@@ -5,7 +5,7 @@ export { getUniqueNodeId, getUniqueNodeLabel, initNode, resolveNodeType } from '
 export { generateExportFlowData } from './flowExport'
 
 // Field visibility engine
-export { evaluateFieldVisibility, evaluateParamVisibility, stripHiddenFieldValues } from './fieldVisibility'
+export { applyVisibleFieldDefaults, evaluateFieldVisibility, evaluateParamVisibility, stripHiddenFieldValues } from './fieldVisibility'
 
 // Dynamic output anchor utilities
 export { buildDynamicOutputAnchors, parseOutputHandleIndex } from './dynamicOutputAnchors'

@@ -1,7 +1,14 @@
 import { ExecutionsViewer, HumanInputParams } from '@flowiseai/observe'
 import { Box, Typography } from '@mui/material'
 
-import { flowId } from '../config'
+import { agentflowCanvasUrl, flowId } from '../config'
+
+// Build the navigation handler only when a canvas URL is configured. When
+// unset, `onAgentflowClick` stays undefined and the SDK renders the chip
+// non-clickable.
+const onAgentflowClick: ((agentflowId: string) => void) | undefined = agentflowCanvasUrl
+    ? (agentflowId) => window.open(`${agentflowCanvasUrl}/${agentflowId}`, '_blank', 'noopener,noreferrer')
+    : undefined
 
 export default function ExecutionsViewerExample() {
     return (
@@ -25,9 +32,7 @@ export default function ExecutionsViewerExample() {
                     onHumanInput={async (agentflowId: string, params: HumanInputParams) => {
                         console.info('[Example] onHumanInput', agentflowId, params)
                     }}
-                    onAgentflowClick={(agentflowId: string) => {
-                        console.info('[Example] onAgentflowClick', agentflowId)
-                    }}
+                    onAgentflowClick={onAgentflowClick}
                 />
             </Box>
         </Box>

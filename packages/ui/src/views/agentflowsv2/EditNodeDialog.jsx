@@ -9,7 +9,7 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { IconPencil, IconX, IconCheck, IconInfoCircle } from '@tabler/icons-react'
 import { useTheme } from '@mui/material/styles'
 import { flowContext } from '@/store/context/ReactFlowContext'
-import { showHideInputParams } from '@/utils/genericHelper'
+import { applyVisibleInputDefaults, showHideInputParams } from '@/utils/genericHelper'
 
 const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
@@ -45,10 +45,10 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
         reactFlowInstance.setNodes((nds) =>
             nds.map((node) => {
                 if (node.id === nodeId) {
-                    const updatedInputs = {
+                    const updatedInputs = applyVisibleInputDefaults(node.data.inputParams, {
                         ...node.data.inputs,
                         [inputParam.name]: newValue
-                    }
+                    })
 
                     const updatedInputParams = showHideInputParams({
                         ...node.data,

@@ -18,7 +18,11 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
         palette: {
             mode,
             primary: tokens.colors.palette.primary,
-            secondary: tokens.colors.palette.secondary,
+            secondary: {
+                light: tokens.colors.palette.secondary.light[mode],
+                main: tokens.colors.palette.secondary.main[mode],
+                dark: tokens.colors.palette.secondary.dark[mode]
+            },
             success: tokens.colors.palette.success,
             error: tokens.colors.palette.error,
             warning: tokens.colors.palette.warning,
@@ -79,27 +83,27 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
                 styleOverrides: {
                     root: {
                         '&.Mui-selected': {
-                            color: isDarkMode ? '#fff' : tokens.colors.palette.secondary.dark,
-                            backgroundColor: isDarkMode
-                                ? tokens.colors.background.listItemSelected.dark
-                                : tokens.colors.palette.secondary.light,
+                            color: tokens.colors.palette.secondary.dark[mode],
+                            backgroundColor: tokens.colors.background.listItemSelected[mode] || tokens.colors.palette.secondary.light[mode],
                             '&:hover': {
-                                backgroundColor: isDarkMode
-                                    ? tokens.colors.background.listItemSelected.dark
-                                    : tokens.colors.palette.secondary.light
+                                backgroundColor:
+                                    tokens.colors.background.listItemSelected[mode] || tokens.colors.palette.secondary.light[mode]
                             }
                         },
                         '&:hover': {
-                            color: isDarkMode ? '#fff' : tokens.colors.palette.secondary.dark,
-                            backgroundColor: isDarkMode
-                                ? tokens.colors.background.listItemSelected.dark
-                                : tokens.colors.palette.secondary.light
+                            color: tokens.colors.palette.secondary.dark[mode],
+                            backgroundColor: tokens.colors.background.listItemSelected[mode] || tokens.colors.palette.secondary.light[mode]
                         }
                     }
                 }
             },
             MuiAutocomplete: {
                 styleOverrides: {
+                    paper: {
+                        boxShadow:
+                            '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
+                        borderRadius: '10px'
+                    },
                     option: {
                         '&:hover': {
                             background: isDarkMode ? `${tokens.colors.background.optionHover.dark} !important` : undefined

@@ -160,6 +160,9 @@ services:
             - TRUST_PROXY=${TRUST_PROXY}
             - OAUTH2_SECURITY_CHECK=${OAUTH2_SECURITY_CHECK}
             - OAUTH2_ALLOWED_TOKEN_DOMAINS=${OAUTH2_ALLOWED_TOKEN_DOMAINS}
+
+            # SCHEDULE
+            - MIN_SCHEDULE_INTERVAL_SECONDS=${MIN_SCHEDULE_INTERVAL_SECONDS}
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:${PORT:-3000}/api/v1/ping']
             interval: 10s

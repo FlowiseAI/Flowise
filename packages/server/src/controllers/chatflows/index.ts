@@ -13,6 +13,8 @@ import { getPageAndLimitParams } from '../../utils/pagination'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import { RateLimiterManager } from '../../utils/rateLimit'
 import { sanitizeFlowDataForPublicEndpoint } from '../../utils/sanitizeFlowData'
+import scheduleService from '../../services/schedule'
+import { ScheduleBeat } from '../../schedule/ScheduleBeat'
 import { stripProtectedFields } from '../../utils/stripProtectedFields'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
@@ -282,6 +284,106 @@ const checkIfChatflowHasChanged = async (req: Request, res: Response, next: Next
     }
 }
 
+const getScheduleStatus = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.params?.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                'Error: chatflowsController.getScheduleStatus - id not provided!'
+            )
+        }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Error: chatflowsController.getScheduleStatus - workspace not found!')
+        }
+        const status = await scheduleService.getScheduleStatus(req.params.id, workspaceId)
+        return res.json({
+            enabled: status.record?.enabled ?? false,
+            canEnable: status.canEnable,
+            reason: status.reason,
+            record: status.record
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getScheduleTriggerLogs = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.params?.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                'Error: chatflowsController.getScheduleTriggerLogs - id not provided!'
+            )
+        }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                'Error: chatflowsController.getScheduleTriggerLogs - workspace not found!'
+            )
+        }
+        const page = req.query.page ? parseInt(String(req.query.page), 10) : undefined
+        const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined
+        const statusRaw = req.query.status
+        const status = Array.isArray(statusRaw) ? (statusRaw as any) : statusRaw ? (String(statusRaw) as any) : undefined
+        const result = await scheduleService.getTriggerLogs(req.params.id, workspaceId, { page, limit, status })
+        return res.json(result)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const deleteScheduleTriggerLogs = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.params?.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                'Error: chatflowsController.deleteScheduleTriggerLogs - id not provided!'
+            )
+        }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                'Error: chatflowsController.deleteScheduleTriggerLogs - workspace not found!'
+            )
+        }
+        const logIds: unknown = req.body?.logIds
+        if (!Array.isArray(logIds) || logIds.some((x) => typeof x !== 'string')) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'logIds must be a string[]')
+        }
+        const result = await scheduleService.deleteTriggerLogs(req.params.id, workspaceId, logIds as string[])
+        return res.json(result)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const toggleScheduleEnabled = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.params?.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                'Error: chatflowsController.toggleScheduleEnabled - id not provided!'
+            )
+        }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Error: chatflowsController.toggleScheduleEnabled - workspace not found!')
+        }
+        const { enabled } = req.body
+        if (typeof enabled !== 'boolean') {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, '"enabled" must be a boolean')
+        }
+        const record = await scheduleService.toggleScheduleEnabled(req.params.id, workspaceId, enabled)
+        await ScheduleBeat.getInstance().onScheduleChanged(record.id, enabled ? 'upsert' : 'delete')
+        return res.json(record)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     checkIfChatflowIsValidForStreaming,
     checkIfChatflowIsValidForUploads,
@@ -293,5 +395,9 @@ export default {
     updateChatflow,
     getSinglePublicChatflow,
     getSinglePublicChatbotConfig,
-    checkIfChatflowHasChanged
+    checkIfChatflowHasChanged,
+    getScheduleStatus,
+    getScheduleTriggerLogs,
+    deleteScheduleTriggerLogs,
+    toggleScheduleEnabled
 }

@@ -653,3 +653,41 @@ describe('ArrayInput – acceptNodeOutputAsVariable', () => {
         expect(keyHandler.getAttribute('data-variable-items')).toBeNull()
     })
 })
+
+describe('ArrayInput – loopUpdateState', () => {
+    it('loopUpdateState — renders key and value sub-fields for each item', () => {
+        const loopUpdateStateParam: InputParam = {
+            id: 'loopUpdateState',
+            name: 'loopUpdateState',
+            label: 'Update Flow State',
+            type: 'array',
+            optional: true,
+            acceptVariable: true,
+            array: [
+                { id: 'key', name: 'key', label: 'Key', type: 'asyncOptions' } as InputParam,
+                {
+                    id: 'value',
+                    name: 'value',
+                    label: 'Value',
+                    type: 'string',
+                    acceptVariable: true,
+                    acceptNodeOutputAsVariable: true
+                } as InputParam
+            ]
+        }
+
+        const data: NodeData = {
+            id: 'loop-node-1',
+            name: 'loopAgentflow',
+            label: 'Loop',
+            inputs: { loopUpdateState: [{ key: '', value: '' }] }
+        } as NodeData
+
+        render(<ArrayInput inputParam={loopUpdateStateParam} data={data} onDataChange={mockOnDataChange} />)
+
+        expect(screen.getByTestId('input-handler-key')).toBeInTheDocument()
+        expect(screen.getByTestId('input-handler-value')).toBeInTheDocument()
+        expect(screen.getByText('Key')).toBeInTheDocument()
+        expect(screen.getByText('Value')).toBeInTheDocument()
+    })
+})
