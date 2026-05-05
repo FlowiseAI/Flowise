@@ -1,6 +1,6 @@
 {
     "name": "@flowiseai/observe",
-    "version": "0.0.0-dev.1",
+    "version": "0.0.0-dev.0",
     "description": "Embeddable React components for observing AI agent executions, evaluations, and runtime activity",
     "license": "Apache-2.0",
     "repository": {
@@ -35,15 +35,12 @@
             "import": "./dist/index.js",
             "require": "./dist/index.umd.js",
             "types": "./dist/index.d.ts"
-        },
-        "./observe.css": "./dist/observe.css"
+        }
     },
     "files": [
         "dist"
     ],
-    "sideEffects": [
-        "dist/**/*.css"
-    ],
+    "sideEffects": false,
     "scripts": {
         "build": "tsc && vite build",
         "clean": "rimraf dist",

@@ -1,4 +1,4 @@
-name: Publish @flowiseai/agentflow
+name: Publish @flowiseai/observe
 on:
     workflow_dispatch:
         inputs:
@@ -34,9 +34,9 @@ jobs:
             pull-requests: write
         uses: ./.github/workflows/publish-package.yml
         with:
-            package_name: '@flowiseai/agentflow'
-            package_path: 'packages/agentflow'
-            slug: 'agentflow'
+            package_name: '@flowiseai/observe'
+            package_path: 'packages/observe'
+            slug: 'observe'
             bump: ${{ inputs.bump }}
             custom_version: ${{ inputs.custom_version }}
             tag: ${{ inputs.tag }}
