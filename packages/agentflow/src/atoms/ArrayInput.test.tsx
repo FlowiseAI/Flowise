@@ -685,9 +685,9 @@ describe('ArrayInput – loopUpdateState', () => {
 
         render(<ArrayInput inputParam={loopUpdateStateParam} data={data} onDataChange={mockOnDataChange} />)
 
-        expect(screen.getByTestId('input-handler-key')).toBeTruthy()
-        expect(screen.getByTestId('input-handler-value')).toBeTruthy()
-        expect(screen.getByText('Key')).toBeTruthy()
-        expect(screen.getByText('Value')).toBeTruthy()
+        expect(screen.getByTestId('input-handler-key')).toBeInTheDocument()
+        expect(screen.getByTestId('input-handler-value')).toBeInTheDocument()
+        expect(screen.getByText('Key')).toBeInTheDocument()
+        expect(screen.getByText('Value')).toBeInTheDocument()
     })
 })

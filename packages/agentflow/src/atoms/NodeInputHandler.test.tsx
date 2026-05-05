@@ -605,7 +605,7 @@ describe('NodeInputHandler – Loop node inputs', () => {
 
         // VariableInput takes priority over RichTextEditor when suggestions exist,
         // even for multiline (rows) fields
-        expect(screen.getByTestId('variable-input')).toBeTruthy()
-        expect(screen.queryByTestId('rich-text-editor')).toBeNull()
+        expect(screen.getByTestId('variable-input')).toBeInTheDocument()
+        expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
     })
 })
