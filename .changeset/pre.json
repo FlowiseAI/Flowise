@@ -1,0 +1,13 @@
+{
+    "mode": "pre",
+    "tag": "dev",
+    "initialVersions": {
+        "@flowiseai/agentflow": "0.0.0-dev.14",
+        "flowise-api": "1.0.3",
+        "flowise-components": "3.1.2",
+        "@flowiseai/observe": "0.0.0-dev.0",
+        "flowise": "3.1.2",
+        "flowise-ui": "3.1.2"
+    },
+    "changesets": []
+}
