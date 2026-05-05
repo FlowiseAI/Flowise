@@ -1,6 +1,6 @@
 import { z } from 'zod/v3'
-import fetch from 'node-fetch'
-import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
+import { secureFetch } from '../../../src/utils'
+import { StructuredTool } from '@langchain/core/tools'
 
 export const desc = `A wrapper around Perplexity's Search API. Useful for retrieving up-to-date, ranked web results with title, URL, and snippet for a given query.`
 
