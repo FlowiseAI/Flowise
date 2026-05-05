@@ -18,7 +18,7 @@ import type {
     NodeData,
     NodeDataSchema
 } from '@/core/types'
-import { getDefinedStateKeys, getStaleEdgesAfterUpgrade, getUniqueNodeId, isNodeOutdated, upgradeNodeData } from '@/core/utils'
+import { getDefinedStateKeys, getUniqueNodeId, isNodeOutdated, upgradeNodeData } from '@/core/utils'
 
 import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
 
@@ -379,17 +379,22 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     const syncNodes = useCallback(() => {
         const clonedNodes = cloneDeep(state.nodes)
         const clonedEdges = cloneDeep(state.edges)
-        const staleEdges: FlowEdge[] = []
+        const componentMap = new Map(state.componentNodes.map((c) => [c.name, c]))
+        const upgradedNodeIds = new Set<string>()
 
         for (let i = 0; i < clonedNodes.length; i++) {
-            const cn = state.componentNodes.find((c) => c.name === clonedNodes[i].data.name)
-            if (cn && isNodeOutdated(clonedNodes[i].data, cn)) {
-                clonedNodes[i].data = upgradeNodeData(cn, clonedNodes[i].data)
-                staleEdges.push(...getStaleEdgesAfterUpgrade(clonedNodes[i].data, clonedEdges))
+            const node = clonedNodes[i]
+            const cn = componentMap.get(node.data.name)
+            if (cn && isNodeOutdated(node.data, cn)) {
+                node.data = upgradeNodeData(cn, node.data)
+                upgradedNodeIds.add(node.id)
             }
         }
 
-        const newEdges = clonedEdges.filter((e) => !staleEdges.includes(e))
+        if (upgradedNodeIds.size === 0) return
+
+        const newEdges = clonedEdges.filter((edge) => (upgradedNodeIds.has(edge.target) ? edge.targetHandle === edge.target : true))
+
         syncStateUpdate({ nodes: clonedNodes, edges: newEdges })
 
         if (onFlowChangeRef.current) {
