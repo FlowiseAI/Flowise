@@ -40,6 +40,7 @@
     "files": [
         "dist"
     ],
+    "sideEffects": false,
     "scripts": {
         "build": "tsc && vite build",
         "clean": "rimraf dist",
