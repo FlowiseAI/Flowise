@@ -139,7 +139,13 @@ export class RedisWebhookListenerRegistry implements IWebhookListenerRegistry {
                 // Only attach if the listener actually lives on this replica (sanity check —
                 // dispatcher already routed by replicaId, but the local SSE client is the
                 // ground truth).
-                if (!this.sseStreamer.hasClient(parsed.listenerId)) return
+                if (!this.sseStreamer.hasClient(parsed.listenerId)) {
+                    logger.warn(
+                        `[WebhookListenerRegistry] Bind dropped: listener ${parsed.listenerId} not on this replica (${this.replicaId}). ` +
+                            `Likely caused by ALB routing without sticky sessions, or by a webhook firing between register and stream.`
+                    )
+                    return
+                }
 
                 this.sseStreamer.addObserver(parsed.executionChatId, parsed.listenerId)
                 // Subscribe to the execution channel so the worker's published events land
@@ -153,11 +159,8 @@ export class RedisWebhookListenerRegistry implements IWebhookListenerRegistry {
         logger.info(`[WebhookListenerRegistry] Connected to Redis (replicaId=${this.replicaId})`)
     }
 
-    async register(chatflowid: string): Promise<string> {
-        const listenerId = `wh-listener-${uuidv4()}`
-        await this.publisher.hSet(this.listenerKey(chatflowid), listenerId, this.replicaId)
-        await this.publisher.expire(this.listenerKey(chatflowid), this.ttlSeconds)
-        return listenerId
+    async register(_chatflowid: string): Promise<string> {
+        return `wh-listener-${uuidv4()}`
     }
 
     async heartbeat(chatflowid: string, listenerId: string): Promise<void> {

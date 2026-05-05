@@ -58,6 +58,12 @@ const streamListener = async (req: Request, res: Response, next: NextFunction) =
 
         sseStreamer.addClient(listenerId, res)
 
+        try {
+            await registry.heartbeat(chatflowid, listenerId)
+        } catch (err) {
+            logger.warn(`[webhookListener] Initial heartbeat failed for ${listenerId}: ${err}`)
+        }
+
         // Initial "ready" beacon so the UI can flip from "connecting…" to "listening".
         res.write(
             'message:\ndata:' +
