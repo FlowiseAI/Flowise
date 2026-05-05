@@ -58,3 +58,33 @@ describe('discoverSkills — multi-source dedup', () => {
         expect(skills.map((s) => s.name).sort()).toEqual(['a', 'b'])
     })
 })
+
+describe('discoverSkills — disabled built-ins', () => {
+    it('filters out disabled built-in skill names', async () => {
+        const backend = new StateBackend()
+        await backend.write('/skills/builtin/a/SKILL.md', `---\nname: a\ndescription: x\n---\n`)
+        await backend.write('/skills/builtin/b/SKILL.md', `---\nname: b\ndescription: y\n---\n`)
+
+        const { skills } = await discoverSkills(backend, [{ path: '/skills/builtin/', label: 'builtin' }], new Set(['a']))
+
+        expect(skills.map((s) => s.name)).toEqual(['b'])
+    })
+
+    it('does not filter user skills sharing names with disabled built-ins', async () => {
+        const backend = new StateBackend()
+        await backend.write('/skills/builtin/a/SKILL.md', `---\nname: a\ndescription: builtin\n---\n`)
+        await backend.write('/skills/user/a/SKILL.md', `---\nname: a\ndescription: user\n---\n`)
+
+        const { skills } = await discoverSkills(
+            backend,
+            [
+                { path: '/skills/builtin/', label: 'builtin' },
+                { path: '/skills/user/', label: 'user' }
+            ],
+            new Set(['a'])
+        )
+
+        expect(skills).toHaveLength(1)
+        expect(skills[0].description).toBe('user')
+    })
+})
