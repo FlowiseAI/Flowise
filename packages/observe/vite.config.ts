@@ -49,14 +49,9 @@ export default defineConfig(({ mode }) => {
                         '@mui/icons-material': 'MaterialUIIcons',
                         '@emotion/react': 'emotionReact',
                         '@emotion/styled': 'emotionStyled'
-                    },
-                    assetFileNames: (assetInfo) => {
-                        if (assetInfo.name === 'style.css') return 'observe.css'
-                        return assetInfo.name || 'asset'
                     }
                 }
             },
-            cssCodeSplit: false,
             sourcemap: isDev ? true : false
         }
     }

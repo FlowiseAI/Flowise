@@ -35,14 +35,10 @@
             "import": "./dist/index.js",
             "require": "./dist/index.umd.js",
             "types": "./dist/index.d.ts"
-        },
-        "./observe.css": "./dist/observe.css"
+        }
     },
     "files": [
         "dist"
-    ],
-    "sideEffects": [
-        "dist/**/*.css"
     ],
     "scripts": {
         "build": "tsc && vite build",
