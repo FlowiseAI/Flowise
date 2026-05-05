@@ -1,6 +1,6 @@
 {
     "name": "@flowiseai/observe",
-    "version": "0.0.0-dev.0",
+    "version": "0.0.0-dev.1",
     "description": "Embeddable React components for observing AI agent executions, evaluations, and runtime activity",
     "license": "Apache-2.0",
     "repository": {
