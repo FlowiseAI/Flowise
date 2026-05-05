@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:24-alpine
 
 RUN apk add --update libc6-compat python3 make g++
 # needed for pdfjs-dist
