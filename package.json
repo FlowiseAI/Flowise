@@ -33,12 +33,16 @@
         "lint-fix": "pnpm lint --fix",
         "quick": "pretty-quick --staged",
         "postinstall": "husky install",
-        "migration:create": "pnpm typeorm migration:create"
+        "migration:create": "pnpm typeorm migration:create",
+        "changeset": "changeset",
+        "changeset:version": "changeset version",
+        "changeset:publish": "changeset publish"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"
     },
     "devDependencies": {
+        "@changesets/cli": "^2.27.0",
         "@babel/preset-env": "^7.19.4",
         "@babel/preset-typescript": "7.18.6",
         "@types/express": "^4.17.13",
