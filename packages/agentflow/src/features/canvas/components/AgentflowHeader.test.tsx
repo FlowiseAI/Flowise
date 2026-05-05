@@ -10,7 +10,8 @@ describe('AgentflowHeader', () => {
         flowName: 'My Flow',
         isDirty: false,
         onSave: jest.fn(),
-        onSyncNodes: jest.fn()
+        onExport: jest.fn(),
+        onValidate: jest.fn()
     }
 
     beforeEach(() => jest.clearAllMocks())
@@ -30,29 +31,9 @@ describe('AgentflowHeader', () => {
         expect(screen.queryByText(/\*/)).not.toBeInTheDocument()
     })
 
-    describe('Sync Nodes button', () => {
-        it('renders when hasOutdatedNodes is true and readOnly is false', () => {
-            render(<AgentflowHeader {...baseProps} hasOutdatedNodes readOnly={false} />)
-            expect(screen.getByRole('button', { name: /sync nodes/i })).toBeInTheDocument()
-        })
-
-        it('does not render when hasOutdatedNodes is false', () => {
-            render(<AgentflowHeader {...baseProps} hasOutdatedNodes={false} />)
-            expect(screen.queryByRole('button', { name: /sync nodes/i })).not.toBeInTheDocument()
-        })
-
-        it('does not render when readOnly is true even if hasOutdatedNodes is true', () => {
-            render(<AgentflowHeader {...baseProps} hasOutdatedNodes readOnly />)
-            expect(screen.queryByRole('button', { name: /sync nodes/i })).not.toBeInTheDocument()
-        })
-
-        it('calls onSyncNodes when clicked', async () => {
-            const onSyncNodes = jest.fn()
-            const user = userEvent.setup()
-            render(<AgentflowHeader {...baseProps} hasOutdatedNodes onSyncNodes={onSyncNodes} />)
-            await user.click(screen.getByRole('button', { name: /sync nodes/i }))
-            expect(onSyncNodes).toHaveBeenCalledTimes(1)
-        })
+    it('does not render a Sync Nodes button (moved to canvas FAB)', () => {
+        render(<AgentflowHeader {...baseProps} hasOutdatedNodes />)
+        expect(screen.queryByRole('button', { name: /sync nodes/i })).not.toBeInTheDocument()
     })
 
     describe('Save button', () => {
@@ -93,7 +74,7 @@ describe('createHeaderProps', () => {
         expect(props.isDirty).toBe(true)
     })
 
-    it('passes onSyncNodes and hasOutdatedNodes through', () => {
+    it('passes onSyncNodes and hasOutdatedNodes through for custom renderHeader consumers', () => {
         const onSyncNodes = jest.fn()
         const props = createHeaderProps(
             'Flow',

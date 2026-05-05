@@ -3,15 +3,15 @@ import type { FlowEdge, NodeData, NodeDataSchema } from '../types'
 import { initNode } from './nodeFactory'
 
 export function isNodeOutdated(nodeData: NodeData, componentNode: NodeDataSchema): boolean {
-    if (!nodeData.version) return true
-    return componentNode.version !== undefined && componentNode.version > nodeData.version
+    if (nodeData.version === undefined || componentNode.version === undefined) return false
+    return componentNode.version > nodeData.version
 }
 
 export function getNodeVersionWarning(nodeData: NodeData, componentNode: NodeDataSchema): string | null {
-    if (!nodeData.version) {
+    if (nodeData.version === undefined && componentNode.version !== undefined) {
         return `Node outdated\nUpdate to latest version ${componentNode.version}`
     }
-    if (componentNode.version !== undefined && componentNode.version > nodeData.version) {
+    if (nodeData.version !== undefined && componentNode.version !== undefined && componentNode.version > nodeData.version) {
         return `Node version ${nodeData.version} outdated\nUpdate to latest version ${componentNode.version}`
     }
     if (componentNode.badge === 'DEPRECATING') {

@@ -12,11 +12,11 @@ const mockInitNode = initNode as jest.MockedFunction<typeof initNode>
 // ─── isNodeOutdated ───────────────────────────────────────────────────────────
 
 describe('isNodeOutdated', () => {
-    it('returns true when nodeData has no version', () => {
-        expect(isNodeOutdated(makeNodeData({ version: undefined }), makeNodeDataSchema({ version: 1.3 }))).toBe(true)
+    it('returns false when nodeData has no version (aligns with V2 — missing version is not flagged)', () => {
+        expect(isNodeOutdated(makeNodeData({ version: undefined }), makeNodeDataSchema({ version: 1.3 }))).toBe(false)
     })
 
-    it('returns true when version is 0 (falsy)', () => {
+    it('returns true when version is 0 (0 < 1.0 so it is outdated)', () => {
         expect(isNodeOutdated(makeNodeData({ version: 0 }), makeNodeDataSchema({ version: 1.0 }))).toBe(true)
     })
 
@@ -36,7 +36,7 @@ describe('isNodeOutdated', () => {
 // ─── getNodeVersionWarning ────────────────────────────────────────────────────
 
 describe('getNodeVersionWarning', () => {
-    it('returns "Node outdated" message when nodeData has no version', () => {
+    it('returns generic outdated message when nodeData has no version but componentNode has one', () => {
         const result = getNodeVersionWarning(makeNodeData({ version: undefined }), makeNodeDataSchema({ version: 1.3 }))
         expect(result).toContain('Node outdated')
         expect(result).toContain('1.3')

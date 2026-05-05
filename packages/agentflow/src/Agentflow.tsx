@@ -2,7 +2,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRe
 import ReactFlow, { Background, Controls, MiniMap, ReactFlowProvider, useEdgesState, useNodesState } from 'reactflow'
 
 import { Alert, Snackbar } from '@mui/material'
-import { IconSparkles } from '@tabler/icons-react'
+import { IconRefreshAlert, IconSparkles } from '@tabler/icons-react'
 
 import { tokens } from './core/theme'
 import type { AgentFlowInstance, AgentflowProps, FlowData, FlowDataCallback, FlowEdge, FlowNode } from './core/types'
@@ -282,6 +282,27 @@ function AgentflowCanvas({
                             }}
                         >
                             <IconSparkles />
+                        </StyledFab>
+                    )}
+
+                    {/* Sync Nodes FAB - orange button matching V2, shown when outdated nodes exist */}
+                    {!readOnly && hasOutdatedNodes && (
+                        <StyledFab
+                            size='small'
+                            aria-label='sync'
+                            title='Sync Nodes'
+                            onClick={syncNodes}
+                            sx={{
+                                position: 'absolute',
+                                left: 20 + (showDefaultPalette ? 50 : 0) + (enableGenerator ? 50 : 0),
+                                top: 20,
+                                zIndex: tokens.zIndex.canvasButton,
+                                background: 'orange',
+                                color: 'white',
+                                '&:hover': { background: 'orange', filter: 'brightness(0.9)' }
+                            }}
+                        >
+                            <IconRefreshAlert />
                         </StyledFab>
                     )}
 

@@ -116,7 +116,11 @@ export function NodeVersioningExample() {
                     Reset to Outdated
                 </button>
                 <span style={{ color: '#666', fontSize: '13px' }}>
-                    1 node current, 1 node outdated, 1 node with no version. Use &quot;Sync Nodes&quot; in the header to upgrade.
+                    <strong>Start</strong> — version matches server, no badge. &nbsp;
+                    <strong>LLM</strong> — version 1 is behind server v1.1: shows warning badge and an orange Sync Nodes button appears
+                    top-left on the canvas. &nbsp;
+                    <strong>Direct Reply</strong> — no version field: shows a warning badge, but the Sync Nodes button does NOT appear
+                    (version must be set to auto-upgrade). Click Sync Nodes to upgrade outdated nodes.
                 </span>
             </div>
 
