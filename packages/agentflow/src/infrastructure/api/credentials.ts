@@ -55,6 +55,15 @@ export function bindCredentialsApi(client: DeduplicatedClient) {
             const response = await client.put(`/credentials/${id}`, body)
             client.clearCache()
             return response.data
+        },
+
+        /**
+         * Reveal plaintext values for url-type fields of a credential.
+         * Requires credentials:create or credentials:update permission.
+         */
+        revealCredential: async (id: string): Promise<{ plainDataObj: Record<string, unknown> }> => {
+            const response = await client.get(`/credentials/${id}/reveal`)
+            return response.data
         }
     }
 }
