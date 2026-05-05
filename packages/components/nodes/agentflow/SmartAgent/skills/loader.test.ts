@@ -1,5 +1,6 @@
 import { discoverSkills } from './loader'
 import { StateBackend } from '../sandbox/backends/StateBackend'
+import { BackendProtocol, LsResult } from '../sandbox/BackendProtocol'
 
 const SKILL_A = `---\nname: web-research\ndescription: Research workflow\n---\n# body`
 
@@ -86,5 +87,44 @@ describe('discoverSkills — disabled built-ins', () => {
 
         expect(skills).toHaveLength(1)
         expect(skills[0].description).toBe('user')
+    })
+})
+
+describe('discoverSkills — error handling', () => {
+    it('skips malformed SKILL.md and emits a warning', async () => {
+        const backend = new StateBackend()
+        await backend.write('/skills/builtin/good/SKILL.md', `---\nname: good\ndescription: ok\n---\n`)
+        await backend.write('/skills/builtin/bad/SKILL.md', `not even close to a SKILL file`)
+
+        const { skills, warnings } = await discoverSkills(backend, [{ path: '/skills/builtin/', label: 'builtin' }])
+
+        expect(skills.map((s) => s.name)).toEqual(['good'])
+        expect(warnings).toHaveLength(1)
+        expect(warnings[0]).toMatch(/skills\/builtin\/bad\/SKILL\.md/)
+    })
+
+    it('emits a warning when ls returns an error', async () => {
+        // StateBackend returns {files: []} for unknown paths rather than an error,
+        // so we use a stub backend to exercise the ls-error branch.
+        const stub: Pick<BackendProtocol, 'ls'> = {
+            async ls(): Promise<LsResult> {
+                return { error: 'ENOENT: no such directory' }
+            }
+        }
+        const { skills, warnings } = await discoverSkills(stub as BackendProtocol, [{ path: '/no/such/path/', label: 'missing' }])
+        expect(skills).toEqual([])
+        expect(warnings).toHaveLength(1)
+        expect(warnings[0]).toMatch(/missing/)
+        expect(warnings[0]).toMatch(/ENOENT/)
+    })
+
+    it('skips subdirectories without a SKILL.md', async () => {
+        const backend = new StateBackend()
+        await backend.write('/skills/builtin/with-skill/SKILL.md', `---\nname: x\ndescription: y\n---\n`)
+        await backend.write('/skills/builtin/no-skill/README.md', `# nothing here`)
+
+        const { skills, warnings } = await discoverSkills(backend, [{ path: '/skills/builtin/', label: 'builtin' }])
+        expect(skills.map((s) => s.name)).toEqual(['x'])
+        expect(warnings.some((w) => w.includes('no-skill'))).toBe(true)
     })
 })
