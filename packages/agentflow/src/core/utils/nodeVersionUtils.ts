@@ -35,15 +35,10 @@ export function upgradeNodeData(componentNode: NodeDataSchema, existingData: Nod
     }
 
     if (existingData.inputs && upgraded.inputs) {
+        // Preserve matching inputs; also carry over *Config keys (loadConfig accordion side-channel
+        // values not present in the inputParams schema directly).
         for (const key of Object.keys(existingData.inputs)) {
-            if (key in upgraded.inputs) {
-                upgraded.inputs[key] = existingData.inputs[key]
-            }
-        }
-        // Preserve loadConfig config objects (e.g. agentModelConfig) — these are side-channel
-        // keys created by the loadConfig accordion that are not in the inputParams schema directly.
-        for (const key of Object.keys(existingData.inputs)) {
-            if (key.endsWith('Config') && !(key in upgraded.inputs)) {
+            if (key in upgraded.inputs || key.endsWith('Config')) {
                 upgraded.inputs[key] = existingData.inputs[key]
             }
         }
@@ -67,8 +62,7 @@ export function getStaleEdgesAfterUpgrade(upgradedData: NodeData, edges: FlowEdg
     const stale: FlowEdge[] = []
 
     for (const edge of edges) {
-        const targetNodeId = edge.targetHandle?.split('-')[0]
-        if (targetNodeId === upgradedData.id && edge.targetHandle !== upgradedData.id) {
+        if (edge.target === upgradedData.id && edge.targetHandle !== upgradedData.id) {
             stale.push(edge)
         }
     }

@@ -111,9 +111,9 @@ describe('getStaleEdgesAfterUpgrade', () => {
         expect(getStaleEdgesAfterUpgrade(nodeData, [edge])).toEqual([])
     })
 
-    it('does not flag an edge with no targetHandle', () => {
+    it('flags an edge with no targetHandle targeting this node (treated as legacy)', () => {
         const edge = makeFlowEdge('start_0', nodeId, { targetHandle: undefined })
-        expect(getStaleEdgesAfterUpgrade(nodeData, [edge])).toEqual([])
+        expect(getStaleEdgesAfterUpgrade(nodeData, [edge])).toEqual([edge])
     })
 
     it('returns only stale edges from a mixed set', () => {
