@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import moment from 'moment'
 import { useSelector } from 'react-redux'
-import { Box, Tooltip } from '@mui/material'
+import { Box, CircularProgress, Tooltip } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconClock } from '@tabler/icons-react'
 
@@ -21,11 +21,14 @@ const ScheduleStatusBadge = ({ scheduleStatus, size = 'md' }) => {
 
     if (!scheduleStatus?.isScheduled) return null
 
-    const isActive = scheduleStatus.enabled === true
+    const isLoading = scheduleStatus.loading === true
+    const isActive = !isLoading && scheduleStatus.enabled === true
     const palette = customization.isDarkMode ? 'dark' : 'light'
     const colors = isActive ? ACTIVE[palette] : PAUSED[palette]
 
-    const tooltipText = isActive
+    const tooltipText = isLoading
+        ? 'Checking schedule status…'
+        : isActive
         ? scheduleStatus.nextRunAt
             ? `Schedule active — next run ${moment(scheduleStatus.nextRunAt).format('MMM D, YYYY h:mm A')}`
             : 'Schedule active'
@@ -60,7 +63,9 @@ const ScheduleStatusBadge = ({ scheduleStatus, size = 'md' }) => {
                     transition: theme.transitions.create(['background-color', 'border-color'])
                 }}
             >
-                {isActive ? (
+                {isLoading ? (
+                    <CircularProgress size={dims.icon} thickness={5} sx={{ color: colors.text }} />
+                ) : isActive ? (
                     <Box
                         component='span'
                         sx={{
@@ -80,7 +85,7 @@ const ScheduleStatusBadge = ({ scheduleStatus, size = 'md' }) => {
                 ) : (
                     <IconClock size={dims.icon} stroke={2} />
                 )}
-                {isActive ? 'Scheduled' : 'Paused'}
+                {isLoading ? 'Loading…' : isActive ? 'Scheduled' : 'Paused'}
             </Box>
         </Tooltip>
     )

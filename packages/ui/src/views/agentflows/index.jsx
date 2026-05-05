@@ -179,23 +179,29 @@ const Agentflows = () => {
                 setScheduleStatuses(initialStatuses)
 
                 if (scheduleConfiguredIds.length > 0) {
-                    Promise.allSettled(
-                        scheduleConfiguredIds.map((id) => chatflowsApi.getScheduleStatus(id).then((res) => ({ id, data: res.data })))
-                    ).then((settled) => {
-                        const next = { ...initialStatuses }
-                        settled.forEach((r) => {
-                            if (r.status === 'fulfilled') {
-                                const { id, data } = r.value
-                                next[id] = {
-                                    isScheduled: true,
-                                    enabled: data?.enabled === true,
-                                    nextRunAt: data?.record?.nextRunAt || null,
-                                    cronExpression: data?.record?.cronExpression || null,
-                                    loading: false
+                    Promise.all(
+                        scheduleConfiguredIds.map((id) =>
+                            chatflowsApi
+                                .getScheduleStatus(id)
+                                .then((res) => ({ id, data: res.data }))
+                                .catch(() => ({ id, error: true }))
+                        )
+                    ).then((results) => {
+                        setScheduleStatuses((prev) => {
+                            const next = { ...prev }
+                            results.forEach(({ id, data }) => {
+                                if (next[id]) {
+                                    next[id] = {
+                                        ...next[id],
+                                        enabled: data?.enabled === true,
+                                        nextRunAt: data?.record?.nextRunAt || null,
+                                        cronExpression: data?.record?.cronExpression || null,
+                                        loading: false
+                                    }
                                 }
-                            }
+                            })
+                            return next
                         })
-                        setScheduleStatuses(next)
                     })
                 }
             } catch (e) {
