@@ -16,6 +16,7 @@ import {
     E2eExampleProps,
     FilteredComponentsExampleProps,
     MultiNodeFlowProps,
+    NodeVersioningExampleProps,
     StatusIndicatorsExampleProps,
     ValidationActionsExampleProps
 } from './demos'
@@ -97,6 +98,13 @@ const examples: Array<{
         description: 'Custom FABs alongside the validation button via canvasActions',
         props: ValidationActionsExampleProps,
         component: lazy(() => import('./demos/ValidationActionsExample').then((m) => ({ default: m.ValidationActionsExample })))
+    },
+    {
+        id: 'node-versioning',
+        name: 'Node Versioning',
+        description: 'Outdated node warnings, Sync Nodes button, and programmatic sync via ref',
+        props: NodeVersioningExampleProps,
+        component: lazy(() => import('./demos/NodeVersioningExample').then((m) => ({ default: m.NodeVersioningExample })))
     }
 ]
 

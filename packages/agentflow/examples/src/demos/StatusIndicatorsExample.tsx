@@ -26,6 +26,7 @@ const initialFlow: FlowData = {
                 id: 'startAgentflow_0',
                 name: 'startAgentflow',
                 label: 'Start',
+                version: 1.3,
                 color: '#7EE787',
                 hideInput: true,
                 outputAnchors: [{ id: 'startAgentflow_0-output-0', name: 'start', label: 'Start', type: 'start' }]
@@ -39,6 +40,7 @@ const initialFlow: FlowData = {
                 id: 'llmAgentflow_0',
                 name: 'llmAgentflow',
                 label: 'LLM Node',
+                version: 1.1,
                 color: '#64B5F6',
                 outputAnchors: [{ id: 'llmAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -51,6 +53,7 @@ const initialFlow: FlowData = {
                 id: 'llmAgentflow_1',
                 name: 'llmAgentflow',
                 label: 'Failing Task',
+                version: 1.1,
                 color: '#64B5F6',
                 outputAnchors: [{ id: 'llmAgentflow_1-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -63,6 +66,7 @@ const initialFlow: FlowData = {
                 id: 'agentAgentflow_0',
                 name: 'agentAgentflow',
                 label: 'Agent Node',
+                version: 3.2,
                 color: '#4DD0E1',
                 outputAnchors: [{ id: 'agentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -75,6 +79,7 @@ const initialFlow: FlowData = {
                 id: 'humanInputAgentflow_0',
                 name: 'humanInputAgentflow',
                 label: 'Human Input',
+                version: 1.0,
                 color: '#6E6EFD',
                 outputAnchors: [{ id: 'humanInputAgentflow_0-output-0', name: 'proceed', label: 'Proceed', type: 'string' }]
             }
@@ -87,6 +92,7 @@ const initialFlow: FlowData = {
                 id: 'directReplyAgentflow_0',
                 name: 'directReplyAgentflow',
                 label: 'Direct Reply',
+                version: 1.0,
                 color: '#4DDBBB',
                 outputAnchors: [{ id: 'directReplyAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }

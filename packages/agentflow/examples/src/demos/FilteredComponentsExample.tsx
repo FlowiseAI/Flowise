@@ -22,6 +22,7 @@ const initialFlow: FlowData = {
                 id: 'startAgentflow_0',
                 name: 'startAgentflow',
                 label: 'Start',
+                version: 1.3,
                 color: '#7EE787',
                 hideInput: true,
                 outputAnchors: [{ id: 'startAgentflow_0-output-0', name: 'start', label: 'Start', type: 'start' }]
