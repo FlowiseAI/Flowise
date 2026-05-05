@@ -140,6 +140,7 @@
         "html-to-text": "^9.0.5",
         "ioredis": "^5.3.2",
         "ipaddr.js": "^2.2.0",
+        "js-yaml": "^4.1.0",
         "jsdom": "^22.1.0",
         "json5": "2.2.3",
         "jsonpointer": "^5.0.1",
