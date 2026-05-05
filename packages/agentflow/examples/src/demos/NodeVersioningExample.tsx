@@ -24,7 +24,7 @@ const outdatedFlow: FlowData = {
                 id: 'startAgentflow_0',
                 name: 'startAgentflow',
                 label: 'Start',
-                version: 1,
+                version: 1.1,
                 color: '#7EE787',
                 hideInput: true,
                 inputs: { startInputType: 'chatInput' },
@@ -46,16 +46,15 @@ const outdatedFlow: FlowData = {
             }
         },
         {
-            id: 'agentAgentflow_0',
+            id: 'directReplyAgentflow_0',
             type: 'agentflowNode',
-            position: { x: 660, y: 200 },
+            position: { x: 680, y: 200 },
             data: {
-                id: 'agentAgentflow_0',
-                name: 'agentAgentflow',
-                label: 'Agent (outdated)',
-                version: 1,
-                color: '#4DD0E1',
-                outputAnchors: [{ id: 'agentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
+                id: 'directReplyAgentflow_0',
+                name: 'directReplyAgentflow',
+                label: 'Direct Reply (no version)',
+                color: '#4DDBBB',
+                outputAnchors: [{ id: 'directReplyAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
         }
     ],
@@ -73,8 +72,8 @@ const outdatedFlow: FlowData = {
             id: 'e2',
             source: 'llmAgentflow_0',
             sourceHandle: 'llmAgentflow_0-output-0',
-            target: 'agentAgentflow_0',
-            targetHandle: 'agentAgentflow_0',
+            target: 'directReplyAgentflow_0',
+            targetHandle: 'directReplyAgentflow_0',
             type: 'agentflowEdge',
             data: { sourceColor: '#64B5F6', targetColor: '#4DD0E1' }
         }
@@ -117,7 +116,7 @@ export function NodeVersioningExample() {
                     Reset to Outdated
                 </button>
                 <span style={{ color: '#666', fontSize: '13px' }}>
-                    All 3 nodes start at version 1. Use &quot;Sync Nodes&quot; in the header to upgrade.
+                    1 node current, 1 node outdated, 1 node with no version. Use &quot;Sync Nodes&quot; in the header to upgrade.
                 </span>
             </div>
 
