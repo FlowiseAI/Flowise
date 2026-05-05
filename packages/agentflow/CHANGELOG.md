@@ -5,6 +5,22 @@ All notable changes to `@flowiseai/agentflow` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.0-dev.14] - 2026-05-04
+
+### Added
+
+-   Node execution visualization with Human-in-the-Loop support
+-   End-to-end example demonstrating flow execution against a Flowise server
+
+### Changed
+
+-   Canvas styling aligned with AgentflowV2
+
+### Fixed
+
+-   Variable resolution and credential sync in node editor
+-   Iteration node functionality (output selection, highlight color, tool args)
+
 ## [0.0.0-dev.13] - 2026-04-17
 
 ### Added

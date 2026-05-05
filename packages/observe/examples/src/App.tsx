@@ -7,8 +7,6 @@ import ExecutionsViewerExample from './demos/ExecutionsViewerExample'
 import StandaloneDetailExample from './demos/StandaloneDetailExample'
 import { apiBaseUrl, token } from './config'
 
-import '@flowiseai/observe/observe.css'
-
 export default function App() {
     const [tab, setTab] = useState(0)
     const [isDarkMode, setIsDarkMode] = useState(false)

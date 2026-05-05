@@ -14,7 +14,6 @@ export default defineConfig({
         // our theme's #673ab7).
         dedupe: ['react', 'react-dom', '@mui/material', '@mui/system', '@emotion/react', '@emotion/styled'],
         alias: {
-            '@flowiseai/observe/observe.css': resolve(__dirname, '../src/observe.css'),
             '@flowiseai/observe': resolve(__dirname, '../src/index.ts'),
             '@': resolve(__dirname, '../src')
         }
