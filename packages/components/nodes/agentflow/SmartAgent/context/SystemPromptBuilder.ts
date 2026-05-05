@@ -1,3 +1,5 @@
+import { SkillMetadata, formatSkillsCatalogue } from '../skills'
+
 // Part 1: Base agent prompt
 const BASE_AGENT_PROMPT = `You are a smart and powerful AI Agent that helps users accomplish tasks using tools. You respond with text and tool calls. The user can see your responses and tool outputs in real time.
 
@@ -32,10 +34,6 @@ Keep working until the task is fully complete. Don't stop partway and explain wh
 ## Progress Updates
 
 For longer tasks, provide brief progress updates at reasonable intervals — a concise sentence recapping what you've done and what's next.`
-
-// Part 3: Skills prompt
-const SKILLS_PROMPT = `## Skills
-// TODO: skills prompt — frontmatter list + load instructions`
 
 // Part 4: Filesystem tool prompt
 const FILESYSTEM_TOOL_PROMPT = `## Filesystem Tools
@@ -132,7 +130,7 @@ Tool Call: create_calendar_event(...) -> just calls a tool, does not commit anyt
 
 export interface SystemPromptOptions {
     todoListPrompt: string // Part 2: from PlanningTool
-    skillsEnabled?: boolean // Part 3
+    skills?: SkillMetadata[] // Part 3
     filesystemEnabled?: boolean // Part 4
     subagentEnabled?: boolean // Part 5
     asyncSubagentEnabled?: boolean // Part 6
@@ -158,9 +156,9 @@ export function buildSystemPrompt(opts: SystemPromptOptions): string {
     // Part 2: Todo list prompt (always)
     parts.push(opts.todoListPrompt)
 
-    // Part 3: Skills — if configured
-    if (opts.skillsEnabled) {
-        parts.push(SKILLS_PROMPT)
+    // Part 3: Skills — if any
+    if (opts.skills && opts.skills.length > 0) {
+        parts.push(formatSkillsCatalogue(opts.skills))
     }
 
     // Part 4: Filesystem tool prompt

@@ -1106,7 +1106,7 @@ class SmartAgent_Agentflow implements INode {
             // Build unified system prompt in fixed assembly order
             const systemPrompt = buildSystemPrompt({
                 todoListPrompt: planner.getSystemPrompt(),
-                skillsEnabled: false, // TODO: wire to node input
+                skills: undefined, // wired in Phase 4
                 filesystemEnabled: true,
                 subagentEnabled: false, // TODO: wire to node input
                 asyncSubagentEnabled: false, // TODO: wire to node input
