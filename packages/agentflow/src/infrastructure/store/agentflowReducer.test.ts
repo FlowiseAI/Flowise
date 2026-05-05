@@ -268,4 +268,24 @@ describe('agentflowReducer', () => {
         const result = agentflowReducer(initialState, { type: 'CLEAR_EXECUTION_STATE' })
         expect(result.executionState).toBeNull()
     })
+
+    it('SET_COMPONENT_NODES should store the provided nodes', () => {
+        const nodes = [{ name: 'agentAgentflow', label: 'Agent', version: 3.2 }] as AgentflowState['componentNodes']
+        const result = agentflowReducer(initialState, { type: 'SET_COMPONENT_NODES', payload: nodes })
+        expect(result.componentNodes).toEqual(nodes)
+    })
+
+    it('SET_COMPONENT_NODES should replace existing componentNodes', () => {
+        const state: AgentflowState = {
+            ...initialState,
+            componentNodes: [{ name: 'llmAgentflow', label: 'LLM' }] as AgentflowState['componentNodes']
+        }
+        const newNodes = [{ name: 'agentAgentflow', label: 'Agent' }] as AgentflowState['componentNodes']
+        const result = agentflowReducer(state, { type: 'SET_COMPONENT_NODES', payload: newNodes })
+        expect(result.componentNodes).toEqual(newNodes)
+    })
+
+    it('initialState should have an empty componentNodes array', () => {
+        expect(initialState.componentNodes).toEqual([])
+    })
 })
