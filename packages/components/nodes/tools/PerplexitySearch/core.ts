@@ -76,7 +76,7 @@ export class PerplexitySearchTool extends DynamicStructuredTool {
             throw new Error('Perplexity API Key is required')
         }
 
-        const response = await fetch('https://api.perplexity.ai/search', {
+        const response = await secureFetch('https://api.perplexity.ai/search', {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${this.apiKey}`,
