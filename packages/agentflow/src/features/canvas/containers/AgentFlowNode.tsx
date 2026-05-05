@@ -72,7 +72,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
         if (data.warning) messages.push(data.warning)
         if (data.validationErrors?.length) messages.push(...data.validationErrors)
         setWarningMessage(messages.join('\n'))
-    }, [data.name, data.version, data.warning, data.validationErrors, state.componentNodes])
+    }, [data, state.componentNodes])
 
     return (
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} onDoubleClick={handleDoubleClick}>
