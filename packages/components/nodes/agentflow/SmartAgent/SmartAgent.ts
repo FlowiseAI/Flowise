@@ -1042,7 +1042,11 @@ class SmartAgent_Agentflow implements INode {
             // agentflow engine when startPersistState=true.
             const runtimeState = options.agentflowRuntime?.state as ICommonObject | undefined
             const initialFiles = (runtimeState?.files as Record<string, FileData> | undefined) ?? {}
-            const backend = await createBackend(initialFiles)
+            const backend = await createBackend(initialFiles, {
+                orgId: options.orgId as string | undefined,
+                chatflowid: options.chatflowid as string | undefined,
+                chatId: options.chatId as string | undefined
+            })
             const fsTools = buildFsTools(backend, (update) => {
                 if (!runtimeState) return
 

@@ -23,7 +23,6 @@ describe('LocalBackend — constructor', () => {
         const root = join(tmpdir(), `flowise-local-create-${Date.now()}`)
         tmpRoots.push(root)
         expect(existsSync(root)).toBe(false)
-        // eslint-disable-next-line no-new
         new LocalBackend(root)
         expect(existsSync(root)).toBe(true)
     })
