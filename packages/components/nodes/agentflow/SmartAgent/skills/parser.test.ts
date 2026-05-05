@@ -79,3 +79,24 @@ describe('parseFrontmatter — required field validation', () => {
         expect('field' in result && result.field).toBe('description')
     })
 })
+
+describe('parseFrontmatter — optional field validation', () => {
+    it('rejects allowed-tools that is not an array of strings', () => {
+        const raw = `---\nname: ok\ndescription: x\nallowed-tools: "not_an_array"\n---\nbody`
+        const result = parseFrontmatter(raw)
+        expect('field' in result && result.field).toBe('allowedTools')
+    })
+
+    it('rejects allowed-tools array containing non-strings', () => {
+        const raw = `---\nname: ok\ndescription: x\nallowed-tools: [foo, 42]\n---\nbody`
+        const result = parseFrontmatter(raw)
+        expect('field' in result && result.field).toBe('allowedTools')
+    })
+
+    it('passes unknown frontmatter keys through to metadata', () => {
+        const raw = `---\nname: ok\ndescription: x\ncategory: research\n---\nbody`
+        const result = parseFrontmatter(raw)
+        expect('name' in result).toBe(true)
+        if ('name' in result) expect(result.metadata?.category).toBe('research')
+    })
+})

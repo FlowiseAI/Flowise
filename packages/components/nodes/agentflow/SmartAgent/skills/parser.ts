@@ -39,6 +39,13 @@ export function parseFrontmatter(raw: string): SkillFrontmatter | ValidationErro
         }
     }
 
+    if (parsed['allowed-tools'] !== undefined) {
+        const at = parsed['allowed-tools']
+        if (!Array.isArray(at) || at.some((x: unknown) => typeof x !== 'string')) {
+            return { field: 'allowedTools', message: 'allowed-tools must be an array of strings' }
+        }
+    }
+
     const result: SkillFrontmatter = {
         name: parsed.name,
         description: parsed.description,
