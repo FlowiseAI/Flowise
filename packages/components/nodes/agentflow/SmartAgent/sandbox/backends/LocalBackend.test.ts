@@ -136,6 +136,19 @@ describe('LocalBackend — readRaw', () => {
         const result = await backend.readRaw('/nope.txt')
         expect('error' in result).toBe(true)
     })
+
+    it('returns base64 string for binary mime', async () => {
+        const backend = makeBackend()
+        const png = new Uint8Array([137, 80, 78, 71])
+        await backend.write('/img.png', png)
+        const result = await backend.readRaw('/img.png')
+        expect('data' in result).toBe(true)
+        if ('data' in result) {
+            expect(typeof result.data.content).toBe('string')
+            expect(result.data.content).toBe(Buffer.from([137, 80, 78, 71]).toString('base64'))
+            expect(result.data.mimeType).toBe('image/png')
+        }
+    })
 })
 
 describe('LocalBackend — edit', () => {

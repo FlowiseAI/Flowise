@@ -1,6 +1,7 @@
 import { buildFsTools } from './fs'
 import { StateBackend } from '../backends/StateBackend'
 import { FilesUpdate } from '../BackendProtocol'
+import { MAX_BINARY_READ_SIZE_BYTES } from '../utils'
 
 function findTool(tools: ReturnType<typeof buildFsTools>, name: string) {
     const tool = tools.find((t) => t.name === name)
@@ -47,5 +48,67 @@ describe('buildFsTools — onFilesUpdate', () => {
         await readFile.invoke({ file_path: '/r.txt' })
 
         expect(updates).toHaveLength(0)
+    })
+})
+
+describe('buildFsTools — read_file binary content blocks', () => {
+    it('returns image content block for png', async () => {
+        const backend = new StateBackend()
+        const png = new Uint8Array([137, 80, 78, 71])
+        await backend.write('/img.png', png)
+        const tools = buildFsTools(backend)
+        const readFile = findTool(tools, 'read_file')
+
+        const result = await readFile.invoke({ file_path: '/img.png' })
+
+        expect(Array.isArray(result)).toBe(true)
+        const arr = result as Array<{ type: string; mimeType: string; data: string }>
+        expect(arr).toHaveLength(1)
+        expect(arr[0].type).toBe('image')
+        expect(arr[0].mimeType).toBe('image/png')
+        expect(arr[0].data).toBe(Buffer.from([137, 80, 78, 71]).toString('base64'))
+    })
+
+    it('returns audio content block for mp3', async () => {
+        const backend = new StateBackend()
+        await backend.write('/song.mp3', new Uint8Array([255, 251, 144]))
+        const tools = buildFsTools(backend)
+        const readFile = findTool(tools, 'read_file')
+        const result = await readFile.invoke({ file_path: '/song.mp3' })
+        const arr = result as Array<{ type: string }>
+        expect(Array.isArray(result)).toBe(true)
+        expect(arr[0].type).toBe('audio')
+    })
+
+    it('returns generic file content block for non-media binary mime', async () => {
+        const backend = new StateBackend()
+        await backend.write('/module.wasm', new Uint8Array([0, 97, 115, 109]))
+        const tools = buildFsTools(backend)
+        const readFile = findTool(tools, 'read_file')
+        const result = await readFile.invoke({ file_path: '/module.wasm' })
+        const arr = result as Array<{ type: string }>
+        expect(Array.isArray(result)).toBe(true)
+        expect(arr[0].type).toBe('file')
+    })
+
+    it('returns error string for binary file exceeding the size cap', async () => {
+        const backend = new StateBackend()
+        const oversize = new Uint8Array(MAX_BINARY_READ_SIZE_BYTES + 1)
+        await backend.write('/big.png', oversize)
+        const tools = buildFsTools(backend)
+        const readFile = findTool(tools, 'read_file')
+        const result = await readFile.invoke({ file_path: '/big.png' })
+        expect(typeof result).toBe('string')
+        expect(result as string).toContain('exceeds')
+    })
+
+    it('still returns line-numbered string for text files', async () => {
+        const backend = new StateBackend()
+        await backend.write('/hello.txt', 'line1\nline2')
+        const tools = buildFsTools(backend)
+        const readFile = findTool(tools, 'read_file')
+        const result = await readFile.invoke({ file_path: '/hello.txt' })
+        expect(typeof result).toBe('string')
+        expect(result as string).toContain('line1')
     })
 })

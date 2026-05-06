@@ -400,3 +400,30 @@ describe('CompositeBackend.grep', () => {
         expect('error' in result).toBe(true)
     })
 })
+
+describe('CompositeBackend — binary content', () => {
+    it('preserves binary bytes through a mount round-trip', async () => {
+        const composite = new CompositeBackend(new StateBackend(), { '/a/': new StateBackend() })
+        const png = new Uint8Array([137, 80, 78, 71])
+        await composite.write('/a/img.png', png)
+        const result = await composite.read('/a/img.png')
+        expect('content' in result).toBe(true)
+        if ('content' in result) {
+            expect(result.content).toBeInstanceOf(Uint8Array)
+            expect(Array.from(result.content as Uint8Array)).toEqual([137, 80, 78, 71])
+            expect(result.mimeType).toBe('image/png')
+        }
+    })
+
+    it('preserves binary bytes through the default backend', async () => {
+        const composite = new CompositeBackend(new StateBackend(), { '/a/': new StateBackend() })
+        const png = new Uint8Array([137, 80, 78, 71])
+        await composite.write('/img.png', png)
+        const result = await composite.read('/img.png')
+        expect('content' in result).toBe(true)
+        if ('content' in result) {
+            expect(result.content).toBeInstanceOf(Uint8Array)
+            expect(Array.from(result.content as Uint8Array)).toEqual([137, 80, 78, 71])
+        }
+    })
+})

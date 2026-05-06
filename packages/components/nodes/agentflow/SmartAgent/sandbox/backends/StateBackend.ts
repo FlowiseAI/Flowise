@@ -13,7 +13,7 @@ import {
     ReadResult,
     WriteResult
 } from '../BackendProtocol'
-import { escapeRegex, getMimeType, globToRegex, isTextMimeType, normalizeContent, paginateLines } from '../utils'
+import { escapeRegex, getMimeType, globToRegex, isTextMimeType, normalizeContent, paginateLines, decodeFileContent } from '../utils'
 
 type FileStore = Record<string, FileData>
 
@@ -46,9 +46,10 @@ export class StateBackend implements BackendProtocol {
             return { error: `File not found: ${filePath}` }
         }
         if (!isTextMimeType(file.mimeType)) {
-            return { content: file.content as Uint8Array, mimeType: file.mimeType }
+            const decoded = decodeFileContent(file.content, file.mimeType) as Uint8Array
+            return { content: decoded, mimeType: file.mimeType }
         }
-        const { content: paginated, truncated } = paginateLines(file.content as string, offset, limit)
+        const { content: paginated, truncated } = paginateLines(file.content, offset, limit)
 
         return { content: paginated, mimeType: file.mimeType, truncated }
     }
@@ -71,7 +72,7 @@ export class StateBackend implements BackendProtocol {
             return { error: `Cannot edit binary file: ${filePath}` }
         }
 
-        const content = file.content as string
+        const content = file.content
         const matches = content.match(new RegExp(escapeRegex(oldStr), 'g'))
         const occurrences = matches ? matches.length : 0
         if (occurrences === 0) {
@@ -158,7 +159,7 @@ export class StateBackend implements BackendProtocol {
                 const basename = key.split('/').pop() ?? key
                 if (!globRx.test(basename)) continue
             }
-            const lines = (data.content as string).split('\n')
+            const lines = data.content.split('\n')
             for (let i = 0; i < lines.length; i++) {
                 if (regex.test(lines[i])) {
                     matches.push({ path: key, line: i + 1, content: lines[i] })

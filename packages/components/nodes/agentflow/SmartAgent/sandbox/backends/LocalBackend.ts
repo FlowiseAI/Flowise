@@ -99,7 +99,7 @@ export class LocalBackend implements BackendProtocol {
         const mimeType = getMimeType(filePath)
         return {
             data: {
-                content: isTextMimeType(mimeType) ? buf.toString('utf8') : new Uint8Array(buf),
+                content: isTextMimeType(mimeType) ? buf.toString('utf8') : buf.toString('base64'),
                 mimeType,
                 created_at: stat.birthtimeMs || stat.mtimeMs,
                 modified_at: stat.mtimeMs

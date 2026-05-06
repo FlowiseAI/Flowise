@@ -1,22 +1,27 @@
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { z } from 'zod'
 import { BackendProtocol, FilesUpdate } from '../BackendProtocol'
-import { formatWithLineNumbers } from '../utils'
+import { formatWithLineNumbers, MAX_BINARY_READ_SIZE_BYTES, toMultimodalContentBlock } from '../utils'
 
 export function buildFsTools(backend: BackendProtocol, onFilesUpdate?: (update: FilesUpdate) => void): DynamicStructuredTool[] {
     const readFileTool = new DynamicStructuredTool({
         name: 'read_file',
-        description: 'Read a text file from the sandbox filesystem. Returns file contents with line numbers.',
+        description:
+            'Read a file from the sandbox filesystem. Text files return contents with line numbers; image, audio, video, and other binary files return as multimodal content blocks the model can natively consume (subject to a 5 MB cap).',
         schema: z.object({
             file_path: z.string().describe('Absolute path of the file to read (e.g. /workspace/hello.txt)'),
-            offset: z.number().int().min(0).optional().describe('Line number to start reading from (0-indexed)'),
-            limit: z.number().int().min(1).optional().describe('Maximum number of lines to return')
+            offset: z.number().int().min(0).optional().describe('Line number to start reading from (0-indexed). Ignored for binary files.'),
+            limit: z.number().int().min(1).optional().describe('Maximum number of lines to return. Ignored for binary files.')
         }),
         func: async ({ file_path, offset, limit }) => {
             const result = await backend.read(file_path, offset, limit)
             if ('error' in result) return `Error: ${result.error}`
-            // TODO: Support binary files local and statebackend are completed
-            if (result.content instanceof Uint8Array) return 'Error: binary files not supported yet'
+            if (result.content instanceof Uint8Array) {
+                if (result.content.byteLength > MAX_BINARY_READ_SIZE_BYTES) {
+                    return `Error: ${file_path} is ${result.content.byteLength} bytes; exceeds the ${MAX_BINARY_READ_SIZE_BYTES}-byte cap.`
+                }
+                return [toMultimodalContentBlock(result.content, result.mimeType)]
+            }
             return formatWithLineNumbers(result.content, offset ?? 0)
         }
     })

@@ -7,7 +7,11 @@ export interface FileInfo {
 }
 
 export interface FileData {
-    content: string | Uint8Array
+    /**
+     * String-encoded file content. Text files use utf-8; binary files use base64.
+     * Backends decode base64 to Uint8Array at the read() boundary (see decodeFileContent in utils.ts).
+     */
+    content: string
     mimeType: string
     created_at: number
     modified_at: number

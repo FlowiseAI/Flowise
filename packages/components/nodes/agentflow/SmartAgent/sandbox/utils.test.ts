@@ -1,4 +1,15 @@
-import { getMimeType, isTextMimeType, paginateLines, escapeRegex, globToRegex, formatWithLineNumbers } from './utils'
+import {
+    decodeFileContent,
+    escapeRegex,
+    formatWithLineNumbers,
+    getMimeType,
+    globToRegex,
+    isTextMimeType,
+    MAX_BINARY_READ_SIZE_BYTES,
+    normalizeContent,
+    paginateLines,
+    toMultimodalContentBlock
+} from './utils'
 
 describe('getMimeType', () => {
     it('returns correct type for TypeScript', () => {
@@ -79,5 +90,84 @@ describe('formatWithLineNumbers', () => {
     })
     it('respects the startLine offset', () => {
         expect(formatWithLineNumbers('foo', 9)).toBe('10\tfoo')
+    })
+})
+
+describe('toMultimodalContentBlock', () => {
+    it('returns image block for image/* mime', () => {
+        const block = toMultimodalContentBlock(new Uint8Array([137, 80, 78, 71]), 'image/png')
+        expect(block.type).toBe('image')
+        expect(block.mimeType).toBe('image/png')
+        expect(block.data).toBe(Buffer.from([137, 80, 78, 71]).toString('base64'))
+    })
+
+    it('returns audio block for audio/* mime', () => {
+        const block = toMultimodalContentBlock(new Uint8Array([1, 2, 3]), 'audio/mpeg')
+        expect(block.type).toBe('audio')
+        expect(block.mimeType).toBe('audio/mpeg')
+    })
+
+    it('returns video block for video/* mime', () => {
+        const block = toMultimodalContentBlock(new Uint8Array([4, 5, 6]), 'video/mp4')
+        expect(block.type).toBe('video')
+    })
+
+    it('returns generic file block for non-image/audio/video mime', () => {
+        const block = toMultimodalContentBlock(new Uint8Array([0]), 'application/wasm')
+        expect(block.type).toBe('file')
+        expect(block.mimeType).toBe('application/wasm')
+    })
+
+    it('returns generic file block for application/octet-stream', () => {
+        const block = toMultimodalContentBlock(new Uint8Array([0]), 'application/octet-stream')
+        expect(block.type).toBe('file')
+    })
+})
+
+describe('decodeFileContent', () => {
+    it('returns text content as-is for text mime', () => {
+        expect(decodeFileContent('hello', 'text/plain')).toBe('hello')
+    })
+
+    it('base64-decodes binary content for binary mime', () => {
+        const b64 = Buffer.from([137, 80, 78, 71]).toString('base64')
+        const result = decodeFileContent(b64, 'image/png')
+        expect(result).toBeInstanceOf(Uint8Array)
+        expect(Array.from(result as Uint8Array)).toEqual([137, 80, 78, 71])
+    })
+
+    it('round-trips bytes through base64 for arbitrary binary content', () => {
+        const original = new Uint8Array([0, 1, 2, 254, 255, 13, 10, 26])
+        const b64 = Buffer.from(original).toString('base64')
+        const decoded = decodeFileContent(b64, 'application/octet-stream') as Uint8Array
+        expect(Array.from(decoded)).toEqual(Array.from(original))
+    })
+})
+
+describe('normalizeContent', () => {
+    it('returns base64 string for binary mime + Uint8Array input', () => {
+        const result = normalizeContent(new Uint8Array([137, 80, 78, 71]), 'image/png')
+        expect(typeof result).toBe('string')
+        expect(result).toBe(Buffer.from([137, 80, 78, 71]).toString('base64'))
+    })
+
+    it('passes through string for binary mime + string input (assumes base64)', () => {
+        const b64 = 'aGVsbG8='
+        expect(normalizeContent(b64, 'image/png')).toBe(b64)
+    })
+
+    it('returns utf-8 string for text mime + string input', () => {
+        expect(normalizeContent('hello', 'text/plain')).toBe('hello')
+    })
+
+    it('decodes Uint8Array for text mime + Uint8Array input', () => {
+        const bytes = new TextEncoder().encode('hi')
+        expect(normalizeContent(bytes, 'text/plain')).toBe('hi')
+    })
+})
+
+describe('MAX_BINARY_READ_SIZE_BYTES', () => {
+    it('is 5 MB', () => {
+        expect(MAX_BINARY_READ_SIZE_BYTES).toBe(5 * 1024 * 1024)
     })
 })

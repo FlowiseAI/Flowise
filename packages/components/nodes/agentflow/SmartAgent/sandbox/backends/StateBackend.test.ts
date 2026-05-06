@@ -335,11 +335,44 @@ describe('StateBackend — isolation & binary', () => {
         const backend = new StateBackend()
         const png = new Uint8Array([137, 80, 78, 71])
         await backend.write('/img.png', png)
+
+        // read() exposes Uint8Array per the ReadResult contract
         const result = await backend.read('/img.png')
         expect('content' in result).toBe(true)
         if ('content' in result) {
             expect(result.content).toBeInstanceOf(Uint8Array)
             expect(Array.from(result.content as Uint8Array)).toEqual([137, 80, 78, 71])
+            expect(result.mimeType).toBe('image/png')
+        }
+
+        // Storage shape: binary content is base64 string in FileData
+        const raw = await backend.readRaw('/img.png')
+        expect('data' in raw).toBe(true)
+        if ('data' in raw) {
+            expect(typeof raw.data.content).toBe('string')
+            expect(raw.data.content).toBe(Buffer.from([137, 80, 78, 71]).toString('base64'))
+        }
+    })
+})
+
+describe('StateBackend — cross-execution persistence', () => {
+    it('survives JSON.stringify round-trip via initialFiles (regression for binary corruption)', async () => {
+        // Mimics what buildAgentflow.ts:171 does: serialize state.files into the
+        // executionData column on every turn, then rehydrate on the next turn.
+        const a = new StateBackend()
+        await a.write('/img.png', new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]))
+
+        // Reach into internal storage to test the persisted shape directly,
+        // since runtimeState.files is exactly what gets JSON.stringified.
+        const internal = (a as unknown as { files: Record<string, FileData> }).files
+        const rehydrated = JSON.parse(JSON.stringify(internal)) as Record<string, FileData>
+
+        const b = new StateBackend(rehydrated)
+        const result = await b.read('/img.png')
+        expect('content' in result).toBe(true)
+        if ('content' in result) {
+            expect(result.content).toBeInstanceOf(Uint8Array)
+            expect(Array.from(result.content as Uint8Array)).toEqual([137, 80, 78, 71, 13, 10, 26, 10])
             expect(result.mimeType).toBe('image/png')
         }
     })
