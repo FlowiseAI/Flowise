@@ -2,6 +2,7 @@ import path from 'node:path'
 import { homedir } from 'node:os'
 import { randomBytes } from 'node:crypto'
 import { BackendProtocol, FileData } from './BackendProtocol'
+import { CompositeBackend } from './backends/CompositeBackend'
 import { LocalBackend } from './backends/LocalBackend'
 import { StateBackend } from './backends/StateBackend'
 
@@ -37,6 +38,8 @@ export async function createBackend(
             const root = path.join(base, ...buildScopeSegments(scope))
             return new LocalBackend(root)
         }
+        case 'composite':
+            return new CompositeBackend(new StateBackend(initialFiles), {})
         default:
             throw new Error(`Unknown SANDBOX_TYPE: ${type}`)
     }

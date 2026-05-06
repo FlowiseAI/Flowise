@@ -203,3 +203,30 @@ describe('createBackend — isolation', () => {
         if ('content' in readBack) expect(readBack.content).toBe('persisted across messages')
     })
 })
+
+describe('createBackend with SANDBOX_TYPE=composite', () => {
+    afterEach(() => {
+        // Reset to unset so we don't leak SANDBOX_TYPE into other suites.
+        // Avoid `process.env.SANDBOX_TYPE = undefined` — that stores the literal string "undefined".
+        delete process.env.SANDBOX_TYPE
+    })
+
+    it('returns a working backend with empty routes (default behaves like StateBackend)', async () => {
+        process.env.SANDBOX_TYPE = 'composite'
+        const backend = await createBackend()
+        const writeResult = await backend.write('/workspace/notes.md', 'hello')
+        expect('path' in writeResult && writeResult.path).toBe('/workspace/notes.md')
+        const readResult = await backend.read('/workspace/notes.md')
+        expect('content' in readResult && readResult.content).toBe('hello')
+    })
+
+    it('seeds the default StateBackend from initialFiles', async () => {
+        process.env.SANDBOX_TYPE = 'composite'
+        const initial = {
+            '/workspace/seed.md': { content: 'seeded', mimeType: 'text/markdown', created_at: 0, modified_at: 0 }
+        }
+        const backend = await createBackend(initial)
+        const result = await backend.read('/workspace/seed.md')
+        expect('content' in result && result.content).toBe('seeded')
+    })
+})
