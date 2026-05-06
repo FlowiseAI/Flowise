@@ -21,6 +21,8 @@ export interface NodeDefinitionBase {
     icon?: string
     hideInput?: boolean
     badge?: string
+    deprecateMessage?: string
+    warning?: string
     tags?: string[]
     documentation?: string
     /** Schema object (from API) or credential ID string (set at runtime when user selects a credential). */

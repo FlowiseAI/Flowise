@@ -4,6 +4,7 @@ import { Box, Typography } from '@mui/material'
 
 import { tokens } from '@/core/theme/tokens'
 import type { NodeData } from '@/core/types'
+import { getNodeVersionWarning } from '@/core/utils'
 import { useAgentflowContext, useApiContext, useConfigContext } from '@/infrastructure/store'
 
 import { NodeIcon } from '../components/NodeIcon'
@@ -32,7 +33,7 @@ export interface AgentFlowNodeProps {
 function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     const { isDarkMode } = useConfigContext()
     const { apiBaseUrl } = useApiContext()
-    const { executionState } = useAgentflowContext()
+    const { executionState, state } = useAgentflowContext()
     const ref = useRef<HTMLDivElement>(null)
     const { openNodeEditor } = useOpenNodeEditor()
 
@@ -61,10 +62,17 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
 
     useEffect(() => {
         const messages: string[] = []
+
+        const componentNode = state.componentNodes.find((cn) => cn.name === data.name)
+        if (componentNode) {
+            const versionWarning = getNodeVersionWarning(data, componentNode)
+            if (versionWarning) messages.push(versionWarning)
+        }
+
         if (data.warning) messages.push(data.warning)
         if (data.validationErrors?.length) messages.push(...data.validationErrors)
         setWarningMessage(messages.join('\n'))
-    }, [data.name, data.version, data.warning, data.validationErrors])
+    }, [data, data.name, data.version, data.warning, data.validationErrors, state.componentNodes])
 
     return (
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} onDoubleClick={handleDoubleClick}>

@@ -26,6 +26,7 @@ const initialFlow: FlowData = {
                 id: 'startAgentflow_0',
                 name: 'startAgentflow',
                 label: 'Start',
+                version: 1.3,
                 color: '#7EE787',
                 hideInput: true,
                 inputs: { startInputType: 'chatInput' },
@@ -40,6 +41,7 @@ const initialFlow: FlowData = {
                 id: 'agentAgentflow_0',
                 name: 'agentAgentflow',
                 label: 'Agent',
+                version: 1,
                 color: '#4DD0E1',
                 outputAnchors: [{ id: 'agentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
