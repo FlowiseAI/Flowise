@@ -1,4 +1,4 @@
-import { sanitizeSegment, buildScopeSegments, createBackend } from './factory'
+import { sanitizeSegment, buildScopeSegments, createBackend, getBuiltinSkillsBackend } from './factory'
 import { LocalBackend } from './backends/LocalBackend'
 import { StateBackend } from './backends/StateBackend'
 import { homedir, tmpdir } from 'node:os'
@@ -228,5 +228,33 @@ describe('createBackend with SANDBOX_TYPE=composite', () => {
         const backend = await createBackend(initial)
         const result = await backend.read('/workspace/seed.md')
         expect('content' in result && result.content).toBe('seeded')
+    })
+})
+
+describe('getBuiltinSkillsBackend', () => {
+    it('lists the shipped built-in skill folders', async () => {
+        const b = getBuiltinSkillsBackend()
+        const result = await b.ls('/')
+        expect('files' in result).toBe(true)
+        if ('files' in result) {
+            const names = result.files.map((f) => f.name).sort()
+            expect(names).toEqual(expect.arrayContaining(['code-review', 'todo-extract', 'web-research']))
+        }
+    })
+
+    it('reads SKILL.md content from a built-in skill', async () => {
+        const b = getBuiltinSkillsBackend()
+        const result = await b.read('/web-research/SKILL.md')
+        expect('content' in result).toBe(true)
+        if ('content' in result) {
+            expect(result.content).toMatch(/name:\s*web-research/)
+        }
+    })
+
+    it('rejects writes (read-only)', async () => {
+        const b = getBuiltinSkillsBackend()
+        const result = await b.write('/poisoned.md', 'x')
+        expect('error' in result).toBe(true)
+        if ('error' in result) expect(result.error).toMatch(/read[- ]?only/i)
     })
 })
