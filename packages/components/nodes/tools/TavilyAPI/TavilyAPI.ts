@@ -171,7 +171,7 @@ class TavilyAPI_Tools implements INode {
         const excludeDomains = nodeData.inputs?.excludeDomains as string
 
         const config: any = {
-            apiKey: tavilyApiKey,
+            tavilyApiKey,
             topic,
             searchDepth,
             maxResults,
