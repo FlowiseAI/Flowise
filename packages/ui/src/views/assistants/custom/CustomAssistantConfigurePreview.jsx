@@ -1665,18 +1665,20 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                     {builtinSkillsOptions.map((skill) => (
                         <FormControlLabel
                             key={skill.name}
+                            sx={{ alignItems: 'flex-start', mb: 1 }}
                             control={
                                 <Checkbox
                                     checked={isBuiltinSkillEnabled(skill.name)}
                                     onChange={() => handleBuiltinSkillToggle(skill.name)}
+                                    sx={{ pt: 0.5 }}
                                 />
                             }
                             label={
-                                <Stack direction='row' alignItems='center' spacing={1}>
+                                <Stack direction='column' spacing={0.25}>
                                     <Typography variant='body2'>{skill.label}</Typography>
                                     {skill.description && (
                                         <Typography variant='caption' color='text.secondary'>
-                                            — {skill.description}
+                                            {skill.description}
                                         </Typography>
                                     )}
                                 </Stack>
