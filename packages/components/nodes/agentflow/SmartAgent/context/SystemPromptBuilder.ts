@@ -43,6 +43,7 @@ You have access to a sandbox filesystem. All paths must be absolute.
 **Path conventions:**
 - \`/workspace/\` — working area for files you create or process during this task
 - \`/artifacts/\` — outputs intended to be surfaced to the user (reports, generated files, etc.)
+- \`/skills/builtin/\`, \`/skills/user-N/\` — read-only skill libraries; use \`read_file\` to fetch SKILL.md bodies (write/edit will fail on these mounts)
 
 **Available tools:**
 - \`read_file\` — read a text file; supports \`offset\` and \`limit\` for pagination of large files

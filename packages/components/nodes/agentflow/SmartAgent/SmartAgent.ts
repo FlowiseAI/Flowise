@@ -23,9 +23,10 @@ import zodToJsonSchema from 'zod-to-json-schema'
 import { z } from 'zod'
 import { PlanningTool, Todo } from './planning/PlanningTool'
 import { buildSystemPrompt } from './context/SystemPromptBuilder'
-import { createBackend } from './sandbox/factory'
+import { createBackend, getBuiltinSkillsBackend } from './sandbox/factory'
 import { buildFsTools } from './sandbox/tools/fs'
 import { FileData } from './sandbox/BackendProtocol'
+import { discoverSkills, setupSkills } from './skills'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
 import { randomBytes } from 'crypto'
@@ -561,6 +562,15 @@ class SmartAgent_Agentflow implements INode {
                         acceptNodeOutputAsVariable: true
                     }
                 ]
+            },
+            // Skills
+            {
+                label: 'Disabled Built-in Skills',
+                name: 'disabledBuiltinSkills',
+                type: 'multiOptions',
+                optional: true,
+                description: 'Built-in skills to exclude from this agent (the rest are auto-loaded).',
+                loadMethod: 'listBuiltinSkills'
             }
         ]
     }
@@ -640,6 +650,11 @@ class SmartAgent_Agentflow implements INode {
             const startAgentflowNode = previousNodes.find((node) => node.name === 'startAgentflow')
             const state = startAgentflowNode?.inputs?.startState as ICommonObject[]
             return state.map((item) => ({ label: item.key, name: item.key }))
+        },
+        async listBuiltinSkills(_: INodeData, _options: ICommonObject): Promise<INodeOptionsValue[]> {
+            const builtin = getBuiltinSkillsBackend()
+            const { skills } = await discoverSkills(builtin, [{ path: '/', label: 'builtin' }])
+            return skills.map((s) => ({ label: s.name, name: s.name, description: s.description }))
         },
         async listStores(_: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> {
             const returnData: INodeOptionsValue[] = []
@@ -1042,11 +1057,27 @@ class SmartAgent_Agentflow implements INode {
             // agentflow engine when startPersistState=true.
             const runtimeState = options.agentflowRuntime?.state as ICommonObject | undefined
             const initialFiles = (runtimeState?.files as Record<string, FileData> | undefined) ?? {}
-            const backend = await createBackend(initialFiles, {
+            const stateBackend = await createBackend(initialFiles, {
                 orgId: options.orgId as string | undefined,
                 chatflowid: options.chatflowid as string | undefined,
                 chatId: options.chatId as string | undefined
             })
+
+            // Compose the agent-facing backend: state/local/etc. as default, /skills/builtin/ mount as read-only.
+            const builtinSkillsBackend = getBuiltinSkillsBackend()
+            const disabledBuiltinSkills = new Set<string>(
+                convertMultiOptionsToStringArray((nodeData.inputs?.disabledBuiltinSkills as string) || '[]')
+            )
+            const skillsResult = await setupSkills({
+                stateBackend,
+                builtin: builtinSkillsBackend,
+                disabled: disabledBuiltinSkills,
+                runtimeState
+            })
+            for (const w of skillsResult.warnings) console.warn(`[skills] ${w}`)
+            const backend = skillsResult.composite
+            const skills = skillsResult.skills
+
             const fsTools = buildFsTools(backend, (update) => {
                 if (!runtimeState) return
 
@@ -1106,7 +1137,7 @@ class SmartAgent_Agentflow implements INode {
             // Build unified system prompt in fixed assembly order
             const systemPrompt = buildSystemPrompt({
                 todoListPrompt: planner.getSystemPrompt(),
-                skills: undefined, // wired in Phase 4
+                skills,
                 filesystemEnabled: true,
                 subagentEnabled: false, // TODO: wire to node input
                 asyncSubagentEnabled: false, // TODO: wire to node input
