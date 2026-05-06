@@ -140,14 +140,28 @@ function inputValuesWithDeclaredDefaults(params: InputParam[], inputValues: Reco
 
 /**
  * Evaluate visibility for all params, returning new param objects with computed `display`.
+ * Also filters individual options within `type: 'options'` params based on their own show/hide conditions.
  * Does not mutate the originals.
  */
 export function evaluateFieldVisibility(params: InputParam[], inputValues: Record<string, unknown>, arrayIndex?: number): InputParam[] {
     const effectiveInputs = inputValuesWithDeclaredDefaults(params, inputValues)
-    return params.map((param) => ({
-        ...param,
-        display: evaluateParamVisibility(param, effectiveInputs, arrayIndex)
-    }))
+    return params.map((param) => {
+        const withDisplay = { ...param, display: evaluateParamVisibility(param, effectiveInputs, arrayIndex) }
+
+        if (withDisplay.type === 'options' && withDisplay.options) {
+            const filteredOptions = withDisplay.options.filter((opt) => {
+                if (typeof opt === 'string' || (!opt.show && !opt.hide)) return true
+                return evaluateParamVisibility(
+                    { id: '', name: '', label: '', type: '', show: opt.show, hide: opt.hide },
+                    effectiveInputs,
+                    arrayIndex
+                )
+            })
+            return filteredOptions.length === withDisplay.options.length ? withDisplay : { ...withDisplay, options: filteredOptions }
+        }
+
+        return withDisplay
+    })
 }
 
 export function applyVisibleFieldDefaults(

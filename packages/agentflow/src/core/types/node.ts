@@ -87,7 +87,17 @@ export interface InputParam {
     type: string
     default?: unknown
     optional?: boolean
-    options?: Array<{ label: string; name: string; description?: string; client?: Array<ClientType> } | string>
+    options?: Array<
+        | {
+              label: string
+              name: string
+              description?: string
+              client?: Array<ClientType>
+              show?: Record<string, unknown>
+              hide?: Record<string, unknown>
+          }
+        | string
+    >
     placeholder?: string
     rows?: number
     description?: string

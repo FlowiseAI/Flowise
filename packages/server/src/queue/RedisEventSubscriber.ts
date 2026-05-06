@@ -1,6 +1,7 @@
 import { createClient } from 'redis'
 import { SSEStreamer } from '../utils/SSEStreamer'
 import logger from '../utils/logger'
+import { createRedisClient } from '../utils/redis'
 
 export class RedisEventSubscriber {
     private redisSubscriber: ReturnType<typeof createClient>
@@ -9,42 +10,7 @@ export class RedisEventSubscriber {
     private cleanupInterval: NodeJS.Timeout | null = null
 
     constructor(sseStreamer: SSEStreamer) {
-        if (process.env.REDIS_URL) {
-            this.redisSubscriber = createClient({
-                url: process.env.REDIS_URL,
-                socket: {
-                    keepAlive:
-                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                            : undefined
-                },
-                pingInterval:
-                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                        : undefined
-            })
-        } else {
-            this.redisSubscriber = createClient({
-                username: process.env.REDIS_USERNAME || undefined,
-                password: process.env.REDIS_PASSWORD || undefined,
-                socket: {
-                    host: process.env.REDIS_HOST || 'localhost',
-                    port: parseInt(process.env.REDIS_PORT || '6379'),
-                    tls: process.env.REDIS_TLS === 'true',
-                    cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
-                    key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
-                    ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined,
-                    keepAlive:
-                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                            : undefined
-                },
-                pingInterval:
-                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                        : undefined
-            })
-        }
+        this.redisSubscriber = createRedisClient()
         this.sseStreamer = sseStreamer
 
         this.setupEventListeners()
@@ -124,7 +90,7 @@ export class RedisEventSubscriber {
 
     startPeriodicCleanup(intervalMs: number = 60_000) {
         this.cleanupInterval = setInterval(() => {
-            const staleChannels = Array.from(this.subscribedChannels).filter((channel) => !this.sseStreamer.hasClient(channel))
+            const staleChannels = Array.from(this.subscribedChannels).filter((channel) => !this.sseStreamer.hasClientOrObserver(channel))
             if (staleChannels.length > 0) {
                 for (const channel of staleChannels) {
                     this.unsubscribe(channel)

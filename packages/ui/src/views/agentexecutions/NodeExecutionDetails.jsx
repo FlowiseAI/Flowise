@@ -917,8 +917,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         ))
                     ) : data?.name === 'toolAgentflow' && data?.input ? (
                         <JSONViewer data={data.input} />
-                    ) : data?.input?.form || data?.input?.http || data?.input?.conditions ? (
-                        <JSONViewer data={data.input.form || data.input.http || data.input.conditions} />
+                    ) : data?.input?.form || data?.input?.http || data?.input?.webhook || data?.input?.conditions ? (
+                        <JSONViewer data={data.input.form || data.input.http || data.input.webhook || data.input.conditions} />
                     ) : data?.input?.code ? (
                         <Box
                             sx={{
