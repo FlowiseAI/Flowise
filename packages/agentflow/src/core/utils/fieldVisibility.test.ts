@@ -200,6 +200,104 @@ describe('evaluateFieldVisibility', () => {
         expect(params[0].display).toBeUndefined()
         expect(params[1].display).toBeUndefined()
     })
+
+    describe('option-level show/hide filtering', () => {
+        it('removes options whose hide condition matches', () => {
+            const param = makeParam({
+                type: 'options',
+                options: [
+                    { label: 'String', name: 'string' },
+                    { label: 'Object', name: 'object', hide: { contentType: 'application/x-www-form-urlencoded' } }
+                ] as any
+            })
+
+            const result = evaluateFieldVisibility([param], { contentType: 'application/x-www-form-urlencoded' })
+            expect(result[0].options).toHaveLength(1)
+            expect(result[0].options![0]).toMatchObject({ name: 'string' })
+        })
+
+        it('keeps options whose hide condition does not match', () => {
+            const param = makeParam({
+                type: 'options',
+                options: [
+                    { label: 'String', name: 'string' },
+                    { label: 'Object', name: 'object', hide: { contentType: 'application/x-www-form-urlencoded' } }
+                ] as any
+            })
+
+            const result = evaluateFieldVisibility([param], { contentType: 'application/json' })
+            expect(result[0].options).toHaveLength(2)
+        })
+
+        it('removes options whose show condition does not match', () => {
+            const param = makeParam({
+                type: 'options',
+                options: [
+                    { label: 'Basic', name: 'basic' },
+                    { label: 'Advanced', name: 'advanced', show: { mode: 'expert' } }
+                ] as any
+            })
+
+            const result = evaluateFieldVisibility([param], { mode: 'beginner' })
+            expect(result[0].options).toHaveLength(1)
+            expect(result[0].options![0]).toMatchObject({ name: 'basic' })
+        })
+
+        it('keeps options whose show condition matches', () => {
+            const param = makeParam({
+                type: 'options',
+                options: [
+                    { label: 'Basic', name: 'basic' },
+                    { label: 'Advanced', name: 'advanced', show: { mode: 'expert' } }
+                ] as any
+            })
+
+            const result = evaluateFieldVisibility([param], { mode: 'expert' })
+            expect(result[0].options).toHaveLength(2)
+        })
+
+        it('passes through string options unchanged', () => {
+            const param = makeParam({
+                type: 'options',
+                options: ['one', 'two', 'three'] as any
+            })
+
+            const result = evaluateFieldVisibility([param], {})
+            expect(result[0].options).toHaveLength(3)
+        })
+
+        it('passes through options with no show/hide unchanged', () => {
+            const param = makeParam({
+                type: 'options',
+                options: [
+                    { label: 'A', name: 'a' },
+                    { label: 'B', name: 'b' }
+                ] as any
+            })
+
+            const result = evaluateFieldVisibility([param], {})
+            expect(result[0].options).toHaveLength(2)
+        })
+
+        it('does not mutate the original options array', () => {
+            const options = [
+                { label: 'String', name: 'string' },
+                { label: 'Object', name: 'object', hide: { contentType: 'application/x-www-form-urlencoded' } }
+            ] as any
+            const param = makeParam({ type: 'options', options })
+
+            evaluateFieldVisibility([param], { contentType: 'application/x-www-form-urlencoded' })
+
+            // Original options array is untouched
+            expect(options).toHaveLength(2)
+        })
+
+        it('does not affect non-options params', () => {
+            const param = makeParam({ type: 'string' })
+            const result = evaluateFieldVisibility([param], {})
+            expect(result[0].options).toBeUndefined()
+        })
+    })
 })
 
 describe('evaluateFieldVisibility – nested array $index pattern (Start node formInputTypes)', () => {

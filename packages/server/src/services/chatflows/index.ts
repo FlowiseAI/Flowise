@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { Brackets, In, QueryRunner } from 'typeorm'
@@ -14,7 +15,15 @@ import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServ
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import documentStoreService from '../../services/documentstore'
-import { constructGraphs, getAppVersion, getEndingNodes, getTelemetryFlowObj, isFlowValidForStream } from '../../utils'
+import {
+    constructGraphs,
+    decryptCredentialData,
+    encryptCredentialData,
+    getAppVersion,
+    getEndingNodes,
+    getTelemetryFlowObj,
+    isFlowValidForStream
+} from '../../utils'
 import { sanitizeAllowedUploadMimeTypesFromConfig } from '../../utils/fileValidation'
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
 import { sanitizeFlowDataForPublicEndpoint } from '../../utils/sanitizeFlowData'
@@ -616,6 +625,66 @@ const checkIfChatflowHasChanged = async (chatflowId: string, lastUpdatedDateTime
     }
 }
 
+const setWebhookSecret = async (chatflowId: string, workspaceId: string): Promise<{ webhookSecret: string }> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(ChatFlow)
+        const chatflow = await repo.findOne({ where: { id: chatflowId, workspaceId } })
+        if (!chatflow) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+        const plaintext = randomBytes(32).toString('hex')
+        chatflow.webhookSecret = await encryptCredentialData({ secret: plaintext })
+        chatflow.webhookSecretConfigured = true
+        await repo.save(chatflow)
+        return { webhookSecret: plaintext }
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) throw error
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.setWebhookSecret - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const clearWebhookSecret = async (chatflowId: string, workspaceId: string): Promise<void> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(ChatFlow)
+        const chatflow = await repo.findOne({ where: { id: chatflowId, workspaceId } })
+        if (!chatflow) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+        chatflow.webhookSecret = null
+        chatflow.webhookSecretConfigured = false
+        await repo.save(chatflow)
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) throw error
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.clearWebhookSecret - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const getWebhookSecret = async (chatflowId: string, workspaceId: string): Promise<string | null> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
+            .createQueryBuilder('chatflow')
+            .select('chatflow.webhookSecret')
+            .where('chatflow.id = :id', { id: chatflowId })
+            .andWhere('chatflow.workspaceId = :workspaceId', { workspaceId })
+            .getOne()
+        const stored = dbResponse?.webhookSecret
+        if (!stored) return null
+        const decrypted = await decryptCredentialData(stored)
+        return (decrypted?.secret as string | undefined) ?? null
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) throw error
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.getWebhookSecret - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     assertChatflowIdsInWorkspace,
     checkIfChatflowIsValidForStreaming,
@@ -630,5 +699,8 @@ export default {
     updateChatflow,
     getSinglePublicChatbotConfig,
     checkIfChatflowHasChanged,
-    getAllChatflowsCountByOrganization
+    getAllChatflowsCountByOrganization,
+    setWebhookSecret,
+    clearWebhookSecret,
+    getWebhookSecret
 }

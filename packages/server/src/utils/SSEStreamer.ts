@@ -12,10 +12,42 @@ type Client = {
 
 export class SSEStreamer implements IServerSideEventStreamer {
     private readonly clients: Map<string, Client> = new Map()
+    // Observers receive a passive copy of every event written for `sourceChatId` — one source,
+    // many destinations. Use cases: webhook listener panels watching an in-flight execution,
+    // multi-tab chat sync, admin shadowing, test/eval harnesses. Per-replica only — cross-replica
+    // fan-out happens upstream by having the observer's replica subscribe to the source chatId itself.
+    private readonly observers: Map<string, Set<string>> = new Map()
     private heartbeatInterval: NodeJS.Timeout | null = null
 
     hasClient(chatId: string): boolean {
         return this.clients.has(chatId)
+    }
+
+    /**
+     * True when there's either a real client or at least one active observer for this chatId.
+     */
+    hasClientOrObserver(chatId: string): boolean {
+        return this.clients.has(chatId) || (this.observers.get(chatId)?.size ?? 0) > 0
+    }
+
+    addObserver(sourceChatId: string, observerId: string) {
+        let set = this.observers.get(sourceChatId)
+        if (!set) {
+            set = new Set()
+            this.observers.set(sourceChatId, set)
+        }
+        set.add(observerId)
+    }
+
+    removeObserver(sourceChatId: string, observerId: string) {
+        const set = this.observers.get(sourceChatId)
+        if (!set) return
+        set.delete(observerId)
+        if (set.size === 0) this.observers.delete(sourceChatId)
+    }
+
+    clearObservers(sourceChatId: string) {
+        this.observers.delete(sourceChatId)
     }
 
     addExternalClient(chatId: string, res: Response) {
@@ -29,17 +61,39 @@ export class SSEStreamer implements IServerSideEventStreamer {
     /**
      * Safely write data to a client's response. If the write fails (e.g., client already disconnected),
      * the client is automatically removed to prevent further writes to a dead connection.
+     * Also fans out to any registered observers of `chatId`.
      */
     private safeWrite(chatId: string, data: string): boolean {
         const client = this.clients.get(chatId)
-        if (!client) return false
-        try {
-            client.response.write(data)
-            return true
-        } catch {
-            this.clients.delete(chatId)
-            return false
+        let ok = false
+        if (client) {
+            try {
+                client.response.write(data)
+                ok = true
+            } catch {
+                this.clients.delete(chatId)
+            }
         }
+
+        const observerSet = this.observers.get(chatId)
+        if (observerSet && observerSet.size > 0) {
+            for (const observerId of Array.from(observerSet)) {
+                const observer = this.clients.get(observerId)
+                if (!observer) {
+                    observerSet.delete(observerId)
+                    continue
+                }
+                try {
+                    observer.response.write(data)
+                } catch {
+                    this.clients.delete(observerId)
+                    observerSet.delete(observerId)
+                }
+            }
+            if (observerSet.size === 0) this.observers.delete(chatId)
+        }
+
+        return ok
     }
 
     removeClient(chatId: string) {
@@ -56,6 +110,32 @@ export class SSEStreamer implements IServerSideEventStreamer {
                 // Client already disconnected, ignore write errors
             } finally {
                 this.clients.delete(chatId)
+            }
+        }
+
+        // Notify any observers that this execution finished, but keep their long-lived
+        // connections open for whatever they're observing next. UI transitions in_progress → done → idle.
+        const observerSet = this.observers.get(chatId)
+        if (observerSet && observerSet.size > 0) {
+            for (const observerId of Array.from(observerSet)) {
+                const observer = this.clients.get(observerId)
+                if (!observer) continue
+                try {
+                    const payload = { event: 'executionEnd', data: { chatId } }
+                    observer.response.write('message:\ndata:' + JSON.stringify(payload) + '\n\n')
+                } catch {
+                    this.clients.delete(observerId)
+                }
+            }
+            this.observers.delete(chatId)
+        }
+
+        // If the removed `chatId` was itself an observer, scrub it from every observer Set that
+        // still references it. Otherwise stale references would sit in memory until the next
+        // write to each observed chatId organically failed and lazily cleaned them up.
+        for (const [sourceId, observerIds] of this.observers) {
+            if (observerIds.delete(chatId) && observerIds.size === 0) {
+                this.observers.delete(sourceId)
             }
         }
     }

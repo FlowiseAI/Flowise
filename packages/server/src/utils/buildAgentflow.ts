@@ -95,6 +95,28 @@ interface IAgentFlowRuntime {
     state?: ICommonObject
     chatHistory?: IMessage[]
     form?: Record<string, any>
+    webhook?: Record<string, any>
+}
+
+/**
+ * Resolves {{ $webhook.body.* }}, {{ $webhook.headers.* }}, {{ $webhook.query.* }} references in a
+ * template string against an incoming webhook payload. Used to pre-resolve webhookDefaultInput
+ * before any node runs, so the Start node's run() and downstream finalInput see the same value.
+ * Unknown references are left as-is.
+ */
+const resolveWebhookRefs = (template: string, webhook: Record<string, any> | undefined | null): string => {
+    if (!template) return ''
+    if (!webhook) return template
+    return template.replace(/{{(.*?)}}/g, (match, ref) => {
+        const path = ref.trim()
+        if (!path.startsWith('$webhook.')) return match
+        // Block prototype-walking paths defensively — lodash.get follows __proto__/constructor/prototype.
+        const subPath = path.replace('$webhook.', '')
+        if (/(^|\.)(__proto__|constructor|prototype)(\.|$)/.test(subPath)) return match
+        const val = get(webhook, subPath)
+        if (val == null) return match
+        return Array.isArray(val) || (typeof val === 'object' && val !== null) ? JSON.stringify(val) : String(val)
+    })
 }
 
 interface IExecuteNodeParams {
@@ -225,7 +247,8 @@ export const resolveVariables = async (
     componentNodes: IComponentNodes,
     agentFlowExecutedData?: IAgentflowExecutedData[],
     iterationContext?: ICommonObject,
-    loopCounts?: Map<string, number>
+    loopCounts?: Map<string, number>,
+    webhook?: Record<string, any>
 ): Promise<INodeData> => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
     const types = 'inputs'
@@ -278,6 +301,17 @@ export const resolveVariables = async (
                 const variableValue = get(form, variableFullPath.replace('$form.', ''))
                 if (variableValue != null) {
                     // For arrays and objects, stringify them to prevent toString() conversion issues
+                    const formattedValue =
+                        Array.isArray(variableValue) || (typeof variableValue === 'object' && variableValue !== null)
+                            ? JSON.stringify(variableValue)
+                            : variableValue
+                    resolvedValue = resolvedValue.replace(match, formattedValue)
+                }
+            }
+
+            if (variableFullPath.startsWith('$webhook.')) {
+                const variableValue = get(webhook, variableFullPath.replace('$webhook.', ''))
+                if (variableValue != null) {
                     const formattedValue =
                         Array.isArray(variableValue) || (typeof variableValue === 'object' && variableValue !== null)
                             ? JSON.stringify(variableValue)
@@ -1124,6 +1158,12 @@ const executeNode = async ({
         } else if (isObjectNotEmpty(agentflowRuntime.form)) {
             formValue = agentflowRuntime.form as Record<string, any>
         }
+        let webhookValue: Record<string, any> = {}
+        if (isObjectNotEmpty(incomingInput.webhook)) {
+            webhookValue = incomingInput.webhook as Record<string, any>
+        } else if (isObjectNotEmpty(agentflowRuntime.webhook)) {
+            webhookValue = agentflowRuntime.webhook as Record<string, any>
+        }
         const reactFlowNodeData: INodeData = await resolveVariables(
             flowNodeData,
             incomingInput.question ?? '',
@@ -1136,7 +1176,8 @@ const executeNode = async ({
             componentNodes,
             agentFlowExecutedData,
             iterationContext,
-            loopCounts
+            loopCounts,
+            webhookValue
         )
 
         // Handle human input if present
@@ -1176,6 +1217,8 @@ const executeNode = async ({
             finalInput = Object.entries(incomingInput.form || {})
                 .map(([key, value]) => `${key}: ${value}`)
                 .join('\n')
+        } else if (incomingInput.webhook) {
+            finalInput = JSON.stringify(incomingInput.webhook)
         }
 
         // Prepare run parameters
@@ -1549,9 +1592,8 @@ export const executeAgentFlow = async ({
     const edges = parsedFlowData.edges
     const { graph, nodeDependencies } = constructGraphs(nodes, edges)
     const { graph: reversedGraph } = constructGraphs(nodes, edges, { isReversed: true })
-    const startInputType = nodes.find((node) => node.data.name === 'startAgentflow')?.data.inputs?.startInputType as
-        | 'chatInput'
-        | 'formInput'
+    const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
+    const startInputType = startNode?.data.inputs?.startInputType as 'chatInput' | 'formInput' | 'webhookTrigger'
     if (!startInputType && !isRecursive) {
         throw new Error('Start input type not found')
     }
@@ -1595,7 +1637,8 @@ export const executeAgentFlow = async ({
     let agentflowRuntime: IAgentFlowRuntime = {
         state: {},
         chatHistory: [],
-        form: {}
+        form: {},
+        webhook: {}
     }
 
     let previousExecution: Execution | undefined
@@ -1676,6 +1719,37 @@ export const executeAgentFlow = async ({
                 }
             }
         }
+    }
+
+    // On webhook humanInput resume, restore the original trigger's webhook data so $webhook.body.*,
+    // $webhook.headers.*, $webhook.query.* and $flow.input resolve to the original trigger values.
+    // incomingInput.webhook is always present on webhook calls so we overwrite it directly rather
+    // than relying on the agentflowRuntime.webhook fallback (unlike the formInput pattern).
+    if (startInputType === 'webhookTrigger' && humanInput && previousExecution) {
+        const previousExecutionData = (JSON.parse(previousExecution.executionData) as IAgentflowExecutedData[]) ?? []
+
+        const previousStartAgent = previousExecutionData.find((execData) => execData.data.name === 'startAgentflow')
+
+        if (previousStartAgent) {
+            const previousStartAgentOutput = previousStartAgent.data.output
+            if (previousStartAgentOutput && typeof previousStartAgentOutput === 'object' && 'webhook' in previousStartAgentOutput) {
+                incomingInput.webhook = previousStartAgentOutput.webhook as Record<string, any>
+            }
+        }
+    }
+
+    if (startInputType === 'webhookTrigger' && !humanInput) {
+        const webhookInputMode = (startNode?.data?.inputs?.webhookInputMode as string) || 'text'
+        if (webhookInputMode === 'text') {
+            const template = (startNode?.data?.inputs?.webhookDefaultInput as string) || ''
+            incomingInput.question = resolveWebhookRefs(template, incomingInput.webhook) || ' '
+        } else if (webhookInputMode === 'none') {
+            incomingInput.question = ' '
+        }
+    }
+
+    if (incomingInput.webhook && Object.keys(incomingInput.webhook).length) {
+        agentflowRuntime.webhook = incomingInput.webhook
     }
 
     // If it is human input, find the last checkpoint and resume
@@ -2258,6 +2332,13 @@ export const executeAgentFlow = async ({
                 .join('\n')
         } else {
             finalUserInput = question || humanInput?.feedback || ' '
+        }
+    } else if (startInputType === 'webhookTrigger') {
+        const webhookInputMode = (startNode?.data?.inputs?.webhookInputMode as string) || 'text'
+        if (webhookInputMode === 'payload') {
+            finalUserInput = incomingInput.webhook ? JSON.stringify(incomingInput.webhook) : ' '
+        } else {
+            finalUserInput = humanInput?.feedback || incomingInput.question || ' '
         }
     }
 
