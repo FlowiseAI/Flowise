@@ -1,4 +1,4 @@
-import type { FlowEdge, NodeData, NodeDataSchema } from '../types'
+import type { NodeData, NodeDataSchema } from '../types'
 
 import { initNode } from './nodeFactory'
 
@@ -47,25 +47,4 @@ export function upgradeNodeData(componentNode: NodeDataSchema, existingData: Nod
     upgraded.label = existingData.label
 
     return upgraded
-}
-
-/**
- * Returns edges that become stale after a node upgrade.
- * Port of updateOutdatedNodeEdge() from packages/ui/src/utils/genericHelper.js:353-416
- * (AgentFlow V2 branch only).
- *
- * In AgentFlow V2, the valid targetHandle for any input edge is exactly the node ID.
- * Edges with a suffixed handle (from an old schema-specific input) are stale.
- * Output edges are never stale in V2.
- */
-export function getStaleEdgesAfterUpgrade(upgradedData: NodeData, edges: FlowEdge[]): FlowEdge[] {
-    const stale: FlowEdge[] = []
-
-    for (const edge of edges) {
-        if (edge.target === upgradedData.id && edge.targetHandle !== upgradedData.id) {
-            stale.push(edge)
-        }
-    }
-
-    return stale
 }

@@ -1,7 +1,7 @@
-import { makeFlowEdge, makeNodeData, makeNodeDataSchema } from '@test-utils/factories'
+import { makeNodeData, makeNodeDataSchema } from '@test-utils/factories'
 
 import { initNode } from './nodeFactory'
-import { getNodeVersionWarning, getStaleEdgesAfterUpgrade, isNodeOutdated, upgradeNodeData } from './nodeVersionUtils'
+import { getNodeVersionWarning, isNodeOutdated, upgradeNodeData } from './nodeVersionUtils'
 
 jest.mock('./nodeFactory', () => ({
     initNode: jest.fn()
@@ -83,44 +83,6 @@ describe('getNodeVersionWarning', () => {
         const cn = makeNodeDataSchema({ version: 1.0, badge: 'DEPRECATING', deprecateMessage: 'Deprecated!', warning: 'Slow' })
         const result = getNodeVersionWarning(makeNodeData({ version: 1.0 }), cn)
         expect(result).toBe('Deprecated!')
-    })
-})
-
-// ─── getStaleEdgesAfterUpgrade ────────────────────────────────────────────────
-
-describe('getStaleEdgesAfterUpgrade', () => {
-    const nodeId = 'llmAgentflow_0'
-    const nodeData = makeNodeData({ id: nodeId })
-
-    it('returns empty array when there are no edges', () => {
-        expect(getStaleEdgesAfterUpgrade(nodeData, [])).toEqual([])
-    })
-
-    it('does not flag edge whose targetHandle exactly matches the node id (valid edge)', () => {
-        const edge = makeFlowEdge('start_0', nodeId, { targetHandle: nodeId })
-        expect(getStaleEdgesAfterUpgrade(nodeData, [edge])).toEqual([])
-    })
-
-    it('flags edge whose targetHandle is a suffixed handle from the old schema', () => {
-        const stale = makeFlowEdge('start_0', nodeId, { targetHandle: `${nodeId}-input-llmModel` })
-        expect(getStaleEdgesAfterUpgrade(nodeData, [stale])).toEqual([stale])
-    })
-
-    it('does not flag edges targeting a different node', () => {
-        const edge = makeFlowEdge('start_0', 'otherNode_0', { targetHandle: 'otherNode_0-input-something' })
-        expect(getStaleEdgesAfterUpgrade(nodeData, [edge])).toEqual([])
-    })
-
-    it('flags an edge with no targetHandle targeting this node (treated as legacy)', () => {
-        const edge = makeFlowEdge('start_0', nodeId, { targetHandle: undefined })
-        expect(getStaleEdgesAfterUpgrade(nodeData, [edge])).toEqual([edge])
-    })
-
-    it('returns only stale edges from a mixed set', () => {
-        const valid = makeFlowEdge('start_0', nodeId, { id: 'e1', targetHandle: nodeId })
-        const stale = makeFlowEdge('start_0', nodeId, { id: 'e2', targetHandle: `${nodeId}-input-model` })
-        const other = makeFlowEdge('start_0', 'other_0', { id: 'e3', targetHandle: 'other_0-input-x' })
-        expect(getStaleEdgesAfterUpgrade(nodeData, [valid, stale, other])).toEqual([stale])
     })
 })
 

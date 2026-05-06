@@ -1,4 +1,4 @@
-import type { AgentflowAction, AgentflowState, FlowNode, NodeDataSchema } from '@/core/types'
+import type { AgentflowAction, AgentflowState, FlowNode } from '@/core/types'
 
 // Node types that size to content; strip stored width/height so they stay content-sized
 const CONTENT_SIZED_NODE_TYPES = new Set(['agentFlow', 'stickyNote'])
@@ -22,7 +22,7 @@ export const initialState: AgentflowState = {
     editingNodeId: null,
     editDialogProps: null,
     executionState: null,
-    componentNodes: [] as NodeDataSchema[]
+    componentNodes: []
 }
 
 export function agentflowReducer(state: AgentflowState, action: AgentflowAction): AgentflowState {

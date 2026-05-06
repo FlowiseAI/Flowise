@@ -14,4 +14,4 @@ export { buildDynamicOutputAnchors, parseOutputHandleIndex } from './dynamicOutp
 export { getDefinedStateKeys, getUpstreamNodes } from './variableUtils'
 
 // Node version detection and upgrade utilities
-export { getNodeVersionWarning, getStaleEdgesAfterUpgrade, isNodeOutdated, upgradeNodeData } from './nodeVersionUtils'
+export { getNodeVersionWarning, isNodeOutdated, upgradeNodeData } from './nodeVersionUtils'

@@ -504,7 +504,7 @@ describe('Agentflow Component', () => {
             const { container } = render(<Agentflow apiBaseUrl='https://example.com' initialFlow={outdatedFlow} />)
 
             await waitFor(() => {
-                expect(container.querySelector('[aria-label="sync"]')).toBeInTheDocument()
+                expect(container.querySelector('[aria-label="Sync Nodes"]')).toBeInTheDocument()
             })
         })
 
@@ -515,7 +515,7 @@ describe('Agentflow Component', () => {
                 expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
             })
 
-            expect(container.querySelector('[aria-label="sync"]')).not.toBeInTheDocument()
+            expect(container.querySelector('[aria-label="Sync Nodes"]')).not.toBeInTheDocument()
         })
 
         it('does not show Sync Nodes FAB when all nodes are up to date', async () => {
@@ -529,7 +529,7 @@ describe('Agentflow Component', () => {
                 expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
             })
 
-            expect(container.querySelector('[aria-label="sync"]')).not.toBeInTheDocument()
+            expect(container.querySelector('[aria-label="Sync Nodes"]')).not.toBeInTheDocument()
         })
     })
 

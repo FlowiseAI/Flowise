@@ -287,7 +287,7 @@ function AgentflowCanvas({
                     {!readOnly && hasOutdatedNodes && (
                         <StyledFab
                             size='small'
-                            aria-label='sync'
+                            aria-label='Sync Nodes'
                             title='Sync Nodes'
                             onClick={syncNodes}
                             sx={{
@@ -295,9 +295,12 @@ function AgentflowCanvas({
                                 left: 20 + (showDefaultPalette ? 50 : 0) + (enableGenerator ? 50 : 0),
                                 top: 20,
                                 zIndex: tokens.zIndex.canvasButton,
-                                background: 'orange',
+                                background: tokens.colors.semantic.syncNodesFab,
                                 color: 'white',
-                                '&:hover': { background: 'orange', filter: 'brightness(0.9)' }
+                                '&:hover': {
+                                    background: tokens.colors.semantic.syncNodesFab,
+                                    backgroundImage: 'linear-gradient(rgb(0 0 0/10%) 0 0)'
+                                }
                             }}
                         >
                             <IconRefreshAlert />

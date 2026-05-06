@@ -31,11 +31,6 @@ describe('AgentflowHeader', () => {
         expect(screen.queryByText(/\*/)).not.toBeInTheDocument()
     })
 
-    it('does not render a Sync Nodes button (moved to canvas FAB)', () => {
-        render(<AgentflowHeader {...baseProps} />)
-        expect(screen.queryByRole('button', { name: /sync nodes/i })).not.toBeInTheDocument()
-    })
-
     describe('Save button', () => {
         it('calls onSave when clicked', async () => {
             const onSave = jest.fn()
