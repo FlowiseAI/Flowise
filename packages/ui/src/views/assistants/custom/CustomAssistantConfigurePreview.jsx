@@ -184,6 +184,12 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
     // Built-in tools — dynamic map keyed by param name (e.g. 'agentToolsBuiltInOpenAI': ['web_search_preview'])
     const [builtInTools, setBuiltInTools] = useState({})
 
+    // Built-in skills catalogue fetched from SmartAgent's listBuiltinSkills loadMethod.
+    // Each entry: { label, name, description }
+    const [builtinSkillsOptions, setBuiltinSkillsOptions] = useState([])
+    // Names of skills that are *disabled* — i.e. excluded from this agent.
+    const [disabledBuiltinSkills, setDisabledBuiltinSkills] = useState([])
+
     const [enableMemory, setEnableMemory] = useState(true)
     const [memoryType, setMemoryType] = useState('allMessages')
     const [memoryWindowSize, setMemoryWindowSize] = useState(20)
@@ -490,6 +496,9 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                 const tools = builtInTools[paramName] || []
                 set(agentNode, `inputs.${paramName}`, tools.length > 0 ? JSON.stringify(tools) : '')
             }
+
+            // Skills — disabled list (JSON-stringified array of names; empty when nothing disabled)
+            set(agentNode, 'inputs.disabledBuiltinSkills', disabledBuiltinSkills.length > 0 ? JSON.stringify(disabledBuiltinSkills) : '')
 
             // Custom tools
             set(agentNode, 'inputs.agentTools', buildToolsArray())
@@ -936,6 +945,14 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
         })
     }
 
+    // ==============================|| Skills Handlers ||============================== //
+
+    const isBuiltinSkillEnabled = (skillName) => !disabledBuiltinSkills.includes(skillName)
+
+    const handleBuiltinSkillToggle = (skillName) => {
+        setDisabledBuiltinSkills((prev) => (prev.includes(skillName) ? prev.filter((n) => n !== skillName) : [...prev, skillName]))
+    }
+
     // ==============================|| Structured Output Handlers ||============================== //
 
     const handleStructuredOutputChange = (index, field, value) => {
@@ -988,11 +1005,12 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
         // Fetch vector store and embedding model options + full component definitions
         const fetchVSEmbeddingOptions = async () => {
             try {
-                const [vsResp, embResp, vsComponentsResp, embComponentsResp] = await Promise.all([
+                const [vsResp, embResp, vsComponentsResp, embComponentsResp, skillsResp] = await Promise.all([
                     nodesApi.executeNodeLoadMethod('smartAgentAgentflow', { loadMethod: 'listVectorStores' }),
                     nodesApi.executeNodeLoadMethod('smartAgentAgentflow', { loadMethod: 'listEmbeddings' }),
                     nodesApi.getNodesByCategory('Vector Stores'),
-                    nodesApi.getNodesByCategory('Embeddings')
+                    nodesApi.getNodesByCategory('Embeddings'),
+                    nodesApi.executeNodeLoadMethod('smartAgentAgentflow', { loadMethod: 'listBuiltinSkills' })
                 ])
                 if (vsResp.data) {
                     setVectorStoreOptions(
@@ -1019,6 +1037,15 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                 }
                 if (embComponentsResp.data) {
                     setEmbeddingModelComponents(embComponentsResp.data.filter((c) => !c.tags?.includes('LlamaIndex')))
+                }
+                if (skillsResp.data) {
+                    setBuiltinSkillsOptions(
+                        skillsResp.data.map((s) => ({
+                            label: s.label,
+                            name: s.name,
+                            description: s.description || ''
+                        }))
+                    )
                 }
             } catch (err) {
                 console.error('Error fetching vector store / embedding options', err)
@@ -1239,6 +1266,16 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                     }
                 }
                 if (Object.keys(loadedBuiltInTools).length > 0) setBuiltInTools(loadedBuiltInTools)
+
+                // Skills — disabled list (JSON-stringified array of names)
+                if (inputs.disabledBuiltinSkills) {
+                    try {
+                        const parsed = JSON.parse(inputs.disabledBuiltinSkills)
+                        if (Array.isArray(parsed)) setDisabledBuiltinSkills(parsed)
+                    } catch {
+                        // ignore — leave default empty array (fail-open: skills enabled)
+                    }
+                }
 
                 // Tools
                 if (inputs.agentTools?.length > 0) {
@@ -1598,6 +1635,50 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                                     <Typography variant='caption' color='text.secondary'>
                                         - {tool.description}
                                     </Typography>
+                                </Stack>
+                            }
+                        />
+                    ))}
+                </FormGroup>
+            </Box>
+        )
+    }
+
+    const renderSkillsSection = () => {
+        if (!builtinSkillsOptions.length) return null
+        return (
+            <Box
+                sx={{
+                    p: 2,
+                    mt: 1,
+                    mb: 1,
+                    border: 1,
+                    borderColor: theme.palette.grey[900] + 25,
+                    borderRadius: 2
+                }}
+            >
+                <Stack sx={{ position: 'relative', alignItems: 'center', mb: 1 }} direction='row'>
+                    <Typography>Skills</Typography>
+                    <TooltipWithParser title='Built-in skills the agent can read on demand. Uncheck to disable for this agent.' />
+                </Stack>
+                <FormGroup>
+                    {builtinSkillsOptions.map((skill) => (
+                        <FormControlLabel
+                            key={skill.name}
+                            control={
+                                <Checkbox
+                                    checked={isBuiltinSkillEnabled(skill.name)}
+                                    onChange={() => handleBuiltinSkillToggle(skill.name)}
+                                />
+                            }
+                            label={
+                                <Stack direction='row' alignItems='center' spacing={1}>
+                                    <Typography variant='body2'>{skill.label}</Typography>
+                                    {skill.description && (
+                                        <Typography variant='caption' color='text.secondary'>
+                                            — {skill.description}
+                                        </Typography>
+                                    )}
                                 </Stack>
                             }
                         />
@@ -2201,6 +2282,9 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
 
                                             {/* Built-in Tools (conditional on model) */}
                                             {selectedChatModel?.name && renderBuiltInToolsSection()}
+
+                                            {/* Skills */}
+                                            {renderSkillsSection()}
 
                                             {/* Tools */}
                                             <Box
