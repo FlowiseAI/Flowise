@@ -88,16 +88,22 @@ export function ExecutionsViewer({
     // Delete confirmation
     const [deleteTarget, setDeleteTarget] = useState<Execution | null>(null)
 
+    // Stable signature for the agentflowIds prop — guards against consumers passing a fresh
+    // array literal on every render (which would otherwise re-fire fetchExecutions endlessly).
+    // The callback re-derives the array from this key so it doesn't close over the prop reference.
+    const agentflowIdsKey = agentflowIds?.join(',') ?? ''
+
     const fetchExecutions = useCallback(async () => {
         setIsLoading(true)
         setError(null)
         try {
+            const propIds = agentflowIdsKey ? agentflowIdsKey.split(',') : []
             const result = await api.getAllExecutions({
                 page: page + 1, // API is 1-based
                 limit: pageSize,
                 ...filters,
                 // Prop wins over filter state when set, so a scoped consumer can't be widened.
-                agentflowIds: agentflowIds && agentflowIds.length > 0 ? agentflowIds : filters.agentflowIds
+                agentflowIds: propIds.length > 0 ? propIds : filters.agentflowIds
             })
             setRows(result.data)
             setTotal(result.total)
@@ -106,7 +112,7 @@ export function ExecutionsViewer({
         } finally {
             setIsLoading(false)
         }
-    }, [api, page, pageSize, agentflowIds, filters])
+    }, [api, page, pageSize, agentflowIdsKey, filters])
 
     useEffect(() => {
         fetchExecutions()

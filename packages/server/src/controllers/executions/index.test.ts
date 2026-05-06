@@ -82,6 +82,16 @@ describe('executionsController.getAllExecutions — agentflowId query parsing', 
         expect(filters).not.toHaveProperty('agentflowIds')
     })
 
+    it('drops nested-object entries (qs `?agentflowId[x]=y` form) rather than coercing to "[object Object]"', async () => {
+        const filters = await callAndCaptureFilters({ agentflowId: { x: 'y' } })
+        expect(filters).not.toHaveProperty('agentflowIds')
+    })
+
+    it('keeps string entries from a mixed array and drops object entries', async () => {
+        const filters = await callAndCaptureFilters({ agentflowId: ['af-1', { x: 'y' }, 'af-2'] })
+        expect(filters.agentflowIds).toEqual(['af-1', 'af-2'])
+    })
+
     it('passes other filters through alongside agentflowIds', async () => {
         const filters = await callAndCaptureFilters({
             agentflowId: 'af-1,af-2',

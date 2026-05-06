@@ -49,11 +49,13 @@ const getAllExecutions = async (req: Request, res: Response, next: NextFunction)
         // Accepts any HTTP idiom: single `?agentflowId=<id>`, comma-separated
         // `?agentflowId=a,b`, repeated keys `?agentflowId=a&agentflowId=b`, or a
         // mix `?agentflowId=a,b&agentflowId=c`. All flatten into a clean string[].
-        if (req.query.agentflowId !== undefined) {
+        // Non-string entries (qs nested-object form like `?agentflowId[x]=y`) are
+        // dropped rather than coerced — `String({})` would yield "[object Object]".
+        if (req.query.agentflowId != null) {
             const raw = req.query.agentflowId
             const values = Array.isArray(raw) ? raw : [raw]
             const ids = values
-                .flatMap((v) => String(v).split(','))
+                .flatMap((v) => (typeof v === 'string' ? v.split(',') : []))
                 .map((v) => v.trim())
                 .filter(Boolean)
             if (ids.length > 0) filters.agentflowIds = ids
