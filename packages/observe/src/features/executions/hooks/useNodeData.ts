@@ -78,6 +78,9 @@ export function useNodeData(node: ExecutionTreeNode): DerivedNodeData {
             if (typeof input === 'object' && !Array.isArray(input) && 'question' in (input as Record<string, unknown>)) {
                 return (input as Record<string, unknown>).question
             }
+            // Iteration parent: legacy's fallback renders `data.input.question || '*No data*'`,
+            // and the runtime emits `data.input.iterationInput` (no `question`) → "No data".
+            if (payload.name === 'iterationAgentflow') return undefined
             return input
         })()
 
@@ -119,7 +122,11 @@ export function useNodeData(node: ExecutionTreeNode): DerivedNodeData {
             typeof stateValue === 'object' &&
             Object.keys(stateValue as Record<string, unknown>).length > 0
 
-        const isHumanInputNode = raw?.name === 'humanInputAgentflow'
+        // Same fallback chain as the tree builder: the runtime emits the type
+        // identifier on `data.name`, not at the top level.
+        const dataName = raw?.data?.name
+        const resolvedName = raw?.name ?? (typeof dataName === 'string' ? dataName : undefined)
+        const isHumanInputNode = resolvedName === 'humanInputAgentflow'
         const enableFeedback = dataInput?.humanInputEnableFeedback === true || payload.humanInputEnableFeedback === true
 
         return {

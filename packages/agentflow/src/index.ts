@@ -64,5 +64,10 @@ export type {
 // Utilities (for advanced usage)
 export { filterNodesByComponents, isAgentflowNode } from './core/node-catalog'
 export { AGENTFLOW_ICONS, DEFAULT_AGENTFLOW_NODES, getAgentflowIcon, getNodeColor } from './core/node-config'
-export { evaluateFieldVisibility, evaluateParamVisibility, stripHiddenFieldValues } from './core/utils/fieldVisibility'
+export {
+    applyVisibleFieldDefaults,
+    evaluateFieldVisibility,
+    evaluateParamVisibility,
+    stripHiddenFieldValues
+} from './core/utils/fieldVisibility'
 export { validateFlow } from './core/validation'

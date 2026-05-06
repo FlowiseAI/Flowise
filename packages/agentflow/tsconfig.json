@@ -13,7 +13,6 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "declaration": true,
-        "declarationMap": true,
         "baseUrl": ".",
         "paths": {
             "@/*": ["./src/*"],

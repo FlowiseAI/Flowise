@@ -95,6 +95,47 @@ describe('useResizableSidebar', () => {
         removeSpy.mockRestore()
     })
 
+    describe('inverted: true (right-anchored panel like a Drawer)', () => {
+        const invertedOptions = { ...baseOptions, inverted: true }
+
+        it('grows the width when the cursor moves left', () => {
+            const { result } = renderHook(() => useResizableSidebar(invertedOptions))
+            // Start drag at x=500 with width=300 (default).
+            act(() => {
+                result.current.onMouseDown({ clientX: 500 } as unknown as React.MouseEvent)
+            })
+            // Cursor moves to x=400 (delta = -100). Inverted: width grows by 100.
+            act(() => dispatchMouseMove(400))
+            expect(result.current.width).toBe(400)
+            act(() => dispatchMouseUp())
+        })
+
+        it('shrinks the width when the cursor moves right', () => {
+            const { result } = renderHook(() => useResizableSidebar({ ...invertedOptions, defaultWidth: 400 }))
+            act(() => {
+                result.current.onMouseDown({ clientX: 500 } as unknown as React.MouseEvent)
+            })
+            // Cursor moves to x=600 (delta = +100). Inverted: width shrinks by 100.
+            act(() => dispatchMouseMove(600))
+            expect(result.current.width).toBe(300)
+            act(() => dispatchMouseUp())
+        })
+
+        it('still clamps to [minWidth, maxWidth]', () => {
+            const { result } = renderHook(() => useResizableSidebar(invertedOptions))
+            act(() => {
+                result.current.onMouseDown({ clientX: 500 } as unknown as React.MouseEvent)
+            })
+            // Drag far left → would give a huge width; clamps to maxWidth (480).
+            act(() => dispatchMouseMove(-10000))
+            expect(result.current.width).toBe(480)
+            // Drag far right → would give a tiny/negative width; clamps to minWidth (180).
+            act(() => dispatchMouseMove(10000))
+            expect(result.current.width).toBe(180)
+            act(() => dispatchMouseUp())
+        })
+    })
+
     it('does not update width when mousemove fires without a prior mousedown', () => {
         // Edge case: a stray document-level mousemove (e.g. another component
         // dispatched it) must not move the sidebar before the user drags.

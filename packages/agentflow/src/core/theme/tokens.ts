@@ -66,6 +66,9 @@ const baseColors = {
     secondaryLight: '#ede7f6',
     secondaryMain: '#673ab7',
     secondaryDark: '#5e35b1',
+    darkSecondaryLight: '#454c59',
+    darkSecondaryMain: '#7c4dff',
+    darkSecondaryDark: '#ffffff',
 
     // MUI palette colors - success (green)
     successLight: '#cdf5d8',
@@ -101,7 +104,10 @@ const baseColors = {
 
     // Gradient colors
     gradientOrange: '#FF6B6B',
-    gradientRed: '#FF8E53'
+    gradientRed: '#FF8E53',
+
+    // CSS keyword 'orange' — used by V2 sync-nodes FAB; kept explicit so it tracks V2 exactly
+    orange: '#ffa500'
 } as const
 
 export const tokens = {
@@ -158,9 +164,9 @@ export const tokens = {
                 dark: baseColors.primaryDark
             },
             secondary: {
-                light: baseColors.secondaryLight,
-                main: baseColors.secondaryMain,
-                dark: baseColors.secondaryDark
+                light: { light: baseColors.secondaryLight, dark: baseColors.darkSecondaryLight },
+                main: { light: baseColors.secondaryMain, dark: baseColors.darkSecondaryMain },
+                dark: { light: baseColors.secondaryDark, dark: baseColors.darkSecondaryDark }
             },
             success: {
                 light: baseColors.successLight,
@@ -186,7 +192,8 @@ export const tokens = {
             warning: baseColors.warning,
             warningBg: baseColors.warningBg,
             warningText: baseColors.warningText,
-            info: baseColors.info
+            info: baseColors.info,
+            syncNodesFab: baseColors.orange
         },
 
         // ReactFlow specific colors - referenced from base
@@ -285,7 +292,11 @@ export const tokens = {
     // All values sit below the Canvas Kit modal overlay (30–50).
     zIndex: {
         canvasButton: 10, // FABs and button containers
-        canvasPanel: 20 // Open panels/poppers anchored to buttons
+        canvasPanel: 20, // Open panels/poppers anchored to buttons
+        // ReactFlow renders group/parent nodes at an elevated stacking context; edges drawn
+        // between children inside an iteration group must exceed that context to stay visible
+        // above the group body. 9999 is the conventional ReactFlow ceiling for this use case.
+        iterationEdge: 9999
     }
 } as const
 

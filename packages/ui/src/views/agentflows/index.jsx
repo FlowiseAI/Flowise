@@ -41,6 +41,7 @@ const Agentflows = () => {
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
     const [icons, setIcons] = useState({})
+    const [scheduleStatuses, setScheduleStatuses] = useState({})
     const [search, setSearch] = useState('')
     const { error, setError } = useError()
 
@@ -139,30 +140,70 @@ const Agentflows = () => {
                 setTotal(getAllAgentflows.data?.total)
                 const images = {}
                 const icons = {}
+                const scheduleConfiguredIds = []
                 for (let i = 0; i < agentflows.length; i += 1) {
                     const flowDataStr = agentflows[i].flowData
                     const flowData = JSON.parse(flowDataStr)
                     const nodes = flowData.nodes || []
                     images[agentflows[i].id] = []
                     icons[agentflows[i].id] = []
+                    let isScheduleFlow = false
                     for (let j = 0; j < nodes.length; j += 1) {
-                        if (nodes[j].data.name === 'stickyNote' || nodes[j].data.name === 'stickyNoteAgentflow') continue
-                        const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodes[j].data.name)
+                        const node = nodes[j]
+                        if (node.data?.name === 'startAgentflow' && node.data?.inputs?.startInputType === 'scheduleInput') {
+                            isScheduleFlow = true
+                        }
+                        if (node.data.name === 'stickyNote' || node.data.name === 'stickyNoteAgentflow') continue
+                        const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === node.data.name)
                         if (foundIcon) {
                             icons[agentflows[i].id].push(foundIcon)
                         } else {
-                            const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
+                            const imageSrc = `${baseURL}/api/v1/node-icon/${node.data.name}`
                             if (!images[agentflows[i].id].some((img) => img.imageSrc === imageSrc)) {
                                 images[agentflows[i].id].push({
                                     imageSrc,
-                                    label: nodes[j].data.label
+                                    label: node.data.label
                                 })
                             }
                         }
                     }
+                    if (isScheduleFlow) scheduleConfiguredIds.push(agentflows[i].id)
                 }
                 setImages(images)
                 setIcons(icons)
+
+                const initialStatuses = {}
+                scheduleConfiguredIds.forEach((id) => {
+                    initialStatuses[id] = { isScheduled: true, enabled: false, loading: true }
+                })
+                setScheduleStatuses(initialStatuses)
+
+                if (scheduleConfiguredIds.length > 0) {
+                    Promise.all(
+                        scheduleConfiguredIds.map((id) =>
+                            chatflowsApi
+                                .getScheduleStatus(id)
+                                .then((res) => ({ id, data: res.data }))
+                                .catch(() => ({ id, error: true }))
+                        )
+                    ).then((results) => {
+                        setScheduleStatuses((prev) => {
+                            const next = { ...prev }
+                            results.forEach(({ id, data }) => {
+                                if (next[id]) {
+                                    next[id] = {
+                                        ...next[id],
+                                        enabled: data?.enabled === true,
+                                        nextRunAt: data?.record?.nextRunAt || null,
+                                        cronExpression: data?.record?.cronExpression || null,
+                                        loading: false
+                                    }
+                                }
+                            })
+                            return next
+                        })
+                    })
+                }
             } catch (e) {
                 console.error(e)
             }
@@ -312,6 +353,7 @@ const Agentflows = () => {
                                             data={data}
                                             images={images[data.id]}
                                             icons={icons[data.id]}
+                                            scheduleStatus={scheduleStatuses[data.id]}
                                         />
                                     ))}
                                 </Box>
@@ -322,6 +364,7 @@ const Agentflows = () => {
                                     data={getAllAgentflows.data?.data}
                                     images={images}
                                     icons={icons}
+                                    scheduleStatuses={scheduleStatuses}
                                     isLoading={isLoading}
                                     filterFunction={filterFlows}
                                     updateFlowsApi={getAllAgentflows}

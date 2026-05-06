@@ -79,6 +79,16 @@ describe('useNodeData', () => {
             const { result } = renderHook(() => useNodeData(makeNode({ data: { input: {} } })))
             expect(result.current.hasInput).toBe(false)
         })
+
+        it('suppresses iteration parent input — legacy renders "No data" for iterationAgentflow', () => {
+            const { result } = renderHook(() =>
+                useNodeData(
+                    makeNode({ name: 'iterationAgentflow', data: { name: 'iterationAgentflow', input: { iterationInput: [{}, {}, {}] } } })
+                )
+            )
+            expect(result.current.inputValue).toBeUndefined()
+            expect(result.current.hasInput).toBe(false)
+        })
     })
 
     describe('inputMessages (chat detection)', () => {
@@ -187,6 +197,11 @@ describe('useNodeData', () => {
 
             const no = renderHook(() => useNodeData(makeNode({ name: 'llmAgentflow', data: {} })))
             expect(no.result.current.isHumanInputNode).toBe(false)
+        })
+
+        it('isHumanInputNode resolves via data.name (runtime payload shape, no top-level name)', () => {
+            const { result } = renderHook(() => useNodeData(makeNode({ data: { name: 'humanInputAgentflow' } })))
+            expect(result.current.isHumanInputNode).toBe(true)
         })
 
         it('enableFeedback reads from data.input.humanInputEnableFeedback', () => {

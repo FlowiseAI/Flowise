@@ -1,15 +1,16 @@
-import type { ReactElement } from 'react'
+import { type ReactElement, useState } from 'react'
 
 import { ThemeProvider } from '@mui/material/styles'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
+import { AGENTFLOW_ICONS } from '@/core/primitives'
 import { createObserveTheme } from '@/core/theme'
 import type { ExecutionTreeNode } from '@/core/types'
 
 import { ExecutionTreeSidebar } from './ExecutionTreeSidebar'
 
-// Stub the syntax highlighter pulled in transitively via @/atoms
-// (CodeFenceBlock → react-syntax-highlighter, ESM-only).
+// Stub the syntax highlighter pulled in transitively via @/atoms.
 jest.mock('react-syntax-highlighter', () => ({ Prism: () => null }))
 jest.mock('react-syntax-highlighter/dist/esm/styles/prism', () => ({ oneDark: {} }))
 
@@ -19,6 +20,43 @@ jest.mock('@/infrastructure/store', () => ({
 
 function renderWithTheme(ui: ReactElement) {
     return render(<ThemeProvider theme={createObserveTheme(false)}>{ui}</ThemeProvider>)
+}
+
+function collectAllIds(nodes: ExecutionTreeNode[]): string[] {
+    const ids: string[] = []
+    for (const node of nodes) {
+        ids.push(node.id)
+        if (node.children.length > 0) ids.push(...collectAllIds(node.children))
+    }
+    return ids
+}
+
+interface HarnessProps {
+    tree: ExecutionTreeNode[]
+    onSelect?: (node: ExecutionTreeNode) => void
+    initialExpanded?: string[]
+}
+
+/**
+ * Wrapper that owns the controlled selectedId/expandedIds state, mirroring
+ * the contract `ExecutionDetail` provides in production. Tests assert against
+ * what reaches the DOM through this contract.
+ */
+function Harness({ tree, onSelect, initialExpanded }: HarnessProps) {
+    const [selectedId, setSelectedId] = useState<string | null>(null)
+    const [expandedIds, setExpandedIds] = useState<string[]>(initialExpanded ?? collectAllIds(tree))
+    return (
+        <ExecutionTreeSidebar
+            tree={tree}
+            selectedId={selectedId}
+            onSelect={(node) => {
+                setSelectedId(node.id)
+                onSelect?.(node)
+            }}
+            expandedIds={expandedIds}
+            onExpandedChange={setExpandedIds}
+        />
+    )
 }
 
 function makeNode(overrides: Partial<ExecutionTreeNode> = {}): ExecutionTreeNode {
@@ -36,7 +74,7 @@ function makeNode(overrides: Partial<ExecutionTreeNode> = {}): ExecutionTreeNode
 describe('ExecutionTreeSidebar', () => {
     describe('empty state', () => {
         it('renders the empty placeholder when tree is []', () => {
-            renderWithTheme(<ExecutionTreeSidebar tree={[]} selectedId={null} onSelect={jest.fn()} />)
+            renderWithTheme(<Harness tree={[]} />)
             expect(screen.getByText(/No execution steps recorded/i)).toBeInTheDocument()
         })
     })
@@ -47,12 +85,12 @@ describe('ExecutionTreeSidebar', () => {
                 makeNode({ id: 'a', nodeId: 'a', nodeLabel: 'Start' }),
                 makeNode({ id: 'b', nodeId: 'b', nodeLabel: 'Agent', name: 'agentAgentflow' })
             ]
-            renderWithTheme(<ExecutionTreeSidebar tree={tree} selectedId={null} onSelect={jest.fn()} />)
+            renderWithTheme(<Harness tree={tree} />)
             expect(screen.getByText('Start')).toBeInTheDocument()
             expect(screen.getByText('Agent')).toBeInTheDocument()
         })
 
-        it('recursively renders child rows under their parent', () => {
+        it('recursively renders child rows when the parent is expanded', () => {
             const tree = [
                 makeNode({
                     id: 'parent',
@@ -62,73 +100,125 @@ describe('ExecutionTreeSidebar', () => {
                     children: [makeNode({ id: 'child', nodeId: 'child', nodeLabel: 'Inner Step' })]
                 })
             ]
-            renderWithTheme(<ExecutionTreeSidebar tree={tree} selectedId={null} onSelect={jest.fn()} />)
+            renderWithTheme(<Harness tree={tree} />)
             expect(screen.getByText('Loop')).toBeInTheDocument()
             expect(screen.getByText('Inner Step')).toBeInTheDocument()
         })
 
-        it('renders virtual iteration container nodes as italic captions instead of clickable rows', () => {
+        it('renders the iteration icon for virtual iteration container nodes', () => {
             const tree: ExecutionTreeNode[] = [
                 {
                     id: 'iter-0',
                     nodeId: 'iter-0',
-                    nodeLabel: 'Iteration #1',
+                    nodeLabel: 'Iteration #0',
                     status: 'FINISHED',
                     isVirtualNode: true,
-                    name: '',
+                    name: 'iterationAgentflow',
                     children: []
                 }
             ]
-            renderWithTheme(<ExecutionTreeSidebar tree={tree} selectedId={null} onSelect={jest.fn()} />)
-            const label = screen.getByText('Iteration #1')
-            expect(label).toBeInTheDocument()
-            // Virtual labels render as a Typography caption with italic style;
-            // not wrapped in the clickable Box's role-pointer cursor.
-            expect(label.tagName.toLowerCase()).toBe('span')
+            renderWithTheme(<Harness tree={tree} />)
+            // Iteration row shows its label …
+            expect(screen.getByText('Iteration #0')).toBeInTheDocument()
+            // … and the AGENTFLOW_ICONS lookup renders the iteration icon
+            // (`IconRelationOneToManyFilled`). The DOM only locks the icon
+            // identity; the registry assertion below locks its color.
+            const treeitem = screen.getByRole('treeitem')
+            expect(treeitem.querySelector('.tabler-icon-relation-one-to-many-filled')).not.toBeNull()
+            expect(AGENTFLOW_ICONS.iterationAgentflow.icon).toBeDefined()
+            expect(AGENTFLOW_ICONS.iterationAgentflow.color).toMatch(/^#[0-9a-fA-F]{6}$/)
+        })
+
+        it.each([
+            ['FINISHED', 'CheckCircleIcon'],
+            ['ERROR', 'ErrorIcon'],
+            ['TIMEOUT', 'ErrorIcon'],
+            ['STOPPED', 'StopCircleIcon']
+        ] as const)('renders the %s status icon as MUI %s', (state, testId) => {
+            const tree = [makeNode({ id: 'a', nodeId: 'a', status: state })]
+            renderWithTheme(<Harness tree={tree} />)
+            expect(screen.getByTestId(testId)).toBeInTheDocument()
+        })
+
+        it('renders TERMINATED with the tabler IconCircleXFilled (no MUI icon test-id)', () => {
+            const tree = [makeNode({ id: 'a', nodeId: 'a', status: 'TERMINATED' })]
+            renderWithTheme(<Harness tree={tree} />)
+            // Tabler icons don't expose data-testid; assert via class.
+            expect(document.querySelector('.tabler-icon-circle-x-filled')).not.toBeNull()
+            // No MUI status icon should be rendered for TERMINATED.
+            expect(screen.queryByTestId('CheckCircleIcon')).not.toBeInTheDocument()
+        })
+
+        it('renders INPROGRESS with the tabler IconLoader spin animation', () => {
+            const tree = [makeNode({ id: 'a', nodeId: 'a', status: 'INPROGRESS' })]
+            renderWithTheme(<Harness tree={tree} />)
+            expect(document.querySelector('.tabler-icon-loader')).not.toBeNull()
+        })
+
+        it('renders the rolled-up status icon on virtual iteration rows (legacy parity)', () => {
+            const tree: ExecutionTreeNode[] = [
+                {
+                    id: 'iter-0',
+                    nodeId: 'iter-0',
+                    nodeLabel: 'Iteration #0',
+                    status: 'FINISHED',
+                    isVirtualNode: true,
+                    name: 'iterationAgentflow',
+                    children: []
+                }
+            ]
+            renderWithTheme(<Harness tree={tree} />)
+            expect(screen.getByTestId('CheckCircleIcon')).toBeInTheDocument()
+        })
+
+        it('omits the status icon when virtual iteration status is UNKNOWN', () => {
+            const tree: ExecutionTreeNode[] = [
+                {
+                    id: 'iter-0',
+                    nodeId: 'iter-0',
+                    nodeLabel: 'Iteration #0',
+                    status: 'UNKNOWN',
+                    isVirtualNode: true,
+                    name: 'iterationAgentflow',
+                    children: []
+                }
+            ]
+            renderWithTheme(<Harness tree={tree} />)
+            expect(screen.queryByTestId('CheckCircleIcon')).not.toBeInTheDocument()
+            expect(screen.queryByTestId('ErrorIcon')).not.toBeInTheDocument()
+            expect(screen.queryByTestId('StopCircleIcon')).not.toBeInTheDocument()
         })
     })
 
     describe('selection', () => {
-        it('fires onSelect with the clicked node (skipping virtual nodes)', () => {
+        it('fires onSelect for real and virtual nodes — legacy parity', async () => {
             const onSelect = jest.fn()
             const tree = [
                 makeNode({ id: 'real', nodeId: 'real', nodeLabel: 'Real' }),
                 {
                     id: 'iter-0',
                     nodeId: 'iter-0',
-                    nodeLabel: 'Iteration #1',
+                    nodeLabel: 'Iteration #0',
                     status: 'FINISHED' as const,
                     isVirtualNode: true,
-                    name: '',
+                    name: 'iterationAgentflow',
                     children: []
                 }
             ]
-            renderWithTheme(<ExecutionTreeSidebar tree={tree} selectedId={null} onSelect={onSelect} />)
+            renderWithTheme(<Harness tree={tree} onSelect={onSelect} />)
 
-            fireEvent.click(screen.getByText('Real'))
+            await userEvent.click(screen.getByText('Real'))
             expect(onSelect).toHaveBeenCalledTimes(1)
             expect(onSelect.mock.calls[0][0].nodeId).toBe('real')
 
-            // Clicking the virtual row must NOT call onSelect.
-            fireEvent.click(screen.getByText('Iteration #1'))
-            expect(onSelect).toHaveBeenCalledTimes(1)
-        })
-
-        it('still calls onSelect on a row even when it matches selectedId (idempotent re-click)', () => {
-            // Sanity: passing selectedId doesn't disable the row's click target.
-            // (MUI's `sx` background highlight isn't observable from jsdom's
-            // computed style, so we anchor on the click behavior here.)
-            const onSelect = jest.fn()
-            const tree = [makeNode({ id: 'a', nodeId: 'a', nodeLabel: 'First' })]
-            renderWithTheme(<ExecutionTreeSidebar tree={tree} selectedId='a' onSelect={onSelect} />)
-            fireEvent.click(screen.getByText('First'))
-            expect(onSelect).toHaveBeenCalledTimes(1)
-            expect(onSelect.mock.calls[0][0].nodeId).toBe('a')
+            await userEvent.click(screen.getByText('Iteration #0'))
+            expect(onSelect).toHaveBeenCalledTimes(2)
+            expect(onSelect.mock.calls[1][0].nodeId).toBe('iter-0')
         })
     })
 
     describe('expand/collapse', () => {
-        it('renders children expanded by default', () => {
+        it('renders children when initialExpanded includes the parent id', () => {
             const tree = [
                 makeNode({
                     id: 'parent',
@@ -137,12 +227,11 @@ describe('ExecutionTreeSidebar', () => {
                     children: [makeNode({ id: 'child', nodeId: 'child', nodeLabel: 'Child' })]
                 })
             ]
-            renderWithTheme(<ExecutionTreeSidebar tree={tree} selectedId={null} onSelect={jest.fn()} />)
+            renderWithTheme(<Harness tree={tree} initialExpanded={['parent']} />)
             expect(screen.getByText('Child')).toBeInTheDocument()
         })
 
-        it('toggles children visibility when a parent row with children is clicked', () => {
-            const onSelect = jest.fn()
+        it('omits children when initialExpanded is empty', () => {
             const tree = [
                 makeNode({
                     id: 'parent',
@@ -151,14 +240,8 @@ describe('ExecutionTreeSidebar', () => {
                     children: [makeNode({ id: 'child', nodeId: 'child', nodeLabel: 'Child' })]
                 })
             ]
-            renderWithTheme(<ExecutionTreeSidebar tree={tree} selectedId={null} onSelect={onSelect} />)
-            expect(screen.getByText('Child')).toBeInTheDocument()
-
-            fireEvent.click(screen.getByText('Parent'))
+            renderWithTheme(<Harness tree={tree} initialExpanded={[]} />)
             expect(screen.queryByText('Child')).not.toBeInTheDocument()
-
-            fireEvent.click(screen.getByText('Parent'))
-            expect(screen.getByText('Child')).toBeInTheDocument()
         })
     })
 })
