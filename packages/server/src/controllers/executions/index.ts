@@ -45,8 +45,19 @@ const getAllExecutions = async (req: Request, res: Response, next: NextFunction)
         // ID filter
         if (req.query.id) filters.id = req.query.id as string
 
-        // Flow and session filters
-        if (req.query.agentflowId) filters.agentflowId = req.query.agentflowId as string
+        // Flow and session filters.
+        // Accepts any HTTP idiom: single `?agentflowId=<id>`, comma-separated
+        // `?agentflowId=a,b`, repeated keys `?agentflowId=a&agentflowId=b`, or a
+        // mix `?agentflowId=a,b&agentflowId=c`. All flatten into a clean string[].
+        if (req.query.agentflowId !== undefined) {
+            const raw = req.query.agentflowId
+            const values = Array.isArray(raw) ? raw : [raw]
+            const ids = values
+                .flatMap((v) => String(v).split(','))
+                .map((v) => v.trim())
+                .filter(Boolean)
+            if (ids.length > 0) filters.agentflowIds = ids
+        }
         if (req.query.agentflowName) filters.agentflowName = req.query.agentflowName as string
         if (req.query.sessionId) filters.sessionId = req.query.sessionId as string
 

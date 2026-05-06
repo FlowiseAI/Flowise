@@ -33,7 +33,7 @@ describe('createExecutionsApi', () => {
                 page: 2,
                 limit: 25,
                 state: 'FINISHED',
-                agentflowId: 'af-123',
+                agentflowIds: ['af-123'],
                 agentflowName: 'My Flow',
                 sessionId: 'sess-abc'
             })
@@ -45,6 +45,20 @@ describe('createExecutionsApi', () => {
                     sessionId: 'sess-abc'
                 })
             })
+        })
+
+        it('joins agentflowIds into a comma-separated agentflowId query value', async () => {
+            mockGet.mockResolvedValueOnce({ data: { data: [], total: 0 } })
+            await api.getAllExecutions({ page: 1, limit: 10, agentflowIds: ['af-1', 'af-2'] })
+            const { params } = mockGet.mock.calls[0][1]
+            expect(params.agentflowId).toBe('af-1,af-2')
+        })
+
+        it('omits the query param when agentflowIds is empty', async () => {
+            mockGet.mockResolvedValueOnce({ data: { data: [], total: 0 } })
+            await api.getAllExecutions({ page: 1, limit: 10, agentflowIds: [] })
+            const { params } = mockGet.mock.calls[0][1]
+            expect(params).not.toHaveProperty('agentflowId')
         })
 
         it('omits undefined optional params', async () => {
