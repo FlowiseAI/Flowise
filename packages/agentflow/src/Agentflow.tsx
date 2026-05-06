@@ -233,9 +233,7 @@ function AgentflowCanvas({
         state.isDirty,
         handleSave,
         agentflow.toJSON,
-        agentflow.validate,
-        syncNodes,
-        hasOutdatedNodes
+        agentflow.validate
     )
 
     // Palette props

@@ -32,7 +32,7 @@ describe('AgentflowHeader', () => {
     })
 
     it('does not render a Sync Nodes button (moved to canvas FAB)', () => {
-        render(<AgentflowHeader {...baseProps} hasOutdatedNodes />)
+        render(<AgentflowHeader {...baseProps} />)
         expect(screen.queryByRole('button', { name: /sync nodes/i })).not.toBeInTheDocument()
     })
 
@@ -66,27 +66,10 @@ describe('createHeaderProps', () => {
             true,
             jest.fn(),
             jest.fn(() => '{}'),
-            jest.fn(),
-            jest.fn(),
-            false
+            jest.fn()
         )
         expect(props.flowName).toBe('Test Flow')
         expect(props.isDirty).toBe(true)
-    })
-
-    it('passes onSyncNodes and hasOutdatedNodes through for custom renderHeader consumers', () => {
-        const onSyncNodes = jest.fn()
-        const props = createHeaderProps(
-            'Flow',
-            false,
-            jest.fn(),
-            jest.fn(() => '{}'),
-            jest.fn(),
-            onSyncNodes,
-            true
-        )
-        expect(props.onSyncNodes).toBe(onSyncNodes)
-        expect(props.hasOutdatedNodes).toBe(true)
     })
 
     it('onValidate delegates to the validate function', () => {
@@ -96,9 +79,7 @@ describe('createHeaderProps', () => {
             false,
             jest.fn(),
             jest.fn(() => '{}'),
-            validate,
-            jest.fn(),
-            false
+            validate
         )
         props.onValidate?.()
         expect(validate).toHaveBeenCalledTimes(1)
@@ -117,7 +98,7 @@ describe('createHeaderProps', () => {
             click: clickSpy
         } as unknown as HTMLAnchorElement)
 
-        const props = createHeaderProps('Flow', false, jest.fn(), toJSON, jest.fn(), jest.fn(), false)
+        const props = createHeaderProps('Flow', false, jest.fn(), toJSON, jest.fn())
         props.onExport?.()
 
         expect(toJSON).toHaveBeenCalled()

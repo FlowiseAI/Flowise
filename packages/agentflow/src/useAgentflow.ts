@@ -36,17 +36,7 @@ import { useAgentflowContext } from './infrastructure/store'
  * ```
  */
 export function useAgentflow(): AgentFlowInstance {
-    const {
-        state,
-        setNodes,
-        setEdges,
-        setDirty,
-        getFlowData,
-        setNodeExecutionStatus,
-        clearExecutionState,
-        syncNodes: contextSyncNodes,
-        hasOutdatedNodes
-    } = useAgentflowContext()
+    const { state, setNodes, setEdges, setDirty, getFlowData, setNodeExecutionStatus, clearExecutionState } = useAgentflowContext()
 
     const { nodes, edges, reactFlowInstance } = state
 
@@ -141,23 +131,9 @@ export function useAgentflow(): AgentFlowInstance {
             addNode,
             clear,
             setNodeExecutionStatus: setNodeExecutionStatusMethod,
-            clearExecutionState: clearExecutionStateMethod,
-            syncNodes: contextSyncNodes,
-            hasOutdatedNodes
+            clearExecutionState: clearExecutionStateMethod
         }),
-        [
-            getFlow,
-            toJSON,
-            validate,
-            fitView,
-            getReactFlowInstance,
-            addNode,
-            clear,
-            setNodeExecutionStatusMethod,
-            clearExecutionStateMethod,
-            contextSyncNodes,
-            hasOutdatedNodes
-        ]
+        [getFlow, toJSON, validate, fitView, getReactFlowInstance, addNode, clear, setNodeExecutionStatusMethod, clearExecutionStateMethod]
     )
 }
 

@@ -31,16 +31,12 @@ export function createHeaderProps(
     isDirty: boolean,
     onSave: () => void,
     toJSON: () => string,
-    validate: () => ValidationResult,
-    onSyncNodes: () => void,
-    hasOutdatedNodes: boolean
+    validate: () => ValidationResult
 ): HeaderRenderProps {
     return {
         flowName,
         isDirty,
         onSave,
-        onSyncNodes,
-        hasOutdatedNodes,
         onExport: () => {
             const json = toJSON()
             const blob = new Blob([json], { type: 'application/json' })

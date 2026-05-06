@@ -21,8 +21,6 @@ export interface HeaderRenderProps {
     onSave: () => void
     onExport: () => void
     onValidate: () => ValidationResult
-    onSyncNodes?: () => void
-    hasOutdatedNodes?: boolean
 }
 
 export interface PaletteRenderProps {
@@ -134,10 +132,4 @@ export interface AgentFlowInstance {
 
     /** Remove all execution status badges from nodes */
     clearExecutionState(): void
-
-    /** Upgrade all outdated nodes to their latest component schema */
-    syncNodes(): void
-
-    /** True when at least one canvas node has an older version than its component definition */
-    hasOutdatedNodes: boolean
 }
