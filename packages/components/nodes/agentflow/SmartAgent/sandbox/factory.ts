@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto'
 import { BackendProtocol, FileData } from './BackendProtocol'
 import { CompositeBackend } from './backends/CompositeBackend'
 import { LocalBackend } from './backends/LocalBackend'
+import { ReadOnlyBackend } from './backends/ReadOnlyBackend'
 import { StateBackend } from './backends/StateBackend'
 
 type FileStore = Record<string, FileData>
@@ -43,4 +44,15 @@ export async function createBackend(
         default:
             throw new Error(`Unknown SANDBOX_TYPE: ${type}`)
     }
+}
+
+/**
+ * Returns a read-only backend rooted at the package's skills/builtin/ folder.
+ * SmartAgent mounts this at /skills/builtin/ via CompositeBackend so the model
+ * can read SKILL.md bodies through the standard read_file tool. ReadOnlyBackend
+ * prevents the model from mutating package-shipped skill files.
+ */
+export function getBuiltinSkillsBackend(): BackendProtocol {
+    const builtinPath = path.join(__dirname, '..', 'skills', 'builtin')
+    return new ReadOnlyBackend(new LocalBackend(builtinPath))
 }
