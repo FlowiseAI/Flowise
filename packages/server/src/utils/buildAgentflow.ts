@@ -1288,7 +1288,6 @@ const executeNode = async ({
                 }
 
                 const iterationResults: string[] = []
-                let successfulCount = 0 // drives newline separator between streamed items
 
                 // Execute sub-flow for each item in the iteration array
                 for (let i = 0; i < results.input.iterationInput.length; i++) {
@@ -1341,9 +1340,8 @@ const executeNode = async ({
                                 // Sub-flows run with isRecursive=true, so inner nodes (e.g. DirectReply)
                                 // never reach isLastNode=true and never call streamTokenEvent themselves.
                                 if (isLastNode && sseStreamer) {
-                                    sseStreamer.streamTokenEvent(chatId, (successfulCount > 0 ? '\n' : '') + subFlowResult.text)
+                                    sseStreamer.streamTokenEvent(chatId, (i > 0 ? '\n' : '') + subFlowResult.text)
                                 }
-                                successfulCount++
                             }
                         }
 
