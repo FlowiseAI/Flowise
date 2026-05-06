@@ -38,8 +38,8 @@ const EXECUTION_STATES: Array<ExecutionState | ''> = ['', 'INPROGRESS', 'FINISHE
 
 /**
  * Top-level executions list + detail drawer.
- * When agentflowId is provided: scoped view (M1 — hides agentflow name column).
- * When agentflowId is omitted: full cross-agent list (M2).
+ * When agentflowId is provided: scoped view (filters list + hides agentflow-name filter).
+ * When agentflowId is omitted: full cross-agent list.
  */
 export function ExecutionsViewer({
     agentflowId,
@@ -234,7 +234,6 @@ export function ExecutionsViewer({
                         onRowClick={setDrawerExecution}
                         onDelete={(e) => setDeleteTarget(e)}
                         allowDelete={allowDelete}
-                        scoped={isScoped}
                     />
                 )}
             </Box>
