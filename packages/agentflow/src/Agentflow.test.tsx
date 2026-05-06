@@ -452,6 +452,87 @@ describe('Agentflow Component', () => {
         })
     })
 
+    describe('Sync Nodes FAB', () => {
+        const outdatedFlow: FlowData = {
+            nodes: [
+                {
+                    id: 'startAgentflow_0',
+                    type: 'agentflowNode',
+                    position: { x: 0, y: 0 },
+                    data: {
+                        id: 'startAgentflow_0',
+                        name: 'startAgentflow',
+                        label: 'Start',
+                        version: 1.0,
+                        color: '#7EE787',
+                        outputAnchors: []
+                    }
+                }
+            ],
+            edges: [],
+            viewport: { x: 0, y: 0, zoom: 1 }
+        }
+
+        beforeEach(() => {
+            mockGet.mockImplementation((url: string) => {
+                if (typeof url === 'string' && url.includes('/nodes')) {
+                    return Promise.resolve({
+                        data: [
+                            {
+                                name: 'startAgentflow',
+                                label: 'Start',
+                                type: 'Start',
+                                category: 'Agent Flows',
+                                description: 'Start node',
+                                baseClasses: ['Start'],
+                                inputs: [],
+                                outputs: [],
+                                version: 2.0 // newer than flow node at 1.0
+                            }
+                        ]
+                    })
+                }
+                return Promise.resolve({ data: [] })
+            })
+        })
+
+        afterEach(() => {
+            mockGet.mockImplementation(() => Promise.resolve({ data: [] }))
+        })
+
+        it('shows Sync Nodes FAB when flow has outdated nodes', async () => {
+            const { container } = render(<Agentflow apiBaseUrl='https://example.com' initialFlow={outdatedFlow} />)
+
+            await waitFor(() => {
+                expect(container.querySelector('[aria-label="Sync Nodes"]')).toBeInTheDocument()
+            })
+        })
+
+        it('does not show Sync Nodes FAB in readOnly mode even when nodes are outdated', async () => {
+            const { container } = render(<Agentflow apiBaseUrl='https://example.com' initialFlow={outdatedFlow} readOnly />)
+
+            await waitFor(() => {
+                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
+            })
+
+            expect(container.querySelector('[aria-label="Sync Nodes"]')).not.toBeInTheDocument()
+        })
+
+        it('does not show Sync Nodes FAB when all nodes are up to date', async () => {
+            const upToDateFlow: FlowData = {
+                ...outdatedFlow,
+                nodes: [{ ...outdatedFlow.nodes[0], data: { ...outdatedFlow.nodes[0].data, version: 2.0 } }]
+            }
+            const { container } = render(<Agentflow apiBaseUrl='https://example.com' initialFlow={upToDateFlow} />)
+
+            await waitFor(() => {
+                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
+            })
+
+            expect(container.querySelector('[aria-label="Sync Nodes"]')).not.toBeInTheDocument()
+        })
+    })
+
     describe('Imperative Ref', () => {
         it('should expose agentflow instance via ref', async () => {
             const ref = createRef<AgentFlowInstance>()
