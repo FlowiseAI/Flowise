@@ -236,40 +236,44 @@ export class A2AClientWrapper {
         // redirect following so credentials can't leak across origins.
         const authHeaders = this.authHeaders
         this.customFetch = async (input, init) => {
-            const mergedSignal = this.mergeRequestSignal(init?.signal ?? null)
+            const { signal: mergedSignal, cleanup: cleanupMergedSignal } = this.mergeRequestSignal(init?.signal ?? null)
 
-            const requestUrl =
-                typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request)?.url ?? String(input)
-            let targetHost = ''
             try {
-                targetHost = new URL(requestUrl).host.toLowerCase()
-            } catch {
-                targetHost = ''
+                const requestUrl =
+                    typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request)?.url ?? String(input)
+                let targetHost = ''
+                try {
+                    targetHost = new URL(requestUrl).host.toLowerCase()
+                } catch {
+                    targetHost = ''
+                }
+
+                const callerHeaders = (init?.headers as Record<string, string> | undefined) ?? {}
+                const effectiveHeaders: Record<string, string> =
+                    targetHost !== '' && targetHost === this.authorizedHost ? { ...callerHeaders, ...authHeaders } : { ...callerHeaders }
+
+                const mergedInit: RequestInit = {
+                    ...init,
+                    headers: effectiveHeaders,
+                    redirect: 'manual',
+                    ...(mergedSignal && { signal: mergedSignal })
+                }
+
+                const res = await fetch(input, mergedInit)
+
+                // Reject any redirect response. Blindly following redirects would
+                // defeat the auth-header scoping above (Authorization/X-API-Key could
+                // be replayed to the redirect target) and reopen the SSRF surface by
+                // sending traffic to arbitrary hosts.
+                if (res.status >= 300 && res.status < 400 && res.status !== 304) {
+                    const location = res.headers.get('location') || '<unknown>'
+                    throw new Error(`A2A request blocked: redirect responses are not followed (status ${res.status} to ${location})`)
+                }
+
+                return res
+            } finally {
+                cleanupMergedSignal()
             }
-
-            const callerHeaders = (init?.headers as Record<string, string> | undefined) ?? {}
-            const effectiveHeaders: Record<string, string> =
-                targetHost !== '' && targetHost === this.authorizedHost ? { ...callerHeaders, ...authHeaders } : { ...callerHeaders }
-
-            const mergedInit: RequestInit = {
-                ...init,
-                headers: effectiveHeaders,
-                redirect: 'manual',
-                ...(mergedSignal && { signal: mergedSignal })
-            }
-
-            const res = await fetch(input, mergedInit)
-
-            // Reject any redirect response. Blindly following redirects would
-            // defeat the auth-header scoping above (Authorization/X-API-Key could
-            // be replayed to the redirect target) and reopen the SSRF surface by
-            // sending traffic to arbitrary hosts.
-            if (res.status >= 300 && res.status < 400) {
-                const location = res.headers.get('location') || '<unknown>'
-                throw new Error(`A2A request blocked: redirect responses are not followed (status ${res.status} to ${location})`)
-            }
-
-            return res
         }
     }
 
@@ -278,24 +282,32 @@ export class A2AClientWrapper {
      * any signal already supplied by the caller (e.g., the SDK's internal signal),
      * so the resulting fetch is aborted when either fires.
      */
-    private mergeRequestSignal(callerSignal: AbortSignal | null): AbortSignal | null {
+    private mergeRequestSignal(callerSignal: AbortSignal | null): { signal: AbortSignal | null; cleanup: () => void } {
         const active = this.activeRequestSignal
-        if (!active && !callerSignal) return null
-        if (!active) return callerSignal
-        if (!callerSignal) return active
+        const noop = () => undefined
+        if (!active && !callerSignal) return { signal: null, cleanup: noop }
+        if (!active) return { signal: callerSignal, cleanup: noop }
+        if (!callerSignal) return { signal: active, cleanup: noop }
 
         try {
-            return AbortSignal.any([active, callerSignal])
+            return { signal: AbortSignal.any([active, callerSignal]), cleanup: noop }
         } catch {
             const merged = new AbortController()
-            const onAbort = () => merged.abort()
+            const cleanup = () => {
+                active.removeEventListener('abort', onAbort)
+                callerSignal.removeEventListener('abort', onAbort)
+            }
+            const onAbort = () => {
+                cleanup()
+                merged.abort()
+            }
             if (active.aborted || callerSignal.aborted) {
                 merged.abort()
             } else {
                 active.addEventListener('abort', onAbort, { once: true })
                 callerSignal.addEventListener('abort', onAbort, { once: true })
             }
-            return merged.signal
+            return { signal: merged.signal, cleanup }
         }
     }
 
@@ -929,15 +941,28 @@ export class A2AClientWrapper {
         const timer = setTimeout(() => internal.abort(), this.timeout)
 
         let signal: AbortSignal
+        let cleanupMergedSignal = () => undefined
         if (this.externalAbortSignal) {
+            const externalSignal = this.externalAbortSignal
             try {
-                signal = AbortSignal.any([internal.signal, this.externalAbortSignal])
+                signal = AbortSignal.any([internal.signal, externalSignal])
             } catch {
                 // Fallback for environments without AbortSignal.any
                 const merged = new AbortController()
-                const onAbort = () => merged.abort()
-                internal.signal.addEventListener('abort', onAbort)
-                this.externalAbortSignal.addEventListener('abort', onAbort)
+                cleanupMergedSignal = () => {
+                    internal.signal.removeEventListener('abort', onAbort)
+                    externalSignal.removeEventListener('abort', onAbort)
+                }
+                const onAbort = () => {
+                    cleanupMergedSignal()
+                    merged.abort()
+                }
+                if (internal.signal.aborted || externalSignal.aborted) {
+                    merged.abort()
+                } else {
+                    internal.signal.addEventListener('abort', onAbort, { once: true })
+                    externalSignal.addEventListener('abort', onAbort, { once: true })
+                }
                 signal = merged.signal
             }
         } else {
@@ -946,7 +971,10 @@ export class A2AClientWrapper {
 
         return {
             signal,
-            cleanup: () => clearTimeout(timer)
+            cleanup: () => {
+                clearTimeout(timer)
+                cleanupMergedSignal()
+            }
         }
     }
 }

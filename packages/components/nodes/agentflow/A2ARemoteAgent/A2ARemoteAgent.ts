@@ -243,7 +243,7 @@ class A2ARemoteAgent_Agentflow implements INode {
             }
 
             const returnRole = returnResponseAs === 'assistantMessage' ? 'assistant' : 'user'
-            const nodeLabel = nodeData?.label ? nodeData.label.toLowerCase().replace(/\s/g, '_').trim() : nodeData?.id
+            const nodeLabel = nodeData?.label ? nodeData.label.trim().toLowerCase().replace(/\s/g, '_') : nodeData?.id
 
             const returnOutput = {
                 id: nodeData.id,

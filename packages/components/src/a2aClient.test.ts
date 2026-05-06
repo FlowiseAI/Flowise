@@ -1168,7 +1168,7 @@ describe('A2AClientWrapper', () => {
             mockCancelTask.mockResolvedValue({})
         })
 
-        it('12-F #1: sync abort during sendMessage throws A2AAbortError when externally aborted', async () => {
+        it('sync abort during sendMessage throws A2AAbortError when externally aborted', async () => {
             const externalController = new AbortController()
             // Simulate the underlying fetch throwing an AbortError when aborted
             mockSendMessage.mockImplementation(() => {
@@ -1182,7 +1182,7 @@ describe('A2AClientWrapper', () => {
             await expect(wrapper.sendMessage('hello')).rejects.toBeInstanceOf(A2AAbortError)
         })
 
-        it('12-F #1 (variant): sync abort surfaces as timeout when only the internal timer fires', async () => {
+        it('(variant): sync abort surfaces as timeout when only the internal timer fires', async () => {
             // No external signal — only internal timer aborts. Should surface as timeout.
             mockSendMessage.mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }))
 
@@ -1190,7 +1190,7 @@ describe('A2AClientWrapper', () => {
             await expect(wrapper.sendMessage('hello')).rejects.toThrow('A2A request timed out after 1000ms')
         })
 
-        it('12-F #1 (signal wiring): customFetch injects active abort signal during sendMessage', async () => {
+        it('(signal wiring): customFetch injects active abort signal during sendMessage', async () => {
             const externalController = new AbortController()
             let observedSignal: AbortSignal | undefined
             mockSendMessage.mockImplementation(async () => {
@@ -1222,7 +1222,7 @@ describe('A2AClientWrapper', () => {
             expect(observedSignal!.aborted).toBe(true)
         })
 
-        it('12-F #2: streaming abort stops iteration cleanly without unhandled rejections', async () => {
+        it('streaming abort stops iteration cleanly without unhandled rejections', async () => {
             const externalController = new AbortController()
             const unhandled: any[] = []
             const handler = (err: any) => unhandled.push(err)
@@ -1262,7 +1262,7 @@ describe('A2AClientWrapper', () => {
             }
         })
 
-        it('12-F #3: best-effort tasks/cancel is fired after sync abort with known taskId', async () => {
+        it('best-effort tasks/cancel is fired after sync abort with known taskId', async () => {
             const externalController = new AbortController()
             mockSendMessage.mockImplementation(() => {
                 externalController.abort()
@@ -1282,7 +1282,7 @@ describe('A2AClientWrapper', () => {
             expect(mockCancelTask).toHaveBeenCalledWith({ id: 'task-to-cancel' })
         })
 
-        it('12-F #3: best-effort tasks/cancel is fired after streaming abort using mid-stream taskId', async () => {
+        it('best-effort tasks/cancel is fired after streaming abort using mid-stream taskId', async () => {
             const externalController = new AbortController()
             async function* abortMidStream() {
                 yield {
@@ -1309,7 +1309,7 @@ describe('A2AClientWrapper', () => {
             expect(mockCancelTask).toHaveBeenCalledWith({ id: 'task-stream-cancel' })
         })
 
-        it('12-F #3: best-effort tasks/cancel failure is silently ignored', async () => {
+        it('best-effort tasks/cancel failure is silently ignored', async () => {
             const externalController = new AbortController()
             mockCancelTask.mockRejectedValue(new Error('cancel failed'))
             mockSendMessage.mockImplementation(() => {
@@ -1327,7 +1327,7 @@ describe('A2AClientWrapper', () => {
             expect(mockCancelTask).toHaveBeenCalledTimes(1)
         })
 
-        it('12-F: best-effort tasks/cancel is NOT called when no taskId is known (sync)', async () => {
+        it('best-effort tasks/cancel is NOT called when no taskId is known (sync)', async () => {
             const externalController = new AbortController()
             mockSendMessage.mockImplementation(() => {
                 externalController.abort()
@@ -1344,7 +1344,7 @@ describe('A2AClientWrapper', () => {
             expect(mockCancelTask).not.toHaveBeenCalled()
         })
 
-        it('12-F: tasks/cancel is invoked when stream loop exits via abort signal break (no error thrown)', async () => {
+        it('tasks/cancel is invoked when stream loop exits via abort signal break (no error thrown)', async () => {
             const externalController = new AbortController()
             async function* slowStream() {
                 yield {
@@ -1377,7 +1377,7 @@ describe('A2AClientWrapper', () => {
             expect(mockCancelTask).toHaveBeenCalledWith({ id: 'task-graceful' })
         })
 
-        it('12-F (AbortSignal.any fallback): merged signal aborts when external signal aborts even if AbortSignal.any unavailable', () => {
+        it('(AbortSignal.any fallback): merged signal aborts when external signal aborts even if AbortSignal.any unavailable', () => {
             // Simulate environment without AbortSignal.any
             const original = (AbortSignal as any).any
             ;(AbortSignal as any).any = undefined
@@ -1391,6 +1391,52 @@ describe('A2AClientWrapper', () => {
                 expect(merged.signal.aborted).toBe(true)
                 merged.cleanup()
             } finally {
+                ;(AbortSignal as any).any = original
+            }
+        })
+
+        it('(AbortSignal.any fallback): customFetch removes merged signal listeners after fetch settles', async () => {
+            const original = (AbortSignal as any).any
+            ;(AbortSignal as any).any = undefined
+
+            const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({ status: 200, ok: true } as any)
+            const activeController = new AbortController()
+            const callerController = new AbortController()
+            const activeRemoveSpy = jest.spyOn(activeController.signal, 'removeEventListener')
+            const callerRemoveSpy = jest.spyOn(callerController.signal, 'removeEventListener')
+
+            try {
+                const wrapper = new A2AClientWrapper(baseConfig())
+                ;(wrapper as any).activeRequestSignal = activeController.signal
+
+                await (wrapper as any).customFetch('https://example.com/rpc', { signal: callerController.signal })
+
+                expect(activeRemoveSpy).toHaveBeenCalledWith('abort', expect.any(Function))
+                expect(callerRemoveSpy).toHaveBeenCalledWith('abort', expect.any(Function))
+            } finally {
+                fetchSpy.mockRestore()
+                activeRemoveSpy.mockRestore()
+                callerRemoveSpy.mockRestore()
+                ;(AbortSignal as any).any = original
+            }
+        })
+
+        it('(AbortSignal.any fallback): merged abort controller cleanup removes external listener', () => {
+            const original = (AbortSignal as any).any
+            ;(AbortSignal as any).any = undefined
+
+            const externalController = new AbortController()
+            const externalRemoveSpy = jest.spyOn(externalController.signal, 'removeEventListener')
+
+            try {
+                const wrapper = new A2AClientWrapper(baseConfig({ abortSignal: externalController.signal }))
+                const merged = (wrapper as any).createMergedAbortController() as { signal: AbortSignal; cleanup: () => void }
+
+                merged.cleanup()
+
+                expect(externalRemoveSpy).toHaveBeenCalledWith('abort', expect.any(Function))
+            } finally {
+                externalRemoveSpy.mockRestore()
                 ;(AbortSignal as any).any = original
             }
         })
