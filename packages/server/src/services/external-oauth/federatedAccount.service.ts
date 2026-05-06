@@ -21,11 +21,22 @@ export async function upsertFederatedAccount(params: {
         where: { issuerUrl, subject: params.subject }
     })
     if (existing) {
-        existing.email = params.email ?? existing.email
-        existing.userId = params.userId ?? existing.userId
-        existing.organizationId = params.organizationId
-        existing.workspaceId = params.workspaceId
-        await repo.save(existing)
+        const nextEmail = params.email ?? existing.email
+        const nextUserId = params.userId ?? existing.userId
+        const nextOrg = params.organizationId
+        const nextWs = params.workspaceId
+        const dirty =
+            (params.email !== undefined && params.email !== existing.email) ||
+            (params.userId !== undefined && params.userId !== existing.userId) ||
+            nextOrg !== existing.organizationId ||
+            nextWs !== existing.workspaceId
+        if (dirty) {
+            existing.email = nextEmail
+            existing.userId = nextUserId
+            existing.organizationId = nextOrg
+            existing.workspaceId = nextWs
+            await repo.save(existing)
+        }
         return
     }
     const row = new FederatedAccount()

@@ -109,6 +109,7 @@ export class StripeManager {
 
         await this.cacheManager.updateSubscriptionDataToCache(subscriptionId, {
             features,
+            productId,
             subsriptionDetails: this.getSubscriptionObject(subscription)
         })
 

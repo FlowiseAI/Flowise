@@ -26,7 +26,7 @@ export async function discoverOidcMetadata(issuerUrl: string): Promise<OidcMetad
 
     const url = wellKnownUrl(issuerUrl)
     try {
-        const { data } = await axios.get<OidcMetadata>(url, { timeout: 10000 })
+        const { data } = await axios.get<OidcMetadata>(url, { timeout: 3000 })
         if (!data?.jwks_uri || !data?.issuer) {
             throw new Error('Invalid OIDC discovery document')
         }

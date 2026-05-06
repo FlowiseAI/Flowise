@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import { Workspace } from '../../enterprise/database/entities/workspace.entity'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { externalOAuthIntegrationService } from '../../services/external-oauth/externalOAuthIntegration.service'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
@@ -44,20 +45,29 @@ const create = async (req: Request, res: Response, next: NextFunction) => {
         if (!orgId) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Missing organization context')
         }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Missing active workspace context')
+        }
         const body = req.body as {
             name: string
             issuerUrl: string
             audiences: string[]
             allowedClientIds?: string[]
             permissionScopeMap?: Record<string, string[]>
-            workspaceId: string
             customPermissionsClaimName?: string | null
             enabled?: boolean
         }
-        if (!body?.name || !body?.issuerUrl || !body?.audiences?.length || !body?.workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'name, issuerUrl, audiences, workspaceId are required')
+        if (!body?.name || !body?.issuerUrl || !body?.audiences?.length) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'name, issuerUrl, and audiences are required')
         }
         const app = getRunningExpressApp()
+        const workspace = await app.AppDataSource.getRepository(Workspace).findOne({
+            where: { id: workspaceId, organizationId: orgId }
+        })
+        if (!workspace) {
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Active workspace is not part of the current organization')
+        }
         const row = await externalOAuthIntegrationService.create(app.AppDataSource, {
             name: body.name,
             issuerUrl: body.issuerUrl,
@@ -65,7 +75,7 @@ const create = async (req: Request, res: Response, next: NextFunction) => {
             allowedClientIds: body.allowedClientIds ?? null,
             permissionScopeMap: body.permissionScopeMap || {},
             organizationId: orgId,
-            workspaceId: body.workspaceId,
+            workspaceId,
             customPermissionsClaimName: body.customPermissionsClaimName,
             enabled: body.enabled
         })
@@ -83,7 +93,8 @@ const update = async (req: Request, res: Response, next: NextFunction) => {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Missing id or organization')
         }
         const app = getRunningExpressApp()
-        const row = await externalOAuthIntegrationService.update(app.AppDataSource, id, orgId, req.body)
+        const { workspaceId: _omitWorkspaceId, ...patch } = req.body as Record<string, unknown> & { workspaceId?: string }
+        const row = await externalOAuthIntegrationService.update(app.AppDataSource, id, orgId, patch)
         if (!row) return res.status(StatusCodes.NOT_FOUND).json({ message: 'Not found' })
         return res.json(row)
     } catch (error) {

@@ -1,4 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm'
+import { Organization } from '../../enterprise/database/entities/organization.entity'
+import { Workspace } from '../../enterprise/database/entities/workspace.entity'
 
 /**
  * Trust configuration for validating JWT access tokens from an external OIDC provider (e.g. Okta).
@@ -47,8 +49,16 @@ export class ExternalOAuthIntegration {
     @Column({ type: 'varchar', length: 36 })
     organizationId: string
 
+    @ManyToOne(() => Organization)
+    @JoinColumn({ name: 'organizationId' })
+    organization?: Organization
+
     @Column({ type: 'varchar', length: 36 })
     workspaceId: string
+
+    @ManyToOne(() => Workspace)
+    @JoinColumn({ name: 'workspaceId' })
+    workspace?: Workspace
 
     @CreateDateColumn()
     createdDate: Date

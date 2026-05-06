@@ -14,6 +14,7 @@ export const externalOAuthIntegrationService = {
         // Prefer exact match; stored URLs should match IdP issuer string.
         return repo.find({
             where: { enabled: true, issuerUrl: iss },
+            relations: ['workspace', 'organization'],
             order: { updatedDate: 'DESC' }
         })
     },
@@ -53,10 +54,7 @@ export const externalOAuthIntegrationService = {
         id: string,
         organizationId: string,
         patch: Partial<
-            Pick<
-                ExternalOAuthIntegration,
-                'name' | 'enabled' | 'issuerUrl' | 'audiences' | 'allowedClientIds' | 'permissionScopeMap' | 'workspaceId'
-            >
+            Pick<ExternalOAuthIntegration, 'name' | 'enabled' | 'issuerUrl' | 'audiences' | 'allowedClientIds' | 'permissionScopeMap'>
         > & { customPermissionsClaimName?: string | null }
     ): Promise<ExternalOAuthIntegration | null> {
         const repo = this.getRepository(ds)
@@ -70,7 +68,6 @@ export const externalOAuthIntegrationService = {
             existing.allowedClientIds = patch.allowedClientIds?.length ? [...patch.allowedClientIds] : null
         if (patch.permissionScopeMap !== undefined) existing.permissionScopeMap = patch.permissionScopeMap
         if (patch.customPermissionsClaimName !== undefined) existing.customPermissionsClaimName = patch.customPermissionsClaimName
-        if (patch.workspaceId !== undefined) existing.workspaceId = patch.workspaceId
         await repo.save(existing)
         return existing
     },

@@ -1,6 +1,4 @@
 import { DataSource } from 'typeorm'
-import { Organization } from '../../enterprise/database/entities/organization.entity'
-import { Workspace } from '../../enterprise/database/entities/workspace.entity'
 import type { LoggedInUser } from '../../enterprise/Interface.Enterprise'
 import type { IdentityManager } from '../../IdentityManager'
 import logger from '../../utils/logger'
@@ -36,16 +34,12 @@ export async function tryAuthenticateExternalBearer(
     for (const integration of candidates) {
         try {
             const verified = await verifyExternalAccessToken(bearerSecret, integration)
-            const workspace = await dataSource.getRepository(Workspace).findOne({
-                where: { id: integration.workspaceId }
-            })
+            const workspace = integration.workspace
+            const org = integration.organization
             if (!workspace || workspace.organizationId !== integration.organizationId) {
                 logger.warn(`[external-oauth]: Invalid workspace binding for integration ${integration.id}`)
                 continue
             }
-            const org = await dataSource.getRepository(Organization).findOne({
-                where: { id: integration.organizationId }
-            })
             if (!org) {
                 logger.warn(`[external-oauth]: Organization missing for integration ${integration.id}`)
                 continue
