@@ -49,6 +49,8 @@ import upsertHistoryRouter from './upsert-history'
 import variablesRouter from './variables'
 import vectorRouter from './vectors'
 import verifyRouter from './verify'
+import webhookRouter from './webhook'
+import webhookListenerRouter from './webhook-listener'
 import versionRouter from './versions'
 import pricingRouter from './pricing'
 import nvidiaNimRouter from './nvidia-nim'
@@ -118,6 +120,8 @@ router.use('/tools', toolsRouter)
 router.use('/variables', variablesRouter)
 router.use('/vector', vectorRouter)
 router.use('/verify', verifyRouter)
+router.use('/webhook', webhookRouter)
+router.use('/webhook-listener', webhookListenerRouter)
 router.use('/version', versionRouter)
 router.use('/upsert-history', upsertHistoryRouter)
 router.use('/settings', settingsRouter)

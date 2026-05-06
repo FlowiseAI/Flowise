@@ -347,6 +347,14 @@ export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNo
         initNewComponentNodeData.outputAnchors[0].options = newOptions
     }
 
+    // Recompute show/hide visibility against the merged inputs so conditional fields
+    if (initNewComponentNodeData.inputParams) {
+        initNewComponentNodeData.inputParams = showHideInputParams(initNewComponentNodeData)
+    }
+    if (initNewComponentNodeData.inputAnchors) {
+        initNewComponentNodeData.inputAnchors = showHideInputAnchors(initNewComponentNodeData)
+    }
+
     return initNewComponentNodeData
 }
 
@@ -1308,6 +1316,17 @@ export const showHideInputs = (nodeData, inputType, overrideParams, arrayIndex) 
         }
         if (inputParam.hide) {
             _showHideOperation(effectiveNodeData, inputParam, 'hide', arrayIndex)
+        }
+
+        // Filter individual options within dropdowns based on their own show/hide conditions
+        if (inputParam.type === 'options' && inputParam.options) {
+            inputParam.options = inputParam.options.filter((opt) => {
+                if (typeof opt === 'string' || (!opt.show && !opt.hide)) return true
+                const synthetic = { show: opt.show, hide: opt.hide, display: true }
+                if (opt.show) _showHideOperation(nodeData, synthetic, 'show', arrayIndex)
+                if (opt.hide) _showHideOperation(nodeData, synthetic, 'hide', arrayIndex)
+                return synthetic.display !== false
+            })
         }
     }
 
