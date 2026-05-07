@@ -12,7 +12,7 @@ import { NodeInputHandle } from '../components/NodeInputHandle'
 import { getMinimumNodeHeight, NodeOutputHandles } from '../components/NodeOutputHandles'
 import { NodeStatusIndicator } from '../components/NodeStatusIndicator'
 import { NodeToolbarActions } from '../components/NodeToolbarActions'
-import { useNodeColors } from '../hooks/useNodeColors'
+import { useNodeColors, useOpenNodeEditor } from '../hooks'
 import { CardWrapper } from '../styled'
 
 import { NodeInfoDialog } from './NodeInfoDialog'
@@ -28,7 +28,10 @@ function IterationNodeComponent({ data }: IterationNodeProps) {
     const theme = useTheme()
     const { isDarkMode } = useConfigContext()
     const { apiBaseUrl } = useApiContext()
-    const { state } = useAgentflowContext()
+    const { state, executionState } = useAgentflowContext()
+    const nodeExecution = executionState?.nodeStates[data.id]
+    const status = nodeExecution?.status ?? data.status
+    const error = nodeExecution?.error ?? data.error
     const ref = useRef<HTMLDivElement>(null)
     const reactFlowWrapper = useRef<HTMLDivElement>(null)
     const updateNodeInternals = useUpdateNodeInternals()
@@ -39,6 +42,8 @@ function IterationNodeComponent({ data }: IterationNodeProps) {
         width: '300px',
         height: '250px'
     })
+
+    const { openNodeEditor } = useOpenNodeEditor()
 
     const { nodeColor, stateColor, backgroundColor } = useNodeColors({
         nodeColor: data.color,
@@ -71,7 +76,7 @@ function IterationNodeComponent({ data }: IterationNodeProps) {
     }, [data, ref, updateNodeInternals])
 
     const onResizeEnd = useCallback(
-        (e: unknown, params: { width: number; height: number }) => {
+        (_e: unknown, params: { width: number; height: number }) => {
             if (!ref.current) return
             setCardDimensions({
                 width: `${params.width}px`,
@@ -82,7 +87,12 @@ function IterationNodeComponent({ data }: IterationNodeProps) {
     )
 
     return (
-        <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+        <div
+            ref={ref}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onDoubleClick={() => openNodeEditor(data.id)}
+        >
             <NodeToolbar align='start' isVisible={true}>
                 <Box style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
                     <NodeIcon data={data} apiBaseUrl={apiBaseUrl} />
@@ -122,7 +132,7 @@ function IterationNodeComponent({ data }: IterationNodeProps) {
                 }}
                 border={false}
             >
-                <NodeStatusIndicator status={data.status} error={data.error} />
+                <NodeStatusIndicator status={status} error={error} />
 
                 <Box sx={{ width: '100%' }}>
                     <NodeInputHandle nodeId={data.id} nodeColor={nodeColor} hidden={data.hideInput} />

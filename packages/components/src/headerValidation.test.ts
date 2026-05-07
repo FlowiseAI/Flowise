@@ -1,4 +1,4 @@
-import { validateCustomHeaders } from './headerValidation'
+import { redactSensitiveHeaders, validateCustomHeaders } from './headerValidation'
 
 describe('validateCustomHeaders', () => {
     it('accepts a typical auth header set', () => {
@@ -62,5 +62,43 @@ describe('validateCustomHeaders', () => {
 
     it('rejects non-string values', () => {
         expect(() => validateCustomHeaders({ 'X-Foo': 123 as any })).toThrow(/must be a string/)
+    })
+})
+
+describe('redactSensitiveHeaders', () => {
+    it('returns empty object when headers are undefined or null', () => {
+        expect(redactSensitiveHeaders(undefined)).toEqual({})
+        expect(redactSensitiveHeaders(null)).toEqual({})
+    })
+
+    it('redacts authorization header regardless of casing', () => {
+        const result = redactSensitiveHeaders({ Authorization: 'Bearer abc', AUTHORIZATION: 'token' })
+        expect(result.Authorization).toBe('[REDACTED]')
+        expect(result.AUTHORIZATION).toBe('[REDACTED]')
+    })
+
+    it('redacts the full set of credential-bearing headers', () => {
+        const result = redactSensitiveHeaders({
+            authorization: 'Bearer x',
+            'proxy-authorization': 'Basic y',
+            cookie: 'session=z',
+            'x-api-key': 'apikey',
+            'x-auth-token': 'token',
+            'x-amz-security-token': 'aws-token'
+        })
+        Object.values(result).forEach((v) => expect(v).toBe('[REDACTED]'))
+    })
+
+    it('passes non-sensitive headers through unchanged', () => {
+        const result = redactSensitiveHeaders({
+            'content-type': 'application/json',
+            'user-agent': 'GitHub-Hookshot/abc',
+            'x-github-event': 'push',
+            authorization: 'Bearer leak'
+        })
+        expect(result['content-type']).toBe('application/json')
+        expect(result['user-agent']).toBe('GitHub-Hookshot/abc')
+        expect(result['x-github-event']).toBe('push')
+        expect(result.authorization).toBe('[REDACTED]')
     })
 })

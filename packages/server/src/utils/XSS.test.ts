@@ -6,7 +6,89 @@ jest.mock('./domainValidation', () => ({
     validateChatflowDomain: jest.fn()
 }))
 
-import { getAllowedIframeOrigins, getIframeSecurityHeaders } from './XSS'
+jest.mock('./logger', () => ({
+    __esModule: true,
+    default: { warn: jest.fn(), info: jest.fn(), error: jest.fn() }
+}))
+
+import logger from './logger'
+import { getAllowedIframeOrigins, getCorsOptions, getIframeSecurityHeaders, validateCorsConfig } from './XSS'
+
+// ---------------------------------------------------------------------------
+// getCorsOptions
+// ---------------------------------------------------------------------------
+
+describe('getCorsOptions', () => {
+    const SAVED_CORS_ORIGINS = process.env.CORS_ORIGINS
+    const SAVED_CORS_ALLOW_CREDENTIALS = process.env.CORS_ALLOW_CREDENTIALS
+
+    afterEach(() => {
+        if (SAVED_CORS_ORIGINS !== undefined) process.env.CORS_ORIGINS = SAVED_CORS_ORIGINS
+        else delete process.env.CORS_ORIGINS
+        if (SAVED_CORS_ALLOW_CREDENTIALS !== undefined) process.env.CORS_ALLOW_CREDENTIALS = SAVED_CORS_ALLOW_CREDENTIALS
+        else delete process.env.CORS_ALLOW_CREDENTIALS
+    })
+
+    function getCredentials(corsOrigins: string | undefined, corsAllowCredentials: string | undefined): boolean {
+        if (corsOrigins === undefined) delete process.env.CORS_ORIGINS
+        else process.env.CORS_ORIGINS = corsOrigins
+        if (corsAllowCredentials === undefined) delete process.env.CORS_ALLOW_CREDENTIALS
+        else process.env.CORS_ALLOW_CREDENTIALS = corsAllowCredentials
+
+        let captured: any
+        getCorsOptions()({ url: '/api/v1/test' }, (_err: any, options: any) => {
+            captured = options
+        })
+        return captured.credentials
+    }
+
+    describe('wildcard + credentials guard', () => {
+        it('forces credentials to false when CORS_ORIGINS=* and CORS_ALLOW_CREDENTIALS=true', () => {
+            expect(getCredentials('*', 'true')).toBe(false)
+        })
+
+        it('leaves credentials false when CORS_ORIGINS=* and CORS_ALLOW_CREDENTIALS is unset', () => {
+            expect(getCredentials('*', undefined)).toBe(false)
+        })
+
+        it('allows credentials when CORS_ORIGINS is an explicit list', () => {
+            expect(getCredentials('https://trusted.example.com', 'true')).toBe(true)
+        })
+
+        it('allows credentials when CORS_ORIGINS has multiple explicit origins', () => {
+            expect(getCredentials('https://app.example.com,https://admin.example.com', 'true')).toBe(true)
+        })
+
+        it('uses credentials=false when CORS_ALLOW_CREDENTIALS is unset regardless of CORS_ORIGINS', () => {
+            expect(getCredentials('https://trusted.example.com', undefined)).toBe(false)
+        })
+    })
+
+    describe('validateCorsConfig', () => {
+        beforeEach(() => jest.clearAllMocks())
+
+        it('warns when CORS_ORIGINS=* and CORS_ALLOW_CREDENTIALS=true', () => {
+            process.env.CORS_ORIGINS = '*'
+            process.env.CORS_ALLOW_CREDENTIALS = 'true'
+            validateCorsConfig()
+            expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('[CORS]'))
+        })
+
+        it('does not warn when CORS_ORIGINS=* without CORS_ALLOW_CREDENTIALS', () => {
+            process.env.CORS_ORIGINS = '*'
+            delete process.env.CORS_ALLOW_CREDENTIALS
+            validateCorsConfig()
+            expect(logger.warn).not.toHaveBeenCalled()
+        })
+
+        it('does not warn when CORS_ORIGINS is an explicit list with CORS_ALLOW_CREDENTIALS=true', () => {
+            process.env.CORS_ORIGINS = 'https://trusted.example.com'
+            process.env.CORS_ALLOW_CREDENTIALS = 'true'
+            validateCorsConfig()
+            expect(logger.warn).not.toHaveBeenCalled()
+        })
+    })
+})
 
 describe('getAllowedIframeOrigins', () => {
     const originalEnv = process.env.IFRAME_ORIGINS

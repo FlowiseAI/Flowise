@@ -2,7 +2,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRe
 import ReactFlow, { Background, Controls, MiniMap, ReactFlowProvider, useEdgesState, useNodesState } from 'reactflow'
 
 import { Alert, Snackbar } from '@mui/material'
-import { IconSparkles } from '@tabler/icons-react'
+import { IconRefreshAlert, IconSparkles } from '@tabler/icons-react'
 
 import { tokens } from './core/theme'
 import type { AgentFlowInstance, AgentflowProps, FlowData, FlowDataCallback, FlowEdge, FlowNode } from './core/types'
@@ -65,7 +65,10 @@ function AgentflowCanvas({
         setReactFlowInstance,
         closeEditDialog,
         registerLocalStateSetters,
-        registerOnFlowChange
+        registerOnFlowChange,
+        setComponentNodes,
+        syncNodes,
+        hasOutdatedNodes
     } = useAgentflowContext()
     const { isDarkMode } = useConfigContext()
     const agentflow = useAgentflow()
@@ -101,7 +104,13 @@ function AgentflowCanvas({
     }, [])
 
     // Load available nodes
-    const { availableNodes } = useFlowNodes()
+    const { availableNodes, isLoading: isNodesLoading } = useFlowNodes()
+
+    useEffect(() => {
+        if (!isNodesLoading && availableNodes.length > 0) {
+            setComponentNodes(availableNodes)
+        }
+    }, [availableNodes, isNodesLoading, setComponentNodes])
 
     // Auto-add Start node when creating a new (empty) canvas.
     // Only runs once: when availableNodes first loads and the canvas has no initial flow.
@@ -271,6 +280,30 @@ function AgentflowCanvas({
                             }}
                         >
                             <IconSparkles />
+                        </StyledFab>
+                    )}
+
+                    {/* Sync Nodes FAB - orange button matching V2, shown when outdated nodes exist */}
+                    {!readOnly && hasOutdatedNodes && (
+                        <StyledFab
+                            size='small'
+                            aria-label='Sync Nodes'
+                            title='Sync Nodes'
+                            onClick={syncNodes}
+                            sx={{
+                                position: 'absolute',
+                                left: 20 + (showDefaultPalette ? 50 : 0) + (enableGenerator ? 50 : 0),
+                                top: 20,
+                                zIndex: tokens.zIndex.canvasButton,
+                                background: tokens.colors.semantic.syncNodesFab,
+                                color: 'white',
+                                '&:hover': {
+                                    background: tokens.colors.semantic.syncNodesFab,
+                                    backgroundImage: 'linear-gradient(rgb(0 0 0/10%) 0 0)'
+                                }
+                            }}
+                        >
+                            <IconRefreshAlert />
                         </StyledFab>
                     )}
 

@@ -3,7 +3,11 @@ import { useState } from 'react'
 import { ExecutionDetail } from '@flowiseai/observe'
 import { Box, TextField, Typography } from '@mui/material'
 
-import { executionId as defaultExecutionId } from '../config'
+import { agentflowCanvasUrl, executionId as defaultExecutionId } from '../config'
+
+const onAgentflowClick: ((agentflowId: string) => void) | undefined = agentflowCanvasUrl
+    ? (agentflowId) => window.open(`${agentflowCanvasUrl}/${agentflowId}`, '_blank', 'noopener,noreferrer')
+    : undefined
 
 export default function StandaloneDetailExample() {
     const [executionId, setExecutionId] = useState(defaultExecutionId ?? '')
@@ -20,13 +24,7 @@ export default function StandaloneDetailExample() {
             />
             {executionId ? (
                 <Box sx={{ height: 600, border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
-                    <ExecutionDetail
-                        executionId={executionId}
-                        pollInterval={3000}
-                        onAgentflowClick={(agentflowId: string) => {
-                            console.info('[Example] onAgentflowClick', agentflowId)
-                        }}
-                    />
+                    <ExecutionDetail executionId={executionId} pollInterval={3000} onAgentflowClick={onAgentflowClick} />
                 </Box>
             ) : (
                 <Typography variant='body2' color='text.secondary'>

@@ -1,8 +1,9 @@
+import { randomBytes } from 'crypto'
 import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { Brackets, In, QueryRunner } from 'typeorm'
 import { validate as isValidUUID } from 'uuid'
-import { ChatflowType, IReactFlowObject } from '../../Interface'
+import { ChatflowType, IReactFlowObject, ScheduleInputMode } from '../../Interface'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { UsageCacheManager } from '../../UsageCacheManager'
 import { ChatFlow, EnumChatflowType } from '../../database/entities/ChatFlow'
@@ -14,7 +15,15 @@ import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServ
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import documentStoreService from '../../services/documentstore'
-import { constructGraphs, getAppVersion, getEndingNodes, getTelemetryFlowObj, isFlowValidForStream } from '../../utils'
+import {
+    constructGraphs,
+    decryptCredentialData,
+    encryptCredentialData,
+    getAppVersion,
+    getEndingNodes,
+    getTelemetryFlowObj,
+    isFlowValidForStream
+} from '../../utils'
 import { sanitizeAllowedUploadMimeTypesFromConfig } from '../../utils/fileValidation'
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
 import { sanitizeFlowDataForPublicEndpoint } from '../../utils/sanitizeFlowData'
@@ -22,6 +31,9 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import { updateStorageUsage } from '../../utils/quotaUsage'
+import { ScheduleTriggerType } from '../../database/entities/ScheduleRecord'
+import scheduleService from '../../services/schedule'
+import { ScheduleBeat } from '../../schedule/ScheduleBeat'
 
 export const enum ChatflowErrorMessage {
     INVALID_CHATFLOW_TYPE = 'Invalid Chatflow Type',
@@ -111,7 +123,7 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
     try {
         const appServer = getRunningExpressApp()
 
-        await getChatflowById(chatflowId, workspaceId)
+        const chatflow = await getChatflowById(chatflowId, workspaceId)
 
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
 
@@ -126,6 +138,14 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
 
         // Delete all upsert history
         await appServer.AppDataSource.getRepository(UpsertHistory).delete({ chatflowid: chatflowId })
+
+        // delete schedules related to the chatflow if it's an agentflow
+        if (chatflow.type === EnumChatflowType.AGENTFLOW) {
+            const existingRecord = await scheduleService.deleteScheduleForTarget(chatflow.id, ScheduleTriggerType.AGENTFLOW, workspaceId)
+            if (existingRecord) {
+                await ScheduleBeat.getInstance().onScheduleChanged(existingRecord.id, 'delete')
+            }
+        }
 
         try {
             // Delete all uploads corresponding to this chatflow
@@ -354,6 +374,54 @@ const saveChatflow = async (
         dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
     }
 
+    // Check if the flow is agentflow and if it has a schedule node, if yes then notify the beat to sync the schedule
+    if (dbResponse.type === EnumChatflowType.AGENTFLOW) {
+        /*** Get chatflows and prepare data  ***/
+        const flowData = dbResponse.flowData
+        const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+        const nodes = (parsedFlowData.nodes || []).filter((node) => node.data.name !== 'stickyNoteAgentflow')
+        const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
+        const startInputType = startNode?.data?.inputs?.startInputType as 'chatInput' | 'formInput' | 'scheduleInput'
+        if (startInputType === 'scheduleInput') {
+            const scheduleInputMode = startNode?.data?.inputs?.scheduleInputMode as ScheduleInputMode | undefined
+            if (!scheduleInputMode) {
+                throw new InternalFlowiseError(
+                    StatusCodes.BAD_REQUEST,
+                    'Schedule Input Mode is required on the Start node when Start Input Type is Schedule.'
+                )
+            }
+            const resolvedCron = scheduleService.resolveScheduleCron(startNode?.data?.inputs || {})
+            const scheduleTimezone = startNode?.data?.inputs?.scheduleTimezone || 'UTC'
+            const scheduleDefaultInput = startNode?.data?.inputs?.scheduleDefaultInput || ''
+            const scheduleFormDefaultsRaw = startNode?.data?.inputs?.scheduleFormDefaults
+            const scheduleFormDefaults =
+                scheduleInputMode === 'form'
+                    ? typeof scheduleFormDefaultsRaw === 'string'
+                        ? scheduleFormDefaultsRaw
+                        : JSON.stringify(scheduleFormDefaultsRaw ?? {})
+                    : undefined
+            const scheduleEndDate = startNode?.data?.inputs?.scheduleEndDate ? new Date(startNode.data.inputs.scheduleEndDate) : undefined
+            const enabled = scheduleService.canScheduleEnable(startNode?.data?.inputs ?? {})
+            const record = await scheduleService.createOrUpdateSchedule({
+                triggerType: ScheduleTriggerType.AGENTFLOW,
+                targetId: dbResponse.id,
+                nodeId: startNode?.id,
+                cronExpression: resolvedCron.cronExpression || '',
+                timezone: scheduleTimezone,
+                enabled: enabled,
+                scheduleInputMode,
+                defaultInput: scheduleInputMode === 'text' ? scheduleDefaultInput : '',
+                defaultForm: scheduleFormDefaults,
+                workspaceId,
+                endDate: scheduleEndDate
+            })
+            if (enabled) {
+                // Notify the beat to sync the schedule
+                await ScheduleBeat.getInstance().onScheduleChanged(record.id, 'upsert')
+            }
+        }
+    }
+
     const productId = await appServer.identityManager.getProductIdFromSubscription(subscriptionId)
 
     await appServer.telemetry.sendTelemetry(
@@ -418,6 +486,62 @@ const updateChatflow = async (
     newDbChatflow.workspaceId = workspaceId // defense-in-depth: use trusted param, not chatflow.workspaceId (merge mutates in-place)
     await _checkAndUpdateDocumentStoreUsage(newDbChatflow, workspaceId)
     const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
+
+    // Check if the flow is agentflow and if it has a schedule node, if yes then notify the beat to sync the schedule
+    if (dbResponse.type === EnumChatflowType.AGENTFLOW) {
+        const flowData = dbResponse.flowData
+        const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+        const nodes = (parsedFlowData.nodes || []).filter((node) => node.data.name !== 'stickyNoteAgentflow')
+        const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
+        const startInputType = startNode?.data?.inputs?.startInputType as 'chatInput' | 'formInput' | 'scheduleInput'
+        if (startInputType === 'scheduleInput') {
+            const scheduleInputMode = startNode?.data?.inputs?.scheduleInputMode as ScheduleInputMode | undefined
+            if (!scheduleInputMode) {
+                throw new InternalFlowiseError(
+                    StatusCodes.BAD_REQUEST,
+                    'Schedule Input Mode is required on the Start node when Start Input Type is Schedule.'
+                )
+            }
+            const resolvedCron = scheduleService.resolveScheduleCron(startNode?.data?.inputs || {})
+            const scheduleTimezone = startNode?.data?.inputs?.scheduleTimezone || 'UTC'
+            const scheduleDefaultInput = startNode?.data?.inputs?.scheduleDefaultInput || ''
+            const scheduleFormDefaultsRaw = startNode?.data?.inputs?.scheduleFormDefaults
+            const scheduleFormDefaults =
+                scheduleInputMode === 'form'
+                    ? typeof scheduleFormDefaultsRaw === 'string'
+                        ? scheduleFormDefaultsRaw
+                        : JSON.stringify(scheduleFormDefaultsRaw ?? {})
+                    : undefined
+            const scheduleEndDate = startNode?.data?.inputs?.scheduleEndDate ? new Date(startNode.data.inputs.scheduleEndDate) : undefined
+            const canEnable = scheduleService.canScheduleEnable(startNode?.data?.inputs ?? {})
+            const record = await scheduleService.createOrUpdateSchedule({
+                triggerType: ScheduleTriggerType.AGENTFLOW,
+                targetId: dbResponse.id,
+                nodeId: startNode?.id,
+                cronExpression: resolvedCron.cronExpression || '',
+                timezone: scheduleTimezone,
+                enabled: canEnable === false ? false : undefined, // automatically disable schedule if it cannot be enabled; otherwise preserve the existing enabled value
+                scheduleInputMode,
+                defaultInput: scheduleInputMode === 'text' ? scheduleDefaultInput : '',
+                defaultForm: scheduleFormDefaults,
+                workspaceId,
+                endDate: scheduleEndDate
+            })
+            if (record.enabled) {
+                // Notify the beat to sync the (enabled) schedule
+                await ScheduleBeat.getInstance().onScheduleChanged(record.id, 'upsert')
+            } else {
+                // Schedule is disabled; ensure any existing scheduled job is removed
+                await ScheduleBeat.getInstance().onScheduleChanged(record.id, 'delete')
+            }
+        } else {
+            // If the start node is not scheduleInput, then we need to delete the existing schedule if it exists
+            const existingRecord = await scheduleService.deleteScheduleForTarget(dbResponse.id, ScheduleTriggerType.AGENTFLOW, workspaceId)
+            if (existingRecord) {
+                await ScheduleBeat.getInstance().onScheduleChanged(existingRecord.id, 'delete')
+            }
+        }
+    }
 
     return dbResponse
 }
@@ -501,6 +625,66 @@ const checkIfChatflowHasChanged = async (chatflowId: string, lastUpdatedDateTime
     }
 }
 
+const setWebhookSecret = async (chatflowId: string, workspaceId: string): Promise<{ webhookSecret: string }> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(ChatFlow)
+        const chatflow = await repo.findOne({ where: { id: chatflowId, workspaceId } })
+        if (!chatflow) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+        const plaintext = randomBytes(32).toString('hex')
+        chatflow.webhookSecret = await encryptCredentialData({ secret: plaintext })
+        chatflow.webhookSecretConfigured = true
+        await repo.save(chatflow)
+        return { webhookSecret: plaintext }
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) throw error
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.setWebhookSecret - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const clearWebhookSecret = async (chatflowId: string, workspaceId: string): Promise<void> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(ChatFlow)
+        const chatflow = await repo.findOne({ where: { id: chatflowId, workspaceId } })
+        if (!chatflow) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+        chatflow.webhookSecret = null
+        chatflow.webhookSecretConfigured = false
+        await repo.save(chatflow)
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) throw error
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.clearWebhookSecret - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const getWebhookSecret = async (chatflowId: string, workspaceId: string): Promise<string | null> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
+            .createQueryBuilder('chatflow')
+            .select('chatflow.webhookSecret')
+            .where('chatflow.id = :id', { id: chatflowId })
+            .andWhere('chatflow.workspaceId = :workspaceId', { workspaceId })
+            .getOne()
+        const stored = dbResponse?.webhookSecret
+        if (!stored) return null
+        const decrypted = await decryptCredentialData(stored)
+        return (decrypted?.secret as string | undefined) ?? null
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) throw error
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.getWebhookSecret - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     assertChatflowIdsInWorkspace,
     checkIfChatflowIsValidForStreaming,
@@ -515,5 +699,8 @@ export default {
     updateChatflow,
     getSinglePublicChatbotConfig,
     checkIfChatflowHasChanged,
-    getAllChatflowsCountByOrganization
+    getAllChatflowsCountByOrganization,
+    setWebhookSecret,
+    clearWebhookSecret,
+    getWebhookSecret
 }

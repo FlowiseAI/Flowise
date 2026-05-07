@@ -58,7 +58,6 @@ Displays all executions across every agentflow. Pass `agentflowId` to scope the 
 
 ```tsx
 import { ExecutionsViewer, ObserveProvider } from '@flowiseai/observe'
-import '@flowiseai/observe/observe.css'
 
 export default function App() {
     return (
@@ -79,7 +78,6 @@ Renders the full step viewer for a single execution by ID — useful for deep-li
 
 ```tsx
 import { ExecutionDetail, ObserveProvider } from '@flowiseai/observe'
-import '@flowiseai/observe/observe.css'
 
 export default function App() {
     return (

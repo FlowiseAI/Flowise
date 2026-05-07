@@ -29,6 +29,18 @@ describe('stripProtectedFields', () => {
         expect(result).toHaveProperty('credential', 'cred-uuid')
     })
 
+    it('removes webhookSecret from input', () => {
+        const result = stripProtectedFields({ webhookSecret: 'attacker-chosen-secret', name: 'test' })
+        expect(result).not.toHaveProperty('webhookSecret')
+        expect(result).toHaveProperty('name', 'test')
+    })
+
+    it('removes webhookSecretConfigured from input', () => {
+        const result = stripProtectedFields({ webhookSecretConfigured: true, name: 'test' })
+        expect(result).not.toHaveProperty('webhookSecretConfigured')
+        expect(result).toHaveProperty('name', 'test')
+    })
+
     it('removes all protected fields when all are present', () => {
         const body = {
             id: 'abc',
@@ -36,6 +48,8 @@ describe('stripProtectedFields', () => {
             updatedDate: '2026-01-02T00:00:00.000Z',
             workspaceId: '11111111-2222-3333-4444-555555555555',
             organizationId: 'org-789',
+            webhookSecret: 'some-secret',
+            webhookSecretConfigured: true,
             details: '{"name":"my assistant"}',
             credential: 'cred-uuid',
             iconSrc: null

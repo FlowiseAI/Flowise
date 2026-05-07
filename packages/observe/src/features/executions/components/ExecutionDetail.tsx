@@ -1,76 +1,110 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Box, Chip, CircularProgress, Divider, IconButton, Stack, Tooltip, Typography } from '@mui/material'
+import { Box, Chip, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconCopy, IconRefresh } from '@tabler/icons-react'
+import { IconCopy, IconExternalLink, IconRefresh } from '@tabler/icons-react'
+import { format as formatDate, parseISO } from 'date-fns'
 
-import { StatusIndicator } from '@/atoms'
-import type { ExecutionDetailProps, ExecutionState, ExecutionTreeNode } from '@/core/types'
+import type { ExecutionDetailProps, ExecutionTreeNode } from '@/core/types'
 
 import { useExecutionPoll } from '../hooks/useExecutionPoll'
 import { useExecutionTree } from '../hooks/useExecutionTree'
+import { useResizableSidebar } from '../hooks/useResizableSidebar'
 
+import { ExecutionTreeSidebar } from './ExecutionTreeSidebar'
 import { NodeExecutionDetail } from './NodeExecutionDetail'
 
 const MIN_SIDEBAR_WIDTH = 240
 const MAX_SIDEBAR_WIDTH = 480
 const DEFAULT_SIDEBAR_WIDTH = 300
 
-/**
- * Full execution detail view: resizable tree sidebar (left) + node detail panel (right).
- * Fetches the execution by ID and auto-polls while INPROGRESS.
- */
+function findFirstStoppedNode(nodes: ExecutionTreeNode[]): ExecutionTreeNode | null {
+    for (const node of nodes) {
+        if (!node.isVirtualNode && node.status === 'STOPPED') return node
+        const found = findFirstStoppedNode(node.children)
+        if (found) return found
+    }
+    return null
+}
+
+function findFirstSelectableNode(nodes: ExecutionTreeNode[]): ExecutionTreeNode | null {
+    for (const node of nodes) {
+        if (!node.isVirtualNode) return node
+        const found = findFirstSelectableNode(node.children)
+        if (found) return found
+    }
+    return null
+}
+
+function collectAllIds(nodes: ExecutionTreeNode[]): string[] {
+    const ids: string[] = []
+    for (const node of nodes) {
+        ids.push(node.id)
+        if (node.children.length > 0) ids.push(...collectAllIds(node.children))
+    }
+    return ids
+}
+
+// PARITY: legacy uses moment(d).format('MMM D, YYYY h:mm A'). date-fns 'MMM d, yyyy h:mm a' produces the same en-US output.
+function formatUpdatedDate(iso: string | undefined): string {
+    if (!iso) return 'N/A'
+    try {
+        return formatDate(parseISO(iso), 'MMM d, yyyy h:mm a')
+    } catch {
+        return 'N/A'
+    }
+}
+
 export function ExecutionDetail({
     executionId,
     pollInterval = 3000,
     onHumanInput,
     onClose: _onClose,
-    onAgentflowClick
+    onAgentflowClick,
+    agentflow: agentflowProp
 }: ExecutionDetailProps) {
     const theme = useTheme()
     const { execution, isLoading, error, refresh } = useExecutionPoll({ executionId, pollInterval })
     const tree = useExecutionTree(execution?.executionData ?? null)
     const [selectedNode, setSelectedNode] = useState<ExecutionTreeNode | null>(null)
-    const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH)
+    const [expandedIds, setExpandedIds] = useState<string[]>([])
+    const { width: sidebarWidth, onMouseDown: onSidebarHandleMouseDown } = useResizableSidebar({
+        defaultWidth: DEFAULT_SIDEBAR_WIDTH,
+        minWidth: MIN_SIDEBAR_WIDTH,
+        maxWidth: MAX_SIDEBAR_WIDTH
+    })
     const [copied, setCopied] = useState(false)
-    const isDragging = useRef(false)
-    const dragStartX = useRef(0)
-    const dragStartWidth = useRef(DEFAULT_SIDEBAR_WIDTH)
+    const hasInitializedRef = useRef(false)
 
-    const handleMouseDown = (e: React.MouseEvent) => {
-        isDragging.current = true
-        dragStartX.current = e.clientX
-        dragStartWidth.current = sidebarWidth
-        document.addEventListener('mousemove', handleMouseMove)
-        document.addEventListener('mouseup', handleMouseUp)
-    }
+    // PARITY: legacy ExecutionDetails opens with all nodes expanded and selects the first STOPPED node when state==='STOPPED', else the first top-level node — only on initial tree build so re-polls don't yank the selection.
+    useEffect(() => {
+        if (hasInitializedRef.current) return
+        if (tree.length === 0) return
+        const initial =
+            execution?.state === 'STOPPED' ? findFirstStoppedNode(tree) ?? findFirstSelectableNode(tree) : findFirstSelectableNode(tree)
+        if (initial) {
+            setSelectedNode(initial)
+            setExpandedIds(collectAllIds(tree))
+            hasInitializedRef.current = true
+        }
+    }, [tree, execution?.state])
 
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-        if (!isDragging.current) return
-        const delta = e.clientX - dragStartX.current
-        const newWidth = Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, dragStartWidth.current + delta))
-        setSidebarWidth(newWidth)
-    }, [])
-
-    const handleMouseUp = useCallback(() => {
-        isDragging.current = false
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-    }, [handleMouseMove])
+    const formattedUpdatedDate = useMemo(() => formatUpdatedDate(execution?.updatedDate), [execution?.updatedDate])
 
     useEffect(() => {
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove)
-            document.removeEventListener('mouseup', handleMouseUp)
-        }
-    }, [handleMouseMove, handleMouseUp])
+        if (!copied) return
+        const timer = setTimeout(() => setCopied(false), 2000)
+        return () => clearTimeout(timer)
+    }, [copied])
 
     const copyId = () => {
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(executionId)
-            setCopied(true)
-            setTimeout(() => setCopied(false), 2000)
-        }
+        if (!navigator.clipboard) return
+        navigator.clipboard
+            .writeText(executionId)
+            .then(() => setCopied(true))
+            .catch((err) => {
+                console.warn('[Observe] Clipboard copy failed:', err)
+            })
     }
 
     if (isLoading) {
@@ -89,167 +123,109 @@ export function ExecutionDetail({
         )
     }
 
-    return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            {/* Toolbar */}
-            <Stack
-                direction='row'
-                spacing={1}
-                alignItems='center'
-                sx={{ px: 2, py: 1, borderBottom: `1px solid ${theme.palette.divider}`, flexShrink: 0 }}
-            >
-                <StatusIndicator state={execution.state as ExecutionState} size={16} />
-                <Typography variant='subtitle1' sx={{ fontWeight: 600 }}>
-                    {execution.state}
-                </Typography>
-                <Tooltip title={copied ? 'Copied!' : `ID: ${execution.id}`}>
-                    <IconButton size='small' onClick={copyId}>
-                        <IconCopy size={14} />
-                    </IconButton>
-                </Tooltip>
-                {execution.agentflow &&
-                    (onAgentflowClick ? (
-                        <Chip
-                            label={execution.agentflow.name}
-                            size='small'
-                            clickable
-                            onClick={() => onAgentflowClick(execution.agentflowId)}
-                        />
-                    ) : (
-                        <Typography variant='body2' color='text.secondary'>
-                            {execution.agentflow.name}
-                        </Typography>
-                    ))}
-                <Box sx={{ flex: 1 }} />
-                <Tooltip title='Refresh'>
-                    <IconButton size='small' onClick={refresh}>
-                        <IconRefresh size={14} />
-                    </IconButton>
-                </Tooltip>
-            </Stack>
+    // The detail endpoint doesn't perform the agentflow join; fall back to the
+    // optional prop (typically passed from ExecutionsViewer's list response).
+    const agentflow = execution.agentflow ?? agentflowProp
+    // PARITY: chained `||` (not `??`) so empty strings fall through to the next option, matching legacy.
+    const agentflowChipLabel = agentflow?.name || agentflow?.id || 'Go to AgentFlow'
 
-            {/* Split pane */}
-            <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-                {/* Tree sidebar */}
-                <Box sx={{ width: sidebarWidth, flexShrink: 0, overflow: 'auto', borderRight: `1px solid ${theme.palette.divider}` }}>
-                    {tree.length === 0 ? (
-                        <Box sx={{ p: 2 }}>
-                            <Typography variant='body2' color='text.secondary'>
-                                No execution steps recorded.
-                            </Typography>
-                        </Box>
-                    ) : (
-                        <TreeNodeList nodes={tree} selectedId={selectedNode?.id ?? null} onSelect={setSelectedNode} depth={0} />
-                    )}
+    return (
+        <Box sx={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
+            <Box sx={{ width: sidebarWidth, flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                {/* Header — chips + date/refresh row, rendered above the tree (parity with legacy). */}
+                <Box
+                    sx={{
+                        p: 2,
+                        pb: 1,
+                        backgroundColor: theme.palette.background.paper,
+                        borderBottom: `1px solid ${theme.palette.divider}`,
+                        flexShrink: 0
+                    }}
+                >
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        {onAgentflowClick ? (
+                            <Chip
+                                sx={{ pl: 1 }}
+                                icon={<IconExternalLink size={15} />}
+                                variant='outlined'
+                                label={agentflowChipLabel}
+                                clickable
+                                onClick={() => onAgentflowClick(execution.agentflowId)}
+                            />
+                        ) : (
+                            <Chip variant='outlined' label={agentflowChipLabel} />
+                        )}
+
+                        <Tooltip
+                            title={copied ? 'Copied!' : `Execution ID: ${execution.id}`}
+                            placement='top'
+                            disableHoverListener={!execution.id}
+                        >
+                            <Chip
+                                sx={{ pl: 1 }}
+                                icon={<IconCopy size={15} />}
+                                variant='outlined'
+                                label={copied ? 'Copied!' : 'Copy ID'}
+                                clickable
+                                onClick={copyId}
+                            />
+                        </Tooltip>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                        <Typography sx={{ flex: 1 }} color='text.primary'>
+                            {formattedUpdatedDate}
+                        </Typography>
+                        <Tooltip title='Refresh'>
+                            <IconButton onClick={refresh} size='small'>
+                                <IconRefresh size={20} />
+                            </IconButton>
+                        </Tooltip>
+                    </Box>
                 </Box>
 
-                {/* Drag handle */}
-                <Box
-                    onMouseDown={handleMouseDown}
-                    sx={{
-                        width: 4,
-                        cursor: 'col-resize',
-                        flexShrink: 0,
-                        backgroundColor: 'transparent',
-                        '&:hover': { backgroundColor: theme.palette.primary.main }
-                    }}
-                />
-
-                {/* Node detail panel */}
-                <Box sx={{ flex: 1, overflow: 'hidden' }}>
-                    {selectedNode ? (
-                        <NodeExecutionDetail
-                            node={selectedNode}
-                            agentflowId={execution.agentflowId}
-                            sessionId={execution.sessionId}
-                            onHumanInput={onHumanInput}
-                        />
-                    ) : (
-                        <Box sx={{ p: 3 }}>
-                            <Typography variant='body2' color='text.secondary'>
-                                Select a step to view details.
-                            </Typography>
-                        </Box>
-                    )}
+                {/* Tree — fills remaining sidebar height, scrolls independently. */}
+                <Box sx={{ flex: 1, overflow: 'auto', p: 1 }}>
+                    <ExecutionTreeSidebar
+                        tree={tree}
+                        selectedId={selectedNode?.id ?? null}
+                        onSelect={setSelectedNode}
+                        expandedIds={expandedIds}
+                        onExpandedChange={setExpandedIds}
+                    />
                 </Box>
             </Box>
-        </Box>
-    )
-}
 
-// ============================================================================
-// Tree rendering — recursive node list
-// ============================================================================
-
-interface TreeNodeListProps {
-    nodes: ExecutionTreeNode[]
-    selectedId: string | null
-    onSelect: (node: ExecutionTreeNode) => void
-    depth: number
-}
-
-function TreeNodeList({ nodes, selectedId, onSelect, depth }: TreeNodeListProps) {
-    return (
-        <>
-            {nodes.map((node) => (
-                <TreeNodeItem key={node.id} node={node} selectedId={selectedId} onSelect={onSelect} depth={depth} />
-            ))}
-        </>
-    )
-}
-
-interface TreeNodeItemProps {
-    node: ExecutionTreeNode
-    selectedId: string | null
-    onSelect: (node: ExecutionTreeNode) => void
-    depth: number
-}
-
-function TreeNodeItem({ node, selectedId, onSelect, depth }: TreeNodeItemProps) {
-    const theme = useTheme()
-    const [expanded, setExpanded] = useState(true)
-    const isSelected = node.id === selectedId
-    const hasChildren = node.children.length > 0
-
-    return (
-        <>
+            {/* Drag handle */}
             <Box
-                onClick={() => {
-                    if (!node.isVirtualNode) onSelect(node)
-                    if (hasChildren) setExpanded((v) => !v)
-                }}
+                onMouseDown={onSidebarHandleMouseDown}
                 sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    pl: 1.5 + depth * 1.5,
-                    pr: 1.5,
-                    py: 0.75,
-                    cursor: node.isVirtualNode ? 'default' : 'pointer',
-                    backgroundColor: isSelected ? theme.palette.action.selected : 'transparent',
-                    '&:hover': { backgroundColor: theme.palette.action.hover },
-                    borderBottom: `1px solid ${theme.palette.divider}`
+                    width: 4,
+                    cursor: 'col-resize',
+                    flexShrink: 0,
+                    backgroundColor: 'transparent',
+                    borderRight: `1px solid ${theme.palette.divider}`,
+                    '&:hover': { backgroundColor: theme.palette.primary.main }
                 }}
-            >
-                {node.isVirtualNode ? (
-                    <Typography variant='caption' color='text.secondary' sx={{ fontStyle: 'italic' }}>
-                        {node.nodeLabel}
-                    </Typography>
+            />
+
+            {/* Detail panel */}
+            <Box sx={{ flex: 1, overflow: 'auto' }}>
+                {selectedNode ? (
+                    <NodeExecutionDetail
+                        node={selectedNode}
+                        agentflowId={execution.agentflowId}
+                        sessionId={execution.sessionId}
+                        onHumanInput={onHumanInput}
+                    />
                 ) : (
-                    <>
-                        <StatusIndicator state={node.status as ExecutionState} size={12} />
-                        <Typography variant='body2' sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {node.nodeLabel}
+                    <Box sx={{ p: 3 }}>
+                        <Typography variant='body2' color='text.secondary'>
+                            Select a step to view details.
                         </Typography>
-                    </>
+                    </Box>
                 )}
             </Box>
-            {hasChildren && expanded && (
-                <>
-                    <Divider />
-                    <TreeNodeList nodes={node.children} selectedId={selectedId} onSelect={onSelect} depth={depth + 1} />
-                </>
-            )}
-        </>
+        </Box>
     )
 }

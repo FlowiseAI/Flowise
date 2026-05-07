@@ -4,197 +4,542 @@
             "name": "awsChatBedrock",
             "models": [
                 {
-                    "label": "anthropic.claude-opus-4-7-v1",
-                    "name": "anthropic.claude-opus-4-7-v1",
-                    "description": "Claude 4.7 Opus",
-                    "input_cost": 0.000005,
-                    "output_cost": 0.000025
+                    "label": "ai21.jamba-1-5-large-v1:0",
+                    "name": "ai21.jamba-1-5-large-v1:0",
+                    "description": "AI21 Jamba 1.5 Large - Text generation",
+                    "input_cost": 0.000002,
+                    "output_cost": 0.000008
                 },
                 {
-                    "label": "anthropic.claude-opus-4-6-v1",
-                    "name": "anthropic.claude-opus-4-6-v1",
-                    "description": "Claude 4.6 Opus",
-                    "input_cost": 0.000005,
-                    "output_cost": 0.000025
+                    "label": "ai21.jamba-1-5-mini-v1:0",
+                    "name": "ai21.jamba-1-5-mini-v1:0",
+                    "description": "AI21 Jamba 1.5 Mini - Text generation",
+                    "input_cost": 0.0000002,
+                    "output_cost": 0.0000004
                 },
                 {
-                    "label": "anthropic.claude-sonnet-4-6",
-                    "name": "anthropic.claude-sonnet-4-6",
-                    "description": "Claude 4.6 Sonnet",
-                    "input_cost": 0.000003,
-                    "output_cost": 0.000015
+                    "label": "amazon.nova-micro-v1:0",
+                    "name": "amazon.nova-micro-v1:0",
+                    "description": "Amazon Nova Micro - Text-only, fastest and most cost-effective",
+                    "input_cost": 0.000000035,
+                    "output_cost": 0.00000014,
+                    "inference_profile_geos": ["us", "eu", "apac"]
                 },
                 {
-                    "label": "anthropic.claude-opus-4-5-20251101-v1:0",
-                    "name": "anthropic.claude-opus-4-5-20251101-v1:0",
-                    "description": "Claude 4.5 Opus",
-                    "input_cost": 0.000005,
-                    "output_cost": 0.000025
+                    "label": "amazon.nova-lite-v1:0",
+                    "name": "amazon.nova-lite-v1:0",
+                    "description": "Amazon Nova Lite - Multimodal (text, image, video)",
+                    "input_cost": 0.00000006,
+                    "output_cost": 0.00000024,
+                    "inference_profile_geos": ["us", "eu", "apac", "ca"]
                 },
                 {
-                    "label": "anthropic.claude-sonnet-4-5-20250929-v1:0",
-                    "name": "anthropic.claude-sonnet-4-5-20250929-v1:0",
-                    "description": "Claude 4.5 Sonnet",
-                    "input_cost": 0.000003,
-                    "output_cost": 0.000015
+                    "label": "amazon.nova-pro-v1:0",
+                    "name": "amazon.nova-pro-v1:0",
+                    "description": "Amazon Nova Pro - Multimodal (text, image, video), balanced performance",
+                    "input_cost": 0.0000008,
+                    "output_cost": 0.0000032,
+                    "inference_profile_geos": ["us", "eu", "apac"]
+                },
+                {
+                    "label": "amazon.nova-2-lite-v1:0",
+                    "name": "amazon.nova-2-lite-v1:0",
+                    "description": "Amazon Nova 2 Lite - Multimodal (text, image, video)",
+                    "input_cost": 0.00000006,
+                    "output_cost": 0.00000024,
+                    "inference_profile_geos": ["us", "eu", "jp", "global"]
                 },
                 {
                     "label": "anthropic.claude-haiku-4-5-20251001-v1:0",
                     "name": "anthropic.claude-haiku-4-5-20251001-v1:0",
-                    "description": "Claude 4.5 Haiku",
+                    "description": "Claude 4.5 Haiku - Latest Haiku with multimodal support",
                     "input_cost": 0.000001,
-                    "output_cost": 0.000005
-                },
-                {
-                    "label": "openai.gpt-oss-20b-1:0",
-                    "name": "openai.gpt-oss-20b-1:0",
-                    "description": "21B parameters model optimized for lower latency, local, and specialized use cases",
-                    "input_cost": 0.00007,
-                    "output_cost": 0.0003
-                },
-                {
-                    "label": "openai.gpt-oss-120b-1:0",
-                    "name": "openai.gpt-oss-120b-1:0",
-                    "description": "120B parameters model optimized for production, general purpose, and high-reasoning use cases",
-                    "input_cost": 0.00015,
-                    "output_cost": 0.0006
-                },
-                {
-                    "label": "anthropic.claude-opus-4-1-20250805-v1:0",
-                    "name": "anthropic.claude-opus-4-1-20250805-v1:0",
-                    "description": "Claude 4.1 Opus",
-                    "input_cost": 0.000015,
-                    "output_cost": 0.000075
+                    "output_cost": 0.000005,
+                    "inference_profile_geos": ["us", "eu", "jp", "au", "global"]
                 },
                 {
                     "label": "anthropic.claude-sonnet-4-20250514-v1:0",
                     "name": "anthropic.claude-sonnet-4-20250514-v1:0",
-                    "description": "Claude 4 Sonnet",
+                    "description": "Claude 4 Sonnet - Balanced intelligence and speed, multimodal",
                     "input_cost": 0.000003,
-                    "output_cost": 0.000015
+                    "output_cost": 0.000015,
+                    "inference_profile_geos": ["us", "eu", "apac", "global"]
                 },
                 {
-                    "label": "anthropic.claude-opus-4-20250514-v1:0",
-                    "name": "anthropic.claude-opus-4-20250514-v1:0",
-                    "description": "Claude 4 Opus",
-                    "input_cost": 0.000015,
-                    "output_cost": 0.000075
-                },
-                {
-                    "label": "anthropic.claude-3-7-sonnet-20250219-v1:0",
-                    "name": "anthropic.claude-3-7-sonnet-20250219-v1:0",
-                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7",
-                    "input_cost": 3e-6,
-                    "output_cost": 0.000015
-                },
-                {
-                    "label": "anthropic.claude-3-5-haiku-20241022-v1:0",
-                    "name": "anthropic.claude-3-5-haiku-20241022-v1:0",
-                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5",
-                    "input_cost": 8e-7,
-                    "output_cost": 4e-6
-                },
-                {
-                    "label": "anthropic.claude-3-5-sonnet-20241022-v2:0",
-                    "name": "anthropic.claude-3-5-sonnet-20241022-v2:0",
-                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5",
-                    "input_cost": 3e-6,
-                    "output_cost": 0.000015
-                },
-                {
-                    "label": "anthropic.claude-3-5-sonnet-20240620-v1:0",
-                    "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
-                    "description": "(20240620-v1:0) specific version of Claude Sonnet 3.5",
-                    "input_cost": 3e-6,
-                    "output_cost": 0.000015
-                },
-                {
-                    "label": "anthropic.claude-3-opus",
-                    "name": "anthropic.claude-3-opus-20240229-v1:0",
-                    "input_cost": 0.000015,
-                    "output_cost": 0.000075
-                },
-                {
-                    "label": "anthropic.claude-3-sonnet",
-                    "name": "anthropic.claude-3-sonnet-20240229-v1:0",
+                    "label": "anthropic.claude-sonnet-4-5-20250929-v1:0",
+                    "name": "anthropic.claude-sonnet-4-5-20250929-v1:0",
+                    "description": "Claude 4.5 Sonnet - Enhanced reasoning, multimodal",
                     "input_cost": 0.000003,
-                    "output_cost": 0.000015
+                    "output_cost": 0.000015,
+                    "inference_profile_geos": ["us", "eu", "jp", "au", "global"]
                 },
                 {
-                    "label": "anthropic.claude-3-haiku",
-                    "name": "anthropic.claude-3-haiku-20240307-v1:0",
-                    "input_cost": 2.5e-7,
-                    "output_cost": 1.25e-6
+                    "label": "anthropic.claude-sonnet-4-6",
+                    "name": "anthropic.claude-sonnet-4-6",
+                    "description": "Claude 4.6 Sonnet - Latest Sonnet, multimodal",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015,
+                    "inference_profile_geos": ["us", "eu", "jp", "au", "global"]
                 },
                 {
-                    "label": "anthropic.claude-instant-v1",
-                    "name": "anthropic.claude-instant-v1",
-                    "description": "Text generation, conversation",
-                    "input_cost": 0.000008,
-                    "output_cost": 0.000024
+                    "label": "anthropic.claude-opus-4-1-20250805-v1:0",
+                    "name": "anthropic.claude-opus-4-1-20250805-v1:0",
+                    "description": "Claude 4.1 Opus - Powerful reasoning, multimodal",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075,
+                    "inference_profile_geos": ["us"]
                 },
                 {
-                    "label": "anthropic.claude-v2:1",
-                    "name": "anthropic.claude-v2:1",
-                    "description": "Text generation, conversation, complex reasoning and analysis",
-                    "input_cost": 0.000008,
-                    "output_cost": 0.000024
+                    "label": "anthropic.claude-opus-4-5-20251101-v1:0",
+                    "name": "anthropic.claude-opus-4-5-20251101-v1:0",
+                    "description": "Claude 4.5 Opus - Advanced reasoning, multimodal",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025,
+                    "inference_profile_geos": ["us", "eu", "global"]
                 },
                 {
-                    "label": "anthropic.claude-v2",
-                    "name": "anthropic.claude-v2",
-                    "description": "Text generation, conversation, complex reasoning and analysis",
-                    "input_cost": 0.000008,
-                    "output_cost": 0.000024
+                    "label": "anthropic.claude-opus-4-7",
+                    "name": "anthropic.claude-opus-4-7",
+                    "description": "Claude 4.7 Opus - Latest and most powerful Claude, multimodal",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025,
+                    "inference_profile_geos": ["us", "eu", "jp", "global"]
                 },
                 {
-                    "label": "meta.llama2-13b-chat-v1",
-                    "name": "meta.llama2-13b-chat-v1",
-                    "description": "Text generation, conversation",
-                    "input_cost": 0.0003,
-                    "output_cost": 0.0006
+                    "label": "anthropic.claude-opus-4-6-v1",
+                    "name": "anthropic.claude-opus-4-6-v1",
+                    "description": "Claude 4.6 Opus - Most powerful Claude, multimodal",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025,
+                    "inference_profile_geos": ["us", "eu", "au", "global"]
                 },
                 {
-                    "label": "meta.llama2-70b-chat-v1",
-                    "name": "meta.llama2-70b-chat-v1",
-                    "description": "Text generation, conversation",
-                    "input_cost": 0.0003,
-                    "output_cost": 0.0006
+                    "label": "deepseek.v3.2",
+                    "name": "deepseek.v3.2",
+                    "description": "DeepSeek V3.2 - Text generation",
+                    "input_cost": 0.00000062,
+                    "output_cost": 0.00000185,
+                    "stop_sequences": false
+                },
+                {
+                    "label": "deepseek.r1-v1:0",
+                    "name": "deepseek.r1-v1:0",
+                    "description": "DeepSeek-R1 - Reasoning model",
+                    "input_cost": 0.00000055,
+                    "output_cost": 0.0000022,
+                    "inference_profile_geos": ["us"],
+                    "stop_sequences": false
+                },
+                {
+                    "label": "google.gemma-3-4b-it",
+                    "name": "google.gemma-3-4b-it",
+                    "description": "Google Gemma 3 4B - Multimodal (text, image)",
+                    "input_cost": 0.00000004,
+                    "output_cost": 0.00000008
+                },
+                {
+                    "label": "google.gemma-3-12b-it",
+                    "name": "google.gemma-3-12b-it",
+                    "description": "Google Gemma 3 12B - Multimodal (text, image)",
+                    "input_cost": 0.00000009,
+                    "output_cost": 0.00000029
+                },
+                {
+                    "label": "google.gemma-3-27b-it",
+                    "name": "google.gemma-3-27b-it",
+                    "description": "Google Gemma 3 27B - Multimodal (text, image)",
+                    "input_cost": 0.00000023,
+                    "output_cost": 0.00000038
                 },
                 {
                     "label": "meta.llama3-8b-instruct-v1:0",
                     "name": "meta.llama3-8b-instruct-v1:0",
-                    "description": "Text summarization, text classification, sentiment analysis",
-                    "input_cost": 0.0003,
-                    "output_cost": 0.0006
+                    "description": "Meta Llama 3 8B - Text generation, classification",
+                    "input_cost": 0.0000003,
+                    "output_cost": 0.0000006
                 },
                 {
                     "label": "meta.llama3-70b-instruct-v1:0",
                     "name": "meta.llama3-70b-instruct-v1:0",
-                    "description": "Language modeling, dialog systems, code generation, text summarization, text classification, sentiment analysis",
-                    "input_cost": 0.00195,
-                    "output_cost": 0.00256
+                    "description": "Meta Llama 3 70B - Advanced text generation, code generation",
+                    "input_cost": 0.00000265,
+                    "output_cost": 0.0000035
+                },
+                {
+                    "label": "meta.llama3-1-8b-instruct-v1:0",
+                    "name": "meta.llama3-1-8b-instruct-v1:0",
+                    "description": "Meta Llama 3.1 8B - Text generation",
+                    "input_cost": 0.0000003,
+                    "output_cost": 0.0000006,
+                    "inference_profile_geos": ["us"]
+                },
+                {
+                    "label": "meta.llama3-1-70b-instruct-v1:0",
+                    "name": "meta.llama3-1-70b-instruct-v1:0",
+                    "description": "Meta Llama 3.1 70B - Advanced text generation",
+                    "input_cost": 0.00000265,
+                    "output_cost": 0.0000035,
+                    "inference_profile_geos": ["us"]
+                },
+                {
+                    "label": "meta.llama3-3-70b-instruct-v1:0",
+                    "name": "meta.llama3-3-70b-instruct-v1:0",
+                    "description": "Meta Llama 3.3 70B - Enhanced text generation",
+                    "input_cost": 0.00000265,
+                    "output_cost": 0.0000035,
+                    "inference_profile_geos": ["us"]
+                },
+                {
+                    "label": "meta.llama4-scout-17b-instruct-v1:0",
+                    "name": "meta.llama4-scout-17b-instruct-v1:0",
+                    "description": "Meta Llama 4 Scout 17B - Multimodal (text, image)",
+                    "input_cost": 0.0000004,
+                    "output_cost": 0.0000012,
+                    "inference_profile_geos": ["us"]
+                },
+                {
+                    "label": "meta.llama4-maverick-17b-instruct-v1:0",
+                    "name": "meta.llama4-maverick-17b-instruct-v1:0",
+                    "description": "Meta Llama 4 Maverick 17B - Multimodal (text, image)",
+                    "input_cost": 0.0000004,
+                    "output_cost": 0.0000012,
+                    "inference_profile_geos": ["us"]
+                },
+                {
+                    "label": "minimax.minimax-m2",
+                    "name": "minimax.minimax-m2",
+                    "description": "MiniMax M2 - Text generation",
+                    "input_cost": 0.0000003,
+                    "output_cost": 0.0000012
+                },
+                {
+                    "label": "minimax.minimax-m2.1",
+                    "name": "minimax.minimax-m2.1",
+                    "description": "MiniMax M2.1 - Enhanced text generation",
+                    "input_cost": 0.0000003,
+                    "output_cost": 0.0000012
                 },
                 {
                     "label": "mistral.mistral-7b-instruct-v0:2",
                     "name": "mistral.mistral-7b-instruct-v0:2",
-                    "description": "Classification, text generation, code generation",
-                    "input_cost": 0.002,
-                    "output_cost": 0.006
+                    "description": "Mistral 7B - Classification, text generation, code generation",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.0000002
                 },
                 {
                     "label": "mistral.mixtral-8x7b-instruct-v0:1",
                     "name": "mistral.mixtral-8x7b-instruct-v0:1",
-                    "description": "Complex reasoning and analysis, text generation, code generation",
-                    "input_cost": 0.002,
-                    "output_cost": 0.006
+                    "description": "Mistral Mixtral 8x7B - Complex reasoning, code generation",
+                    "input_cost": 0.00000045,
+                    "output_cost": 0.0000007
                 },
                 {
                     "label": "mistral.mistral-large-2402-v1:0",
                     "name": "mistral.mistral-large-2402-v1:0",
-                    "description": "Complex reasoning and analysis, text generation, code generation, RAG, agents",
-                    "input_cost": 0.002,
-                    "output_cost": 0.006
+                    "description": "Mistral Large (24.02) - Complex reasoning, RAG, agents",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
+                },
+                {
+                    "label": "mistral.mistral-small-2402-v1:0",
+                    "name": "mistral.mistral-small-2402-v1:0",
+                    "description": "Mistral Small (24.02) - Cost-effective text generation",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000003
+                },
+                {
+                    "label": "mistral.ministral-3-3b-instruct",
+                    "name": "mistral.ministral-3-3b-instruct",
+                    "description": "Mistral Ministral 3B - Multimodal (text, image), compact",
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000001
+                },
+                {
+                    "label": "mistral.ministral-3-8b-instruct",
+                    "name": "mistral.ministral-3-8b-instruct",
+                    "description": "Mistral Ministral 8B - Multimodal (text, image)",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.00000015
+                },
+                {
+                    "label": "mistral.ministral-3-14b-instruct",
+                    "name": "mistral.ministral-3-14b-instruct",
+                    "description": "Mistral Ministral 14B - Multimodal (text, image)",
+                    "input_cost": 0.0000002,
+                    "output_cost": 0.0000002
+                },
+                {
+                    "label": "mistral.mistral-large-3-675b-instruct",
+                    "name": "mistral.mistral-large-3-675b-instruct",
+                    "description": "Mistral Large 3 - Multimodal (text, image), most powerful",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.0000015
+                },
+                {
+                    "label": "mistral.magistral-small-2509",
+                    "name": "mistral.magistral-small-2509",
+                    "description": "Mistral Magistral Small - Multimodal (text, image)",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.0000015
+                },
+                {
+                    "label": "mistral.devstral-2-123b",
+                    "name": "mistral.devstral-2-123b",
+                    "description": "Mistral Devstral 2 123B - Code generation specialist",
+                    "input_cost": 0.0000004,
+                    "output_cost": 0.000002
+                },
+                {
+                    "label": "mistral.pixtral-large-2502-v1:0",
+                    "name": "mistral.pixtral-large-2502-v1:0",
+                    "description": "Mistral Pixtral Large - Multimodal (text, image)",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000009,
+                    "inference_profile_geos": ["us", "eu"]
+                },
+                {
+                    "label": "mistral.voxtral-mini-3b-2507",
+                    "name": "mistral.voxtral-mini-3b-2507",
+                    "description": "Mistral Voxtral Mini - Speech and text",
+                    "input_cost": 0.00000004,
+                    "output_cost": 0.00000004
+                },
+                {
+                    "label": "mistral.voxtral-small-24b-2507",
+                    "name": "mistral.voxtral-small-24b-2507",
+                    "description": "Mistral Voxtral Small - Speech and text",
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000003
+                },
+                {
+                    "label": "moonshot.kimi-k2-thinking",
+                    "name": "moonshot.kimi-k2-thinking",
+                    "description": "Moonshot Kimi K2 Thinking - Reasoning model",
+                    "input_cost": 0.0000006,
+                    "output_cost": 0.0000025
+                },
+                {
+                    "label": "moonshotai.kimi-k2.5",
+                    "name": "moonshotai.kimi-k2.5",
+                    "description": "Moonshot Kimi K2.5 - Multimodal (text, image)",
+                    "input_cost": 0.0000006,
+                    "output_cost": 0.000003
+                },
+                {
+                    "label": "nvidia.nemotron-nano-9b-v2",
+                    "name": "nvidia.nemotron-nano-9b-v2",
+                    "description": "NVIDIA Nemotron Nano 9B v2 - Text generation",
+                    "input_cost": 0.00000006,
+                    "output_cost": 0.00000023
+                },
+                {
+                    "label": "nvidia.nemotron-nano-12b-v2",
+                    "name": "nvidia.nemotron-nano-12b-v2",
+                    "description": "NVIDIA Nemotron Nano 12B v2 VL - Multimodal (text, image)",
+                    "input_cost": 0.0000002,
+                    "output_cost": 0.0000006
+                },
+                {
+                    "label": "nvidia.nemotron-nano-3-30b",
+                    "name": "nvidia.nemotron-nano-3-30b",
+                    "description": "NVIDIA Nemotron 3 Nano 30B - Text generation",
+                    "input_cost": 0.00000006,
+                    "output_cost": 0.00000024
+                },
+                {
+                    "label": "openai.gpt-oss-20b-1:0",
+                    "name": "openai.gpt-oss-20b-1:0",
+                    "description": "OpenAI GPT OSS 20B - Text generation",
+                    "input_cost": 0.00000007,
+                    "output_cost": 0.0000003,
+                    "stop_sequences": false
+                },
+                {
+                    "label": "openai.gpt-oss-120b-1:0",
+                    "name": "openai.gpt-oss-120b-1:0",
+                    "description": "OpenAI GPT OSS 120B - Advanced text generation",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.0000006,
+                    "stop_sequences": false
+                },
+                {
+                    "label": "openai.gpt-oss-safeguard-20b",
+                    "name": "openai.gpt-oss-safeguard-20b",
+                    "description": "OpenAI GPT OSS Safeguard 20B - Content moderation",
+                    "input_cost": 0.00000007,
+                    "output_cost": 0.0000002,
+                    "stop_sequences": false
+                },
+                {
+                    "label": "openai.gpt-oss-safeguard-120b",
+                    "name": "openai.gpt-oss-safeguard-120b",
+                    "description": "OpenAI GPT OSS Safeguard 120B - Advanced content moderation",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.0000006,
+                    "stop_sequences": false
+                },
+                {
+                    "label": "qwen.qwen3-32b-v1:0",
+                    "name": "qwen.qwen3-32b-v1:0",
+                    "description": "Qwen 3 32B - Text generation",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.0000006
+                },
+                {
+                    "label": "qwen.qwen3-coder-30b-a3b-v1:0",
+                    "name": "qwen.qwen3-coder-30b-a3b-v1:0",
+                    "description": "Qwen 3 Coder 30B - Code generation specialist",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.0000006
+                },
+                {
+                    "label": "qwen.qwen3-next-80b-a3b",
+                    "name": "qwen.qwen3-next-80b-a3b",
+                    "description": "Qwen 3 Next 80B - Text generation",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.0000012
+                },
+                {
+                    "label": "qwen.qwen3-vl-235b-a22b",
+                    "name": "qwen.qwen3-vl-235b-a22b",
+                    "description": "Qwen 3 VL 235B - Multimodal (text, image)",
+                    "input_cost": 0.00000053,
+                    "output_cost": 0.00000266
+                },
+                {
+                    "label": "qwen.qwen3-coder-next",
+                    "name": "qwen.qwen3-coder-next",
+                    "description": "Qwen 3 Coder Next - Latest code generation",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.0000012
+                },
+                {
+                    "label": "writer.palmyra-x4-v1:0",
+                    "name": "writer.palmyra-x4-v1:0",
+                    "description": "Writer Palmyra X4 - Text generation",
+                    "input_cost": 0.0000025,
+                    "output_cost": 0.00001,
+                    "inference_profile_geos": ["us"]
+                },
+                {
+                    "label": "writer.palmyra-x5-v1:0",
+                    "name": "writer.palmyra-x5-v1:0",
+                    "description": "Writer Palmyra X5 - Enhanced text generation",
+                    "input_cost": 0.0000006,
+                    "output_cost": 0.000006,
+                    "inference_profile_geos": ["us"]
+                },
+                {
+                    "label": "writer.palmyra-vision-7b",
+                    "name": "writer.palmyra-vision-7b",
+                    "description": "Writer Palmyra Vision 7B - Multimodal (text, image)",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.0000006
+                },
+                {
+                    "label": "zai.glm-4.7",
+                    "name": "zai.glm-4.7",
+                    "description": "Z.AI GLM 4.7 - Text generation",
+                    "input_cost": 0.0000006,
+                    "output_cost": 0.0000022
+                },
+                {
+                    "label": "zai.glm-4.7-flash",
+                    "name": "zai.glm-4.7-flash",
+                    "description": "Z.AI GLM 4.7 Flash - Fast text generation",
+                    "input_cost": 0.00000007,
+                    "output_cost": 0.0000004
+                },
+                {
+                    "label": "minimax.minimax-m2.5",
+                    "name": "minimax.minimax-m2.5",
+                    "description": "MiniMax M2.5 - General purpose text generation",
+                    "input_cost": 0.0000003,
+                    "output_cost": 0.0000012
+                },
+                {
+                    "label": "nvidia.nemotron-super-3-120b",
+                    "name": "nvidia.nemotron-super-3-120b",
+                    "description": "NVIDIA Nemotron 3 Super 120B A12B - Large-scale text generation",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.00000065
+                },
+                {
+                    "label": "zai.glm-5",
+                    "name": "zai.glm-5",
+                    "description": "Z.AI GLM 5 - Advanced text generation",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.0000032
+                },
+                {
+                    "label": "amazon.nova-premier-v1:0 (Legacy)",
+                    "name": "amazon.nova-premier-v1:0",
+                    "description": "Amazon Nova Premier - Legacy",
+                    "input_cost": 0.0000025,
+                    "output_cost": 0.0000125,
+                    "inference_profile_geos": ["us"]
+                },
+                {
+                    "label": "anthropic.claude-3-haiku-20240307-v1:0 (Legacy)",
+                    "name": "anthropic.claude-3-haiku-20240307-v1:0",
+                    "description": "Claude 3 Haiku - Legacy",
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.00000125,
+                    "inference_profile_geos": ["us", "eu", "apac"]
+                },
+                {
+                    "label": "anthropic.claude-3-5-haiku-20241022-v1:0 (Legacy)",
+                    "name": "anthropic.claude-3-5-haiku-20241022-v1:0",
+                    "description": "Claude 3.5 Haiku - Legacy",
+                    "input_cost": 0.0000008,
+                    "output_cost": 0.000004,
+                    "inference_profile_geos": ["us"]
+                },
+                {
+                    "label": "cohere.command-r-v1:0 (Legacy)",
+                    "name": "cohere.command-r-v1:0",
+                    "description": "Cohere Command R - Legacy",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.0000015
+                },
+                {
+                    "label": "cohere.command-r-plus-v1:0 (Legacy)",
+                    "name": "cohere.command-r-plus-v1:0",
+                    "description": "Cohere Command R+ - Legacy",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "meta.llama3-2-1b-instruct-v1:0 (Legacy)",
+                    "name": "meta.llama3-2-1b-instruct-v1:0",
+                    "description": "Meta Llama 3.2 1B Instruct - Legacy",
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000001,
+                    "inference_profile_geos": ["us", "eu"]
+                },
+                {
+                    "label": "meta.llama3-2-3b-instruct-v1:0 (Legacy)",
+                    "name": "meta.llama3-2-3b-instruct-v1:0",
+                    "description": "Meta Llama 3.2 3B Instruct - Legacy",
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.00000015,
+                    "inference_profile_geos": ["us", "eu"]
+                },
+                {
+                    "label": "meta.llama3-2-11b-instruct-v1:0 (Legacy)",
+                    "name": "meta.llama3-2-11b-instruct-v1:0",
+                    "description": "Meta Llama 3.2 11B Instruct - Legacy",
+                    "input_cost": 0.00000016,
+                    "output_cost": 0.00000016,
+                    "inference_profile_geos": ["us"]
+                },
+                {
+                    "label": "meta.llama3-2-90b-instruct-v1:0 (Legacy)",
+                    "name": "meta.llama3-2-90b-instruct-v1:0",
+                    "description": "Meta Llama 3.2 90B Instruct - Legacy",
+                    "input_cost": 0.00000072,
+                    "output_cost": 0.00000072,
+                    "inference_profile_geos": ["us"]
                 }
             ],
             "regions": [
@@ -205,6 +550,10 @@
                 {
                     "label": "ap-east-1",
                     "name": "ap-east-1"
+                },
+                {
+                    "label": "ap-east-2",
+                    "name": "ap-east-2"
                 },
                 {
                     "label": "ap-northeast-1",
@@ -249,6 +598,10 @@
                 {
                     "label": "ap-southeast-6",
                     "name": "ap-southeast-6"
+                },
+                {
+                    "label": "ap-southeast-7",
+                    "name": "ap-southeast-7"
                 },
                 {
                     "label": "ca-central-1",
@@ -309,6 +662,10 @@
                 {
                     "label": "me-south-1",
                     "name": "me-south-1"
+                },
+                {
+                    "label": "mx-central-1",
+                    "name": "mx-central-1"
                 },
                 {
                     "label": "sa-east-1",
@@ -394,38 +751,38 @@
                 {
                     "label": "gpt-4.1",
                     "name": "gpt-4.1",
-                    "input_cost": 2e-6,
-                    "output_cost": 8e-6
+                    "input_cost": 0.000002,
+                    "output_cost": 0.000008
                 },
                 {
                     "label": "o3-mini",
                     "name": "o3-mini",
-                    "input_cost": 1.1e-6,
-                    "output_cost": 4.4e-6
+                    "input_cost": 0.0000011,
+                    "output_cost": 0.0000044
                 },
                 {
                     "label": "o3",
                     "name": "o3",
-                    "input_cost": 2e-6,
-                    "output_cost": 8e-6
+                    "input_cost": 0.000002,
+                    "output_cost": 0.000008
                 },
                 {
                     "label": "o3-pro",
                     "name": "o3-pro",
-                    "input_cost": 2e-5,
-                    "output_cost": 8e-5
+                    "input_cost": 0.00002,
+                    "output_cost": 0.00008
                 },
                 {
                     "label": "o4-mini",
                     "name": "o4-mini",
-                    "input_cost": 1.1e-6,
-                    "output_cost": 4.4e-6
+                    "input_cost": 0.0000011,
+                    "output_cost": 0.0000044
                 },
                 {
                     "label": "codex-mini",
                     "name": "codex-mini",
-                    "input_cost": 1.5e-6,
-                    "output_cost": 6e-6
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.000006
                 },
                 {
                     "label": "o1",
@@ -442,19 +799,19 @@
                 {
                     "label": "o1-mini",
                     "name": "o1-mini",
-                    "input_cost": 3e-6,
+                    "input_cost": 0.000003,
                     "output_cost": 0.000012
                 },
                 {
                     "label": "gpt-4o-mini",
                     "name": "gpt-4o-mini",
-                    "input_cost": 1.5e-7,
-                    "output_cost": 6e-7
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.0000006
                 },
                 {
                     "label": "gpt-4o",
                     "name": "gpt-4o",
-                    "input_cost": 2.5e-6,
+                    "input_cost": 0.0000025,
                     "output_cost": 0.00001
                 },
                 {
@@ -472,14 +829,14 @@
                 {
                     "label": "gpt-35-turbo",
                     "name": "gpt-35-turbo",
-                    "input_cost": 1.5e-6,
-                    "output_cost": 2e-6
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.000002
                 },
                 {
                     "label": "gpt-35-turbo-16k",
                     "name": "gpt-35-turbo-16k",
-                    "input_cost": 3e-6,
-                    "output_cost": 4e-6
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000004
                 },
                 {
                     "label": "gpt-4-vision-preview",
@@ -502,14 +859,14 @@
                 {
                     "label": "gpt-4.1-nano",
                     "name": "gpt-4.1-nano",
-                    "input_cost": 1e-7,
-                    "output_cost": 4e-7
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000004
                 },
                 {
                     "label": "gpt-5-pro",
                     "name": "gpt-5-pro",
-                    "input_cost": 2.1e-5,
-                    "output_cost": 1.68e-4
+                    "input_cost": 0.000021,
+                    "output_cost": 0.000168
                 },
                 {
                     "label": "gpt-5-chat-latest",
@@ -525,13 +882,13 @@
                 {
                     "label": "gpt-4o-mini",
                     "name": "gpt-4o-mini",
-                    "input_cost": 1.5e-7,
-                    "output_cost": 6e-7
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.0000006
                 },
                 {
                     "label": "gpt-4o",
                     "name": "gpt-4o",
-                    "input_cost": 2.5e-6,
+                    "input_cost": 0.0000025,
                     "output_cost": 0.00001
                 },
                 {
@@ -555,13 +912,13 @@
                 {
                     "label": "gpt-35-turbo",
                     "name": "gpt-35-turbo",
-                    "input_cost": 1.5e-6,
-                    "output_cost": 2e-6
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.000002
                 },
                 {
                     "label": "gpt-35-turbo-16k",
                     "name": "gpt-35-turbo-16k",
-                    "input_cost": 5e-7,
+                    "input_cost": 0.0000005,
                     "output_cost": 0.0000015
                 },
                 {
@@ -660,21 +1017,21 @@
                     "label": "claude-3-7-sonnet-latest",
                     "name": "claude-3-7-sonnet-latest",
                     "description": "Most recent snapshot version of Claude Sonnet 3.7",
-                    "input_cost": 3e-6,
+                    "input_cost": 0.000003,
                     "output_cost": 0.000015
                 },
                 {
                     "label": "claude-3-5-haiku-latest",
                     "name": "claude-3-5-haiku-latest",
                     "description": "Most recent snapshot version of Claude Haiku 3.5",
-                    "input_cost": 8e-7,
-                    "output_cost": 4e-6
+                    "input_cost": 0.0000008,
+                    "output_cost": 0.000004
                 },
                 {
                     "label": "claude-3.5-sonnet-latest",
                     "name": "claude-3-5-sonnet-latest",
                     "description": "Most recent snapshot version of Claude Sonnet 3.5 model",
-                    "input_cost": 3e-6,
+                    "input_cost": 0.000003,
                     "output_cost": 0.000015
                 },
                 {
@@ -695,8 +1052,8 @@
                     "label": "claude-3-haiku",
                     "name": "claude-3-haiku-20240307",
                     "description": "Fastest and most compact model, designed for near-instant responsiveness",
-                    "input_cost": 2.5e-7,
-                    "output_cost": 1.25e-6
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.00000125
                 }
             ]
         },
@@ -707,8 +1064,8 @@
                     "label": "claude-3-haiku",
                     "name": "claude-3-haiku",
                     "description": "Fastest and most compact model, designed for near-instant responsiveness",
-                    "input_cost": 2.5e-7,
-                    "output_cost": 1.25e-6
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.00000125
                 },
                 {
                     "label": "claude-3-opus",
@@ -776,56 +1133,56 @@
                 {
                     "label": "gemini-2.5-pro",
                     "name": "gemini-2.5-pro",
-                    "input_cost": 0.3e-6,
+                    "input_cost": 0.0000003,
                     "output_cost": 0.000025
                 },
                 {
                     "label": "gemini-2.5-flash",
                     "name": "gemini-2.5-flash",
-                    "input_cost": 1.25e-6,
+                    "input_cost": 0.00000125,
                     "output_cost": 0.00001
                 },
                 {
                     "label": "gemini-2.5-flash-image",
                     "name": "gemini-2.5-flash-image",
-                    "input_cost": 1.25e-6,
+                    "input_cost": 0.00000125,
                     "output_cost": 0.00001
                 },
                 {
                     "label": "gemini-2.5-flash-lite",
                     "name": "gemini-2.5-flash-lite",
-                    "input_cost": 1e-7,
-                    "output_cost": 4e-7
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000004
                 },
                 {
                     "label": "gemini-2.0-flash",
                     "name": "gemini-2.0-flash",
-                    "input_cost": 1e-7,
-                    "output_cost": 4e-7
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000004
                 },
                 {
                     "label": "gemini-2.0-flash-lite",
                     "name": "gemini-2.0-flash-lite",
-                    "input_cost": 7.5e-8,
-                    "output_cost": 3e-7
+                    "input_cost": 0.000000075,
+                    "output_cost": 0.0000003
                 },
                 {
                     "label": "gemini-1.5-flash",
                     "name": "gemini-1.5-flash",
-                    "input_cost": 7.5e-8,
-                    "output_cost": 3e-7
+                    "input_cost": 0.000000075,
+                    "output_cost": 0.0000003
                 },
                 {
                     "label": "gemini-1.5-flash-8b",
                     "name": "gemini-1.5-flash-8b",
-                    "input_cost": 3.75e-8,
-                    "output_cost": 1.5e-7
+                    "input_cost": 0.0000000375,
+                    "output_cost": 0.00000015
                 },
                 {
                     "label": "gemini-1.5-pro",
                     "name": "gemini-1.5-pro",
-                    "input_cost": 1.25e-6,
-                    "output_cost": 5e-6
+                    "input_cost": 0.00000125,
+                    "output_cost": 0.000005
                 }
             ]
         },
@@ -885,68 +1242,68 @@
                 {
                     "label": "gemini-2.5-pro",
                     "name": "gemini-2.5-pro",
-                    "input_cost": 0.3e-6,
+                    "input_cost": 0.0000003,
                     "output_cost": 0.000025
                 },
                 {
                     "label": "gemini-2.5-flash",
                     "name": "gemini-2.5-flash",
-                    "input_cost": 1.25e-6,
+                    "input_cost": 0.00000125,
                     "output_cost": 0.00001
                 },
                 {
                     "label": "gemini-2.5-flash-lite",
                     "name": "gemini-2.5-flash-lite",
-                    "input_cost": 1e-7,
-                    "output_cost": 4e-7
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000004
                 },
                 {
                     "label": "gemini-2.0-flash",
                     "name": "gemini-2.0-flash-001",
-                    "input_cost": 1e-7,
-                    "output_cost": 4e-7
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000004
                 },
                 {
                     "label": "gemini-2.0-flash-lite",
                     "name": "gemini-2.0-flash-lite-001",
-                    "input_cost": 7.5e-8,
-                    "output_cost": 3e-7
+                    "input_cost": 0.000000075,
+                    "output_cost": 0.0000003
                 },
                 {
                     "label": "gemini-1.5-flash-002",
                     "name": "gemini-1.5-flash-002",
-                    "input_cost": 7.5e-8,
-                    "output_cost": 3e-7
+                    "input_cost": 0.000000075,
+                    "output_cost": 0.0000003
                 },
                 {
                     "label": "gemini-1.5-flash-001",
                     "name": "gemini-1.5-flash-001",
-                    "input_cost": 7.5e-8,
-                    "output_cost": 3e-7
+                    "input_cost": 0.000000075,
+                    "output_cost": 0.0000003
                 },
                 {
                     "label": "gemini-1.5-pro-002",
                     "name": "gemini-1.5-pro-002",
-                    "input_cost": 1.25e-6,
-                    "output_cost": 5e-6
+                    "input_cost": 0.00000125,
+                    "output_cost": 0.000005
                 },
                 {
                     "label": "gemini-1.5-pro-001",
                     "name": "gemini-1.5-pro-001",
-                    "input_cost": 1.25e-6,
-                    "output_cost": 5e-6
+                    "input_cost": 0.00000125,
+                    "output_cost": 0.000005
                 },
                 {
                     "label": "gemini-1.0-pro",
                     "name": "gemini-1.0-pro",
-                    "input_cost": 1.25e-7,
-                    "output_cost": 3.75e-7
+                    "input_cost": 0.000000125,
+                    "output_cost": 0.000000375
                 },
                 {
                     "label": "gemini-1.0-pro-vision",
                     "name": "gemini-1.0-pro-vision",
-                    "input_cost": 1.25e-7,
-                    "output_cost": 3.75e-7
+                    "input_cost": 0.000000125,
+                    "output_cost": 0.000000375
                 },
                 {
                     "label": "claude-opus-4-7",
@@ -1015,21 +1372,21 @@
                     "label": "claude-3-7-sonnet@20250219",
                     "name": "claude-3-7-sonnet@20250219",
                     "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7",
-                    "input_cost": 3e-6,
+                    "input_cost": 0.000003,
                     "output_cost": 0.000015
                 },
                 {
                     "label": "claude-3-5-haiku@20241022",
                     "name": "claude-3-5-haiku@20241022",
                     "description": "(20241022-v1:0) specific version of Claude Haiku 3.5",
-                    "input_cost": 8e-7,
-                    "output_cost": 4e-6
+                    "input_cost": 0.0000008,
+                    "output_cost": 0.000004
                 },
                 {
                     "label": "claude-3-5-sonnet-v2@20241022",
                     "name": "claude-3-5-sonnet-v2@20241022",
                     "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5",
-                    "input_cost": 3e-6,
+                    "input_cost": 0.000003,
                     "output_cost": 0.000015
                 },
                 {
@@ -1050,54 +1407,183 @@
                     "label": "claude-3-haiku@20240307",
                     "name": "claude-3-haiku@20240307",
                     "description": "Fastest and most compact model for near-instant responsiveness",
-                    "input_cost": 2.5e-7,
-                    "output_cost": 1.25e-6
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.00000125
                 }
             ],
             "regions": [
-                { "label": "global", "name": "global" },
-                { "label": "us-east1", "name": "us-east1" },
-                { "label": "us-east4", "name": "us-east4" },
-                { "label": "us-central1", "name": "us-central1" },
-                { "label": "us-west1", "name": "us-west1" },
-                { "label": "europe-west4", "name": "europe-west4" },
-                { "label": "europe-west1", "name": "europe-west1" },
-                { "label": "europe-west3", "name": "europe-west3" },
-                { "label": "europe-west2", "name": "europe-west2" },
-                { "label": "asia-east1", "name": "asia-east1" },
-                { "label": "asia-southeast1", "name": "asia-southeast1" },
-                { "label": "asia-northeast1", "name": "asia-northeast1" },
-                { "label": "asia-south1", "name": "asia-south1" },
-                { "label": "australia-southeast1", "name": "australia-southeast1" },
-                { "label": "southamerica-east1", "name": "southamerica-east1" },
-                { "label": "africa-south1", "name": "africa-south1" },
-                { "label": "asia-east2", "name": "asia-east2" },
-                { "label": "asia-northeast2", "name": "asia-northeast2" },
-                { "label": "asia-northeast3", "name": "asia-northeast3" },
-                { "label": "asia-south2", "name": "asia-south2" },
-                { "label": "asia-southeast2", "name": "asia-southeast2" },
-                { "label": "australia-southeast2", "name": "australia-southeast2" },
-                { "label": "europe-central2", "name": "europe-central2" },
-                { "label": "europe-north1", "name": "europe-north1" },
-                { "label": "europe-north2", "name": "europe-north2" },
-                { "label": "europe-southwest1", "name": "europe-southwest1" },
-                { "label": "europe-west10", "name": "europe-west10" },
-                { "label": "europe-west12", "name": "europe-west12" },
-                { "label": "europe-west6", "name": "europe-west6" },
-                { "label": "europe-west8", "name": "europe-west8" },
-                { "label": "europe-west9", "name": "europe-west9" },
-                { "label": "me-central1", "name": "me-central1" },
-                { "label": "me-central2", "name": "me-central2" },
-                { "label": "me-west1", "name": "me-west1" },
-                { "label": "northamerica-northeast1", "name": "northamerica-northeast1" },
-                { "label": "northamerica-northeast2", "name": "northamerica-northeast2" },
-                { "label": "northamerica-south1", "name": "northamerica-south1" },
-                { "label": "southamerica-west1", "name": "southamerica-west1" },
-                { "label": "us-east5", "name": "us-east5" },
-                { "label": "us-south1", "name": "us-south1" },
-                { "label": "us-west2", "name": "us-west2" },
-                { "label": "us-west3", "name": "us-west3" },
-                { "label": "us-west4", "name": "us-west4" }
+                {
+                    "label": "global",
+                    "name": "global"
+                },
+                {
+                    "label": "us-east1",
+                    "name": "us-east1"
+                },
+                {
+                    "label": "us-east4",
+                    "name": "us-east4"
+                },
+                {
+                    "label": "us-central1",
+                    "name": "us-central1"
+                },
+                {
+                    "label": "us-west1",
+                    "name": "us-west1"
+                },
+                {
+                    "label": "europe-west4",
+                    "name": "europe-west4"
+                },
+                {
+                    "label": "europe-west1",
+                    "name": "europe-west1"
+                },
+                {
+                    "label": "europe-west3",
+                    "name": "europe-west3"
+                },
+                {
+                    "label": "europe-west2",
+                    "name": "europe-west2"
+                },
+                {
+                    "label": "asia-east1",
+                    "name": "asia-east1"
+                },
+                {
+                    "label": "asia-southeast1",
+                    "name": "asia-southeast1"
+                },
+                {
+                    "label": "asia-northeast1",
+                    "name": "asia-northeast1"
+                },
+                {
+                    "label": "asia-south1",
+                    "name": "asia-south1"
+                },
+                {
+                    "label": "australia-southeast1",
+                    "name": "australia-southeast1"
+                },
+                {
+                    "label": "southamerica-east1",
+                    "name": "southamerica-east1"
+                },
+                {
+                    "label": "africa-south1",
+                    "name": "africa-south1"
+                },
+                {
+                    "label": "asia-east2",
+                    "name": "asia-east2"
+                },
+                {
+                    "label": "asia-northeast2",
+                    "name": "asia-northeast2"
+                },
+                {
+                    "label": "asia-northeast3",
+                    "name": "asia-northeast3"
+                },
+                {
+                    "label": "asia-south2",
+                    "name": "asia-south2"
+                },
+                {
+                    "label": "asia-southeast2",
+                    "name": "asia-southeast2"
+                },
+                {
+                    "label": "australia-southeast2",
+                    "name": "australia-southeast2"
+                },
+                {
+                    "label": "europe-central2",
+                    "name": "europe-central2"
+                },
+                {
+                    "label": "europe-north1",
+                    "name": "europe-north1"
+                },
+                {
+                    "label": "europe-north2",
+                    "name": "europe-north2"
+                },
+                {
+                    "label": "europe-southwest1",
+                    "name": "europe-southwest1"
+                },
+                {
+                    "label": "europe-west10",
+                    "name": "europe-west10"
+                },
+                {
+                    "label": "europe-west12",
+                    "name": "europe-west12"
+                },
+                {
+                    "label": "europe-west6",
+                    "name": "europe-west6"
+                },
+                {
+                    "label": "europe-west8",
+                    "name": "europe-west8"
+                },
+                {
+                    "label": "europe-west9",
+                    "name": "europe-west9"
+                },
+                {
+                    "label": "me-central1",
+                    "name": "me-central1"
+                },
+                {
+                    "label": "me-central2",
+                    "name": "me-central2"
+                },
+                {
+                    "label": "me-west1",
+                    "name": "me-west1"
+                },
+                {
+                    "label": "northamerica-northeast1",
+                    "name": "northamerica-northeast1"
+                },
+                {
+                    "label": "northamerica-northeast2",
+                    "name": "northamerica-northeast2"
+                },
+                {
+                    "label": "northamerica-south1",
+                    "name": "northamerica-south1"
+                },
+                {
+                    "label": "southamerica-west1",
+                    "name": "southamerica-west1"
+                },
+                {
+                    "label": "us-east5",
+                    "name": "us-east5"
+                },
+                {
+                    "label": "us-south1",
+                    "name": "us-south1"
+                },
+                {
+                    "label": "us-west2",
+                    "name": "us-west2"
+                },
+                {
+                    "label": "us-west3",
+                    "name": "us-west3"
+                },
+                {
+                    "label": "us-west4",
+                    "name": "us-west4"
+                }
             ]
         },
         {
@@ -1362,20 +1848,20 @@
                 {
                     "label": "gpt-4.1",
                     "name": "gpt-4.1",
-                    "input_cost": 2e-6,
-                    "output_cost": 8e-6
+                    "input_cost": 0.000002,
+                    "output_cost": 0.000008
                 },
                 {
                     "label": "gpt-4.1-mini",
                     "name": "gpt-4.1-mini",
-                    "input_cost": 4e-7,
-                    "output_cost": 1.6e-6
+                    "input_cost": 0.0000004,
+                    "output_cost": 0.0000016
                 },
                 {
                     "label": "gpt-4.1-nano",
                     "name": "gpt-4.1-nano",
-                    "input_cost": 1e-7,
-                    "output_cost": 4e-7
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000004
                 },
                 {
                     "label": "gpt-4.5-preview",
@@ -1386,56 +1872,56 @@
                 {
                     "label": "gpt-4o-mini (latest)",
                     "name": "gpt-4o-mini",
-                    "input_cost": 1.5e-7,
-                    "output_cost": 6e-7
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.0000006
                 },
                 {
                     "label": "gpt-4o-mini-2024-07-18",
                     "name": "gpt-4o-mini-2024-07-18",
-                    "input_cost": 1.5e-7,
-                    "output_cost": 6e-7
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.0000006
                 },
                 {
                     "label": "gpt-4o (latest)",
                     "name": "gpt-4o",
-                    "input_cost": 2.5e-6,
+                    "input_cost": 0.0000025,
                     "output_cost": 0.00001
                 },
                 {
                     "label": "gpt-4o-2024-11-20",
                     "name": "gpt-4o-2024-11-20",
-                    "input_cost": 2.5e-6,
+                    "input_cost": 0.0000025,
                     "output_cost": 0.00001
                 },
                 {
                     "label": "gpt-4o-2024-08-06",
                     "name": "gpt-4o-2024-08-06",
-                    "input_cost": 2.5e-6,
+                    "input_cost": 0.0000025,
                     "output_cost": 0.00001
                 },
                 {
                     "label": "gpt-4o-2024-05-13",
                     "name": "gpt-4o-2024-05-13",
-                    "input_cost": 2.5e-6,
+                    "input_cost": 0.0000025,
                     "output_cost": 0.00001
                 },
                 {
                     "label": "o4-mini (latest)",
                     "name": "o4-mini",
-                    "input_cost": 1.1e-6,
-                    "output_cost": 4.4e-6
+                    "input_cost": 0.0000011,
+                    "output_cost": 0.0000044
                 },
                 {
                     "label": "o3-mini (latest)",
                     "name": "o3-mini",
-                    "input_cost": 1.1e-6,
-                    "output_cost": 4.4e-6
+                    "input_cost": 0.0000011,
+                    "output_cost": 0.0000044
                 },
                 {
                     "label": "o3-mini-2025-01-31",
                     "name": "o3-mini-2025-01-31",
-                    "input_cost": 1.1e-6,
-                    "output_cost": 4.4e-6
+                    "input_cost": 0.0000011,
+                    "output_cost": 0.0000044
                 },
                 {
                     "label": "o1-preview (latest)",
@@ -1452,13 +1938,13 @@
                 {
                     "label": "o1-mini (latest)",
                     "name": "o1-mini",
-                    "input_cost": 3e-6,
+                    "input_cost": 0.000003,
                     "output_cost": 0.000012
                 },
                 {
                     "label": "o1-mini-2024-09-12",
                     "name": "o1-mini-2024-09-12",
-                    "input_cost": 3e-6,
+                    "input_cost": 0.000003,
                     "output_cost": 0.000012
                 },
                 {
@@ -1524,13 +2010,13 @@
                 {
                     "label": "gpt-3.5-turbo",
                     "name": "gpt-3.5-turbo",
-                    "input_cost": 1.5e-6,
-                    "output_cost": 2e-6
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.000002
                 },
                 {
                     "label": "gpt-3.5-turbo-0125",
                     "name": "gpt-3.5-turbo-0125",
-                    "input_cost": 5e-7,
+                    "input_cost": 0.0000005,
                     "output_cost": 0.0000015
                 },
                 {
@@ -1548,7 +2034,7 @@
                 {
                     "label": "gpt-3.5-turbo-16k",
                     "name": "gpt-3.5-turbo-16k",
-                    "input_cost": 5e-7,
+                    "input_cost": 0.0000005,
                     "output_cost": 0.0000015
                 },
                 {
@@ -1577,7 +2063,7 @@
                 {
                     "label": "gpt-4o",
                     "name": "gpt-4o",
-                    "input_cost": 2.5e-6,
+                    "input_cost": 0.0000025,
                     "output_cost": 0.00001
                 },
                 {
@@ -1637,8 +2123,8 @@
                 {
                     "label": "gpt-3.5-turbo",
                     "name": "gpt-3.5-turbo",
-                    "input_cost": 1.5e-6,
-                    "output_cost": 2e-6
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.000002
                 },
                 {
                     "label": "gpt-3.5-turbo-1106",
@@ -1655,7 +2141,7 @@
                 {
                     "label": "gpt-3.5-turbo-16k",
                     "name": "gpt-3.5-turbo-16k",
-                    "input_cost": 5e-7,
+                    "input_cost": 0.0000005,
                     "output_cost": 0.0000015
                 },
                 {
@@ -1672,38 +2158,38 @@
                 {
                     "label": "sonar",
                     "name": "sonar",
-                    "input_cost": 1e-6,
-                    "output_cost": 1e-6
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000001
                 },
                 {
                     "label": "sonar-pro",
                     "name": "sonar-pro",
-                    "input_cost": 3e-6,
-                    "output_cost": 1.5e-5
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "sonar-reasoning",
                     "name": "sonar-reasoning",
-                    "input_cost": 1e-6,
-                    "output_cost": 5e-6
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000005
                 },
                 {
                     "label": "sonar-reasoning-pro",
                     "name": "sonar-reasoning-pro",
-                    "input_cost": 2e-6,
-                    "output_cost": 8e-6
+                    "input_cost": 0.000002,
+                    "output_cost": 0.000008
                 },
                 {
                     "label": "sonar-deep-research",
                     "name": "sonar-deep-research",
-                    "input_cost": 2e-6,
-                    "output_cost": 8e-6
+                    "input_cost": 0.000002,
+                    "output_cost": 0.000008
                 },
                 {
                     "label": "r1-1776",
                     "name": "r1-1776",
-                    "input_cost": 2e-6,
-                    "output_cost": 8e-6
+                    "input_cost": 0.000002,
+                    "output_cost": 0.000008
                 }
             ]
         },
@@ -2091,8 +2577,8 @@
                 {
                     "label": "gpt-35-turbo",
                     "name": "gpt-35-turbo",
-                    "input_cost": 1.5e-6,
-                    "output_cost": 2e-6
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.000002
                 },
                 {
                     "label": "gpt-4",
@@ -2155,38 +2641,38 @@
                 {
                     "label": "text-bison",
                     "name": "text-bison",
-                    "input_cost": 2.5e-7,
-                    "output_cost": 5e-7
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.0000005
                 },
                 {
                     "label": "code-bison",
                     "name": "code-bison",
-                    "input_cost": 2.5e-7,
-                    "output_cost": 5e-7
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.0000005
                 },
                 {
                     "label": "code-gecko",
                     "name": "code-gecko",
-                    "input_cost": 2.5e-7,
-                    "output_cost": 5e-7
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.0000005
                 },
                 {
                     "label": "text-bison-32k",
                     "name": "text-bison-32k",
-                    "input_cost": 2.5e-7,
-                    "output_cost": 5e-7
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.0000005
                 },
                 {
                     "label": "code-bison-32k",
                     "name": "code-bison-32k",
-                    "input_cost": 2.5e-7,
-                    "output_cost": 5e-7
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.0000005
                 },
                 {
                     "label": "code-gecko-32k",
                     "name": "code-gecko-32k",
-                    "input_cost": 2.5e-7,
-                    "output_cost": 5e-7
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.0000005
                 }
             ]
         },
@@ -2202,7 +2688,7 @@
                 {
                     "label": "babbage-002",
                     "name": "babbage-002",
-                    "input_cost": 4e-7,
+                    "input_cost": 0.0000004,
                     "output_cost": 0.0000016
                 },
                 {
@@ -2355,48 +2841,174 @@
                 }
             ],
             "regions": [
-                { "label": "us-east1", "name": "us-east1" },
-                { "label": "us-east4", "name": "us-east4" },
-                { "label": "us-central1", "name": "us-central1" },
-                { "label": "us-west1", "name": "us-west1" },
-                { "label": "europe-west4", "name": "europe-west4" },
-                { "label": "europe-west1", "name": "europe-west1" },
-                { "label": "europe-west3", "name": "europe-west3" },
-                { "label": "europe-west2", "name": "europe-west2" },
-                { "label": "asia-east1", "name": "asia-east1" },
-                { "label": "asia-southeast1", "name": "asia-southeast1" },
-                { "label": "asia-northeast1", "name": "asia-northeast1" },
-                { "label": "asia-south1", "name": "asia-south1" },
-                { "label": "australia-southeast1", "name": "australia-southeast1" },
-                { "label": "southamerica-east1", "name": "southamerica-east1" },
-                { "label": "africa-south1", "name": "africa-south1" },
-                { "label": "asia-east2", "name": "asia-east2" },
-                { "label": "asia-northeast2", "name": "asia-northeast2" },
-                { "label": "asia-northeast3", "name": "asia-northeast3" },
-                { "label": "asia-south2", "name": "asia-south2" },
-                { "label": "asia-southeast2", "name": "asia-southeast2" },
-                { "label": "australia-southeast2", "name": "australia-southeast2" },
-                { "label": "europe-central2", "name": "europe-central2" },
-                { "label": "europe-north1", "name": "europe-north1" },
-                { "label": "europe-north2", "name": "europe-north2" },
-                { "label": "europe-southwest1", "name": "europe-southwest1" },
-                { "label": "europe-west10", "name": "europe-west10" },
-                { "label": "europe-west12", "name": "europe-west12" },
-                { "label": "europe-west6", "name": "europe-west6" },
-                { "label": "europe-west8", "name": "europe-west8" },
-                { "label": "europe-west9", "name": "europe-west9" },
-                { "label": "me-central1", "name": "me-central1" },
-                { "label": "me-central2", "name": "me-central2" },
-                { "label": "me-west1", "name": "me-west1" },
-                { "label": "northamerica-northeast1", "name": "northamerica-northeast1" },
-                { "label": "northamerica-northeast2", "name": "northamerica-northeast2" },
-                { "label": "northamerica-south1", "name": "northamerica-south1" },
-                { "label": "southamerica-west1", "name": "southamerica-west1" },
-                { "label": "us-east5", "name": "us-east5" },
-                { "label": "us-south1", "name": "us-south1" },
-                { "label": "us-west2", "name": "us-west2" },
-                { "label": "us-west3", "name": "us-west3" },
-                { "label": "us-west4", "name": "us-west4" }
+                {
+                    "label": "us-east1",
+                    "name": "us-east1"
+                },
+                {
+                    "label": "us-east4",
+                    "name": "us-east4"
+                },
+                {
+                    "label": "us-central1",
+                    "name": "us-central1"
+                },
+                {
+                    "label": "us-west1",
+                    "name": "us-west1"
+                },
+                {
+                    "label": "europe-west4",
+                    "name": "europe-west4"
+                },
+                {
+                    "label": "europe-west1",
+                    "name": "europe-west1"
+                },
+                {
+                    "label": "europe-west3",
+                    "name": "europe-west3"
+                },
+                {
+                    "label": "europe-west2",
+                    "name": "europe-west2"
+                },
+                {
+                    "label": "asia-east1",
+                    "name": "asia-east1"
+                },
+                {
+                    "label": "asia-southeast1",
+                    "name": "asia-southeast1"
+                },
+                {
+                    "label": "asia-northeast1",
+                    "name": "asia-northeast1"
+                },
+                {
+                    "label": "asia-south1",
+                    "name": "asia-south1"
+                },
+                {
+                    "label": "australia-southeast1",
+                    "name": "australia-southeast1"
+                },
+                {
+                    "label": "southamerica-east1",
+                    "name": "southamerica-east1"
+                },
+                {
+                    "label": "africa-south1",
+                    "name": "africa-south1"
+                },
+                {
+                    "label": "asia-east2",
+                    "name": "asia-east2"
+                },
+                {
+                    "label": "asia-northeast2",
+                    "name": "asia-northeast2"
+                },
+                {
+                    "label": "asia-northeast3",
+                    "name": "asia-northeast3"
+                },
+                {
+                    "label": "asia-south2",
+                    "name": "asia-south2"
+                },
+                {
+                    "label": "asia-southeast2",
+                    "name": "asia-southeast2"
+                },
+                {
+                    "label": "australia-southeast2",
+                    "name": "australia-southeast2"
+                },
+                {
+                    "label": "europe-central2",
+                    "name": "europe-central2"
+                },
+                {
+                    "label": "europe-north1",
+                    "name": "europe-north1"
+                },
+                {
+                    "label": "europe-north2",
+                    "name": "europe-north2"
+                },
+                {
+                    "label": "europe-southwest1",
+                    "name": "europe-southwest1"
+                },
+                {
+                    "label": "europe-west10",
+                    "name": "europe-west10"
+                },
+                {
+                    "label": "europe-west12",
+                    "name": "europe-west12"
+                },
+                {
+                    "label": "europe-west6",
+                    "name": "europe-west6"
+                },
+                {
+                    "label": "europe-west8",
+                    "name": "europe-west8"
+                },
+                {
+                    "label": "europe-west9",
+                    "name": "europe-west9"
+                },
+                {
+                    "label": "me-central1",
+                    "name": "me-central1"
+                },
+                {
+                    "label": "me-central2",
+                    "name": "me-central2"
+                },
+                {
+                    "label": "me-west1",
+                    "name": "me-west1"
+                },
+                {
+                    "label": "northamerica-northeast1",
+                    "name": "northamerica-northeast1"
+                },
+                {
+                    "label": "northamerica-northeast2",
+                    "name": "northamerica-northeast2"
+                },
+                {
+                    "label": "northamerica-south1",
+                    "name": "northamerica-south1"
+                },
+                {
+                    "label": "southamerica-west1",
+                    "name": "southamerica-west1"
+                },
+                {
+                    "label": "us-east5",
+                    "name": "us-east5"
+                },
+                {
+                    "label": "us-south1",
+                    "name": "us-south1"
+                },
+                {
+                    "label": "us-west2",
+                    "name": "us-west2"
+                },
+                {
+                    "label": "us-west3",
+                    "name": "us-west3"
+                },
+                {
+                    "label": "us-west4",
+                    "name": "us-west4"
+                }
             ]
         },
         {
@@ -2454,38 +3066,55 @@
                 {
                     "label": "amazon.titan-embed-text-v1",
                     "name": "amazon.titan-embed-text-v1",
-                    "description": "Embedding Dimensions: 1536"
+                    "description": "Amazon Titan Text Embeddings V1 - Dimensions: 1536"
                 },
                 {
-                    "label": "amazon.titan-embed-text-v2",
+                    "label": "amazon.titan-embed-text-v2:0",
                     "name": "amazon.titan-embed-text-v2:0",
-                    "description": "Embedding Dimensions: 1024"
+                    "description": "Amazon Titan Text Embeddings V2 - Dimensions: 1024"
                 },
                 {
                     "label": "amazon.titan-embed-g1-text-02",
                     "name": "amazon.titan-embed-g1-text-02",
-                    "description": "Embedding Dimensions: 1536"
+                    "description": "Amazon Titan Text Embeddings G1 - Dimensions: 1536"
+                },
+                {
+                    "label": "amazon.titan-embed-image-v1",
+                    "name": "amazon.titan-embed-image-v1",
+                    "description": "Amazon Titan Multimodal Embeddings G1 - Text and Image"
+                },
+                {
+                    "label": "amazon.nova-2-multimodal-embeddings-v1:0",
+                    "name": "amazon.nova-2-multimodal-embeddings-v1:0",
+                    "description": "Amazon Nova 2 Multimodal Embeddings - Text, Image, Audio, Video"
                 },
                 {
                     "label": "cohere.embed-english-v3",
                     "name": "cohere.embed-english-v3",
-                    "description": "Embedding Dimensions: 1024"
+                    "description": "Cohere Embed English V3 - Dimensions: 1024"
                 },
                 {
                     "label": "cohere.embed-multilingual-v3",
                     "name": "cohere.embed-multilingual-v3",
-                    "description": "Embedding Dimensions: 1024"
+                    "description": "Cohere Embed Multilingual V3 - Dimensions: 1024"
+                },
+                {
+                    "label": "cohere.embed-v4:0",
+                    "name": "cohere.embed-v4:0",
+                    "description": "Cohere Embed V4 - Multimodal (text, image)"
+                },
+                {
+                    "label": "twelvelabs.marengo-embed-2-7-v1:0",
+                    "name": "twelvelabs.marengo-embed-2-7-v1:0",
+                    "description": "TwelveLabs Marengo Embed 2.7 - Video embeddings"
+                },
+                {
+                    "label": "twelvelabs.marengo-embed-3-0-v1:0",
+                    "name": "twelvelabs.marengo-embed-3-0-v1:0",
+                    "description": "TwelveLabs Marengo Embed 3.0 - Video embeddings"
                 }
             ],
             "regions": [
-                {
-                    "label": "af-south-1",
-                    "name": "af-south-1"
-                },
-                {
-                    "label": "ap-east-1",
-                    "name": "ap-east-1"
-                },
                 {
                     "label": "ap-northeast-1",
                     "name": "ap-northeast-1"
@@ -2523,28 +3152,8 @@
                     "name": "ap-southeast-4"
                 },
                 {
-                    "label": "ap-southeast-5",
-                    "name": "ap-southeast-5"
-                },
-                {
-                    "label": "ap-southeast-6",
-                    "name": "ap-southeast-6"
-                },
-                {
                     "label": "ca-central-1",
                     "name": "ca-central-1"
-                },
-                {
-                    "label": "ca-west-1",
-                    "name": "ca-west-1"
-                },
-                {
-                    "label": "cn-north-1",
-                    "name": "cn-north-1"
-                },
-                {
-                    "label": "cn-northwest-1",
-                    "name": "cn-northwest-1"
                 },
                 {
                     "label": "eu-central-1",
@@ -2577,18 +3186,6 @@
                 {
                     "label": "eu-west-3",
                     "name": "eu-west-3"
-                },
-                {
-                    "label": "il-central-1",
-                    "name": "il-central-1"
-                },
-                {
-                    "label": "me-central-1",
-                    "name": "me-central-1"
-                },
-                {
-                    "label": "me-south-1",
-                    "name": "me-south-1"
                 },
                 {
                     "label": "sa-east-1",
