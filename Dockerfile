@@ -25,20 +25,20 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 ENV NODE_OPTIONS=--max-old-space-size=8192
 
+# Create app directory and give node user ownership BEFORE switching user
+RUN mkdir -p /usr/src/flowise && chown -R node:node /usr/src/flowise
+
+# Switch to non-root user (node user already exists in node:20-alpine)
+USER node
+
 WORKDIR /usr/src/flowise
 
-# Copy app source
-COPY . .
+# Copy app source with correct ownership from the start
+COPY --chown=node:node . .
 
 # Install dependencies and build
 RUN pnpm install && \
     pnpm build
-
-# Give the node user ownership of the application files
-RUN chown -R node:node .
-
-# Switch to non-root user (node user already exists in node:20-alpine)
-USER node
 
 EXPOSE 3000
 
