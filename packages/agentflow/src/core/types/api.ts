@@ -47,7 +47,7 @@ export interface Credential {
 export interface CredentialSchemaInput {
     label: string
     name: string
-    type: 'password' | 'string' | 'number' | 'boolean' | 'options' | 'json' | 'url'
+    type: 'password' | 'string' | 'number' | 'boolean' | 'options' | 'json'
     default?: unknown
     optional?: boolean
     description?: string

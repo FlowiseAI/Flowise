@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
     Alert,
@@ -10,12 +10,11 @@ import {
     DialogContent,
     DialogTitle,
     IconButton,
-    InputAdornment,
     OutlinedInput,
     Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconAlertTriangle, IconArrowsMaximize, IconEye, IconEyeOff } from '@tabler/icons-react'
+import { IconAlertTriangle, IconArrowsMaximize } from '@tabler/icons-react'
 import DOMPurify from 'dompurify'
 import parser from 'html-react-parser'
 
@@ -28,12 +27,6 @@ import { getDefaultValueForType } from '@/core/primitives'
 import { tokens } from '@/core/theme/tokens'
 import type { ComponentCredentialSchema, CredentialSchemaInput } from '@/core/types'
 import { useApiContext } from '@/infrastructure/store/ApiContext'
-
-const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
-const MASKED_URL_CHARS = '••••••'
-const MULTILINE_PASSWORD_DOTS = '••••••••••••••'
-
-const isRedactedValue = (v: unknown): boolean => typeof v === 'string' && (v === REDACTED_CREDENTIAL_VALUE || v.includes(MASKED_URL_CHARS))
 
 export interface CreateCredentialDialogProps {
     open: boolean
@@ -60,7 +53,6 @@ export function CreateCredentialDialog({ open, credentialNames, onClose, onCreat
     const [loading, setLoading] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const revealedDataRef = useRef<Record<string, unknown> | null>(null)
 
     // Stable string key for credentialNames — a new array reference on every render
     // (e.g. inline credentialNames={['openAIApi']}) would otherwise restart the effect.
@@ -83,7 +75,6 @@ export function CreateCredentialDialog({ open, credentialNames, onClose, onCreat
     useEffect(() => {
         if (!open) return
 
-        revealedDataRef.current = null
         let cancelled = false
 
         async function fetchSchemas() {
@@ -143,18 +134,6 @@ export function CreateCredentialDialog({ open, credentialNames, onClose, onCreat
         setFormValues((prev) => ({ ...prev, [fieldName]: value }))
     }, [])
 
-    const handleReveal = useCallback(
-        async (fieldName: string): Promise<unknown> => {
-            if (!editCredentialId) return undefined
-            if (!revealedDataRef.current) {
-                const resp = await credentialsApi.revealCredential(editCredentialId)
-                revealedDataRef.current = resp.plainDataObj
-            }
-            return revealedDataRef.current?.[fieldName]
-        },
-        [editCredentialId, credentialsApi]
-    )
-
     const handleSubmit = useCallback(async () => {
         if (!selectedSchema || !credentialName.trim()) return
 
@@ -164,9 +143,8 @@ export function CreateCredentialDialog({ open, credentialNames, onClose, onCreat
         try {
             const plainDataObj: Record<string, unknown> = {}
             for (const key of Object.keys(formValues)) {
-                const val = formValues[key]
-                if (isRedactedValue(val)) continue
                 const input = selectedSchema.inputs?.find((i) => i.name === key)
+                const val = formValues[key]
                 if (input?.type === 'number' && typeof val === 'string' && val) {
                     plainDataObj[key] = Number(val)
                 } else {
@@ -281,7 +259,6 @@ export function CreateCredentialDialog({ open, credentialNames, onClose, onCreat
                                     input={input}
                                     value={formValues[input.name]}
                                     onChange={(value) => handleFieldChange(input.name, value)}
-                                    onReveal={isEditMode ? (fieldName) => handleReveal(fieldName) : undefined}
                                 />
                             ))}
                     </>
@@ -314,42 +291,12 @@ interface CredentialFieldProps {
     value: unknown
     onChange: (value: unknown) => void
     disabled?: boolean
-    onReveal?: (fieldName: string) => Promise<unknown>
 }
 
-function CredentialField({ input, value, onChange, disabled = false, onReveal }: CredentialFieldProps) {
+function CredentialField({ input, value, onChange, disabled = false }: CredentialFieldProps) {
     const theme = useTheme()
     const [expandOpen, setExpandOpen] = useState(false)
-    const [isUrlVisible, setIsUrlVisible] = useState(false)
-    const [isRevealing, setIsRevealing] = useState(false)
-    const maskedUrlRef = useRef<string | null>(typeof value === 'string' && value.includes(MASKED_URL_CHARS) ? value : null)
-
     const showExpand = input.type === 'string' && !!input.rows
-    const isUrl = input.type === 'url'
-    const isMultilinePassword = input.type === 'password' && !!input.rows
-    const strValue = (value as string) ?? ''
-    const isMaskedUrl = isUrl && strValue.includes(MASKED_URL_CHARS)
-    const isRedactedMultiline = isMultilinePassword && strValue === REDACTED_CREDENTIAL_VALUE
-
-    const handleUrlToggle = async () => {
-        if (!isUrlVisible && onReveal && (strValue === REDACTED_CREDENTIAL_VALUE || isMaskedUrl)) {
-            setIsRevealing(true)
-            const revealed = await onReveal(input.name)
-            setIsRevealing(false)
-            if (revealed !== undefined) {
-                onChange(revealed)
-            }
-        } else if (isUrlVisible && maskedUrlRef.current) {
-            onChange(maskedUrlRef.current)
-        }
-        setIsUrlVisible((prev) => !prev)
-    }
-
-    const inputSx = {
-        '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: theme.palette.grey[900] + 25
-        }
-    }
 
     return (
         <Box sx={{ p: 2 }}>
@@ -396,81 +343,16 @@ function CredentialField({ input, value, onChange, disabled = false, onReveal }:
             {input.type === 'boolean' && (
                 <SwitchInput disabled={disabled} value={value as boolean | undefined} onChange={(checked) => onChange(checked)} />
             )}
-            {isUrl && !onReveal && (
+            {(input.type === 'string' || input.type === 'password' || input.type === 'number') && (
                 <OutlinedInput
                     disabled={disabled}
                     fullWidth
-                    type='text'
-                    placeholder={input.placeholder}
-                    value={strValue}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-                    sx={inputSx}
-                />
-            )}
-            {isUrl && onReveal && (
-                <>
-                    <OutlinedInput
-                        disabled={disabled}
-                        fullWidth
-                        type={isUrlVisible || isMaskedUrl ? 'text' : 'password'}
-                        placeholder={input.placeholder}
-                        value={strValue}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-                        inputProps={{ readOnly: isMaskedUrl && !isUrlVisible }}
-                        endAdornment={
-                            <InputAdornment position='end'>
-                                <IconButton
-                                    edge='end'
-                                    onClick={handleUrlToggle}
-                                    onMouseDown={(e) => e.preventDefault()}
-                                    aria-label={isUrlVisible ? 'Hide' : 'Show'}
-                                    disabled={isRevealing}
-                                >
-                                    {isRevealing ? (
-                                        <CircularProgress size={16} />
-                                    ) : isUrlVisible ? (
-                                        <IconEyeOff size={18} />
-                                    ) : (
-                                        <IconEye size={18} />
-                                    )}
-                                </IconButton>
-                            </InputAdornment>
-                        }
-                        sx={inputSx}
-                    />
-                    <Typography variant='caption' sx={{ color: 'text.secondary', mt: 0.5, display: 'block' }}>
-                        Click the eye icon to reveal the value before editing.
-                    </Typography>
-                </>
-            )}
-            {(input.type === 'string' || input.type === 'number') && (
-                <OutlinedInput
-                    disabled={disabled}
-                    fullWidth
-                    type={input.type === 'number' ? 'number' : 'text'}
+                    type={input.type === 'password' ? 'password' : input.type === 'number' ? 'number' : 'text'}
                     multiline={!!input.rows}
                     rows={input.rows}
                     placeholder={input.placeholder}
-                    value={strValue}
+                    value={(value as string) ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-                />
-            )}
-            {input.type === 'password' && (
-                <OutlinedInput
-                    disabled={disabled}
-                    fullWidth
-                    type='password'
-                    multiline={isMultilinePassword}
-                    rows={isMultilinePassword ? input.rows : undefined}
-                    placeholder={input.placeholder}
-                    value={isRedactedMultiline ? MULTILINE_PASSWORD_DOTS : strValue}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-                    onFocus={() => {
-                        if (isRedactedMultiline) onChange('')
-                    }}
-                    onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
-                        if (isMultilinePassword && e.target.value === '') onChange(REDACTED_CREDENTIAL_VALUE)
-                    }}
                 />
             )}
             {input.type === 'json' && (
@@ -497,7 +379,7 @@ function CredentialField({ input, value, onChange, disabled = false, onReveal }:
                             multiline
                             minRows={12}
                             placeholder={input.placeholder}
-                            value={strValue}
+                            value={(value as string) ?? ''}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
                         />
                     </DialogContent>

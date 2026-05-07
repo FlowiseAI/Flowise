@@ -80,13 +80,4 @@ describe('bindCredentialsApi', () => {
         expect(mockClient.put).toHaveBeenCalledWith('/credentials/cred-1', body)
         expect(result).toEqual(mockUpdated)
     })
-
-    it('revealCredential calls GET /credentials/:id/reveal', async () => {
-        const mockRevealed = { plainDataObj: { redisUrl: 'redis://user:secret@localhost:6379' } }
-        ;(mockClient.get as jest.Mock).mockResolvedValue({ data: mockRevealed })
-
-        const result = await api.revealCredential('cred-1')
-        expect(mockClient.get).toHaveBeenCalledWith('/credentials/cred-1/reveal')
-        expect(result).toEqual(mockRevealed)
-    })
 })
