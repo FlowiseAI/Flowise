@@ -1603,9 +1603,10 @@ export const executeAgentFlow = async ({
 
     if (!isRecursive) {
         if (startInputType === 'webhookTrigger' && chatType !== ChatType.WEBHOOK) {
+            const configuredMethod = ((startNode?.data?.inputs?.webhookMethod as string) || 'POST').toUpperCase()
             throw new InternalFlowiseError(
                 StatusCodes.BAD_REQUEST,
-                `This flow is configured as a Webhook Trigger. Call POST /api/v1/webhook/${chatflowid} instead of the prediction API.`
+                `This flow is configured as a Webhook Trigger. Call ${configuredMethod} /api/v1/webhook/${chatflowid} instead of the prediction API.`
             )
         }
         if (startInputType === 'scheduleInput' && chatType !== ChatType.SCHEDULED) {
