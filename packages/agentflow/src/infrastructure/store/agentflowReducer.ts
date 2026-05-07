@@ -21,7 +21,8 @@ export const initialState: AgentflowState = {
     reactFlowInstance: null,
     editingNodeId: null,
     editDialogProps: null,
-    executionState: null
+    executionState: null,
+    componentNodes: []
 }
 
 export function agentflowReducer(state: AgentflowState, action: AgentflowAction): AgentflowState {
@@ -77,6 +78,8 @@ export function agentflowReducer(state: AgentflowState, action: AgentflowAction)
             }
         case 'CLEAR_EXECUTION_STATE':
             return { ...state, executionState: null }
+        case 'SET_COMPONENT_NODES':
+            return { ...state, componentNodes: action.payload }
         default:
             return state
     }

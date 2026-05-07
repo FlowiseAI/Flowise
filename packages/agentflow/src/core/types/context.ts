@@ -6,7 +6,7 @@ import type { ReactFlowInstance } from 'reactflow'
 
 import type { ExecutionStatus, FlowExecutionState } from './execution'
 import type { FlowConfig, FlowEdge, FlowNode } from './flow'
-import type { InputParam, NodeData } from './node'
+import type { InputParam, NodeData, NodeDataSchema } from './node'
 
 export interface ConfigContextValue {
     isDarkMode: boolean
@@ -30,6 +30,7 @@ export interface AgentflowState {
     editingNodeId: string | null
     editDialogProps: EditDialogProps | null
     executionState: FlowExecutionState | null
+    componentNodes: NodeDataSchema[]
 }
 
 export type AgentflowAction =
@@ -44,3 +45,4 @@ export type AgentflowAction =
     | { type: 'START_EXECUTION'; payload: string }
     | { type: 'SET_NODE_EXECUTION_STATUS'; nodeId: string; status: ExecutionStatus; error?: string }
     | { type: 'CLEAR_EXECUTION_STATE' }
+    | { type: 'SET_COMPONENT_NODES'; payload: NodeDataSchema[] }

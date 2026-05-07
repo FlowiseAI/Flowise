@@ -104,7 +104,10 @@ const baseColors = {
 
     // Gradient colors
     gradientOrange: '#FF6B6B',
-    gradientRed: '#FF8E53'
+    gradientRed: '#FF8E53',
+
+    // CSS keyword 'orange' — used by V2 sync-nodes FAB; kept explicit so it tracks V2 exactly
+    orange: '#ffa500'
 } as const
 
 export const tokens = {
@@ -189,7 +192,8 @@ export const tokens = {
             warning: baseColors.warning,
             warningBg: baseColors.warningBg,
             warningText: baseColors.warningText,
-            info: baseColors.info
+            info: baseColors.info,
+            syncNodesFab: baseColors.orange
         },
 
         // ReactFlow specific colors - referenced from base

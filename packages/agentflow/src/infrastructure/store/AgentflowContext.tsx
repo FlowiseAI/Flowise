@@ -1,4 +1,4 @@
-import { createContext, Dispatch, ReactNode, useCallback, useContext, useReducer, useRef } from 'react'
+import { createContext, Dispatch, ReactNode, useCallback, useContext, useMemo, useReducer, useRef } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
 import { cloneDeep } from 'lodash'
@@ -15,9 +15,10 @@ import type {
     FlowExecutionState,
     FlowNode,
     InputParam,
-    NodeData
+    NodeData,
+    NodeDataSchema
 } from '@/core/types'
-import { getDefinedStateKeys, getUniqueNodeId } from '@/core/utils'
+import { getDefinedStateKeys, getUniqueNodeId, isNodeOutdated, upgradeNodeData } from '@/core/utils'
 
 import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
 
@@ -95,6 +96,11 @@ export interface AgentflowContextValue {
     startExecution: (executionId: string) => void
     setNodeExecutionStatus: (nodeId: string, status: ExecutionStatus, error?: string) => void
     clearExecutionState: () => void
+
+    // Version operations
+    setComponentNodes: (nodes: NodeDataSchema[]) => void
+    hasOutdatedNodes: boolean
+    syncNodes: () => void
 }
 
 const AgentflowContext = createContext<AgentflowContextValue | null>(null)
@@ -356,6 +362,47 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         dispatch({ type: 'CLEAR_EXECUTION_STATE' })
     }, [])
 
+    // Version operations
+    const setComponentNodes = useCallback((nodes: NodeDataSchema[]) => {
+        dispatch({ type: 'SET_COMPONENT_NODES', payload: nodes })
+    }, [])
+
+    const hasOutdatedNodes = useMemo(
+        () =>
+            state.nodes.some((node) => {
+                const cn = state.componentNodes.find((c) => c.name === node.data.name)
+                return cn ? isNodeOutdated(node.data, cn) : false
+            }),
+        [state.nodes, state.componentNodes]
+    )
+
+    const syncNodes = useCallback(() => {
+        const clonedNodes = cloneDeep(state.nodes)
+        const clonedEdges = cloneDeep(state.edges)
+        const componentMap = new Map(state.componentNodes.map((c) => [c.name, c]))
+        const upgradedNodeIds = new Set<string>()
+
+        for (let i = 0; i < clonedNodes.length; i++) {
+            const node = clonedNodes[i]
+            const cn = componentMap.get(node.data.name)
+            if (cn && isNodeOutdated(node.data, cn)) {
+                node.data = upgradeNodeData(cn, node.data)
+                upgradedNodeIds.add(node.id)
+            }
+        }
+
+        if (upgradedNodeIds.size === 0) return
+
+        const newEdges = clonedEdges.filter((edge) => (upgradedNodeIds.has(edge.target) ? edge.targetHandle === edge.target : true))
+
+        syncStateUpdate({ nodes: clonedNodes, edges: newEdges })
+
+        if (onFlowChangeRef.current) {
+            const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
+            onFlowChangeRef.current({ nodes: clonedNodes, edges: newEdges, viewport })
+        }
+    }, [state.nodes, state.edges, state.componentNodes, state.reactFlowInstance, syncStateUpdate])
+
     const value: AgentflowContextValue = {
         state,
         dispatch,
@@ -380,7 +427,10 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         executionState: state.executionState,
         startExecution,
         setNodeExecutionStatus,
-        clearExecutionState
+        clearExecutionState,
+        setComponentNodes,
+        hasOutdatedNodes,
+        syncNodes
     }
 
     return <AgentflowContext.Provider value={value}>{children}</AgentflowContext.Provider>
