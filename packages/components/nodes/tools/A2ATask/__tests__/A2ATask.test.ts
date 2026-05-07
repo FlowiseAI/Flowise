@@ -1,3 +1,6 @@
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
 import { LocalJsonAdapter } from '../../A2AStorage/adapters/LocalJsonAdapter'
 import type { A2AStorageAdapter } from '../../../../src/A2AStorageAdapter'
 import { TaskCreateTool, TaskGetTool, TaskStatusTool, TaskListTool, MessageSendTool, MessageGetTool } from '../core'
@@ -7,10 +10,16 @@ const AGENT_B_ID = '123e4567-e89b-12d3-a456-426614174000'
 
 describe('A2ATask Node', () => {
     let adapter: A2AStorageAdapter
+    let dataDir: string
 
     beforeEach(async () => {
-        adapter = new LocalJsonAdapter()
+        dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a2a-task-test-'))
+        adapter = new LocalJsonAdapter({ dataDir })
         await adapter.initialize({})
+    })
+
+    afterEach(() => {
+        fs.rmSync(dataDir, { recursive: true, force: true })
     })
 
     describe('TaskCreateTool', () => {

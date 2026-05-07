@@ -1,13 +1,22 @@
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
 import { LocalJsonAdapter } from '../../A2AStorage/adapters/LocalJsonAdapter'
 import type { A2AStorageAdapter } from '../../../../src/A2AStorageAdapter'
 import { A2AStorageMemory } from '../core'
 
 describe('A2AMemoryAdapter', () => {
     let adapter: A2AStorageAdapter
+    let dataDir: string
 
     beforeEach(async () => {
-        adapter = new LocalJsonAdapter()
+        dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a2a-memory-test-'))
+        adapter = new LocalJsonAdapter({ dataDir })
         await adapter.initialize({})
+    })
+
+    afterEach(() => {
+        fs.rmSync(dataDir, { recursive: true, force: true })
     })
 
     // We test A2AStorageMemory directly (without node wrapper) since the node
