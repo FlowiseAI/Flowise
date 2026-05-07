@@ -38,6 +38,7 @@ import {
     revertBase64ImagesToFileRefs,
     normalizeMessagesForStorage,
     replaceInlineDataWithFileReferences,
+    rewriteBinaryToolResults,
     updateFlowState
 } from '../utils'
 import {
@@ -1264,7 +1265,7 @@ class SmartAgent_Agentflow implements INode {
                         isLastNode
                     )
                 } else {
-                    response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+                    response = await llmNodeInstance.invoke(rewriteBinaryToolResults(messages), { signal: abortController?.signal })
                 }
             }
 
@@ -1963,7 +1964,9 @@ class SmartAgent_Agentflow implements INode {
         let sentLastThinkingEvent = false
 
         try {
-            for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
+            for await (const chunk of await llmNodeInstance.stream(rewriteBinaryToolResults(messages), {
+                signal: abortController?.signal
+            })) {
                 if (sseStreamer && !isStructuredOutput) {
                     let content = ''
 
@@ -2512,7 +2515,7 @@ class SmartAgent_Agentflow implements INode {
                 isLastNode
             )
         } else {
-            newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+            newResponse = await llmNodeInstance.invoke(rewriteBinaryToolResults(messages), { signal: abortController?.signal })
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer && !isStructuredOutput) {
@@ -2906,7 +2909,7 @@ class SmartAgent_Agentflow implements INode {
                 isLastNode
             )
         } else {
-            newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+            newResponse = await llmNodeInstance.invoke(rewriteBinaryToolResults(messages), { signal: abortController?.signal })
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer && !isStructuredOutput) {

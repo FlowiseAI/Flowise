@@ -7,7 +7,7 @@ export function buildFsTools(backend: BackendProtocol, onFilesUpdate?: (update: 
     const readFileTool = new DynamicStructuredTool({
         name: 'read_file',
         description:
-            'Read a file from the sandbox filesystem. Text files return contents with line numbers; image, audio, video, and other binary files return as multimodal content blocks the model can natively consume (subject to a 5 MB cap).',
+            'Read a file from the sandbox filesystem. Text files return line-numbered contents. Image files are forwarded to the model and readable by any vision-capable model. Audio, video, and PDF files are forwarded as multimodal blocks but are only readable by models with native support for that modality (e.g. Anthropic for PDFs, Gemini for audio/video) — calling this on such files with a non-supporting model will error. Subject to a 5 MB cap.',
         schema: z.object({
             file_path: z.string().describe('Absolute path of the file to read (e.g. /workspace/hello.txt)'),
             offset: z.number().int().min(0).optional().describe('Line number to start reading from (0-indexed). Ignored for binary files.'),
