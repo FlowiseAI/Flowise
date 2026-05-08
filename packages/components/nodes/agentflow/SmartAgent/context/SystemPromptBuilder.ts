@@ -39,7 +39,35 @@ const SKILLS_PROMPT = `## Skills
 
 // Part 4: Filesystem tool prompt
 const FILESYSTEM_TOOL_PROMPT = `## Filesystem Tools
-// TODO: ls, read_file, write_file usage guidance`
+
+You have access to a sandbox filesystem. All paths must be absolute.
+
+**Path conventions:**
+- \`/workspace/\` — working area for files you create or process during this task
+- \`/artifacts/\` — outputs intended to be surfaced to the user (reports, generated files, etc.)
+
+**Available tools:**
+- \`read_file\` — read a text file; supports \`offset\` and \`limit\` for pagination of large files
+- \`write_file\` — create a new text file; **create-only** — errors if the file already exists
+- \`edit_file\` — replace a specific string in an existing file; errors if the string appears more than once unless \`replace_all\` is true
+- \`list_files\` — list files and directories at a given path
+- \`glob_files\` — find files matching a glob pattern (e.g. \`**/*.ts\`) within a base directory
+- \`grep_files\` — search file contents for a regex pattern; returns matching lines with file path and line number
+
+**Usage guidance:**
+- Prefer \`edit_file\` over re-writing a whole file when making targeted changes — it's faster and less error-prone.
+- Use \`glob_files\` to discover files before reading them; use \`grep_files\` to locate specific content across many files.
+- Large files: use \`offset\` + \`limit\` on \`read_file\` to paginate rather than reading the entire file at once.`
+
+const EXECUTE_TOOL_PROMPT = `## Execute Tool
+
+You have access to \`execute\` to run shell commands in the sandbox.
+
+- Returns combined stdout and stderr (stderr lines prefixed \`[stderr] \`); \`Exit code: N\` is appended when the command exits non-zero
+- Output is truncated at ~100 KB
+- Each command times out after 30 seconds
+- Chain commands with \`&&\` for sequential steps (e.g. \`cd /workspace && npm i && npm test\`)
+- **Paths:** \`/workspace/\`, \`/artifacts/\`, \`/memories/\`, \`/large_tool_results/\`, and \`/conversation_history/\` refer to the sandbox filesystem (same paths the filesystem tools use). Other absolute paths refer to the host.`
 
 // Part 5: Subagent prompt
 const SUBAGENT_PROMPT = `## Subagent Delegation
@@ -116,6 +144,7 @@ export interface SystemPromptOptions {
     todoListPrompt: string // Part 2: from PlanningTool
     skillsEnabled?: boolean // Part 3
     filesystemEnabled?: boolean // Part 4
+    executeEnabled?: boolean // Part 4b: only when backend supports execute (LocalShellBackend, future remote sandboxes)
     subagentEnabled?: boolean // Part 5
     asyncSubagentEnabled?: boolean // Part 6
     userSystemPrompt?: string // Part 7: user-specified system message / memory (AGENTS.md)
@@ -148,6 +177,11 @@ export function buildSystemPrompt(opts: SystemPromptOptions): string {
     // Part 4: Filesystem tool prompt
     if (opts.filesystemEnabled) {
         parts.push(FILESYSTEM_TOOL_PROMPT)
+    }
+
+    // Part 4b: Execute tool prompt — when the active backend supports it
+    if (opts.executeEnabled) {
+        parts.push(EXECUTE_TOOL_PROMPT)
     }
 
     // Part 5: Subagent prompt

@@ -186,7 +186,7 @@ class Start_Agentflow implements INode {
         }
 
         const runtimeState = options.agentflowRuntime?.state as ICommonObject
-        if (startPersistState === true && runtimeState && Object.keys(runtimeState).length) {
+        if (runtimeState && Object.keys(runtimeState).length) {
             for (const state in runtimeState) {
                 flowState[state] = runtimeState[state]
             }

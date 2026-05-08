@@ -23,6 +23,9 @@ import zodToJsonSchema from 'zod-to-json-schema'
 import { z } from 'zod'
 import { PlanningTool, Todo } from './planning/PlanningTool'
 import { buildSystemPrompt } from './context/SystemPromptBuilder'
+import { createBackend } from './sandbox/factory'
+import { buildExecuteTool, buildFsTools } from './sandbox/tools/fs'
+import { FileData, ShellBackendProtocol } from './sandbox/BackendProtocol'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
 import { randomBytes } from 'crypto'
@@ -35,6 +38,7 @@ import {
     revertBase64ImagesToFileRefs,
     normalizeMessagesForStorage,
     replaceInlineDataWithFileReferences,
+    rewriteBinaryToolResults,
     updateFlowState
 } from '../utils'
 import {
@@ -1035,6 +1039,41 @@ class SmartAgent_Agentflow implements INode {
                 toolNode: { label: 'Planning', name: 'write_todos' }
             })
 
+            // For StateBackend, runtimeState.files is the persisted snapshot — saved into executionData by the
+            // agentflow engine when startPersistState=true.
+            const runtimeState = options.agentflowRuntime?.state as ICommonObject | undefined
+            const initialFiles = (runtimeState?.files as Record<string, FileData> | undefined) ?? {}
+            const backend = await createBackend(initialFiles, {
+                orgId: options.orgId as string | undefined,
+                chatflowid: options.chatflowid as string | undefined,
+                chatId: options.chatId as string | undefined
+            })
+            const fsTools = buildFsTools(backend, (update) => {
+                if (!runtimeState) return
+
+                // keep runtimeState.files in sync with the backend after each mutation
+                const existing = (runtimeState.files as Record<string, FileData> | undefined) ?? {}
+                const merged = { ...existing }
+                for (const [path, data] of Object.entries(update)) {
+                    if (data === null) {
+                        delete merged[path]
+                    } else {
+                        merged[path] = data
+                    }
+                }
+
+                runtimeState.files = merged
+            })
+
+            toolsInstance.push(...(fsTools as unknown as Tool[]))
+
+            // Bind the execute tool when the backend supports it (duck-typed).
+            const executeEnabled = 'execute' in backend && typeof (backend as { execute?: unknown }).execute === 'function'
+            if (executeEnabled) {
+                const executeTool = buildExecuteTool(backend as ShellBackendProtocol)
+                toolsInstance.push(executeTool as unknown as Tool)
+            }
+
             if (llmNodeInstance && toolsInstance.length > 0) {
                 if (llmNodeInstance.bindTools === undefined) {
                     throw new Error(`Agent needs to have a function calling capable models.`)
@@ -1076,7 +1115,8 @@ class SmartAgent_Agentflow implements INode {
             const systemPrompt = buildSystemPrompt({
                 todoListPrompt: planner.getSystemPrompt(),
                 skillsEnabled: false, // TODO: wire to node input
-                filesystemEnabled: false, // TODO: wire to node input
+                filesystemEnabled: true,
+                executeEnabled,
                 subagentEnabled: false, // TODO: wire to node input
                 asyncSubagentEnabled: false, // TODO: wire to node input
                 userSystemPrompt: userSystemParts.join('\n\n') || undefined
@@ -1233,7 +1273,7 @@ class SmartAgent_Agentflow implements INode {
                         isLastNode
                     )
                 } else {
-                    response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+                    response = await llmNodeInstance.invoke(rewriteBinaryToolResults(messages), { signal: abortController?.signal })
                 }
             }
 
@@ -1932,7 +1972,9 @@ class SmartAgent_Agentflow implements INode {
         let sentLastThinkingEvent = false
 
         try {
-            for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
+            for await (const chunk of await llmNodeInstance.stream(rewriteBinaryToolResults(messages), {
+                signal: abortController?.signal
+            })) {
                 if (sseStreamer && !isStructuredOutput) {
                     let content = ''
 
@@ -2481,7 +2523,7 @@ class SmartAgent_Agentflow implements INode {
                 isLastNode
             )
         } else {
-            newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+            newResponse = await llmNodeInstance.invoke(rewriteBinaryToolResults(messages), { signal: abortController?.signal })
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer && !isStructuredOutput) {
@@ -2875,7 +2917,7 @@ class SmartAgent_Agentflow implements INode {
                 isLastNode
             )
         } else {
-            newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+            newResponse = await llmNodeInstance.invoke(rewriteBinaryToolResults(messages), { signal: abortController?.signal })
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer && !isStructuredOutput) {

@@ -1617,9 +1617,16 @@ export const executeAgentFlow = async ({
         }
     }
 
-    // If the state is persistent, get the state from the previous execution
+    // If the state is persistent, get the state from the previous execution.
+    // SmartAgent with SANDBOX_TYPE=state always requires state persistence for its sandbox filesystem.
     const startPersistState = nodes.find((node) => node.data.name === 'startAgentflow')?.data.inputs?.startPersistState
-    if (startPersistState === true && previousExecution) {
+    const sandboxType = process.env.SANDBOX_TYPE || 'state'
+
+    // NOTE / TODO: currently both sandboxType state and composite needed here so that both are able to have
+    // persistence on executionData state. But we might remove composite later depending on the usage.
+    const hasStatefulSmartAgent =
+        nodes.some((node) => node.data.name === 'smartAgentAgentflow') && (sandboxType === 'state' || sandboxType === 'composite')
+    if ((startPersistState === true || hasStatefulSmartAgent) && previousExecution) {
         const previousExecutionData = (JSON.parse(previousExecution.executionData) as IAgentflowExecutedData[]) ?? []
 
         let previousState = {}

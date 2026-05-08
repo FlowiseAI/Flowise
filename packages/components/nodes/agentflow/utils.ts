@@ -708,6 +708,38 @@ export const extractArtifactsFromResponse = async (
 
 // ─── Injecting image artifacts as temporary messages for model context ────────
 
+/** Rewrites tool-message image content blocks into a synthetic user message with `image_url`, because OpenAI Chat Completion rejects `image` blocks on tool messages. Non-image binary blocks pass through unchanged; providers must natively support the modality (Anthropic for PDFs, Gemini for audio/video). Sibling of addImageArtifactsToMessages — same `_isTemporaryImageMessage` convention. */
+export function rewriteBinaryToolResults(messages: any[]): any[] {
+    const result: any[] = []
+    for (const msg of messages) {
+        const role = (msg as any).role ?? (msg as any)._getType?.()
+        if (role !== 'tool' || !Array.isArray((msg as any).content)) {
+            result.push(msg)
+            continue
+        }
+        const content = (msg as any).content as any[]
+        const imageBlocks = content.filter((b) => b?.type === 'image')
+        if (!imageBlocks.length) {
+            result.push(msg)
+            continue
+        }
+        const nonImageBlocks = content.filter((b) => b?.type !== 'image')
+        result.push({
+            ...(msg as any),
+            content: nonImageBlocks.length > 0 ? nonImageBlocks : 'Image content forwarded as user message below.'
+        })
+        result.push({
+            role: 'user',
+            content: imageBlocks.map((b) => ({
+                type: 'image_url',
+                image_url: { url: `data:${b.mimeType};base64,${b.data}` }
+            })),
+            _isTemporaryImageMessage: true
+        })
+    }
+    return result
+}
+
 /**
  * Scans assistant messages for image artifacts and inserts temporary user messages
  * containing the base64 image data right after each assistant message. This allows

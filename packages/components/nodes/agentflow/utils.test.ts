@@ -1,4 +1,10 @@
-import { revertBase64ImagesToFileRefs, processMessagesWithImages, addImageArtifactsToMessages, getUniqueImageMessages } from './utils'
+import {
+    revertBase64ImagesToFileRefs,
+    processMessagesWithImages,
+    addImageArtifactsToMessages,
+    getUniqueImageMessages,
+    rewriteBinaryToolResults
+} from './utils'
 import { sanitizeFileName } from '../../src/validator'
 import { IChatMessage, IMultimodalContentItem } from './Interface.Agentflow'
 import { IFileUpload } from '../../src/Interface'
@@ -380,6 +386,90 @@ describe('addImageArtifactsToMessages', () => {
         expect(msg1.additional_kwargs?._imageFileRefs?.[0].fileName).toBe('img1.png')
         expect(msg4._isTemporaryImageMessage).toBe(true)
         expect(msg4.additional_kwargs?._imageFileRefs?.[0].fileName).toBe('img2.jpg')
+    })
+})
+
+describe('rewriteBinaryToolResults', () => {
+    it('returns non-tool messages unchanged', () => {
+        const messages = [
+            { role: 'user', content: 'hello' },
+            { role: 'assistant', content: 'hi there' }
+        ]
+        expect(rewriteBinaryToolResults(messages)).toEqual(messages)
+    })
+
+    it('passes through tool messages with string content', () => {
+        const messages = [{ role: 'tool', content: 'plain text result', tool_call_id: 'call_1' }]
+        expect(rewriteBinaryToolResults(messages)).toEqual(messages)
+    })
+
+    it('passes through tool messages whose content has no image blocks (audio/video/file stay)', () => {
+        const messages = [
+            {
+                role: 'tool',
+                tool_call_id: 'call_1',
+                content: [{ type: 'audio', mimeType: 'audio/mpeg', data: 'AUDIOBYTES' }]
+            }
+        ]
+        expect(rewriteBinaryToolResults(messages)).toEqual(messages)
+    })
+
+    it('rewrites image-only tool messages: text stub + synthetic user message', () => {
+        const messages = [
+            {
+                role: 'tool',
+                tool_call_id: 'call_1',
+                content: [{ type: 'image', mimeType: 'image/png', data: 'IMGBYTES' }]
+            }
+        ]
+        const result = rewriteBinaryToolResults(messages)
+        expect(result).toHaveLength(2)
+        expect(result[0]).toMatchObject({
+            role: 'tool',
+            tool_call_id: 'call_1',
+            content: 'Image content forwarded as user message below.'
+        })
+        expect(result[1]).toEqual({
+            role: 'user',
+            content: [{ type: 'image_url', image_url: { url: 'data:image/png;base64,IMGBYTES' } }],
+            _isTemporaryImageMessage: true
+        })
+    })
+
+    it('on mixed content: keeps non-image blocks on tool message, forwards images via user message', () => {
+        const messages = [
+            {
+                role: 'tool',
+                tool_call_id: 'call_1',
+                content: [
+                    { type: 'image', mimeType: 'image/png', data: 'IMG' },
+                    { type: 'file', mimeType: 'application/pdf', data: 'PDF' }
+                ]
+            }
+        ]
+        const result = rewriteBinaryToolResults(messages)
+        expect(result).toHaveLength(2)
+        expect(result[0].content).toEqual([{ type: 'file', mimeType: 'application/pdf', data: 'PDF' }])
+        expect(result[1]).toEqual({
+            role: 'user',
+            content: [{ type: 'image_url', image_url: { url: 'data:image/png;base64,IMG' } }],
+            _isTemporaryImageMessage: true
+        })
+    })
+
+    it('detects tool role via _getType() for BaseMessage-like instances', () => {
+        const messages = [
+            {
+                _getType: () => 'tool',
+                content: [{ type: 'image', mimeType: 'image/jpeg', data: 'JPG' }]
+            }
+        ]
+        const result = rewriteBinaryToolResults(messages)
+        expect(result).toHaveLength(2)
+        expect(result[1]).toMatchObject({
+            role: 'user',
+            _isTemporaryImageMessage: true
+        })
     })
 })
 
