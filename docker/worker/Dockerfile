@@ -1,6 +1,6 @@
 FROM node:24-alpine
 
-RUN apk add --update libc6-compat python3 make g++ git cmake openblas-dev
+RUN apk add --update libc6-compat python3 make g++ git cmake openblas-dev py3-setuptools
 # needed for pdfjs-dist
 RUN apk add --no-cache build-base cairo-dev pango-dev
 

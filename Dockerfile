@@ -20,7 +20,8 @@ RUN apk update && \
     curl \
     git \
     cmake \
-    openblas-dev && \
+    openblas-dev \
+    py3-setuptools && \
     npm install -g pnpm@10.26.0
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
