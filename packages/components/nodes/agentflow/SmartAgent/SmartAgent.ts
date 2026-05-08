@@ -24,8 +24,8 @@ import { z } from 'zod'
 import { PlanningTool, Todo } from './planning/PlanningTool'
 import { buildSystemPrompt } from './context/SystemPromptBuilder'
 import { createBackend } from './sandbox/factory'
-import { buildFsTools } from './sandbox/tools/fs'
-import { FileData } from './sandbox/BackendProtocol'
+import { buildExecuteTool, buildFsTools } from './sandbox/tools/fs'
+import { FileData, ShellBackendProtocol } from './sandbox/BackendProtocol'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
 import { randomBytes } from 'crypto'
@@ -1067,6 +1067,13 @@ class SmartAgent_Agentflow implements INode {
 
             toolsInstance.push(...(fsTools as unknown as Tool[]))
 
+            // Bind the execute tool when the backend supports it (duck-typed).
+            const executeEnabled = 'execute' in backend && typeof (backend as { execute?: unknown }).execute === 'function'
+            if (executeEnabled) {
+                const executeTool = buildExecuteTool(backend as ShellBackendProtocol)
+                toolsInstance.push(executeTool as unknown as Tool)
+            }
+
             if (llmNodeInstance && toolsInstance.length > 0) {
                 if (llmNodeInstance.bindTools === undefined) {
                     throw new Error(`Agent needs to have a function calling capable models.`)
@@ -1109,6 +1116,7 @@ class SmartAgent_Agentflow implements INode {
                 todoListPrompt: planner.getSystemPrompt(),
                 skillsEnabled: false, // TODO: wire to node input
                 filesystemEnabled: true,
+                executeEnabled,
                 subagentEnabled: false, // TODO: wire to node input
                 asyncSubagentEnabled: false, // TODO: wire to node input
                 userSystemPrompt: userSystemParts.join('\n\n') || undefined

@@ -230,3 +230,59 @@ describe('createBackend with SANDBOX_TYPE=composite', () => {
         expect('content' in result && result.content).toBe('seeded')
     })
 })
+
+describe('createBackend — local-shell', () => {
+    const originalSandboxType = process.env.SANDBOX_TYPE
+    const originalLocalPath = process.env.SANDBOX_LOCAL_PATH
+    const tmpRoots: string[] = []
+    let warnSpy: jest.SpyInstance
+
+    beforeEach(() => {
+        warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+        warnSpy.mockRestore()
+        process.env.SANDBOX_TYPE = originalSandboxType
+        process.env.SANDBOX_LOCAL_PATH = originalLocalPath
+    })
+
+    afterAll(() => {
+        for (const root of tmpRoots) rmSync(root, { recursive: true, force: true })
+        tmpRoots.length = 0
+    })
+
+    it('returns a LocalShellBackend instance when SANDBOX_TYPE=local-shell', async () => {
+        const tmp = mkdtempSync(join(tmpdir(), 'flowise-localshell-'))
+        tmpRoots.push(tmp)
+        process.env.SANDBOX_TYPE = 'local-shell'
+        process.env.SANDBOX_LOCAL_PATH = tmp
+
+        const { LocalShellBackend } = await import('./backends/LocalShellBackend')
+
+        const backend = await createBackend(undefined, {
+            orgId: 'org-1',
+            chatflowid: 'flow-2',
+            chatId: 'chat-3'
+        })
+
+        expect(backend).toBeInstanceOf(LocalShellBackend)
+        const root = (backend as unknown as { root: string }).root
+        expect(root).toBe(resolve(tmp, 'org-1', 'flow-2', 'chat-3'))
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('LocalShellBackend is enabled'))
+    })
+
+    it('uses the same scope-segments path as SANDBOX_TYPE=local for the same scope', async () => {
+        const tmp = mkdtempSync(join(tmpdir(), 'flowise-localshell-parity-'))
+        tmpRoots.push(tmp)
+        process.env.SANDBOX_LOCAL_PATH = tmp
+
+        process.env.SANDBOX_TYPE = 'local'
+        const localBackend = (await createBackend(undefined, { orgId: 'o', chatflowid: 'f', chatId: 'c' })) as unknown as { root: string }
+
+        process.env.SANDBOX_TYPE = 'local-shell'
+        const shellBackend = (await createBackend(undefined, { orgId: 'o', chatflowid: 'f', chatId: 'c' })) as unknown as { root: string }
+
+        expect(shellBackend.root).toBe(localBackend.root)
+    })
+})

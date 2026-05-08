@@ -1,6 +1,7 @@
-import { buildFsTools } from './fs'
+import { buildExecuteTool, buildFsTools } from './fs'
 import { StateBackend } from '../backends/StateBackend'
 import { FilesUpdate } from '../BackendProtocol'
+import type { ExecuteResult, ShellBackendProtocol } from '../BackendProtocol'
 import { MAX_BINARY_READ_SIZE_BYTES } from '../utils'
 
 function findTool(tools: ReturnType<typeof buildFsTools>, name: string) {
@@ -110,5 +111,36 @@ describe('buildFsTools — read_file binary content blocks', () => {
         const result = await readFile.invoke({ file_path: '/hello.txt' })
         expect(typeof result).toBe('string')
         expect(result as string).toContain('line1')
+    })
+})
+
+function stubShellBackend(execute: (cmd: string) => Promise<ExecuteResult>): ShellBackendProtocol {
+    return { execute } as unknown as ShellBackendProtocol
+}
+
+describe('buildExecuteTool', () => {
+    it('forwards command to backend.execute and returns the output string', async () => {
+        let received = ''
+        const backend = stubShellBackend(async (cmd) => {
+            received = cmd
+            return { output: 'hello\n', exitCode: 0, truncated: false }
+        })
+        const tool = buildExecuteTool(backend)
+        const result = await tool.invoke({ command: 'echo hello' })
+        expect(received).toBe('echo hello')
+        expect(result).toBe('hello\n')
+    })
+
+    it('returns the output verbatim when truncated (the [output truncated] suffix is already in output)', async () => {
+        const backend = stubShellBackend(async () => ({ output: 'a'.repeat(100) + '\n\n[output truncated]', exitCode: 0, truncated: true }))
+        const tool = buildExecuteTool(backend)
+        const result = await tool.invoke({ command: 'irrelevant' })
+        expect(result).toContain('[output truncated]')
+    })
+
+    it('exposes the tool name "execute" and a non-empty description', () => {
+        const tool = buildExecuteTool(stubShellBackend(async () => ({ output: '', exitCode: 0, truncated: false })))
+        expect(tool.name).toBe('execute')
+        expect(tool.description.length).toBeGreaterThan(0)
     })
 })

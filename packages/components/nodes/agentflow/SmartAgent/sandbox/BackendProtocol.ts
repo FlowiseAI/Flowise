@@ -55,3 +55,20 @@ export const DEFAULT_READ_LIMIT = 500
 
 // Cap on results returned by listing operations (glob, grep) across all backends.
 export const MAX_LIST_OBJECTS = 1_000
+
+export type ExecuteResult = { output: string; exitCode: number; truncated: boolean }
+
+/**
+ * Extends BackendProtocol with shell command execution.
+ */
+export interface ShellBackendProtocol extends BackendProtocol {
+    execute(command: string): Promise<ExecuteResult>
+}
+
+// Cap on combined stdout/stderr bytes returned from execute(). Beyond this, the
+// output is truncated and ExecuteResult.truncated is set.
+export const MAX_OUTPUT_BYTES = 100_000
+
+// Default per-command timeout for LocalShellBackend.execute(). Override via the
+// SANDBOX_LOCAL_SHELL_TIMEOUT_MS env var.
+export const LOCAL_SHELL_TIMEOUT_DEFAULT_MS = 30_000

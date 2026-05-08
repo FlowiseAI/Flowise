@@ -59,6 +59,16 @@ You have access to a sandbox filesystem. All paths must be absolute.
 - Use \`glob_files\` to discover files before reading them; use \`grep_files\` to locate specific content across many files.
 - Large files: use \`offset\` + \`limit\` on \`read_file\` to paginate rather than reading the entire file at once.`
 
+const EXECUTE_TOOL_PROMPT = `## Execute Tool
+
+You have access to \`execute\` to run shell commands in the sandbox.
+
+- Returns combined stdout and stderr (stderr lines prefixed \`[stderr] \`); \`Exit code: N\` is appended when the command exits non-zero
+- Output is truncated at ~100 KB
+- Each command times out after 30 seconds
+- Chain commands with \`&&\` for sequential steps (e.g. \`cd /workspace && npm i && npm test\`)
+- **Paths:** \`/workspace/\`, \`/artifacts/\`, \`/memories/\`, \`/large_tool_results/\`, and \`/conversation_history/\` refer to the sandbox filesystem (same paths the filesystem tools use). Other absolute paths refer to the host.`
+
 // Part 5: Subagent prompt
 const SUBAGENT_PROMPT = `## Subagent Delegation
 // TODO: task delegation guidance`
@@ -134,6 +144,7 @@ export interface SystemPromptOptions {
     todoListPrompt: string // Part 2: from PlanningTool
     skillsEnabled?: boolean // Part 3
     filesystemEnabled?: boolean // Part 4
+    executeEnabled?: boolean // Part 4b: only when backend supports execute (LocalShellBackend, future remote sandboxes)
     subagentEnabled?: boolean // Part 5
     asyncSubagentEnabled?: boolean // Part 6
     userSystemPrompt?: string // Part 7: user-specified system message / memory (AGENTS.md)
@@ -166,6 +177,11 @@ export function buildSystemPrompt(opts: SystemPromptOptions): string {
     // Part 4: Filesystem tool prompt
     if (opts.filesystemEnabled) {
         parts.push(FILESYSTEM_TOOL_PROMPT)
+    }
+
+    // Part 4b: Execute tool prompt — when the active backend supports it
+    if (opts.executeEnabled) {
+        parts.push(EXECUTE_TOOL_PROMPT)
     }
 
     // Part 5: Subagent prompt

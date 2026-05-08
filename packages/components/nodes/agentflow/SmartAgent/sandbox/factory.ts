@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto'
 import { BackendProtocol, FileData } from './BackendProtocol'
 import { CompositeBackend } from './backends/CompositeBackend'
 import { LocalBackend } from './backends/LocalBackend'
+import { LocalShellBackend } from './backends/LocalShellBackend'
 import { StateBackend } from './backends/StateBackend'
 
 type FileStore = Record<string, FileData>
@@ -37,6 +38,11 @@ export async function createBackend(
             const base = process.env.SANDBOX_LOCAL_PATH || path.join(homedir(), '.flowise', 'sandbox')
             const root = path.join(base, ...buildScopeSegments(scope))
             return new LocalBackend(root)
+        }
+        case 'local-shell': {
+            const base = process.env.SANDBOX_LOCAL_PATH || path.join(homedir(), '.flowise', 'sandbox')
+            const root = path.join(base, ...buildScopeSegments(scope))
+            return new LocalShellBackend(root)
         }
         case 'composite':
             return new CompositeBackend(new StateBackend(initialFiles), {})

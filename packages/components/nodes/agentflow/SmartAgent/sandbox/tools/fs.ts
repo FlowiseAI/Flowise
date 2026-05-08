@@ -1,6 +1,6 @@
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { z } from 'zod'
-import { BackendProtocol, FilesUpdate } from '../BackendProtocol'
+import { BackendProtocol, FilesUpdate, ShellBackendProtocol } from '../BackendProtocol'
 import { formatWithLineNumbers, MAX_BINARY_READ_SIZE_BYTES, toMultimodalContentBlock } from '../utils'
 
 export function buildFsTools(backend: BackendProtocol, onFilesUpdate?: (update: FilesUpdate) => void): DynamicStructuredTool[] {
@@ -106,4 +106,19 @@ export function buildFsTools(backend: BackendProtocol, onFilesUpdate?: (update: 
     })
 
     return [readFileTool, writeFileTool, editFileTool, listFilesTool, globFilesTool, grepFilesTool]
+}
+
+export function buildExecuteTool(backend: ShellBackendProtocol): DynamicStructuredTool {
+    return new DynamicStructuredTool({
+        name: 'execute',
+        description:
+            'Run a shell command in the sandbox. Returns combined stdout/stderr (stderr lines prefixed "[stderr] "), exit code annotated when non-zero, output truncated at ~100 KB, 30-second timeout.',
+        schema: z.object({
+            command: z.string().min(1).describe('Shell command to execute (e.g. "npm test", "cd /workspace && python script.py")')
+        }),
+        func: async ({ command }) => {
+            const result = await backend.execute(command)
+            return result.output
+        }
+    })
 }
