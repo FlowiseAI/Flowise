@@ -7,6 +7,12 @@ interface UseResizableSidebarOptions {
     minWidth: number
     /** Maximum width (in px) the user can drag the sidebar to. */
     maxWidth: number
+    /**
+     * When true, dragging left grows the panel (and dragging right shrinks it).
+     * Use for right-anchored panels like a right-side `<Drawer>` whose handle
+     * sits on its LEFT edge. Defaults to false (left-anchored: drag right grows).
+     */
+    inverted?: boolean
 }
 
 interface UseResizableSidebarResult {
@@ -23,7 +29,12 @@ interface UseResizableSidebarResult {
  * Encapsulates: width state, drag-state refs, document-level mousemove /
  * mouseup listeners, and cleanup on unmount.
  */
-export function useResizableSidebar({ defaultWidth, minWidth, maxWidth }: UseResizableSidebarOptions): UseResizableSidebarResult {
+export function useResizableSidebar({
+    defaultWidth,
+    minWidth,
+    maxWidth,
+    inverted = false
+}: UseResizableSidebarOptions): UseResizableSidebarResult {
     const [width, setWidth] = useState(defaultWidth)
     const [hasUserResized, setHasUserResized] = useState(false)
     const isDragging = useRef(false)
@@ -39,10 +50,11 @@ export function useResizableSidebar({ defaultWidth, minWidth, maxWidth }: UseRes
         (e: MouseEvent) => {
             if (!isDragging.current) return
             const delta = e.clientX - dragStartX.current
-            const next = Math.min(maxWidth, Math.max(minWidth, dragStartWidth.current + delta))
+            const adjusted = inverted ? -delta : delta
+            const next = Math.min(maxWidth, Math.max(minWidth, dragStartWidth.current + adjusted))
             setWidth(next)
         },
-        [maxWidth, minWidth]
+        [maxWidth, minWidth, inverted]
     )
 
     const handleMouseUp = useCallback(() => {

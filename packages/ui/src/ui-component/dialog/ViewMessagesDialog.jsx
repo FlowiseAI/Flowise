@@ -195,7 +195,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const [sourceDialogProps, setSourceDialogProps] = useState({})
     const [hardDeleteDialogOpen, setHardDeleteDialogOpen] = useState(false)
     const [hardDeleteDialogProps, setHardDeleteDialogProps] = useState({})
-    const [chatTypeFilter, setChatTypeFilter] = useState(['INTERNAL', 'EXTERNAL', 'MCP', 'SCHEDULED'])
+    const [chatTypeFilter, setChatTypeFilter] = useState(['INTERNAL', 'EXTERNAL', 'MCP', 'SCHEDULED', 'WEBHOOK'])
     const [feedbackTypeFilter, setFeedbackTypeFilter] = useState([])
     const [startDate, setStartDate] = useState(new Date(new Date().setMonth(new Date().getMonth() - 1)))
     const [endDate, setEndDate] = useState(new Date())
@@ -351,6 +351,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             return 'MCP'
         } else if (chatType === 'SCHEDULED') {
             return 'Scheduled'
+        } else if (chatType === 'WEBHOOK') {
+            return 'Webhook'
         }
         return 'API/Embed'
     }
@@ -760,7 +762,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         return () => {
             setChatLogs([])
             setChatMessages([])
-            setChatTypeFilter(['INTERNAL', 'EXTERNAL', 'MCP', 'SCHEDULED'])
+            setChatTypeFilter(['INTERNAL', 'EXTERNAL', 'MCP', 'SCHEDULED', 'WEBHOOK'])
             setFeedbackTypeFilter([])
             setSelectedMessageIndex(0)
             setSelectedChatId('')
@@ -917,6 +919,10 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                     {
                                         label: 'Scheduled',
                                         name: 'SCHEDULED'
+                                    },
+                                    {
+                                        label: 'Webhook',
+                                        name: 'WEBHOOK'
                                     },
                                     {
                                         label: 'Evaluations',

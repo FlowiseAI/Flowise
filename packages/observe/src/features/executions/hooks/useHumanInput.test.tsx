@@ -36,10 +36,12 @@ describe('useHumanInput', () => {
             )
         })
 
-        it('does not open the feedback dialog when enableFeedback=false', () => {
+        it('does not open the feedback dialog when enableFeedback=false', async () => {
             const onHumanInput = jest.fn().mockResolvedValue(undefined)
             const { result } = renderHook(() => useHumanInput({ ...baseOpts, onHumanInput }))
-            act(() => {
+            // Async act so the post-await `setIsSubmitting(false)` in `submit`'s
+            // finally block flushes inside the boundary.
+            await act(async () => {
                 result.current.handleProceed()
             })
             expect(result.current.feedbackOpen).toBe(false)

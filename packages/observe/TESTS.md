@@ -30,9 +30,9 @@ Presentational components that are mostly JSX. Only add tests if the component c
 
 **Currently classified as Tier 3 (no `coverageThreshold` entry):**
 
--   `ExecutionDetail.tsx` — orchestration shell wiring `useExecutionPoll` + `useExecutionTree` + `useResizableSidebar` + `<ExecutionTreeSidebar>` + `<NodeExecutionDetail>`. The drag-resize logic was lifted to `useResizableSidebar` (testable in isolation); the recursive tree renderer was lifted to `<ExecutionTreeSidebar>`. What remains is composition.
--   `ExecutionTreeSidebar.tsx` — recursive list rendering with one click branch (skip-on-virtual-node). Add tests if the tree gains filtering, search, or non-trivial expand/collapse behavior.
 -   `ExecutionsListTable.tsx`, `ExecutionsViewer.tsx` — data-table + outer composition shells.
+
+`ExecutionDetail.tsx` was promoted to Tier 2 once it grew real branching (initial-selection rule, copy-id flow, error/loading/empty states). Drag-resize lives in `useResizableSidebar` and the recursive tree renderer in `<ExecutionTreeSidebar>`, both tested in isolation; the orchestrator's own tests cover composition + the auto-select branches.
 
 If any of these grows real branching logic (filter predicates, sort comparators, debounced handlers), promote it to Tier 2 by adding a `coverageThreshold` entry in `jest.config.js` and writing the corresponding tests.
 

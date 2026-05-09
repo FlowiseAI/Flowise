@@ -33,6 +33,10 @@ router.put(
 // DELETE
 router.delete(['/', '/:id'], checkAnyPermission('chatflows:delete,agentflows:delete'), chatflowsController.deleteChatflow)
 
+// WEBHOOK SECRET
+router.post('/:id/webhook-secret', checkAnyPermission('chatflows:update,agentflows:update'), chatflowsController.setWebhookSecret)
+router.delete('/:id/webhook-secret', checkAnyPermission('chatflows:update,agentflows:update'), chatflowsController.clearWebhookSecret)
+
 // CHECK FOR CHANGE
 router.get(
     '/has-changed/:id/:lastUpdatedDateTime',

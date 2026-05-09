@@ -4,7 +4,7 @@
 
 import type { InternalAxiosRequestConfig } from 'axios'
 
-import type { ExecutionFilters, HumanInputParams } from './execution'
+import type { AgentflowRef, ExecutionFilters, HumanInputParams } from './execution'
 
 /**
  * Callback to customize outgoing Axios requests.
@@ -65,6 +65,18 @@ export interface ExecutionsViewerProps {
     initialFilters?: Partial<ExecutionFilters>
     /** See ExecutionDetailProps.onAgentflowClick — threaded through to the detail drawer */
     onAgentflowClick?: (agentflowId: string) => void
+    /**
+     * Detail-drawer sizing overrides. Each key is independent — supply only
+     * the values you want to override. Defaults (legacy parity):
+     * `defaultWidth = max(minWidth, window.innerWidth - 400)`,
+     * `minWidth = 400`, `maxWidth = window.innerWidth`. The resolved default
+     * is clamped into `[minWidth, maxWidth]` if you pass inconsistent values.
+     */
+    drawer?: {
+        defaultWidth?: number
+        minWidth?: number
+        maxWidth?: number
+    }
 }
 
 // ============================================================================
@@ -86,4 +98,11 @@ export interface ExecutionDetailProps {
      * When absent, the name is rendered as plain text (or omitted if no name is available).
      */
     onAgentflowClick?: (agentflowId: string) => void
+    /**
+     * Optional agentflow info to seed the header chip while the detail endpoint
+     * loads (or when the server's `getExecutionById` doesn't perform the
+     * `agentflow` join — only the list endpoint does today). When the API
+     * response carries `execution.agentflow`, it takes precedence.
+     */
+    agentflow?: AgentflowRef
 }

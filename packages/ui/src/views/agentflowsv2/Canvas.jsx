@@ -31,6 +31,7 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
 import ChatPopUp from '@/views/chatmessage/ChatPopUp'
 import ScheduleHistoryFAB from '@/views/schedule/ScheduleHistoryFAB'
+import WebhookListenerFAB from '@/views/webhooklistener/WebhookListenerFAB'
 import ValidationPopUp from '@/views/chatmessage/ValidationPopUp'
 import { flowContext } from '@/store/context/ReactFlowContext'
 
@@ -101,6 +102,12 @@ const AgentflowCanvas = () => {
         if (!nodes || nodes.length === 0) return false
         const startNode = nodes.find((n) => n.data?.name === 'startAgentflow')
         return startNode?.data?.inputs?.startInputType === 'scheduleInput'
+    }, [nodes])
+
+    const isWebhookFlow = useMemo(() => {
+        if (!nodes || nodes.length === 0) return false
+        const startNode = nodes.find((n) => n.data?.name === 'startAgentflow')
+        return startNode?.data?.inputs?.startInputType === 'webhookTrigger'
     }, [nodes])
 
     const [selectedNode, setSelectedNode] = useState(null)
@@ -805,6 +812,8 @@ const AgentflowCanvas = () => {
                                 )}
                                 {isScheduleFlow ? (
                                     <ScheduleHistoryFAB chatflowid={chatflowId} onOpenChange={setChatPopupOpen} />
+                                ) : isWebhookFlow ? (
+                                    <WebhookListenerFAB chatflowid={chatflowId} onOpenChange={setChatPopupOpen} />
                                 ) : (
                                     <ChatPopUp isAgentCanvas={true} chatflowid={chatflowId} onOpenChange={setChatPopupOpen} />
                                 )}

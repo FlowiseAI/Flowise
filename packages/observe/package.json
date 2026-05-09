@@ -35,15 +35,12 @@
             "import": "./dist/index.js",
             "require": "./dist/index.umd.js",
             "types": "./dist/index.d.ts"
-        },
-        "./observe.css": "./dist/observe.css"
+        }
     },
     "files": [
         "dist"
     ],
-    "sideEffects": [
-        "dist/**/*.css"
-    ],
+    "sideEffects": false,
     "scripts": {
         "build": "tsc && vite build",
         "clean": "rimraf dist",
@@ -68,6 +65,7 @@
         "react-dom": "^18.2.0"
     },
     "dependencies": {
+        "@mui/x-tree-view": "^7.25.0",
         "@tabler/icons-react": "^3.7.0",
         "axios": "1.15.0",
         "date-fns": "^3.6.0",

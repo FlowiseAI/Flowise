@@ -116,6 +116,33 @@ Flowise has 3 different modules in a single mono repository.
 
 11. Commit code and submit Pull Request from forked branch pointing to [Flowise main](https://github.com/FlowiseAI/Flowise/tree/main).
 
+### Adding or modifying credential definitions
+
+Credential definitions live in `packages/components/credentials/`. Each input field has a `type` that controls both UI rendering and how the value is handled on the server.
+
+**Security rule: any field that contains a secret must use `type: 'url'` or `type: 'password'` — never `type: 'string'`.**
+
+The server redacts both `url` and `password` fields before returning credential data to the client. Fields typed `string` are returned in plaintext, which exposes stored secrets to any authenticated user with `credentials:view` permission.
+
+Use `type: 'url'` for connection strings with embedded credentials:
+
+-   Connection URLs that embed a username/password (e.g. `mongodb+srv://user:pass@host/db`, `redis://:pass@host`, `postgresql://user:pass@host/db`)
+-   Displayed with the password portion masked (e.g. `mongodb+srv://user:••••••@host/db`); users with edit permission can reveal the full URL
+
+Use `type: 'password'` for opaque secrets with no meaningful preview:
+
+-   API keys, access keys, secret keys, tokens
+-   JSON blobs containing private keys or certificates (e.g. Google service account JSON)
+-   Fully redacted in the UI; users must replace the entire value to update them
+
+Fields that are safe as `type: 'string'`:
+
+-   Usernames / account names (when the password is a separate field)
+-   Region, host, port, database name, project ID
+-   Non-secret identifiers and configuration values
+
+If in doubt, use `type: 'password'`. The only cost is that the field must be re-entered on edit; the cost of using `type: 'string'` for a secret is that it is exposed via the API.
+
 ### Testing
 
 -   Unit tests are **co-located** with their source files — a test for `Foo.ts` lives in `Foo.test.ts` in the same directory. This is the standard used across all packages in this repo.
