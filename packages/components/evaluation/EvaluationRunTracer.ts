@@ -66,7 +66,7 @@ export class EvaluationRunTracer extends RunCollectorCallbackHandler {
     onLLMEnd?(run: Run): void | Promise<void> {
         if (run.name) {
             let provider = run.name
-            if (provider === 'BedrockChat') {
+            if (provider === 'BedrockChat' || provider === 'bedrock-imported') {
                 provider = 'awsChatBedrock'
             }
             EvaluationRunner.addMetrics(

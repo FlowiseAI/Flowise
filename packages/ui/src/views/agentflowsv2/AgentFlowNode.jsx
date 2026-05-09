@@ -29,7 +29,8 @@ import {
     IconBrowserCheck,
     IconMessageCircle,
     IconClockHour4,
-    IconListDetails
+    IconListDetails,
+    IconWebhook
 } from '@tabler/icons-react'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
@@ -409,7 +410,8 @@ const AgentFlowNode = ({ data }) => {
                                     const iconMap = {
                                         chatInput: { icon: <IconMessageCircle size={14} /> },
                                         formInput: { icon: <IconListDetails size={14} /> },
-                                        scheduleInput: { icon: <IconClockHour4 size={14} /> }
+                                        scheduleInput: { icon: <IconClockHour4 size={14} /> },
+                                        webhookTrigger: { icon: <IconWebhook size={14} /> }
                                     }
                                     const info = iconMap[inputType]
                                     if (!info) return null
@@ -469,7 +471,9 @@ const AgentFlowNode = ({ data }) => {
                                                     alt={item.model}
                                                 />
                                                 <Typography sx={{ fontSize: '0.7rem', ml: 0.5 }}>
-                                                    {item.config.modelName || item.config.model}
+                                                    {item.config.customModel
+                                                        ? item.config.customModel.replace(/^arn:aws:bedrock:[^:]+:[^:]+:/, '')
+                                                        : item.config.modelName || item.config.model}
                                                 </Typography>
                                             </Box>
                                         </Box>

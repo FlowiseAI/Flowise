@@ -14,6 +14,18 @@ const DENIED_HEADER_NAMES = new Set([
 
 const DENIED_HEADER_PREFIXES = ['proxy-', 'x-forwarded-', 'sec-']
 
+const SENSITIVE_HEADER_NAMES = new Set([
+    'authorization',
+    'proxy-authorization',
+    'cookie',
+    'set-cookie',
+    'x-api-key',
+    'x-auth-token',
+    'x-amz-security-token'
+])
+
+const REDACTED_PLACEHOLDER = '[REDACTED]'
+
 const MAX_HEADERS = 25
 const MAX_KEY_LENGTH = 128
 const MAX_VALUE_LENGTH = 2048
@@ -63,4 +75,18 @@ export function validateCustomHeaders(headers: Record<string, string>): void {
             }
         }
     }
+}
+
+/**
+ * Returns a copy of `headers` with credential-bearing entries (Authorization, Cookie, X-Api-Key, …)
+ * replaced by a placeholder string. Used at trust boundaries before a header bag is exposed to flow
+ * templates, observers, or logs. Comparison is case-insensitive; non-sensitive headers pass through.
+ */
+export function redactSensitiveHeaders(headers: Record<string, any> | undefined | null): Record<string, any> {
+    if (!headers) return {}
+    const out: Record<string, any> = {}
+    for (const [key, value] of Object.entries(headers)) {
+        out[key] = SENSITIVE_HEADER_NAMES.has(key.toLowerCase()) ? REDACTED_PLACEHOLDER : value
+    }
+    return out
 }

@@ -138,6 +138,7 @@ export const suggestionOptions = (
         }))
 
         const startAgentflowNode = nodes.find((node) => node.data.name === 'startAgentflow')
+        const { webhookQueryParams, webhookBodyParams, webhookHeaderParams } = startAgentflowNode?.data?.inputs ?? {}
         const startInputType = startAgentflowNode?.data?.inputs?.startInputType
         const scheduleInputMode = startAgentflowNode?.data?.inputs?.scheduleInputMode
         const activeFormInputTypes =
@@ -155,6 +156,36 @@ export const suggestionOptions = (
             }))
         }
 
+        let webhookQueryItems = []
+        if (webhookQueryParams) {
+            webhookQueryItems = webhookQueryParams.map((input) => ({
+                id: `$webhook.query.${input.name}`,
+                mentionLabel: `$webhook.query.${input.name}`,
+                description: `Webhook Query: ${input.name}`,
+                category: 'Webhook Inputs'
+            }))
+        }
+
+        let webhookItems = []
+        if (webhookBodyParams) {
+            webhookItems = webhookBodyParams.map((input) => ({
+                id: `$webhook.body.${input.name}`,
+                mentionLabel: `$webhook.body.${input.name}`,
+                description: `Webhook Body: ${input.name}`,
+                category: 'Webhook Inputs'
+            }))
+        }
+
+        let webhookHeaderItems = []
+        if (webhookHeaderParams) {
+            webhookHeaderItems = webhookHeaderParams.map((input) => ({
+                id: `$webhook.headers.${input.name}`,
+                mentionLabel: `$webhook.headers.${input.name}`,
+                description: `Webhook Header: ${input.name}`,
+                category: 'Webhook Inputs'
+            }))
+        }
+
         const nodeItems = (availableNodesForVariable || []).map((node) => {
             const selectedOutputAnchor = node.data.outputAnchors?.[0]?.options?.find((ancr) => ancr.name === node.data.outputs['output'])
 
@@ -169,7 +200,16 @@ export const suggestionOptions = (
             }
         })
 
-        const allItems = [...defaultItems, ...formItems, ...nodeItems, ...stateItems, ...variableItems]
+        const allItems = [
+            ...defaultItems,
+            ...formItems,
+            ...webhookQueryItems,
+            ...webhookItems,
+            ...webhookHeaderItems,
+            ...nodeItems,
+            ...stateItems,
+            ...variableItems
+        ]
 
         return allItems.filter(
             (item) => item.mentionLabel.toLowerCase().includes(query.toLowerCase()) || item.id.toLowerCase().includes(query.toLowerCase())

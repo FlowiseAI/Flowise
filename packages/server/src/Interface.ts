@@ -32,7 +32,8 @@ export enum ChatType {
     EXTERNAL = 'EXTERNAL',
     EVALUATION = 'EVALUATION',
     MCP = 'MCP',
-    SCHEDULED = 'SCHEDULED'
+    SCHEDULED = 'SCHEDULED',
+    WEBHOOK = 'WEBHOOK'
 }
 
 export enum ChatMessageRatingType {
@@ -74,6 +75,8 @@ export interface IChatFlow {
     type?: ChatflowType
     mcpServerConfig?: string
     workspaceId: string
+    webhookSecret?: string | null
+    webhookSecretConfigured?: boolean
 }
 
 export interface IChatMessage {
@@ -371,6 +374,7 @@ export interface IncomingAgentflowInput extends Omit<IncomingInput, 'question'> 
     question?: string
     form?: Record<string, any>
     humanInput?: IHumanInput
+    webhook?: Record<string, any>
 }
 
 export interface IActiveChatflows {

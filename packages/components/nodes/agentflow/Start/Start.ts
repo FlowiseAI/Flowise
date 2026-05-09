@@ -48,7 +48,7 @@ class Start_Agentflow implements INode {
     constructor() {
         this.label = 'Start'
         this.name = 'startAgentflow'
-        this.version = 1.3
+        this.version = 1.4
         this.type = 'Start'
         this.category = 'Agent Flows'
         this.description = 'Starting point of the agentflow'
@@ -70,6 +70,12 @@ class Start_Agentflow implements INode {
                         label: 'Form Input',
                         name: 'formInput',
                         description: 'Start the workflow with form inputs',
+                        client: ['agentflowv2']
+                    },
+                    {
+                        label: 'Webhook Trigger',
+                        name: 'webhookTrigger',
+                        description: 'Trigger the workflow via an external webhook',
                         client: ['agentflowv2']
                     },
                     {
@@ -159,6 +165,330 @@ class Start_Agentflow implements INode {
                                 type: 'string'
                             }
                         ]
+                    }
+                ]
+            },
+            {
+                label: 'HTTP Method',
+                name: 'webhookMethod',
+                type: 'options',
+                options: [
+                    { label: 'GET', name: 'GET' },
+                    { label: 'POST', name: 'POST' },
+                    { label: 'PUT', name: 'PUT' },
+                    { label: 'PATCH', name: 'PATCH' },
+                    { label: 'DELETE', name: 'DELETE' }
+                ],
+                default: 'POST',
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
+                label: 'Content Type',
+                name: 'webhookContentType',
+                type: 'options',
+                description:
+                    'Expected Content-Type of incoming requests. For application/x-www-form-urlencoded, if the entire payload is a JSON string in a "payload" field (e.g. GitHub webhooks), it is automatically parsed — use $webhook.body.* as normal.',
+                options: [
+                    { label: 'application/json', name: 'application/json' },
+                    { label: 'application/x-www-form-urlencoded', name: 'application/x-www-form-urlencoded' }
+                ],
+                default: 'application/json',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
+                label: 'Webhook URL',
+                name: 'webhookURL',
+                type: 'string',
+                description: 'Send a request to this URL to trigger the workflow',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
+                label: 'Input Mode',
+                name: 'webhookInputMode',
+                type: 'options',
+                description: 'What this Start node passes as input to the rest of the flow when a webhook fires.',
+                options: [
+                    {
+                        label: 'Custom Text',
+                        name: 'text',
+                        description:
+                            'Pass a fixed string. Reference webhook fields with $webhook.body.* / $webhook.headers.* / $webhook.query.*'
+                    },
+                    {
+                        label: 'No Input',
+                        name: 'none',
+                        description: 'Pass nothing. Use $webhook.* references inside downstream node configs to access the payload.'
+                    },
+                    {
+                        label: 'Full Webhook Payload',
+                        name: 'payload',
+                        description:
+                            'Pass the full JSON-serialized webhook payload (body, headers, query). Useful for debugging; bloats LLM context.'
+                    }
+                ],
+                default: 'text',
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
+                label: 'Custom Text',
+                name: 'webhookDefaultInput',
+                type: 'string',
+                rows: 3,
+                placeholder: 'Answer user question: {{ $webhook.body.question }}',
+                description:
+                    'Text passed to downstream nodes as the user input. Use {{ $webhook.body.* }}, {{ $webhook.headers.* }}, or {{ $webhook.query.* }} to interpolate fields from the incoming request.',
+                optional: true,
+                acceptVariable: true,
+                show: {
+                    startInputType: 'webhookTrigger',
+                    webhookInputMode: 'text'
+                }
+            },
+            {
+                label: 'Verify request signature',
+                name: 'webhookEnableAuth',
+                type: 'boolean',
+                description:
+                    'Reject incoming requests that do not include a valid signature. Turn this on if your sender (GitHub, Stripe, Slack, GitLab, etc.) signs each request with a shared secret, then generate a secret below and copy it to the sender. Leave off for testing or trusted networks.',
+                default: false,
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
+                label: 'Webhook Secret',
+                name: 'webhookSecret',
+                type: 'string',
+                description:
+                    'Click Generate Secret to create a random shared secret, then copy it into your sender so it can sign each request. Use Signature Header and Signature Type below to match how your sender delivers the signature.',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger',
+                    webhookEnableAuth: true
+                }
+            },
+            {
+                label: 'Signature Header',
+                name: 'webhookSignatureHeader',
+                type: 'string',
+                description:
+                    'The request header that carries the signature. e.g. x-hub-signature-256 for GitHub, stripe-signature for Stripe, x-gitlab-token for GitLab.',
+                placeholder: 'x-webhook-signature',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger',
+                    webhookEnableAuth: true
+                }
+            },
+            {
+                label: 'Signature Type',
+                name: 'webhookSignatureType',
+                type: 'options',
+                description:
+                    'How to verify the signature. HMAC-SHA256 for GitHub, Stripe, Slack (supports sha256=<hex> prefix automatically). Plain Token for GitLab-style plain secret comparison.',
+                options: [
+                    { label: 'HMAC-SHA256', name: 'hmac-sha256' },
+                    { label: 'Plain Token', name: 'plain-token' }
+                ],
+                default: 'hmac-sha256',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger',
+                    webhookEnableAuth: true
+                }
+            },
+            {
+                label: 'Response Mode',
+                name: 'webhookResponseMode',
+                type: 'options',
+                description: 'How Flowise replies to the incoming webhook request.',
+                options: [
+                    {
+                        label: 'Synchronous',
+                        name: 'sync',
+                        description:
+                            'Wait for the flow to finish and return the full result as JSON. Simple but blocks the caller; can time out for senders with short HTTP windows.'
+                    },
+                    {
+                        label: 'Asynchronous (callback)',
+                        name: 'async',
+                        description:
+                            'Return 202 Accepted immediately and run the flow in the background. Set a Callback URL below to have the result POSTed there when the flow finishes; leave it blank for fire-and-forget. Best for senders with short HTTP timeouts.'
+                    },
+                    {
+                        label: 'Streaming (SSE)',
+                        name: 'stream',
+                        description:
+                            'Return a Server-Sent Events stream so the caller sees tokens and agent steps as they happen. Best for custom callers (browsers using fetch+ReadableStream, internal services). NOT compatible with senders that expect a single quick response.'
+                    }
+                ],
+                default: 'sync',
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
+                label: 'Callback URL',
+                name: 'callbackUrl',
+                type: 'string',
+                description:
+                    'Optional. Flowise will POST the flow result to this URL when the flow finishes. Leave blank for fire-and-forget — the flow still runs in the background, but no callback is delivered.',
+                placeholder: 'https://example.com/flowise-callback',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger',
+                    webhookResponseMode: 'async'
+                }
+            },
+            {
+                label: 'Callback Secret',
+                name: 'callbackSecret',
+                type: 'string',
+                description:
+                    'Optional. If set, outgoing callback POSTs are signed with HMAC-SHA256 and delivered as X-Flowise-Signature: sha256=<hex> so your callback endpoint can verify the request came from Flowise.',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger',
+                    webhookResponseMode: 'async'
+                }
+            },
+            {
+                label: 'Validate request shape',
+                name: 'webhookEnableValidation',
+                type: 'boolean',
+                description:
+                    'Reject requests that are missing required headers, body fields, or query parameters declared below. Turn this on to enforce a request contract and catch bad requests early. Leave off to accept any payload and let the flow handle validation itself.',
+                default: false,
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
+                label: 'Expected Query Parameters',
+                name: 'webhookQueryParams',
+                description: 'Declare expected query parameters. Leave empty to accept any.',
+                type: 'array',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger',
+                    webhookEnableValidation: true
+                },
+                array: [
+                    {
+                        label: 'Variable Name',
+                        name: 'name',
+                        type: 'string',
+                        placeholder: 'e.g. page'
+                    },
+                    {
+                        label: 'Required',
+                        name: 'required',
+                        type: 'boolean'
+                    }
+                ]
+            },
+            {
+                label: 'Expected Body Parameters',
+                name: 'webhookBodyParams',
+                description: 'Define expected parameters in the webhook request body. Leave empty to accept any JSON body.',
+                type: 'array',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger',
+                    webhookEnableValidation: true
+                },
+                array: [
+                    {
+                        label: 'Variable Name',
+                        name: 'name',
+                        type: 'string',
+                        placeholder: 'e.g. userId'
+                    },
+                    {
+                        label: 'Type',
+                        name: 'type',
+                        type: 'options',
+                        options: [
+                            {
+                                label: 'String',
+                                name: 'string'
+                            },
+                            {
+                                label: 'Number',
+                                name: 'number'
+                            },
+                            {
+                                label: 'Boolean',
+                                name: 'boolean'
+                            },
+                            {
+                                label: 'Object',
+                                name: 'object',
+                                hide: { webhookContentType: 'application/x-www-form-urlencoded' }
+                            },
+                            {
+                                label: 'Array[String]',
+                                name: 'array[string]',
+                                hide: { webhookContentType: 'application/x-www-form-urlencoded' }
+                            },
+                            {
+                                label: 'Array[Number]',
+                                name: 'array[number]',
+                                hide: { webhookContentType: 'application/x-www-form-urlencoded' }
+                            },
+                            {
+                                label: 'Array[Boolean]',
+                                name: 'array[boolean]',
+                                hide: { webhookContentType: 'application/x-www-form-urlencoded' }
+                            },
+                            {
+                                label: 'Array[Object]',
+                                name: 'array[object]',
+                                hide: { webhookContentType: 'application/x-www-form-urlencoded' }
+                            }
+                        ],
+                        default: 'string'
+                    },
+                    {
+                        label: 'Required',
+                        name: 'required',
+                        type: 'boolean'
+                    }
+                ]
+            },
+            {
+                label: 'Expected Headers',
+                name: 'webhookHeaderParams',
+                description: 'Declare expected request headers. Leave empty to accept any.',
+                type: 'array',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger',
+                    webhookEnableValidation: true
+                },
+                array: [
+                    {
+                        label: 'Header Name',
+                        name: 'name',
+                        type: 'string',
+                        placeholder: 'e.g. x-github-event'
+                    },
+                    {
+                        label: 'Required',
+                        name: 'required',
+                        type: 'boolean'
                     }
                 ]
             },
@@ -480,6 +810,40 @@ class Start_Agentflow implements INode {
                 form = options.agentflowRuntime.form
             }
             outputData.form = form
+        }
+
+        if (startInputType === 'webhookTrigger') {
+            const webhookInputMode = (nodeData.inputs?.webhookInputMode as string) || 'text'
+
+            // Always preserve the webhook payload in inputData/outputData so downstream nodes can
+            // reference $webhook.* and human-input resume can restore the original trigger data.
+            // The runtime fallback is the authoritative source when set (text/none modes don't pass
+            // the payload through `input`); otherwise parse it back from the JSON string `input`.
+            let webhookPayload: any =
+                options.agentflowRuntime?.webhook && Object.keys(options.agentflowRuntime.webhook).length
+                    ? options.agentflowRuntime.webhook
+                    : input
+            if (typeof webhookPayload === 'string') {
+                try {
+                    webhookPayload = JSON.parse(webhookPayload)
+                } catch (_) {
+                    /* leave as string if not valid JSON */
+                }
+            }
+            inputData.webhook = webhookPayload
+            outputData.webhook = webhookPayload
+
+            if (webhookInputMode === 'none') {
+                // Single-space sentinel — same convention as scheduleInputMode='none'.
+                inputData.question = ' '
+                outputData.question = ' '
+            } else if (webhookInputMode === 'text') {
+                // executeAgentFlow pre-resolves $webhook.* refs and passes the result as `input`.
+                const resolved = (typeof input === 'string' && input) || ' '
+                inputData.question = resolved
+                outputData.question = resolved
+            }
+            // mode='payload' — webhook is exposed via outputData.webhook; no `question` is set.
         }
 
         if (startInputType === 'scheduleInput') {
