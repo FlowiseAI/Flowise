@@ -26,6 +26,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 
 import MoreItemsTooltip from '../tooltip/MoreItemsTooltip'
+import ScheduleStatusBadge from '@/ui-component/extended/ScheduleStatusBadge'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -54,6 +55,7 @@ export const FlowListTable = ({
     data,
     images = {},
     icons = {},
+    scheduleStatuses = {},
     isLoading,
     filterFunction,
     updateFlowsApi,
@@ -191,23 +193,27 @@ export const FlowListTable = ({
                                 {sortedData.filter(filterFunction).map((row, index) => (
                                     <StyledTableRow key={index}>
                                         <StyledTableCell key='0'>
-                                            <Tooltip title={row.templateName || row.name}>
-                                                <Typography
-                                                    sx={{
-                                                        display: '-webkit-box',
-                                                        fontSize: 14,
-                                                        fontWeight: 500,
-                                                        WebkitLineClamp: 2,
-                                                        WebkitBoxOrient: 'vertical',
-                                                        textOverflow: 'ellipsis',
-                                                        overflow: 'hidden'
-                                                    }}
-                                                >
-                                                    <Link to={onFlowClick(row)} style={{ color: '#2196f3', textDecoration: 'none' }}>
-                                                        {row.templateName || row.name}
-                                                    </Link>
-                                                </Typography>
-                                            </Tooltip>
+                                            <Stack direction='row' spacing={1} alignItems='center' sx={{ minWidth: 0 }}>
+                                                <Tooltip title={row.templateName || row.name}>
+                                                    <Typography
+                                                        sx={{
+                                                            display: '-webkit-box',
+                                                            fontSize: 14,
+                                                            fontWeight: 500,
+                                                            WebkitLineClamp: 2,
+                                                            WebkitBoxOrient: 'vertical',
+                                                            textOverflow: 'ellipsis',
+                                                            overflow: 'hidden',
+                                                            minWidth: 0
+                                                        }}
+                                                    >
+                                                        <Link to={onFlowClick(row)} style={{ color: '#2196f3', textDecoration: 'none' }}>
+                                                            {row.templateName || row.name}
+                                                        </Link>
+                                                    </Typography>
+                                                </Tooltip>
+                                                <ScheduleStatusBadge scheduleStatus={scheduleStatuses[row.id]} size='sm' />
+                                            </Stack>
                                         </StyledTableCell>
                                         <StyledTableCell key='1'>
                                             <div
@@ -354,6 +360,7 @@ FlowListTable.propTypes = {
     data: PropTypes.array,
     images: PropTypes.object,
     icons: PropTypes.object,
+    scheduleStatuses: PropTypes.object,
     isLoading: PropTypes.bool,
     filterFunction: PropTypes.func,
     updateFlowsApi: PropTypes.object,

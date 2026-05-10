@@ -7,7 +7,7 @@ import { WorkspaceService } from '../../enterprise/services/workspace.service'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { decryptCredentialData, transformToCredentialEntity } from '../../utils'
+import { decryptCredentialData, transformToCredentialEntity, REDACTED_CREDENTIAL_VALUE } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 const createCredential = async (requestBody: any) => {
@@ -177,7 +177,8 @@ const updateCredential = async (credentialId: string, requestBody: any, workspac
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
         }
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
-        requestBody.plainDataObj = { ...decryptedCredentialData, ...requestBody.plainDataObj }
+        const incomingData = requestBody.plainDataObj ?? {}
+        requestBody.plainDataObj = { ...decryptedCredentialData, ...incomingData }
         const updateCredential = await transformToCredentialEntity(requestBody)
         updateCredential.workspaceId = workspaceId
         await appServer.AppDataSource.getRepository(Credential).merge(credential, updateCredential)
@@ -191,10 +192,40 @@ const updateCredential = async (credentialId: string, requestBody: any, workspac
     }
 }
 
+const revealCredentialById = async (credentialId: string, workspaceId: string): Promise<any> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
+            id: credentialId,
+            workspaceId: workspaceId
+        })
+        if (!credential) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
+        }
+        const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+        const componentCredentials = appServer.nodesPool.componentCredentials
+        const inputs = componentCredentials[credential.credentialName]?.inputs ?? []
+        const plainDataObj: Record<string, any> = { ...decryptedCredentialData }
+        for (const key in plainDataObj) {
+            const inputParam = inputs.find((inp: any) => inp.name === key)
+            if (inputParam?.type !== 'url') {
+                plainDataObj[key] = REDACTED_CREDENTIAL_VALUE
+            }
+        }
+        return { plainDataObj }
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: credentialsService.revealCredentialById - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     createCredential,
     deleteCredentials,
     getAllCredentials,
     getCredentialById,
+    revealCredentialById,
     updateCredential
 }

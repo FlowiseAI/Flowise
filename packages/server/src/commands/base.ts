@@ -111,6 +111,8 @@ export abstract class BaseCommand extends Command {
         HTTP_SECURITY_CHECK: Flags.string(),
         PATH_TRAVERSAL_SAFETY: Flags.string(),
         TRUST_PROXY: Flags.string(),
+        OAUTH2_SECURITY_CHECK: Flags.string(),
+        OAUTH2_ALLOWED_TOKEN_DOMAINS: Flags.string(),
 
         // Auth
         APP_URL: Flags.string(),
@@ -158,7 +160,10 @@ export abstract class BaseCommand extends Command {
 
         // Document Loaders
         PUPPETEER_EXECUTABLE_FILE_PATH: Flags.string(),
-        PLAYWRIGHT_EXECUTABLE_FILE_PATH: Flags.string()
+        PLAYWRIGHT_EXECUTABLE_FILE_PATH: Flags.string(),
+
+        // Schedule
+        MIN_SCHEDULE_INTERVAL_SECONDS: Flags.string()
     }
 
     protected async stopProcess() {

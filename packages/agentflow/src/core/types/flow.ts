@@ -33,6 +33,7 @@ export interface FlowEdge {
     data?: EdgeData
     selected?: boolean
     animated?: boolean
+    zIndex?: number
 }
 
 export interface FlowData {

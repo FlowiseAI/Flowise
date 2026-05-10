@@ -1,49 +1,14 @@
 import { IServerSideEventStreamer } from 'flowise-components'
 import { createClient } from 'redis'
 import logger from '../utils/logger'
+import { createRedisClient } from '../utils/redis'
 
 export class RedisEventPublisher implements IServerSideEventStreamer {
     private redisPublisher: ReturnType<typeof createClient>
     private connectPromise: Promise<void> | null = null
 
     constructor() {
-        if (process.env.REDIS_URL) {
-            this.redisPublisher = createClient({
-                url: process.env.REDIS_URL,
-                socket: {
-                    keepAlive:
-                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                            : undefined
-                },
-                pingInterval:
-                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                        : undefined
-            })
-        } else {
-            this.redisPublisher = createClient({
-                username: process.env.REDIS_USERNAME || undefined,
-                password: process.env.REDIS_PASSWORD || undefined,
-                socket: {
-                    host: process.env.REDIS_HOST || 'localhost',
-                    port: parseInt(process.env.REDIS_PORT || '6379'),
-                    tls: process.env.REDIS_TLS === 'true',
-                    cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
-                    key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
-                    ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined,
-                    keepAlive:
-                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                            : undefined
-                },
-                pingInterval:
-                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                        : undefined
-            })
-        }
-
+        this.redisPublisher = createRedisClient()
         this.setupEventListeners()
     }
 

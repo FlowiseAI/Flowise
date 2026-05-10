@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useContext } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback, useContext } from 'react'
 import ReactFlow, { addEdge, Controls, MiniMap, Background, useNodesState, useEdgesState } from 'reactflow'
 import 'reactflow/dist/style.css'
 import './index.css'
@@ -30,6 +30,8 @@ import AddNodes from '@/views/canvas/AddNodes'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
 import ChatPopUp from '@/views/chatmessage/ChatPopUp'
+import ScheduleHistoryFAB from '@/views/schedule/ScheduleHistoryFAB'
+import WebhookListenerFAB from '@/views/webhooklistener/WebhookListenerFAB'
 import ValidationPopUp from '@/views/chatmessage/ValidationPopUp'
 import { flowContext } from '@/store/context/ReactFlowContext'
 
@@ -95,6 +97,18 @@ const AgentflowCanvas = () => {
 
     const [nodes, setNodes, onNodesChange] = useNodesState()
     const [edges, setEdges, onEdgesChange] = useEdgesState()
+
+    const isScheduleFlow = useMemo(() => {
+        if (!nodes || nodes.length === 0) return false
+        const startNode = nodes.find((n) => n.data?.name === 'startAgentflow')
+        return startNode?.data?.inputs?.startInputType === 'scheduleInput'
+    }, [nodes])
+
+    const isWebhookFlow = useMemo(() => {
+        if (!nodes || nodes.length === 0) return false
+        const startNode = nodes.find((n) => n.data?.name === 'startAgentflow')
+        return startNode?.data?.inputs?.startInputType === 'webhookTrigger'
+    }, [nodes])
 
     const [selectedNode, setSelectedNode] = useState(null)
     const [isSyncNodesButtonEnabled, setIsSyncNodesButtonEnabled] = useState(false)
@@ -796,7 +810,13 @@ const AgentflowCanvas = () => {
                                         <IconRefreshAlert />
                                     </Fab>
                                 )}
-                                <ChatPopUp isAgentCanvas={true} chatflowid={chatflowId} onOpenChange={setChatPopupOpen} />
+                                {isScheduleFlow ? (
+                                    <ScheduleHistoryFAB chatflowid={chatflowId} onOpenChange={setChatPopupOpen} />
+                                ) : isWebhookFlow ? (
+                                    <WebhookListenerFAB chatflowid={chatflowId} onOpenChange={setChatPopupOpen} />
+                                ) : (
+                                    <ChatPopUp isAgentCanvas={true} chatflowid={chatflowId} onOpenChange={setChatPopupOpen} />
+                                )}
                                 {!chatPopupOpen && <ValidationPopUp isAgentCanvas={true} chatflowid={chatflowId} />}
                             </ReactFlow>
                         </div>

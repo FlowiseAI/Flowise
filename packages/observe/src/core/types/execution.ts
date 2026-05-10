@@ -48,21 +48,25 @@ export interface NodeExecutionOutput {
     [key: string]: unknown
 }
 
+// Iteration metadata (`parentNodeId`, `iterationIndex`, `iterationContext`) is
+// nested in `data`, not at the top level — matches the runtime emission in
+// `packages/server/src/utils/buildAgentflow.ts`.
+export interface NodeExecutionDataPayload {
+    name?: string
+    parentNodeId?: string
+    /** 0-based */
+    iterationIndex?: number
+    iterationContext?: Record<string, unknown>
+    [key: string]: unknown
+}
+
 export interface NodeExecutionData {
     nodeLabel: string
     nodeId: string
-    /** Node output data — shape varies by node type */
-    data: Record<string, unknown>
+    data: NodeExecutionDataPayload
     previousNodeIds: string[]
     status: ExecutionState
-    /** Node type name — used for icon lookup */
     name?: string
-    /** Index within an iteration group (0-based) */
-    iterationIndex?: number
-    iterationContext?: Record<string, unknown>
-    /** Parent node ID for iteration child nodes */
-    parentNodeId?: string
-    output?: NodeExecutionOutput
 }
 
 // ============================================================================
@@ -73,8 +77,19 @@ export interface ExecutionTreeNode {
     id: string
     nodeId: string
     nodeLabel: string
-    status: ExecutionState
-    name?: string
+    /**
+     * `ExecutionState` for real nodes; virtual iteration nodes additionally
+     * surface `'UNKNOWN'` when the rollup over their children falls through
+     * (legacy ExecutionDetails.jsx:438-446 parity).
+     */
+    status: ExecutionState | 'UNKNOWN'
+    /**
+     * Resolved node type name — `useExecutionTree` always populates this for
+     * non-virtual nodes (falling back to `data.name` then `nodeId.split('_')[0]`).
+     * Empty string for virtual iteration container nodes (consumers gate on
+     * `isVirtualNode` before reading).
+     */
+    name: string
     /** True for virtual iteration container nodes (not real execution nodes) */
     isVirtualNode?: boolean
     iterationIndex?: number

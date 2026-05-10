@@ -64,6 +64,8 @@ export interface INodeOptionsValue {
     description?: string
     imageSrc?: string
     client?: Array<ClientType>
+    show?: INodeDisplay
+    hide?: INodeDisplay
 }
 
 export interface INodeOutputsValue {

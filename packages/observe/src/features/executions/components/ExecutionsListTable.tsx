@@ -13,8 +13,6 @@ interface ExecutionsListTableProps {
     onRowClick: (execution: Execution) => void
     onDelete?: (execution: Execution) => void
     allowDelete?: boolean
-    /** When true, hides the Agentflow Name column (scoped view) */
-    scoped?: boolean
 }
 
 function formatDate(iso: string): string {
@@ -37,8 +35,7 @@ export function ExecutionsListTable({
     onSelectAll,
     onRowClick,
     onDelete,
-    allowDelete = false,
-    scoped = false
+    allowDelete = false
 }: ExecutionsListTableProps) {
     const theme = useTheme()
     const allSelected = executions.length > 0 && executions.every((e) => selectedIds.has(e.id))
@@ -58,7 +55,7 @@ export function ExecutionsListTable({
                     </TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell>Last Updated</TableCell>
-                    {!scoped && <TableCell>Agentflow</TableCell>}
+                    <TableCell>Agentflow</TableCell>
                     <TableCell>Session ID</TableCell>
                     <TableCell>Created</TableCell>
                     {allowDelete && <TableCell padding='checkbox' />}
@@ -91,11 +88,9 @@ export function ExecutionsListTable({
                         <TableCell>
                             <Typography variant='body2'>{formatDate(execution.updatedDate)}</Typography>
                         </TableCell>
-                        {!scoped && (
-                            <TableCell>
-                                <Typography variant='body2'>{execution.agentflow?.name ?? '—'}</Typography>
-                            </TableCell>
-                        )}
+                        <TableCell>
+                            <Typography variant='body2'>{execution.agentflow?.name ?? '—'}</Typography>
+                        </TableCell>
                         <TableCell>
                             <Tooltip title={execution.sessionId}>
                                 <Typography variant='body2' sx={{ fontFamily: 'monospace', fontSize: '0.7rem' }}>
