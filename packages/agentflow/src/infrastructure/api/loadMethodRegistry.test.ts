@@ -101,6 +101,7 @@ describe('loadMethodRegistry', () => {
             const fn = getLoadMethod('listRegions')
             const result = await fn(mockApis, { nodeName: 'awsChatBedrock' })
             expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('awsChatBedrock', 'listRegions', {
+                inputs: {},
                 currentNode: { inputs: {} }
             })
             expect(result).toEqual(mockRegions)
@@ -113,31 +114,53 @@ describe('loadMethodRegistry', () => {
     })
 
     describe('listActions', () => {
-        it('should call nodesApi.loadNodeMethod() with nodeName, listActions, and currentNode.inputs', async () => {
+        it('should send credential and inputs at top level', async () => {
             const mockActions = [{ name: 'GITHUB_CREATE_ISSUE', label: 'Create Issue' }]
             ;(mockApis.nodesApi.loadNodeMethod as jest.Mock).mockResolvedValue(mockActions)
 
-            const fn = getLoadMethod('listActions')
-            const result = await fn(mockApis, { nodeName: 'composio', inputs: { appName: 'github' } })
-            expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('composio', 'listActions', {
-                currentNode: { inputs: { appName: 'github' } }
+            const inputs = { credential: 'cred-123', mcpActions: [] }
+            const result = await loadMethodRegistry['listActions'](mockApis, {
+                nodeName: 'githubMCP',
+                inputs
+            })
+            expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('githubMCP', 'listActions', {
+                credential: 'cred-123',
+                inputs,
+                currentNode: { inputs }
             })
             expect(result).toEqual(mockActions)
         })
 
-        it('should pass empty inputs when inputs param is omitted', async () => {
+        it('should extract credential from FLOWISE_CREDENTIAL_ID when credential field is absent', async () => {
             ;(mockApis.nodesApi.loadNodeMethod as jest.Mock).mockResolvedValue([])
 
-            const fn = getLoadMethod('listActions')
-            await fn(mockApis, { nodeName: 'composio' })
+            const inputs = { FLOWISE_CREDENTIAL_ID: 'cred-456', appName: 'github' }
+            await loadMethodRegistry['listActions'](mockApis, {
+                nodeName: 'composio',
+                inputs
+            })
             expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('composio', 'listActions', {
+                credential: 'cred-456',
+                inputs,
+                currentNode: { inputs }
+            })
+        })
+
+        it('should send empty credential and inputs when no inputs provided', async () => {
+            ;(mockApis.nodesApi.loadNodeMethod as jest.Mock).mockResolvedValue([])
+
+            await loadMethodRegistry['listActions'](mockApis, { nodeName: 'composio' })
+            expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('composio', 'listActions', {
+                credential: '',
+                inputs: {},
                 currentNode: { inputs: {} }
             })
         })
 
         it('should reject when nodeName param is missing', async () => {
-            const fn = getLoadMethod('listActions')
-            await expect(fn(mockApis)).rejects.toThrow('loadMethod "listActions" requires a string "nodeName" parameter.')
+            await expect(loadMethodRegistry['listActions'](mockApis)).rejects.toThrow(
+                '`listActions` requires a string "nodeName" parameter.'
+            )
         })
     })
 
@@ -149,6 +172,7 @@ describe('loadMethodRegistry', () => {
             const fn = getLoadMethod('listTables')
             const result = await fn(mockApis, { nodeName: 'awsDynamoDBKVStorage', inputs: { region: 'us-east-1' } })
             expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('awsDynamoDBKVStorage', 'listTables', {
+                inputs: { region: 'us-east-1' },
                 currentNode: { inputs: { region: 'us-east-1' } }
             })
             expect(result).toEqual(mockTables)
@@ -160,6 +184,7 @@ describe('loadMethodRegistry', () => {
             const fn = getLoadMethod('listTables')
             await fn(mockApis, { nodeName: 'awsDynamoDBKVStorage' })
             expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('awsDynamoDBKVStorage', 'listTables', {
+                inputs: {},
                 currentNode: { inputs: {} }
             })
         })
@@ -248,6 +273,7 @@ describe('getLoadMethod', () => {
         const result = await fn(mockApis, { nodeName: 'awsSNS', inputs: { region: 'us-east-1' } })
 
         expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('awsSNS', 'listTopics', {
+            inputs: { region: 'us-east-1' },
             currentNode: { inputs: { region: 'us-east-1' } }
         })
         expect(result).toEqual(mockTopics)

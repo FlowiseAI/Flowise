@@ -14,8 +14,11 @@ export abstract class BaseCommand extends Command {
     static flags = {
         // General Settings
         FLOWISE_FILE_SIZE_LIMIT: Flags.string(),
+        CUSTOM_MCP_TOOLS_MAX_BYTES: Flags.string(),
+        CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS: Flags.string(),
         PORT: Flags.string(),
         CORS_ORIGINS: Flags.string(),
+        MCP_CORS_ORIGINS: Flags.string(),
         IFRAME_ORIGINS: Flags.string(),
         DEBUG: Flags.string(),
         NUMBER_OF_PROXIES: Flags.string(),
@@ -108,6 +111,8 @@ export abstract class BaseCommand extends Command {
         HTTP_SECURITY_CHECK: Flags.string(),
         PATH_TRAVERSAL_SAFETY: Flags.string(),
         TRUST_PROXY: Flags.string(),
+        OAUTH2_SECURITY_CHECK: Flags.string(),
+        OAUTH2_ALLOWED_TOKEN_DOMAINS: Flags.string(),
 
         // Auth
         APP_URL: Flags.string(),
@@ -155,7 +160,10 @@ export abstract class BaseCommand extends Command {
 
         // Document Loaders
         PUPPETEER_EXECUTABLE_FILE_PATH: Flags.string(),
-        PLAYWRIGHT_EXECUTABLE_FILE_PATH: Flags.string()
+        PLAYWRIGHT_EXECUTABLE_FILE_PATH: Flags.string(),
+
+        // Schedule
+        MIN_SCHEDULE_INTERVAL_SECONDS: Flags.string()
     }
 
     protected async stopProcess() {

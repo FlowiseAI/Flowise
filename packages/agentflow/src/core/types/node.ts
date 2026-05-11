@@ -2,6 +2,8 @@
 // Node & Edge Data Types
 // ============================================================================
 
+import type { ExecutionStatus } from './execution'
+
 /**
  * Shared metadata between GET /api/v1/nodes payloads and canvas {@link NodeData}.
  * Excludes `inputs` (API: schema array vs canvas: value map) and other API-only or canvas-only fields.
@@ -19,9 +21,12 @@ export interface NodeDefinitionBase {
     icon?: string
     hideInput?: boolean
     badge?: string
+    deprecateMessage?: string
+    warning?: string
     tags?: string[]
     documentation?: string
-    credential?: { credentialNames?: string[]; label?: string; type?: string; optional?: boolean }
+    /** Schema object (from API) or credential ID string (set at runtime when user selects a credential). */
+    credential?: string | { credentialNames?: string[]; label?: string; type?: string; optional?: boolean }
     inputAnchors?: InputAnchor[]
     outputAnchors?: OutputAnchor[]
     selected?: boolean
@@ -40,7 +45,7 @@ export interface NodeData extends NodeDefinitionBase {
     inputParams?: InputParam[] // Parameter definitions
     inputs?: Record<string, unknown> // Actual values entered by users
     // Status properties
-    status?: 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'STOPPED' | 'TERMINATED'
+    status?: ExecutionStatus
     error?: string
     warning?: string
     hint?: string
@@ -84,14 +89,26 @@ export interface InputParam {
     type: string
     default?: unknown
     optional?: boolean
-    options?: Array<{ label: string; name: string; description?: string } | string>
+    options?: Array<
+        | {
+              label: string
+              name: string
+              description?: string
+              client?: Array<ClientType>
+              show?: Record<string, unknown>
+              hide?: Record<string, unknown>
+          }
+        | string
+    >
     placeholder?: string
     rows?: number
     description?: string
     acceptVariable?: boolean
+    acceptNodeOutputAsVariable?: boolean
     additionalParams?: boolean
     show?: Record<string, unknown>
     hide?: Record<string, unknown>
+    client?: Array<ClientType>
     display?: boolean
     minItems?: number
     maxItems?: number // No agentflow nodes set this today — supported for forward-compat
@@ -101,6 +118,7 @@ export interface InputParam {
     credentialNames?: string[] // If set, bypasses loadMethod and fetches matching credentials
     codeLanguage?: string // Language hint for code editor (e.g. 'javascript', 'python', 'json')
     codeExample?: string // Example code snippet shown via an "Example" button
+    refresh?: boolean // When true, shows a refresh button next to async dropdowns to re-fetch options
 }
 
 export interface NodeConfigEntry {
@@ -120,3 +138,5 @@ export interface EdgeData {
     isHumanInput?: boolean
     [key: string]: unknown
 }
+
+export type ClientType = 'agentflowv2' | 'agentflowsdk'

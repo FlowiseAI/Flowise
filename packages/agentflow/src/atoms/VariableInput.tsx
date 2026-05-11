@@ -15,7 +15,8 @@ import python from 'highlight.js/lib/languages/python'
 import typescript from 'highlight.js/lib/languages/typescript'
 import { createLowlight } from 'lowlight'
 
-import { getEditorMarkdown, isHtmlContent } from '@/atoms/utils/'
+import type { JsonNode } from '@/atoms/utils/'
+import { escapeXmlTags, getEditorMarkdown, isHtmlContent, restoreTextMentions, unescapeXmlTags } from '@/atoms/utils/'
 import { CustomMention } from '@/core/primitives/customMention'
 import { tokens } from '@/core/theme/tokens'
 
@@ -60,21 +61,21 @@ const StyledEditorContent = styled(EditorContent, {
             overflowY: rows ? 'auto' : 'hidden',
             overflowX: rows ? 'auto' : 'hidden',
             lineHeight: rows ? `${tokens.typography.rowHeightRem}em` : `${tokens.typography.singleLineLineHeightEm}em`,
-            fontWeight: 500,
-            color: disabled ? theme.palette.action.disabled : theme.palette.grey[900],
-            border: `1px solid ${theme.palette.grey[900]}25`,
+            fontSize: tokens.typography.fontSize.md,
+            fontWeight: tokens.typography.fontWeight.medium,
+            color: disabled ? theme.palette.action.disabled : theme.palette.text.primary,
+            border: `1px solid ${tokens.colors.border.input[mode]}`,
             borderRadius: '10px',
-            backgroundColor:
-                (theme.palette as { textBackground?: { main: string } }).textBackground?.main ?? theme.palette.background.paper,
+            backgroundColor: tokens.colors.background.input[mode],
             boxSizing: 'border-box',
             whiteSpace: rows ? 'pre-wrap' : 'nowrap',
 
             '&:hover': {
-                borderColor: disabled ? `${theme.palette.grey[900]}25` : theme.palette.text.primary,
+                borderColor: disabled ? tokens.colors.border.input[mode] : theme.palette.text.primary,
                 cursor: disabled ? 'default' : 'text'
             },
             '&:focus': {
-                borderColor: disabled ? `${theme.palette.grey[900]}25` : theme.palette.primary.main,
+                borderColor: disabled ? tokens.colors.border.input[mode] : theme.palette.primary.main,
                 outline: 'none'
             },
 
@@ -88,14 +89,13 @@ const StyledEditorContent = styled(EditorContent, {
                 height: 0
             },
 
-            // Mention (variable) chip styling — matches original UI green style
             '& .mention': {
-                backgroundColor: mode === 'dark' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.08)',
-                borderRadius: '4px',
-                padding: '1px 4px',
-                fontWeight: 600,
-                color: mode === 'dark' ? '#81c784' : '#2e7d32',
-                whiteSpace: 'nowrap'
+                backgroundColor: '#b3f0b8',
+                borderRadius: '0.4rem',
+                boxDecorationBreak: 'clone',
+                WebkitBoxDecorationBreak: 'clone',
+                color: '#0d7115',
+                padding: '0.1rem 0.3rem'
             },
 
             // Block element spacing
@@ -132,6 +132,15 @@ const StyledEditorContent = styled(EditorContent, {
         }
     }
 })
+
+function loadContent(ed: Editor, content: string, hasMentions: boolean): void {
+    if (isHtmlContent(content)) {
+        ed.commands.setContent(content, { emitUpdate: false, contentType: 'html' })
+    } else {
+        ed.commands.setContent(escapeXmlTags(content), { emitUpdate: false, contentType: 'markdown' })
+        ed.commands.setContent(restoreTextMentions(ed.getJSON() as JsonNode, hasMentions)[0], { emitUpdate: false })
+    }
+}
 
 /**
  * A TipTap-based text input with `{{ variable }}` mention support.
@@ -170,16 +179,23 @@ export function VariableInput({
     // `editor` without suppressing the exhaustive-deps rule.
     const initialValueRef = useRef(value)
 
+    const useMarkdown = !!rows
+
     const suggestionConfig = useMemo(
         () => (suggestionItems?.length ? createSuggestionConfig(suggestionItems) : undefined),
         [suggestionItems]
     )
+    const suggestionConfigRef = useRef(suggestionConfig)
+    useEffect(() => {
+        suggestionConfigRef.current = suggestionConfig
+    }, [suggestionConfig])
 
     const extensions = useMemo(
         () => [
             Markdown,
             StarterKit.configure({
-                codeBlock: false
+                codeBlock: false,
+                ...(!useMarkdown && { link: false })
             }),
             CodeBlockLowlight.configure({ lowlight, enableTabIndentation: true, tabSize: 2 }),
             ...(placeholder ? [Placeholder.configure({ placeholder })] : []),
@@ -191,7 +207,7 @@ export function VariableInput({
                               return [
                                   'span',
                                   mergeAttributes(this.HTMLAttributes ?? {}, options.HTMLAttributes),
-                                  `${options.suggestion?.char ?? '{{'}${node.attrs.label ?? node.attrs.id}}}`
+                                  `${options.suggestion?.char ?? '{{'}${node.attrs.id ?? node.attrs.label}}}`
                               ]
                           },
                           suggestion: suggestionConfig,
@@ -200,7 +216,7 @@ export function VariableInput({
                   ]
                 : [])
         ],
-        [placeholder, suggestionConfig]
+        [placeholder, suggestionConfig, useMarkdown]
     )
 
     const editor = useEditor({
@@ -209,9 +225,9 @@ export function VariableInput({
         editable: !disabled,
         autofocus: autoFocus ? 'end' : false,
         onUpdate: ({ editor: ed }) => {
-            const value = getEditorMarkdown(ed)
-            lastEmittedRef.current = value
-            onChangeRef.current(value)
+            const emitted = unescapeXmlTags(getEditorMarkdown(ed))
+            lastEmittedRef.current = emitted
+            onChangeRef.current(emitted)
         }
     })
 
@@ -219,16 +235,14 @@ export function VariableInput({
     // Reads from a ref so only `editor` needs to be in the dep array.
     useEffect(() => {
         if (!editor || !initialValueRef.current) return
-        const contentType = isHtmlContent(initialValueRef.current) ? 'html' : 'markdown'
-        editor.commands.setContent(initialValueRef.current, { emitUpdate: false, contentType })
+        loadContent(editor, initialValueRef.current, !!suggestionConfigRef.current)
         lastEmittedRef.current = initialValueRef.current
     }, [editor])
 
     // Sync genuine external value changes (e.g. parent resets the field programmatically).
     useEffect(() => {
         if (editor && value !== lastEmittedRef.current) {
-            const contentType = isHtmlContent(value) ? 'html' : 'markdown'
-            editor.commands.setContent(value, { emitUpdate: false, contentType })
+            loadContent(editor, value, !!suggestionConfigRef.current)
             lastEmittedRef.current = value
         }
     }, [editor, value])

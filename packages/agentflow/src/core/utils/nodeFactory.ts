@@ -62,7 +62,12 @@ function initializeDefaultNodeData(nodeParams: Pick<InputParam, 'name' | 'type' 
     const initialValues: Record<string, unknown> = {}
 
     for (const input of nodeParams) {
-        initialValues[input.name] = getDefaultValueForType(input)
+        // Don't overwrite an already-set value. Some nodes (e.g. HTTP) define two params
+        // with the same name (e.g. 'body' for string vs. array body types) — the first
+        // occurrence's default takes precedence so the initial value is a usable empty string.
+        if (!(input.name in initialValues)) {
+            initialValues[input.name] = getDefaultValueForType(input)
+        }
     }
 
     return initialValues
@@ -167,8 +172,11 @@ export function initNode(nodeData: NodeDataSchema, newNodeId: string, isAgentflo
         }
     }
 
-    // Credential — extract top-level credential property and prepend to input definitions
-    const rawCredential = nodeData.credential
+    // Credential — extract top-level credential property and prepend to input definitions.
+    // When coming from the API, credential is the schema object; after user selection it
+    // becomes a string ID. Only the schema object form is relevant here (initNode is called
+    // during node creation from the API payload, not after credential selection).
+    const rawCredential = typeof nodeData.credential === 'object' ? nodeData.credential : undefined
 
     if (rawCredential?.credentialNames?.length) {
         inputDefinitions.unshift({

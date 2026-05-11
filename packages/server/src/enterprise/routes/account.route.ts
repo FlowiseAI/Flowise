@@ -16,8 +16,6 @@ router.post(
     accountController.invite
 )
 
-router.post('/login', accountController.login)
-
 router.post('/logout', accountController.logout)
 
 router.post('/verify', accountController.verify)
@@ -31,10 +29,6 @@ router.post('/forgot-password', accountController.forgotPassword)
 router.post('/reset-password', accountController.resetPassword)
 
 router.post('/billing', accountController.createStripeCustomerPortalSession)
-
-router.get('/basic-auth', accountController.getBasicAuth)
-
-router.post('/basic-auth', accountController.checkBasicAuth)
 
 router.delete('/delete', accountController.delete)
 

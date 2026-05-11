@@ -29,6 +29,10 @@ export type MessageType = 'apiMessage' | 'userMessage'
 
 export type ImageDetail = 'auto' | 'low' | 'high'
 
+export type ClientType = 'agentflowv2' | 'agentflowsdk'
+
+export const VALID_CLIENT_TYPES = new Set<ClientType>(['agentflowv2', 'agentflowsdk'])
+
 /**
  * Others
  */
@@ -59,6 +63,9 @@ export interface INodeOptionsValue {
     name: string
     description?: string
     imageSrc?: string
+    client?: Array<ClientType>
+    show?: INodeDisplay
+    hide?: INodeDisplay
 }
 
 export interface INodeOutputsValue {
@@ -92,6 +99,7 @@ export interface INodeParams {
     loadMethod?: string
     loadConfig?: boolean
     hidden?: boolean
+    client?: Array<ClientType>
     hideCodeExecute?: boolean
     codeExample?: string
     hint?: Record<string, string>

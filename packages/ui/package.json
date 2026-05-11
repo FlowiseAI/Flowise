@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "3.1.1",
+    "version": "3.1.2",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -37,7 +37,7 @@
         "@uiw/codemirror-theme-sublime": "^4.21.21",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",
-        "axios": "1.12.0",
+        "axios": "1.15.0",
         "clsx": "^1.1.1",
         "dompurify": "^3.2.6",
         "dotenv": "^16.0.0",
@@ -84,7 +84,7 @@
         "build": "vite build",
         "test": "jest",
         "clean": "rimraf build",
-        "nuke": "rimraf build node_modules .turbo"
+        "nuke": "pnpm clean && rimraf node_modules .turbo"
     },
     "babel": {
         "presets": [

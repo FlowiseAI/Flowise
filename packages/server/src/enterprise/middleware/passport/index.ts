@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import jwt, { JwtPayload, sign } from 'jsonwebtoken'
 import passport from 'passport'
 import { VerifiedCallback } from 'passport-jwt'
+import { v4 as uuidv4 } from 'uuid'
 import { InternalFlowiseError } from '../../../errors/internalFlowiseError'
 import { IdentityManager } from '../../../IdentityManager'
 import { Platform } from '../../../Interface'
@@ -29,7 +30,6 @@ import {
 import { decryptToken, encryptToken, generateSafeCopy } from '../../utils/tempTokenUtils'
 import { getAuthStrategy } from './AuthStrategy'
 import { initializeDBClientAndStore, initializeRedisClientAndStore } from './SessionPersistance'
-import { v4 as uuidv4 } from 'uuid'
 
 const localStrategy = require('passport-local').Strategy
 
@@ -173,8 +173,8 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
 
                     const loggedInUser: LoggedInUser = {
                         id: workspaceUser.userId,
-                        email: response.user.email,
-                        name: response.user?.name,
+                        email: response.user.email!,
+                        name: response.user.name ?? response.user.email!,
                         roleId: workspaceUser.roleId,
                         activeOrganizationId: organization.id,
                         activeOrganizationSubscriptionId: subscriptionId,

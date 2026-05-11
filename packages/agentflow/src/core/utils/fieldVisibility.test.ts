@@ -1,6 +1,12 @@
 import type { InputParam } from '../types'
 
-import { conditionMatches, evaluateFieldVisibility, evaluateParamVisibility, stripHiddenFieldValues } from './fieldVisibility'
+import {
+    applyVisibleFieldDefaults,
+    conditionMatches,
+    evaluateFieldVisibility,
+    evaluateParamVisibility,
+    stripHiddenFieldValues
+} from './fieldVisibility'
 
 const makeParam = (overrides: Partial<InputParam> = {}): InputParam => ({
     id: 'p1',
@@ -194,6 +200,104 @@ describe('evaluateFieldVisibility', () => {
         expect(params[0].display).toBeUndefined()
         expect(params[1].display).toBeUndefined()
     })
+
+    describe('option-level show/hide filtering', () => {
+        it('removes options whose hide condition matches', () => {
+            const param = makeParam({
+                type: 'options',
+                options: [
+                    { label: 'String', name: 'string' },
+                    { label: 'Object', name: 'object', hide: { contentType: 'application/x-www-form-urlencoded' } }
+                ] as any
+            })
+
+            const result = evaluateFieldVisibility([param], { contentType: 'application/x-www-form-urlencoded' })
+            expect(result[0].options).toHaveLength(1)
+            expect(result[0].options![0]).toMatchObject({ name: 'string' })
+        })
+
+        it('keeps options whose hide condition does not match', () => {
+            const param = makeParam({
+                type: 'options',
+                options: [
+                    { label: 'String', name: 'string' },
+                    { label: 'Object', name: 'object', hide: { contentType: 'application/x-www-form-urlencoded' } }
+                ] as any
+            })
+
+            const result = evaluateFieldVisibility([param], { contentType: 'application/json' })
+            expect(result[0].options).toHaveLength(2)
+        })
+
+        it('removes options whose show condition does not match', () => {
+            const param = makeParam({
+                type: 'options',
+                options: [
+                    { label: 'Basic', name: 'basic' },
+                    { label: 'Advanced', name: 'advanced', show: { mode: 'expert' } }
+                ] as any
+            })
+
+            const result = evaluateFieldVisibility([param], { mode: 'beginner' })
+            expect(result[0].options).toHaveLength(1)
+            expect(result[0].options![0]).toMatchObject({ name: 'basic' })
+        })
+
+        it('keeps options whose show condition matches', () => {
+            const param = makeParam({
+                type: 'options',
+                options: [
+                    { label: 'Basic', name: 'basic' },
+                    { label: 'Advanced', name: 'advanced', show: { mode: 'expert' } }
+                ] as any
+            })
+
+            const result = evaluateFieldVisibility([param], { mode: 'expert' })
+            expect(result[0].options).toHaveLength(2)
+        })
+
+        it('passes through string options unchanged', () => {
+            const param = makeParam({
+                type: 'options',
+                options: ['one', 'two', 'three'] as any
+            })
+
+            const result = evaluateFieldVisibility([param], {})
+            expect(result[0].options).toHaveLength(3)
+        })
+
+        it('passes through options with no show/hide unchanged', () => {
+            const param = makeParam({
+                type: 'options',
+                options: [
+                    { label: 'A', name: 'a' },
+                    { label: 'B', name: 'b' }
+                ] as any
+            })
+
+            const result = evaluateFieldVisibility([param], {})
+            expect(result[0].options).toHaveLength(2)
+        })
+
+        it('does not mutate the original options array', () => {
+            const options = [
+                { label: 'String', name: 'string' },
+                { label: 'Object', name: 'object', hide: { contentType: 'application/x-www-form-urlencoded' } }
+            ] as any
+            const param = makeParam({ type: 'options', options })
+
+            evaluateFieldVisibility([param], { contentType: 'application/x-www-form-urlencoded' })
+
+            // Original options array is untouched
+            expect(options).toHaveLength(2)
+        })
+
+        it('does not affect non-options params', () => {
+            const param = makeParam({ type: 'string' })
+            const result = evaluateFieldVisibility([param], {})
+            expect(result[0].options).toBeUndefined()
+        })
+    })
 })
 
 describe('evaluateFieldVisibility – nested array $index pattern (Start node formInputTypes)', () => {
@@ -254,5 +358,127 @@ describe('stripHiddenFieldValues', () => {
         expect(result).toHaveProperty('visible', 'yes')
         expect(result).not.toHaveProperty('hidden')
         expect(result).toHaveProperty('mode', 'api')
+    })
+})
+
+describe('evaluateFieldVisibility – declared defaults of sibling fields', () => {
+    const scheduleTypeParam = makeParam({
+        name: 'scheduleType',
+        default: 'visualPicker',
+        show: { startInputType: 'scheduleInput' }
+    })
+    const frequencyParam = makeParam({
+        name: 'scheduleFrequency',
+        show: { startInputType: 'scheduleInput', scheduleType: 'visualPicker' }
+    })
+    const defaultInputParam = makeParam({
+        name: 'scheduleDefaultInput',
+        show: { startInputType: 'scheduleInput', scheduleInputMode: 'text' }
+    })
+    const scheduleInputModeParam = makeParam({
+        name: 'scheduleInputMode',
+        default: 'text',
+        show: { startInputType: 'scheduleInput' }
+    })
+
+    const params = [scheduleTypeParam, scheduleInputModeParam, frequencyParam, defaultInputParam]
+
+    it('shows fields whose `show` references a sibling default value, even if the sibling key is absent', () => {
+        const inputs = { startInputType: 'scheduleInput' }
+        const result = evaluateFieldVisibility(params, inputs)
+        const byName = Object.fromEntries(result.map((p) => [p.name, p.display]))
+
+        expect(byName.scheduleType).toBe(true)
+        expect(byName.scheduleInputMode).toBe(true)
+        expect(byName.scheduleFrequency).toBe(true)
+        expect(byName.scheduleDefaultInput).toBe(true)
+    })
+
+    it('explicit value overrides declared default', () => {
+        // User explicitly chose cronExpression — Frequency must hide.
+        const inputs = { startInputType: 'scheduleInput', scheduleType: 'cronExpression' }
+        const result = evaluateFieldVisibility(params, inputs)
+        const byName = Object.fromEntries(result.map((p) => [p.name, p.display]))
+
+        expect(byName.scheduleFrequency).toBe(false)
+    })
+
+    it('does not synthesize defaults for fields that have no `default`', () => {
+        // No declared default => stays missing => sibling show against it fails.
+        const sibling = makeParam({ name: 'sib', show: { other: 'expected' } })
+        const referenced = makeParam({ name: 'other' /* no default */ })
+        const result = evaluateFieldVisibility([referenced, sibling], {})
+        expect(result.find((p) => p.name === 'sib')!.display).toBe(false)
+    })
+})
+
+describe('applyVisibleFieldDefaults', () => {
+    const buildParams = (): InputParam[] => [
+        makeParam({
+            name: 'scheduleType',
+            default: 'visualPicker',
+            show: { startInputType: 'scheduleInput' }
+        }),
+        makeParam({
+            name: 'scheduleInputMode',
+            default: 'text',
+            show: { startInputType: 'scheduleInput' }
+        }),
+        // Hidden in this scenario — its default must NOT be merged.
+        makeParam({
+            name: 'formTitle',
+            default: 'Untitled Form',
+            show: { startInputType: 'formInput' }
+        }),
+        // Visible but no default — stays missing.
+        makeParam({
+            name: 'scheduleFrequency',
+            show: { startInputType: 'scheduleInput', scheduleType: 'visualPicker' }
+        })
+    ]
+
+    it('writes declared defaults for currently visible fields whose value is missing', () => {
+        const params = buildParams()
+        const result = applyVisibleFieldDefaults(params, { startInputType: 'scheduleInput' })
+
+        expect(result.scheduleType).toBe('visualPicker')
+        expect(result.scheduleInputMode).toBe('text')
+    })
+
+    it('does not synthesize defaults for hidden fields', () => {
+        const params = buildParams()
+        const result = applyVisibleFieldDefaults(params, { startInputType: 'scheduleInput' })
+
+        expect(result).not.toHaveProperty('formTitle')
+    })
+
+    it('does not synthesize defaults for fields without a `default`', () => {
+        const params = buildParams()
+        const result = applyVisibleFieldDefaults(params, { startInputType: 'scheduleInput' })
+
+        expect(result).not.toHaveProperty('scheduleFrequency')
+    })
+
+    it('preserves existing values, including falsy ones (empty string, false, 0)', () => {
+        const params: InputParam[] = [
+            makeParam({ name: 'a', default: 'fallback' }),
+            makeParam({ name: 'b', default: 'fallback' }),
+            makeParam({ name: 'c', default: 'fallback' }),
+            makeParam({ name: 'd', default: 'fallback' })
+        ]
+        const result = applyVisibleFieldDefaults(params, { a: '', b: false, c: 0, d: null })
+
+        expect(result.a).toBe('')
+        expect(result.b).toBe(false)
+        expect(result.c).toBe(0)
+        expect(result.d).toBeNull()
+    })
+
+    it('does not mutate the input map', () => {
+        const params = buildParams()
+        const inputs = { startInputType: 'scheduleInput' }
+        const inputsBefore = { ...inputs }
+        applyVisibleFieldDefaults(params, inputs)
+        expect(inputs).toEqual(inputsBefore)
     })
 })

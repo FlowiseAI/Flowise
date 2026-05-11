@@ -17,7 +17,7 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
-const AllowedDomains = ({ dialogProps, onConfirm }) => {
+const AllowedDomains = ({ dialogProps, onConfirm, hideTitle = false }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -119,14 +119,16 @@ const AllowedDomains = ({ dialogProps, onConfirm }) => {
     }, [dialogProps])
 
     return (
-        <Stack direction='column' spacing={2} sx={{ alignItems: 'start' }}>
-            <Typography variant='h3'>
-                Allowed Domains
-                <TooltipWithParser
-                    style={{ mb: 1, mt: 2, marginLeft: 10 }}
-                    title={'Your chatbot will only work when used from the following domains.'}
-                />
-            </Typography>
+        <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
+            {!hideTitle && (
+                <Typography variant='h3'>
+                    Allowed Domains
+                    <TooltipWithParser
+                        style={{ mb: 1, mt: 2, marginLeft: 10 }}
+                        title={'Your chatbot will only work when used from the following domains.'}
+                    />
+                </Typography>
+            )}
             <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
                 <Stack direction='column' spacing={2}>
                     <Typography>Domains</Typography>
@@ -193,16 +195,19 @@ const AllowedDomains = ({ dialogProps, onConfirm }) => {
                     />
                 </Stack>
             </Stack>
-            <StyledButton variant='contained' onClick={onSave}>
-                Save
-            </StyledButton>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
+                <StyledButton variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
+                    Save
+                </StyledButton>
+            </Box>
         </Stack>
     )
 }
 
 AllowedDomains.propTypes = {
     dialogProps: PropTypes.object,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    hideTitle: PropTypes.bool
 }
 
 export default AllowedDomains

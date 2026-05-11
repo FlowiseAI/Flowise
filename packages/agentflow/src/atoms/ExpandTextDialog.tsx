@@ -4,7 +4,7 @@ import { Box, Button, Dialog, DialogActions, DialogContent, TextField, ToggleBut
 import { IconCode, IconPencil } from '@tabler/icons-react'
 import type { Editor } from '@tiptap/react'
 
-import { getEditorMarkdown } from '@/atoms/utils/'
+import { getEditorMarkdown, unescapeXmlTags } from '@/atoms/utils/'
 
 import { CodeInput } from './CodeInput'
 import { RichTextEditor } from './RichTextEditor.lazy'
@@ -73,7 +73,7 @@ export function ExpandTextDialog({
         // When switching to Source, flush the editor's current state to markdown so the
         // textarea shows markdown rather than a raw HTML string (Gap 3 fix — mirrors PR #6021).
         if (newMode === 'source' && editorRef.current) {
-            setLocalValue(getEditorMarkdown(editorRef.current))
+            setLocalValue(unescapeXmlTags(getEditorMarkdown(editorRef.current)))
         }
         setMode(newMode)
     }
@@ -125,13 +125,15 @@ export function ExpandTextDialog({
                         <TextField
                             fullWidth
                             multiline
-                            minRows={15}
                             value={localValue}
                             disabled={disabled}
                             onChange={(e) => setLocalValue(e.target.value)}
                             placeholder={placeholder}
                             data-testid='source-input'
-                            inputProps={{ style: { fontFamily: 'monospace', fontSize: '0.85em' } }}
+                            sx={{
+                                '& .MuiInputBase-root': { height: 'calc(100vh - 220px)', alignItems: 'flex-start' },
+                                '& textarea': { height: '100% !important', overflowY: 'auto !important', boxSizing: 'border-box' }
+                            }}
                         />
                     ) : suggestionItems?.length ? (
                         <VariableInput

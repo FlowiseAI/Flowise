@@ -24,6 +24,7 @@ import { JsonInput } from '@/atoms/JsonInput'
 import { SwitchInput } from '@/atoms/SwitchInput'
 import { TooltipWithParser } from '@/atoms/TooltipWithParser'
 import { getDefaultValueForType } from '@/core/primitives'
+import { tokens } from '@/core/theme/tokens'
 import type { ComponentCredentialSchema, CredentialSchemaInput } from '@/core/types'
 import { useApiContext } from '@/infrastructure/store/ApiContext'
 
@@ -184,7 +185,7 @@ export function CreateCredentialDialog({ open, credentialNames, onClose, onCreat
 
     return (
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth={showSelection ? 'md' : 'sm'}>
-            <DialogTitle sx={{ fontSize: '1rem', p: 3, pb: 0 }}>
+            <DialogTitle sx={{ fontSize: tokens.typography.fontSize.lg, p: 3, pb: 0 }}>
                 {selectedSchema ? (
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                         <div style={{ marginRight: 10 }}>
@@ -236,7 +237,7 @@ export function CreateCredentialDialog({ open, credentialNames, onClose, onCreat
                         )}
 
                         <Box sx={{ p: 2 }}>
-                            <Typography variant='overline'>
+                            <Typography>
                                 Credential Name
                                 <span style={{ color: theme.palette.error.main }}>&nbsp;*</span>
                             </Typography>
