@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 
@@ -28,9 +29,36 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
     whiteSpace: 'pre-line'
 }))
 
+const IconAvatar = ({ iconSrc, fallbackIconSrc }) => {
+    const [imgSrc, setImgSrc] = useState(iconSrc || fallbackIconSrc)
+
+    useEffect(() => {
+        setImgSrc(iconSrc || fallbackIconSrc)
+    }, [iconSrc, fallbackIconSrc])
+
+    if (!imgSrc) return null
+
+    return (
+        <img
+            src={imgSrc}
+            alt='item-icon'
+            onError={() => setImgSrc(fallbackIconSrc || '')}
+            style={{
+                width: 35,
+                height: 35,
+                display: 'flex',
+                flexShrink: 0,
+                marginRight: 10,
+                borderRadius: '50%',
+                objectFit: 'contain'
+            }}
+        />
+    )
+}
+
 // ===========================|| CONTRACT CARD ||=========================== //
 
-const ItemCard = ({ data, images, icons, onClick }) => {
+const ItemCard = ({ data, images, icons, onClick, fallbackIconSrc }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -48,23 +76,27 @@ const ItemCard = ({ data, images, icons, onClick }) => {
                                 overflow: 'hidden'
                             }}
                         >
-                            {data.iconSrc && (
-                                <div
-                                    style={{
-                                        width: 35,
-                                        height: 35,
-                                        display: 'flex',
-                                        flexShrink: 0,
-                                        marginRight: 10,
-                                        borderRadius: '50%',
-                                        backgroundImage: `url(${data.iconSrc})`,
-                                        backgroundSize: 'contain',
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'center center'
-                                    }}
-                                ></div>
+                            {fallbackIconSrc ? (
+                                <IconAvatar iconSrc={data.iconSrc} fallbackIconSrc={fallbackIconSrc} />
+                            ) : (
+                                data.iconSrc && (
+                                    <div
+                                        style={{
+                                            width: 35,
+                                            height: 35,
+                                            display: 'flex',
+                                            flexShrink: 0,
+                                            marginRight: 10,
+                                            borderRadius: '50%',
+                                            backgroundImage: `url(${data.iconSrc})`,
+                                            backgroundSize: 'contain',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'center center'
+                                        }}
+                                    ></div>
+                                )
                             )}
-                            {!data.iconSrc && data.color && (
+                            {!fallbackIconSrc && !data.iconSrc && data.color && (
                                 <div
                                     style={{
                                         width: 35,
@@ -187,7 +219,13 @@ ItemCard.propTypes = {
     data: PropTypes.object,
     images: PropTypes.array,
     icons: PropTypes.array,
-    onClick: PropTypes.func
+    onClick: PropTypes.func,
+    fallbackIconSrc: PropTypes.string
+}
+
+IconAvatar.propTypes = {
+    iconSrc: PropTypes.string,
+    fallbackIconSrc: PropTypes.string
 }
 
 export default ItemCard

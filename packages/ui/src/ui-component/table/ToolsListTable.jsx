@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { styled } from '@mui/material/styles'
@@ -15,6 +16,7 @@ import {
     Typography,
     useTheme
 } from '@mui/material'
+import toolSVG from '@/assets/images/tool.svg'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -34,6 +36,31 @@ const StyledTableRow = styled(TableRow)(() => ({
         border: 0
     }
 }))
+
+const ToolIconAvatar = ({ iconSrc }) => {
+    const [imgSrc, setImgSrc] = useState(iconSrc || toolSVG)
+
+    useEffect(() => {
+        setImgSrc(iconSrc || toolSVG)
+    }, [iconSrc])
+
+    return (
+        <img
+            src={imgSrc}
+            alt='tool-icon'
+            onError={() => setImgSrc(toolSVG)}
+            style={{
+                width: 35,
+                height: 35,
+                display: 'flex',
+                flexShrink: 0,
+                marginRight: 10,
+                borderRadius: '50%',
+                objectFit: 'contain'
+            }}
+        />
+    )
+}
 
 export const ToolsTable = ({ data, isLoading, onSelect }) => {
     const theme = useTheme()
@@ -90,20 +117,7 @@ export const ToolsTable = ({ data, isLoading, onSelect }) => {
                                 {data?.map((row, index) => (
                                     <StyledTableRow key={index}>
                                         <StyledTableCell sx={{ display: 'flex', alignItems: 'center', gap: 1 }} key='0'>
-                                            <div
-                                                style={{
-                                                    width: 35,
-                                                    height: 35,
-                                                    display: 'flex',
-                                                    flexShrink: 0,
-                                                    marginRight: 10,
-                                                    borderRadius: '50%',
-                                                    backgroundImage: `url(${row.iconSrc})`,
-                                                    backgroundSize: 'contain',
-                                                    backgroundRepeat: 'no-repeat',
-                                                    backgroundPosition: 'center center'
-                                                }}
-                                            ></div>
+                                            <ToolIconAvatar iconSrc={row.iconSrc} />
                                             <Typography
                                                 sx={{
                                                     display: '-webkit-box',
@@ -141,4 +155,8 @@ ToolsTable.propTypes = {
     data: PropTypes.array,
     isLoading: PropTypes.bool,
     onSelect: PropTypes.func
+}
+
+ToolIconAvatar.propTypes = {
+    iconSrc: PropTypes.string
 }

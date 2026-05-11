@@ -79,6 +79,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     const [toolName, setToolName] = useState('')
     const [toolDesc, setToolDesc] = useState('')
     const [toolIcon, setToolIcon] = useState('')
+    const [toolIconError, setToolIconError] = useState('')
     const [toolSchema, setToolSchema] = useState([])
     const [toolFunc, setToolFunc] = useState('')
     const [showHowToDialog, setShowHowToDialog] = useState(false)
@@ -87,6 +88,44 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
 
     const [showPasteJSONDialog, setShowPasteJSONDialog] = useState(false)
+
+    const validateToolIconUrl = (iconSource) => {
+        const trimmedIconSource = iconSource?.trim()
+        if (!trimmedIconSource) return ''
+
+        try {
+            const parsedUrl = new URL(trimmedIconSource)
+            if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+                return 'Tool Icon Source must be a valid HTTP/HTTPS URL'
+            }
+            return ''
+        } catch {
+            return 'Tool Icon Source must be a valid HTTP/HTTPS URL'
+        }
+    }
+
+    const validateIconAndNotify = () => {
+        const iconError = validateToolIconUrl(toolIcon)
+        setToolIconError(iconError)
+
+        if (iconError) {
+            enqueueSnackbar({
+                message: iconError,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            return false
+        }
+
+        return true
+    }
 
     const deleteItem = useCallback(
         (id) => () => {
@@ -177,6 +216,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolId(getSpecificToolApi.data.id)
             setToolName(getSpecificToolApi.data.name)
             setToolDesc(getSpecificToolApi.data.description)
+            setToolIcon(getSpecificToolApi.data.iconSrc || '')
+            setToolIconError('')
             setToolSchema(formatDataGridRows(getSpecificToolApi.data.schema))
             if (getSpecificToolApi.data.func) setToolFunc(getSpecificToolApi.data.func)
             else setToolFunc('')
@@ -196,7 +237,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolId(dialogProps.data.id)
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
-            setToolIcon(dialogProps.data.iconSrc)
+            setToolIcon(dialogProps.data.iconSrc || '')
+            setToolIconError('')
             setToolSchema(formatDataGridRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
@@ -207,7 +249,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             // When tool dialog is to import existing tool
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
-            setToolIcon(dialogProps.data.iconSrc)
+            setToolIcon(dialogProps.data.iconSrc || '')
+            setToolIconError('')
             setToolSchema(formatDataGridRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
@@ -215,7 +258,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             // When tool dialog is a template
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
-            setToolIcon(dialogProps.data.iconSrc)
+            setToolIcon(dialogProps.data.iconSrc || '')
+            setToolIconError('')
             setToolSchema(formatDataGridRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
@@ -225,6 +269,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolName('')
             setToolDesc('')
             setToolIcon('')
+            setToolIconError('')
             setToolSchema([])
             setToolFunc('')
         }
@@ -277,6 +322,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     }
 
     const addNewTool = async () => {
+        if (!validateIconAndNotify()) return
+
         try {
             const obj = {
                 name: toolName,
@@ -323,6 +370,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     }
 
     const saveTool = async () => {
+        if (!validateIconAndNotify()) return
+
         try {
             const saveResp = await toolsApi.updateTool(toolId, {
                 name: toolName,
@@ -513,8 +562,23 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                             placeholder='https://raw.githubusercontent.com/gilbarbara/logos/main/logos/airtable.svg'
                             value={toolIcon}
                             name='toolIcon'
-                            onChange={(e) => setToolIcon(e.target.value)}
+                            error={!!toolIconError}
+                            onBlur={() => setToolIconError(validateToolIconUrl(toolIcon))}
+                            onChange={(e) => {
+                                const iconSource = e.target.value
+                                setToolIcon(iconSource)
+                                setToolIconError(validateToolIconUrl(iconSource))
+                            }}
                         />
+                        {toolIconError ? (
+                            <Typography sx={{ mt: 0.5 }} variant='caption' color='error'>
+                                {toolIconError}
+                            </Typography>
+                        ) : (
+                            <Typography sx={{ mt: 0.5 }} variant='caption' color='text.secondary'>
+                                Optional. Leave empty to use the default tool icon.
+                            </Typography>
+                        )}
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', justifyContent: 'space-between' }} direction='row'>
@@ -583,7 +647,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                 {dialogProps.type !== 'TEMPLATE' && (
                     <StyledPermissionButton
                         permissionId={'tools:update,tools:create'}
-                        disabled={!(toolName && toolDesc)}
+                        disabled={!(toolName && toolDesc) || !!validateToolIconUrl(toolIcon)}
                         variant='contained'
                         onClick={() => (dialogProps.type === 'ADD' || dialogProps.type === 'IMPORT' ? addNewTool() : saveTool())}
                     >

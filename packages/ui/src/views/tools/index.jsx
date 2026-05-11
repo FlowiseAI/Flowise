@@ -25,6 +25,7 @@ import { gridSpacing } from '@/store/constant'
 // icons
 import { IconPlus, IconFileUpload, IconLayoutGrid, IconList } from '@tabler/icons-react'
 import ToolEmptySVG from '@/assets/images/tools_empty.svg'
+import toolSVG from '@/assets/images/tool.svg'
 
 // ==============================|| TOOLS ||============================== //
 
@@ -241,7 +242,7 @@ const Tools = () => {
                                 {!view || view === 'card' ? (
                                     <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                                         {getAllToolsApi.data?.data?.filter(filterTools).map((data, index) => (
-                                            <ItemCard data={data} key={index} onClick={() => edit(data)} />
+                                            <ItemCard data={data} key={index} onClick={() => edit(data)} fallbackIconSrc={toolSVG} />
                                         ))}
                                     </Box>
                                 ) : (
