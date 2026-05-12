@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 
 // material-ui
-import { Box, Stack, ButtonGroup, Skeleton, ToggleButtonGroup, ToggleButton, Tabs, Tab } from '@mui/material'
+import { Box, Stack, ButtonGroup, Skeleton, ToggleButtonGroup, ToggleButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -477,7 +477,7 @@ const Tools = () => {
                                     Create
                                 </StyledPermissionButton>
                             </ButtonGroup>
-                        </ViewHeader>
+                        </Box>
                         {isLoading && (
                             <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                                 <Skeleton variant='rounded' height={160} />
