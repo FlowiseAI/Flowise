@@ -1134,8 +1134,7 @@ const executeNode = async ({
             apiMessageId,
             chatHistory,
             runtimeChatHistoryLength: Math.max(0, runtimeChatHistory.length - 1),
-            state: updatedState,
-            ...overrideConfig
+            state: updatedState
         }
         if (
             iterationContext &&
