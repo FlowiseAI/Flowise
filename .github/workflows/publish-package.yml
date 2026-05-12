@@ -67,9 +67,6 @@ jobs:
               env:
                   CUSTOM_VERSION: ${{ inputs.custom_version }}
 
-            - name: Install native build dependencies
-              run: sudo apt-get install -y libopenblas-dev
-
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
               env:
@@ -133,9 +130,6 @@ jobs:
               with:
                   node-version: '20.20.2'
                   registry-url: 'https://registry.npmjs.org'
-
-            - name: Install native build dependencies
-              run: sudo apt-get install -y libopenblas-dev
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile

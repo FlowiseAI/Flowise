@@ -29,8 +29,6 @@ jobs:
                   node-version: ${{ matrix.node-version }}
                   cache: 'pnpm'
                   cache-dependency-path: 'pnpm-lock.yaml'
-            - name: Install native build dependencies
-              run: sudo apt-get install -y libopenblas-dev
             - run: pnpm install
             - run: pnpm lint
             - run: pnpm build

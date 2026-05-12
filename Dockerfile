@@ -17,11 +17,7 @@ RUN apk update && \
     cairo-dev \
     pango-dev \
     chromium \
-    curl \
-    git \
-    cmake \
-    openblas-dev \
-    py3-setuptools && \
+    curl && \
     npm install -g pnpm@10.26.0
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
