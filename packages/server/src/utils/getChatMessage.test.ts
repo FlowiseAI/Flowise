@@ -124,4 +124,23 @@ describe('utilGetChatMessage', () => {
             })
         )
     })
+
+    it('applies take without skip when only pageSize is provided', async () => {
+        await utilGetChatMessage({
+            chatflowid: 'flow-1',
+            activeWorkspaceId: 'ws-1',
+            pageSize: 10
+        })
+
+        expect(mockFind).toHaveBeenCalledWith(
+            expect.objectContaining({
+                take: 10
+            })
+        )
+        expect(mockFind).toHaveBeenCalledWith(
+            expect.not.objectContaining({
+                skip: expect.anything()
+            })
+        )
+    })
 })

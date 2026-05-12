@@ -54,7 +54,13 @@ export const utilGetChatMessage = async ({
 }: GetChatMessageParams): Promise<ChatMessage[]> => {
     if (!page) page = -1
     if (!pageSize) pageSize = -1
-    const pagination = page > 0 && pageSize > 0 ? { skip: pageSize * (page - 1), take: pageSize } : {}
+    const pagination =
+        pageSize > 0
+            ? {
+                  skip: page > 1 ? pageSize * (page - 1) : undefined,
+                  take: pageSize
+              }
+            : {}
 
     const appServer = getRunningExpressApp()
 
