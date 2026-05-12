@@ -108,4 +108,20 @@ describe('utilGetChatMessage', () => {
             })
         )
     })
+
+    it('does not paginate when page/pageSize are invalid', async () => {
+        await utilGetChatMessage({
+            chatflowid: 'flow-1',
+            activeWorkspaceId: 'ws-1',
+            page: 0,
+            pageSize: 0
+        })
+
+        expect(mockFind).toHaveBeenCalledWith(
+            expect.not.objectContaining({
+                skip: expect.anything(),
+                take: expect.anything()
+            })
+        )
+    })
 })
