@@ -735,8 +735,8 @@ importers:
         specifier: ^10.0.0
         version: 10.0.0
       vm2:
-        specifier: 3.11.2
-        version: 3.11.2
+        specifier: 3.11.3
+        version: 3.11.3
       weaviate-client:
         specifier: 3.12.0
         version: 3.12.0(encoding@0.1.13)
@@ -20443,8 +20443,8 @@ packages:
       terser:
         optional: true
 
-  vm2@3.11.2:
-    resolution: {integrity: sha512-hnsYAgBSAgwwPM/Gq66gMmUY0VlY9mKC8nvVRAZiJp+tYxF4sfNRlZymP8uqzIUK2U/7+SVZ/H8p7USxNHLlZA==}
+  vm2@3.11.3:
+    resolution: {integrity: sha512-DO1TTKuOc+veL11VNOvJwRab80mghFKE40Av3bl6pdXs11bdiDMuR73owy+dS2EsTZEvRUeBkkBuDVRjV/RgEw==}
     engines: {node: '>=6.0'}
     hasBin: true
 
@@ -46604,7 +46604,7 @@ snapshots:
       sass: 1.71.1
       terser: 5.29.1
 
-  vm2@3.11.2:
+  vm2@3.11.3:
     dependencies:
       acorn: 8.16.0
       acorn-walk: 8.3.5
