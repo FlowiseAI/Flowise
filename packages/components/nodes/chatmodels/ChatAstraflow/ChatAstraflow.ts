@@ -141,14 +141,15 @@ class ChatAstraflow_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: astraflowApiKey,
             apiKey: astraflowApiKey,
             streaming: streaming ?? true
         }
 
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
+        if (temperature) obj.temperature = parseFloat(temperature)
+
+        if (maxTokens) obj.maxCompletionTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
@@ -172,7 +173,7 @@ class ChatAstraflow_ChatModels implements INode {
             ...obj,
             configuration: {
                 baseURL: basePath,
-                ...parsedBaseOptions
+                defaultHeaders: parsedBaseOptions
             }
         })
         return model
