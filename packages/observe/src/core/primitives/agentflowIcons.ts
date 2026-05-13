@@ -5,6 +5,7 @@
 import {
     type Icon,
     IconArrowsSplit,
+    IconCoin,
     IconFunctionFilled,
     IconLibrary,
     IconMessageCircleFilled,
@@ -42,6 +43,7 @@ export const AGENTFLOW_ICONS: Record<string, AgentflowIconEntry> = {
     conditionAgentAgentflow: { icon: IconSubtask, color: tokens.colors.nodes.conditionAgent },
     stickyNoteAgentflow: { icon: IconNote, color: tokens.colors.nodes.stickyNote },
     httpAgentflow: { icon: IconWorld, color: tokens.colors.nodes.http },
+    x402PaidApiAgentflow: { icon: IconCoin, color: tokens.colors.nodes.http },
     iterationAgentflow: { icon: IconRelationOneToManyFilled, color: tokens.colors.nodes.iteration },
     executeFlowAgentflow: { icon: IconVectorBezier2, color: tokens.colors.nodes.executeFlow }
 }
