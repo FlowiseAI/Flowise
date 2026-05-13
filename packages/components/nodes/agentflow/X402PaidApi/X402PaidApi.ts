@@ -179,7 +179,7 @@ class X402PaidApi_Agentflow implements INode {
 
         if (headers && Array.isArray(headers)) {
             for (const h of headers) {
-                if (h?.key && h.value !== undefined && h.value !== null) {
+                if (h?.key && h.value != null) {
                     requestHeaders[h.key] = String(h.value)
                 }
             }
@@ -196,7 +196,7 @@ class X402PaidApi_Agentflow implements INode {
         if (queryParams && Array.isArray(queryParams)) {
             const params = new URLSearchParams()
             for (const p of queryParams) {
-                if (p?.key && p.value !== undefined && p.value !== null) {
+                if (p?.key && p.value != null) {
                     params.append(p.key, String(p.value))
                 }
             }
@@ -221,7 +221,7 @@ class X402PaidApi_Agentflow implements INode {
             }
             client.onBeforePaymentCreation(async (ctx: { selectedRequirements: { amount?: string | number } }) => {
                 const raw = ctx?.selectedRequirements?.amount
-                if (raw === undefined || raw === null) return undefined
+                if (raw == null) return undefined
                 const requested = typeof raw === 'bigint' ? raw : BigInt(String(raw))
                 if (requested > max) {
                     return {
@@ -336,9 +336,9 @@ function extractPaymentSummary(client: any, response: AxiosResponse): X402Paymen
     const paymentProof = paymentResponseHeader
 
     let amountPaidAtomic: string | null = null
-    if (paymentMetadata && typeof paymentMetadata === 'object' && paymentMetadata !== null) {
+    if (paymentMetadata != null && typeof paymentMetadata === 'object') {
         const maybe = (paymentMetadata as Record<string, unknown>).amount
-        if (maybe !== undefined && maybe !== null) {
+        if (maybe != null) {
             amountPaidAtomic = String(maybe)
         }
     }
