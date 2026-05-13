@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
-import { IReactFlowObject } from '../../Interface'
+import { IReactFlowObject, StartInputType } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { verifyWebhookSignature, verifyPlainToken } from '../../utils/signatureVerification'
@@ -23,7 +23,7 @@ const validateWebhookChatflow = async (
 
         const parsedFlowData: IReactFlowObject = JSON.parse(chatflow.flowData)
         const startNode = parsedFlowData.nodes.find((node) => node.data.name === 'startAgentflow')
-        const startInputType = startNode?.data?.inputs?.startInputType
+        const startInputType = startNode?.data?.inputs?.startInputType as StartInputType | undefined
 
         if (startInputType !== 'webhookTrigger') {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} is not configured as a webhook trigger`)
