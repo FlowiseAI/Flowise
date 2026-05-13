@@ -9,6 +9,7 @@ import { Box, Grid, Tooltip, Typography, useTheme } from '@mui/material'
 import MainCard from '@/ui-component/cards/MainCard'
 import MoreItemsTooltip from '../tooltip/MoreItemsTooltip'
 import ScheduleStatusBadge from '@/ui-component/extended/ScheduleStatusBadge'
+import { getItemCardIconBackgroundUrl } from '@/utils/toolIconUrl'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -34,6 +35,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 const ItemCard = ({ data, images, icons, scheduleStatus, onClick }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
+    const headerIconBgUrl = getItemCardIconBackgroundUrl(data.iconSrc)
 
     return (
         <CardWrapper content={false} onClick={onClick} sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}>
@@ -49,7 +51,7 @@ const ItemCard = ({ data, images, icons, scheduleStatus, onClick }) => {
                                 overflow: 'hidden'
                             }}
                         >
-                            {data.iconSrc && (
+                            {headerIconBgUrl && (
                                 <div
                                     style={{
                                         width: 35,
@@ -58,14 +60,14 @@ const ItemCard = ({ data, images, icons, scheduleStatus, onClick }) => {
                                         flexShrink: 0,
                                         marginRight: 10,
                                         borderRadius: '50%',
-                                        backgroundImage: `url(${data.iconSrc})`,
+                                        backgroundImage: `url(${headerIconBgUrl})`,
                                         backgroundSize: 'contain',
                                         backgroundRepeat: 'no-repeat',
                                         backgroundPosition: 'center center'
                                     }}
                                 ></div>
                             )}
-                            {!data.iconSrc && data.color && (
+                            {!headerIconBgUrl && data.color && (
                                 <div
                                     style={{
                                         width: 35,
