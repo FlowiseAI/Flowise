@@ -189,6 +189,8 @@ export interface IExecution {
 
 export type ScheduleInputMode = 'text' | 'form' | 'none'
 
+export type StartInputType = 'chatInput' | 'formInput' | 'webhookTrigger' | 'scheduleInput'
+
 export interface IScheduleRecord {
     id: string
     triggerType: string

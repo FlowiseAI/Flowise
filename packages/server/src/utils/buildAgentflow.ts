@@ -30,7 +30,8 @@ import {
     IComponentNodes,
     INodeOverrides,
     IVariableOverride,
-    INodeDirectedGraph
+    INodeDirectedGraph,
+    StartInputType
 } from '../Interface'
 import {
     RUNTIME_MESSAGES_LENGTH_VAR_PREFIX,
@@ -60,6 +61,8 @@ import { Telemetry } from './telemetry'
 import { getWorkspaceSearchOptions } from '../enterprise/utils/ControllerServiceUtils'
 import { UsageCacheManager } from '../UsageCacheManager'
 import { generateTTSForResponseStream, shouldAutoPlayTTS } from './buildChatflow'
+import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 interface IWaitingNode {
     nodeId: string
@@ -1592,9 +1595,25 @@ export const executeAgentFlow = async ({
     const { graph, nodeDependencies } = constructGraphs(nodes, edges)
     const { graph: reversedGraph } = constructGraphs(nodes, edges, { isReversed: true })
     const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
-    const startInputType = startNode?.data.inputs?.startInputType as 'chatInput' | 'formInput' | 'webhookTrigger'
+    const startInputType = startNode?.data.inputs?.startInputType as StartInputType | undefined
     if (!startInputType && !isRecursive) {
         throw new Error('Start input type not found')
+    }
+
+    if (!isRecursive) {
+        if (startInputType === 'webhookTrigger' && chatType !== ChatType.WEBHOOK) {
+            const configuredMethod = ((startNode?.data?.inputs?.webhookMethod as string) || 'POST').toUpperCase()
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                `This flow is configured as a Webhook Trigger. Call ${configuredMethod} /api/v1/webhook/${chatflowid} instead of the prediction API.`
+            )
+        }
+        if (startInputType === 'scheduleInput' && chatType !== ChatType.SCHEDULED) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                `This flow is configured as a Scheduled Trigger. It is fired by the scheduler and cannot be invoked via the API. Change the Start node Input Type to Chat or Form to call it from the prediction API.`
+            )
+        }
     }
     // @ts-ignore
     if (isTool) sseStreamer = undefined // If the request is from ChatflowTool, don't stream the response
