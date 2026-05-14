@@ -150,6 +150,40 @@ describe('Xquik tools', () => {
         )
     })
 
+    it('returns top-level array results with provenance', async () => {
+        mockedSecureFetch.mockResolvedValue(
+            createResponse([
+                {
+                    id: '1911111111111111112',
+                    text: 'Top-level array result',
+                    author: {
+                        username: 'flowiseai'
+                    }
+                }
+            ])
+        )
+
+        const tool = new SearchTweetsTool({
+            apiKey: 'test-key',
+            baseUrl: 'https://xquik.test/api/v1'
+        })
+        const result = JSON.parse(
+            await tool._call({
+                query: 'Flowise'
+            })
+        )
+
+        expect(result.items[0]).toEqual(
+            expect.objectContaining({
+                source: 'xquik',
+                resource_type: 'tweet',
+                id: '1911111111111111112',
+                url: 'https://x.com/flowiseai/status/1911111111111111112',
+                query: 'Flowise'
+            })
+        )
+    })
+
     it('returns trend results with source URLs and requested count', async () => {
         mockedSecureFetch.mockResolvedValue(
             createResponse({
@@ -207,16 +241,49 @@ describe('Xquik tools', () => {
         ).rejects.toThrow('Xquik query is required for this operation')
         expect(mockedSecureFetch).not.toHaveBeenCalled()
     })
+
+    it('fails fast when Xquik returns invalid JSON', async () => {
+        mockedSecureFetch.mockResolvedValue(createTextResponse('not json'))
+
+        const tool = new SearchTweetsTool({
+            apiKey: 'test-key',
+            baseUrl: 'https://xquik.test/api/v1'
+        })
+
+        await expect(
+            tool._call({
+                query: 'Flowise'
+            })
+        ).rejects.toThrow('Xquik response body is not valid JSON')
+    })
+
+    it('fails fast when Xquik returns an unsupported payload shape', async () => {
+        mockedSecureFetch.mockResolvedValue(createResponse({}))
+
+        const tool = new SearchTweetsTool({
+            apiKey: 'test-key',
+            baseUrl: 'https://xquik.test/api/v1'
+        })
+
+        await expect(
+            tool._call({
+                query: 'Flowise'
+            })
+        ).rejects.toThrow('Xquik tweet response payload has an unsupported format')
+    })
 })
 
 function createResponse(body: unknown, headers: Record<string, string> = {}): Response {
+    return createTextResponse(JSON.stringify(body), headers)
+}
+
+function createTextResponse(text: string, headers: Record<string, string> = {}): Response {
     return {
         ok: true,
         status: 200,
         headers: {
             get: (name: string): string | null => headers[name.toLowerCase()] ?? null
         },
-        json: async (): Promise<unknown> => body,
-        text: async (): Promise<string> => JSON.stringify(body)
+        text: async (): Promise<string> => text
     } as unknown as Response
 }

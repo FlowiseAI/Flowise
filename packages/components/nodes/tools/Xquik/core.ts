@@ -108,12 +108,12 @@ abstract class BaseXquikTool<TSchema extends z.AnyZodObject> extends StructuredT
         })
 
         if (!response.ok) {
-            const errorPayload = await readResponsePayload(response)
+            const errorPayload = await readJsonResponse(response)
             const errorMessage = getErrorMessage(errorPayload)
             throw new Error(`Xquik request failed with HTTP ${response.status}${errorMessage ? `: ${errorMessage}` : ''}`)
         }
 
-        const payload = (await response.json()) as unknown
+        const payload = await readJsonResponse(response)
         const retrievedAt = new Date().toISOString()
         const rateLimit = getRateLimit(response.headers)
         const pagination = getPagination(payload)
@@ -318,15 +318,16 @@ function requireInput(value: string | undefined, field: string): string {
     return value
 }
 
-async function readResponsePayload(response: Response): Promise<unknown> {
+async function readJsonResponse(response: Response): Promise<unknown> {
+    const text = await response.text()
+    if (!text) {
+        throw new Error('Xquik response body is empty')
+    }
+
     try {
-        return await response.json()
+        return JSON.parse(text) as unknown
     } catch {
-        try {
-            return await response.text()
-        } catch {
-            return undefined
-        }
+        throw new Error('Xquik response body is not valid JSON')
     }
 }
 
@@ -381,13 +382,17 @@ function getPagination(payload: unknown): Pagination {
 }
 
 function getPayloadItems(payload: unknown, resourceType: string): Record<string, unknown>[] {
+    if (Array.isArray(payload)) {
+        return payload.map((item) => toPayloadRecord(item, resourceType))
+    }
+
     const record = asRecord(payload)
     const collectionKeys = getCollectionKeys(resourceType)
 
     for (const key of collectionKeys) {
         const value = record[key]
         if (Array.isArray(value)) {
-            return value.map(asRecord)
+            return value.map((item) => toPayloadRecord(item, resourceType))
         }
     }
 
@@ -395,7 +400,16 @@ function getPayloadItems(payload: unknown, resourceType: string): Record<string,
         return [record]
     }
 
-    return []
+    throw new Error(`Xquik ${resourceType} response payload has an unsupported format`)
+}
+
+function toPayloadRecord(value: unknown, resourceType: string): Record<string, unknown> {
+    const record = asRecord(value)
+    if (Object.keys(record).length === 0) {
+        throw new Error(`Xquik ${resourceType} response item has an unsupported format`)
+    }
+
+    return record
 }
 
 function getCollectionKeys(resourceType: string): string[] {
