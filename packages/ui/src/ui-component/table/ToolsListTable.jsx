@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { styled } from '@mui/material/styles'
-import { tableCellClasses } from '@mui/material/TableCell'
 import {
     Button,
     Paper,
@@ -16,22 +15,21 @@ import {
     useTheme
 } from '@mui/material'
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    borderColor: theme.palette.grey[900] + 25,
-
-    [`&.${tableCellClasses.head}`]: {
-        color: theme.palette.grey[900]
-    },
-    [`&.${tableCellClasses.body}`]: {
-        fontSize: 14,
-        height: 64
-    }
-}))
-
 const StyledTableRow = styled(TableRow)(() => ({
     // hide last border
     '&:last-child td, &:last-child th': {
         border: 0
+    }
+}))
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    borderColor: theme.palette.grey[900] + 25,
+    [`&.MuiTableCell-head`]: {
+        color: theme.palette.grey[900]
+    },
+    [`&.MuiTableCell-body`]: {
+        fontSize: 14,
+        height: 64
     }
 }))
 
