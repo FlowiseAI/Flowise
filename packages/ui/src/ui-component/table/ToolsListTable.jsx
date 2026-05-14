@@ -14,6 +14,9 @@ import {
     Typography,
     useTheme
 } from '@mui/material'
+import { Avatar } from '@mui/material'
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
+import { tableCellClasses } from '@mui/material/TableCell'
 
 const StyledTableRow = styled(TableRow)(() => ({
     // hide last border
@@ -24,10 +27,10 @@ const StyledTableRow = styled(TableRow)(() => ({
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
-    [`&.MuiTableCell-head`]: {
+    [`&.${tableCellClasses.head}`]: {
         color: theme.palette.grey[900]
     },
-    [`&.MuiTableCell-body`]: {
+    [`&.${tableCellClasses.body}`]: {
         fontSize: 14,
         height: 64
     }
@@ -88,20 +91,27 @@ export const ToolsTable = ({ data, isLoading, onSelect }) => {
                                 {data?.map((row, index) => (
                                     <StyledTableRow key={index}>
                                         <StyledTableCell sx={{ display: 'flex', alignItems: 'center', gap: 1 }} key='0'>
-                                            <div
-                                                style={{
+                                            <Avatar
+                                                src={(() => {
+                                                    try {
+                                                        const parsed = new URL(row.iconSrc)
+                                                        return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+                                                            ? row.iconSrc
+                                                            : undefined
+                                                    } catch {
+                                                        return undefined
+                                                    }
+                                                })()}
+                                                alt={row.templateName || row.name}
+                                                sx={{
                                                     width: 35,
                                                     height: 35,
-                                                    display: 'flex',
                                                     flexShrink: 0,
-                                                    marginRight: 10,
-                                                    borderRadius: '50%',
-                                                    backgroundImage: `url(${row.iconSrc})`,
-                                                    backgroundSize: 'contain',
-                                                    backgroundRepeat: 'no-repeat',
-                                                    backgroundPosition: 'center center'
+                                                    marginRight: 1
                                                 }}
-                                            ></div>
+                                            >
+                                                <BuildOutlinedIcon fontSize='small' />
+                                            </Avatar>
                                             <Typography
                                                 sx={{
                                                     display: '-webkit-box',

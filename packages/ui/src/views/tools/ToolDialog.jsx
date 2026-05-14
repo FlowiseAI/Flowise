@@ -89,32 +89,51 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     const [toolId, setToolId] = useState('')
     const [toolName, setToolName] = useState('')
     const [toolDesc, setToolDesc] = useState('')
+    // const [toolIcon, setToolIcon] = useState('')
+    // const [toolSchema, setToolSchema] = useState([])
+    // const [toolFunc, setToolFunc] = useState('')
+    // const [showHowToDialog, setShowHowToDialog] = useState(false)
+    // const [toolIconError, setToolIconError] = useState('')
+    // // URL validation: only allow empty or http/https URLs
+    // const validateIconUrl = (url) => {
+    //     if (!url) return ''
+    //     try {
+    //         const parsed = new URL(url)
+    //         if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return ''
+    //         return 'Icon URL must start with http:// or https://'
+    //     } catch {
+    //         return 'Icon URL must be a valid http(s) URL'
+    //     }
+    // }
+
+    // // Validate on change
+    // const handleToolIconChange = (e) => {
+    //     const value = e.target.value
+    //     setToolIcon(value)
+    //     setToolIconError(validateIconUrl(value))
+    // }
+    // {
+    //     toolIconError ? <FormHelperText error>{toolIconError}</FormHelperText> : null
+    // }
+
     const [toolIcon, setToolIcon] = useState('')
     const [toolSchema, setToolSchema] = useState([])
     const [toolFunc, setToolFunc] = useState('')
     const [showHowToDialog, setShowHowToDialog] = useState(false)
-    const [toolIconError, setToolIconError] = useState('')
-    // URL validation: only allow empty or http/https URLs
-    const validateIconUrl = (url) => {
-        if (!url) return ''
+
+    const toolIconError = useMemo(() => {
+        const value = toolIcon.trim()
+
+        if (!value) return ''
+
         try {
-            const parsed = new URL(url)
+            const parsed = new URL(value)
             if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return ''
             return 'Icon URL must start with http:// or https://'
         } catch {
             return 'Icon URL must be a valid http(s) URL'
         }
-    }
-
-    // Validate on change
-    const handleToolIconChange = (e) => {
-        const value = e.target.value
-        setToolIcon(value)
-        setToolIconError(validateIconUrl(value))
-    }
-    {
-        toolIconError ? <FormHelperText error>{toolIconError}</FormHelperText> : null
-    }
+    }, [toolIcon])
 
     const [exportAsTemplateDialogOpen, setExportAsTemplateDialogOpen] = useState(false)
     const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
@@ -547,7 +566,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                             value={toolIcon}
                             name='toolIcon'
                             error={!!toolIconError}
-                            onChange={handleToolIconChange}
+                            onChange={(e) => setToolIcon(e.target.value)}
                         />
                         {toolIconError && <FormHelperText error>{toolIconError}</FormHelperText>}
                     </Box>
