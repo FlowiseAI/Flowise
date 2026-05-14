@@ -35,8 +35,7 @@
         "postinstall": "husky install",
         "migration:create": "pnpm typeorm migration:create",
         "changeset": "changeset",
-        "changeset:version": "changeset version",
-        "changeset:publish": "changeset publish"
+        "changeset:version": "changeset version"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"

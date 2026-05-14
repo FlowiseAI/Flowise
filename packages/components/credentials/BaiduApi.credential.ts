@@ -14,7 +14,7 @@ class BaiduQianfanApi implements INodeCredential {
             {
                 label: 'Qianfan Access Key',
                 name: 'qianfanAccessKey',
-                type: 'string'
+                type: 'password'
             },
             {
                 label: 'Qianfan Secret Key',

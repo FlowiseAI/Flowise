@@ -19,7 +19,7 @@ import {
     canScheduleEnable
 } from './utils'
 import { ICommonObject } from 'flowise-components'
-import { ScheduleInputMode } from '../../Interface'
+import { ScheduleInputMode, StartInputType } from '../../Interface'
 
 export {
     validateCronExpression,
@@ -220,7 +220,8 @@ const getScheduleStatus = async (
         try {
             const parsedFlowData = JSON.parse(chatflow.flowData)
             const startNode = (parsedFlowData.nodes || []).find((n: any) => n.data?.name === 'startAgentflow')
-            if (!startNode || startNode.data?.inputs?.startInputType !== 'scheduleInput') {
+            const startInputType = startNode?.data?.inputs?.startInputType as StartInputType | undefined
+            if (!startNode || startInputType !== 'scheduleInput') {
                 return { record, canEnable: false, reason: 'Flow is not configured as a scheduled flow' }
             }
 

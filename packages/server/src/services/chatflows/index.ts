@@ -3,7 +3,7 @@ import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { Brackets, In, QueryRunner } from 'typeorm'
 import { validate as isValidUUID } from 'uuid'
-import { ChatflowType, IReactFlowObject, ScheduleInputMode } from '../../Interface'
+import { ChatflowType, IReactFlowObject, ScheduleInputMode, StartInputType } from '../../Interface'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { UsageCacheManager } from '../../UsageCacheManager'
 import { ChatFlow, EnumChatflowType } from '../../database/entities/ChatFlow'
@@ -381,7 +381,7 @@ const saveChatflow = async (
         const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
         const nodes = (parsedFlowData.nodes || []).filter((node) => node.data.name !== 'stickyNoteAgentflow')
         const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
-        const startInputType = startNode?.data?.inputs?.startInputType as 'chatInput' | 'formInput' | 'scheduleInput'
+        const startInputType = startNode?.data?.inputs?.startInputType as StartInputType | undefined
         if (startInputType === 'scheduleInput') {
             const scheduleInputMode = startNode?.data?.inputs?.scheduleInputMode as ScheduleInputMode | undefined
             if (!scheduleInputMode) {
@@ -493,7 +493,7 @@ const updateChatflow = async (
         const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
         const nodes = (parsedFlowData.nodes || []).filter((node) => node.data.name !== 'stickyNoteAgentflow')
         const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
-        const startInputType = startNode?.data?.inputs?.startInputType as 'chatInput' | 'formInput' | 'scheduleInput'
+        const startInputType = startNode?.data?.inputs?.startInputType as StartInputType | undefined
         if (startInputType === 'scheduleInput') {
             const scheduleInputMode = startNode?.data?.inputs?.scheduleInputMode as ScheduleInputMode | undefined
             if (!scheduleInputMode) {
