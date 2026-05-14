@@ -79,6 +79,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     const [toolName, setToolName] = useState('')
     const [toolDesc, setToolDesc] = useState('')
     const [toolIcon, setToolIcon] = useState('')
+    const [toolIconError, setToolIconError] = useState('')
     const [toolSchema, setToolSchema] = useState([])
     const [toolFunc, setToolFunc] = useState('')
     const [showHowToDialog, setShowHowToDialog] = useState(false)
@@ -96,6 +97,32 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
         },
         []
     )
+
+    const validateIconUrl = (url) => {
+        if (!url || url.trim() === '') {
+            setToolIconError('')
+            return true
+        }
+        
+        try {
+            const urlObj = new URL(url)
+            if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+                setToolIconError('Icon source must be a valid http or https URL')
+                return false
+            }
+            setToolIconError('')
+            return true
+        } catch (error) {
+            setToolIconError('Icon source must be a valid URL')
+            return false
+        }
+    }
+
+    const handleIconChange = (e) => {
+        const value = e.target.value
+        setToolIcon(value)
+        validateIconUrl(value)
+    }
 
     const addNewRow = () => {
         setTimeout(() => {
@@ -277,6 +304,10 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     }
 
     const addNewTool = async () => {
+        if (!validateIconUrl(toolIcon)) {
+            return
+        }
+        
         try {
             const obj = {
                 name: toolName,
@@ -323,6 +354,10 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     }
 
     const saveTool = async () => {
+        if (!validateIconUrl(toolIcon)) {
+            return
+        }
+        
         try {
             const saveResp = await toolsApi.updateTool(toolId, {
                 name: toolName,
@@ -513,8 +548,14 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                             placeholder='https://raw.githubusercontent.com/gilbarbara/logos/main/logos/airtable.svg'
                             value={toolIcon}
                             name='toolIcon'
-                            onChange={(e) => setToolIcon(e.target.value)}
+                            onChange={handleIconChange}
+                            error={!!toolIconError}
                         />
+                        {toolIconError && (
+                            <Typography variant='caption' color='error' sx={{ mt: 0.5, display: 'block' }}>
+                                {toolIconError}
+                            </Typography>
+                        )}
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', justifyContent: 'space-between' }} direction='row'>
@@ -583,7 +624,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                 {dialogProps.type !== 'TEMPLATE' && (
                     <StyledPermissionButton
                         permissionId={'tools:update,tools:create'}
-                        disabled={!(toolName && toolDesc)}
+                        disabled={!(toolName && toolDesc) || !!toolIconError}
                         variant='contained'
                         onClick={() => (dialogProps.type === 'ADD' || dialogProps.type === 'IMPORT' ? addNewTool() : saveTool())}
                     >
