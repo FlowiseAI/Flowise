@@ -92,7 +92,8 @@ export class PredictionQueue extends BaseQueue {
                 componentNodes: this.componentNodes,
                 data: executeCustomFunctionData.data,
                 workspaceId: executeCustomFunctionData.workspaceId,
-                orgId: executeCustomFunctionData.orgId
+                orgId: executeCustomFunctionData.orgId,
+                canViewVariables: executeCustomFunctionData.canViewVariables
             })
         }
 
