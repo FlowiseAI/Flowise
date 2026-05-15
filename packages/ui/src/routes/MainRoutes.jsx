@@ -52,6 +52,9 @@ const Evaluators = Loadable(lazy(() => import('@/views/evaluators')))
 // account routing
 const Account = Loadable(lazy(() => import('@/views/account')))
 
+// sentinel cockpit routing
+const SentinelResumeStatus = Loadable(lazy(() => import('@/views/sentinel-cockpit/SentinelResumeStatus')))
+
 // files routing
 const Files = Loadable(lazy(() => import('@/views/files')))
 
@@ -291,6 +294,10 @@ const MainRoutes = {
         {
             path: '/account',
             element: <Account />
+        },
+        {
+            path: '/sentinel-cockpit',
+            element: <SentinelResumeStatus />
         },
         {
             path: '/users',
