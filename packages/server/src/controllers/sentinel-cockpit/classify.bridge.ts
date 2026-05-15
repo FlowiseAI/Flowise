@@ -1,11 +1,6 @@
 import { Buffer } from 'buffer'
 import { createHash, randomBytes, randomUUID } from 'crypto'
-import {
-    COCKPIT_SNAPSHOT_SCHEMA_VERSION,
-    CockpitRequest,
-    CockpitSnapshot,
-    createStaticSnapshot
-} from './snapshot.static'
+import { COCKPIT_SNAPSHOT_SCHEMA_VERSION, CockpitRequest, CockpitSnapshot, createStaticSnapshot } from './snapshot.static'
 
 export const CLASSIFY_BRIDGE_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_CLASSIFY_BRIDGE'
 export const CLASSIFY_BRIDGE_TOKEN_ENV = 'BEZZTY_FLOWISE_SENTINEL_GATEWAY_TOKEN'
@@ -252,13 +247,23 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
 
     const token = env[CLASSIFY_BRIDGE_TOKEN_ENV]
     if (!isSafeBearerToken(token)) {
-        return { requested: true, planReadinessCard, planDecisionBridge, manualPacketBridge, resultReviewBridge, errorCode: 'sentinel_classify_unavailable' }
+        return {
+            requested: true,
+            planReadinessCard,
+            planDecisionBridge,
+            manualPacketBridge,
+            resultReviewBridge,
+            errorCode: 'sentinel_classify_unavailable'
+        }
     }
 
     return { requested: true, planReadinessCard, planDecisionBridge, manualPacketBridge, resultReviewBridge, token }
 }
 
-export async function createClassifySnapshot(request: CockpitRequest, options: ClassifyBridgeOptions = {}): Promise<CockpitSnapshot | PlanSessionResponse> {
+export async function createClassifySnapshot(
+    request: CockpitRequest,
+    options: ClassifyBridgeOptions = {}
+): Promise<CockpitSnapshot | PlanSessionResponse> {
     const config = options.config || defaultConfig
     if (!config.requested) {
         return createStaticSnapshot(request)
@@ -345,7 +350,13 @@ export async function createManualPacketSession(
     try {
         const gatewayPacket = await fetchGatewayManualWorkerPacket(binding, config.token, runtimeFetch, options.requestId)
         binding.state = 'consumed'
-        const planSession = projectManualPacketSession(gatewayPacket.alreadyPrepared, config, binding, gatewayPacket.body, request.client_nonce)
+        const planSession = projectManualPacketSession(
+            gatewayPacket.alreadyPrepared,
+            config,
+            binding,
+            gatewayPacket.body,
+            request.client_nonce
+        )
         assertPlanSessionSafe(planSession, config.token, '', request.client_nonce)
         return planSession
     } catch (error) {
@@ -391,7 +402,12 @@ export async function createResultReviewSession(
     }
 }
 
-async function fetchGatewayClassify(goalText: string, token: string, fetchImpl: FetchLike, requestId?: string): Promise<GatewayClassifyBody> {
+async function fetchGatewayClassify(
+    goalText: string,
+    token: string,
+    fetchImpl: FetchLike,
+    requestId?: string
+): Promise<GatewayClassifyBody> {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
     try {
@@ -501,8 +517,16 @@ function projectClassifySnapshot(body: GatewayClassifyBody, planReadinessCard: b
         next_safe_action: blocked ? 'goal_blocked' : 'planning_deferred',
         allowed_user_actions: ['none'],
         blocked_actions: blocked
-            ? ['This goal is blocked by Sentinel safety policy.', 'Plan approval is not available here.', 'Execution is not available here.']
-            : ['Plan approval is not available here.', 'Execution is not available here.', 'Manual handoff and result intake are deferred.'],
+            ? [
+                  'This goal is blocked by Sentinel safety policy.',
+                  'Plan approval is not available here.',
+                  'Execution is not available here.'
+              ]
+            : [
+                  'Plan approval is not available here.',
+                  'Execution is not available here.',
+                  'Manual handoff and result intake are deferred.'
+              ],
         checkpoint_ref: null,
         evidence_refs: [],
         manual_handoff_preview: null,
@@ -516,7 +540,11 @@ function projectClassifySnapshot(body: GatewayClassifyBody, planReadinessCard: b
 }
 
 function assertClassifySnapshotSafe(snapshot: CockpitSnapshot, token: string, goalText: string) {
-    if (!Array.isArray(snapshot.allowed_user_actions) || snapshot.allowed_user_actions.length !== 1 || snapshot.allowed_user_actions[0] !== 'none') {
+    if (
+        !Array.isArray(snapshot.allowed_user_actions) ||
+        snapshot.allowed_user_actions.length !== 1 ||
+        snapshot.allowed_user_actions[0] !== 'none'
+    ) {
         throw classifyBridgeError(502, 'sentinel_classify_malformed')
     }
 
@@ -744,14 +772,22 @@ function projectPlanDecisionSession(
         plan_card: {
             plain_title: 'Plain-English plan draft',
             plain_summary: 'Review this plan outside the cockpit before any manual work begins.',
-            plain_steps: ['Confirm the goal is still correct.', 'Use the governed manual coding process.', 'Return with evidence for review.'],
+            plain_steps: [
+                'Confirm the goal is still correct.',
+                'Use the governed manual coding process.',
+                'Return with evidence for review.'
+            ],
             will_not_do: ['No files are edited here', 'No tools are run here', 'No background work starts here']
         },
         safe_error: null
     }
 }
 
-function createManualPacketPreparationRequiredSession(binding: PlanBinding, body: GatewayDraftPlanBody, clientNonce: string): PlanSessionResponse {
+function createManualPacketPreparationRequiredSession(
+    binding: PlanBinding,
+    body: GatewayDraftPlanBody,
+    clientNonce: string
+): PlanSessionResponse {
     const planId = readGatewayId(body.plan_id, 'plan_')
     const approvalId = readGatewayId(body.approval_id, 'ap_')
     if (!planId || !approvalId) {
@@ -780,12 +816,20 @@ function createManualPacketPreparationRequiredSession(binding: PlanBinding, body
         plain_summary: 'Sentinel drafted the plan. You can now prepare a manual worker packet as a separate explicit step.',
         next_safe_action: 'prepare_manual_worker_packet',
         allowed_user_actions: ['prepare_manual_worker_packet'],
-        blocked_actions: ['No worker is launched here.', 'No files are edited here.', 'No tools, shell, MCP, Agentflow, or HITL work starts here.'],
+        blocked_actions: [
+            'No worker is launched here.',
+            'No files are edited here.',
+            'No tools, shell, MCP, Agentflow, or HITL work starts here.'
+        ],
         cockpit_ref: cockpitRef,
         plan_card: {
             plain_title: 'Manual packet preparation',
             plain_summary: 'Prepare a manual packet only when you are ready to hand work to the governed out-of-band process.',
-            plain_steps: ['Confirm the plan is still the right next step.', 'Prepare the manual packet.', 'Use the governed manual handoff outside this page.'],
+            plain_steps: [
+                'Confirm the plan is still the right next step.',
+                'Prepare the manual packet.',
+                'Use the governed manual handoff outside this page.'
+            ],
             will_not_do: ['No worker is launched here', 'No files are edited here', 'No background work starts here']
         },
         safe_error: null
@@ -911,11 +955,16 @@ function projectManualPacketSession(
             : 'The manual worker packet is ready. No worker was launched and no files were edited here.',
         next_safe_action: 'manual_handoff_ready',
         allowed_user_actions: ['none'],
-        blocked_actions: ['No worker was launched here.', 'No files were edited here.', 'No tools, shell, MCP, Agentflow, or HITL work ran here.'],
+        blocked_actions: [
+            'No worker was launched here.',
+            'No files were edited here.',
+            'No tools, shell, MCP, Agentflow, or HITL work ran here.'
+        ],
         cockpit_ref: null,
         plan_card: {
             plain_title: alreadyPrepared ? 'Manual packet already ready' : 'Manual packet ready',
-            plain_summary: 'Use the governed out-of-band manual handoff process for any work. This page does not expose packet contents or execute work.',
+            plain_summary:
+                'Use the governed out-of-band manual handoff process for any work. This page does not expose packet contents or execute work.',
             plain_steps: ['Use the approved manual handoff process outside this page.', 'Return later with worker evidence for review.'],
             will_not_do: ['No worker launched here', 'No files edited here', 'No result intake here']
         },
@@ -923,7 +972,11 @@ function projectManualPacketSession(
     }
 }
 
-function createResultReviewRequiredSession(binding: ManualPacketBinding, body: GatewayManualPacketBody, clientNonce: string): PlanSessionResponse | null {
+function createResultReviewRequiredSession(
+    binding: ManualPacketBinding,
+    body: GatewayManualPacketBody,
+    clientNonce: string
+): PlanSessionResponse | null {
     const taskId = readGatewayId(body.task_id, 'task_')
     const taskPacketHash = readGatewayHash(body.task_packet_hash)
     if (!taskId || !taskPacketHash) {
@@ -949,10 +1002,15 @@ function createResultReviewRequiredSession(binding: ManualPacketBinding, body: G
         schema_version: PLAN_SESSION_SCHEMA_VERSION,
         status: 'ok',
         state: 'result_review_required',
-        plain_summary: 'The manual worker packet is ready. Paste the manual worker result for Sentinel review when the out-of-band work is finished.',
+        plain_summary:
+            'The manual worker packet is ready. Paste the manual worker result for Sentinel review when the out-of-band work is finished.',
         next_safe_action: 'submit_manual_worker_result',
         allowed_user_actions: ['submit_result_review'],
-        blocked_actions: ['No worker is launched here.', 'No files are edited here.', 'No shell, MCP, Agentflow, HITL, commit, publish, or deploy action runs here.'],
+        blocked_actions: [
+            'No worker is launched here.',
+            'No files are edited here.',
+            'No shell, MCP, Agentflow, HITL, commit, publish, or deploy action runs here.'
+        ],
         cockpit_ref: cockpitRef,
         plan_card: {
             plain_title: 'Paste manual result for review',
@@ -1088,15 +1146,24 @@ function projectResultReviewSession(body: GatewayResultReviewBody): PlanSessionR
             schema_version: PLAN_SESSION_SCHEMA_VERSION,
             status: 'ok',
             state: 'result_review_accepted',
-            plain_summary: 'Sentinel accepted this pasted result for the prepared manual packet. This page did not apply code, publish work, or start a continuation.',
+            plain_summary:
+                'Sentinel accepted this pasted result for the prepared manual packet. This page did not apply code, publish work, or start a continuation.',
             next_safe_action: 'review_complete',
             allowed_user_actions: ['none'],
-            blocked_actions: ['No worker was launched here.', 'No repo write occurred here.', 'No commit, publish, or deploy action ran here.'],
+            blocked_actions: [
+                'No worker was launched here.',
+                'No repo write occurred here.',
+                'No commit, publish, or deploy action ran here.'
+            ],
             cockpit_ref: null,
             plan_card: {
                 plain_title: 'Sentinel review accepted',
-                plain_summary: 'Sentinel accepted this pasted result for the prepared manual packet. This page did not apply code, publish work, or start a continuation.',
-                plain_steps: ['Record or hand off this verdict using your normal out-of-band process.', 'Use a separately approved continue path for any next step.'],
+                plain_summary:
+                    'Sentinel accepted this pasted result for the prepared manual packet. This page did not apply code, publish work, or start a continuation.',
+                plain_steps: [
+                    'Record or hand off this verdict using your normal out-of-band process.',
+                    'Use a separately approved continue path for any next step.'
+                ],
                 will_not_do: ['No code applied here', 'No worker launched here', 'No automatic continuation here']
             },
             safe_error: null
@@ -1116,7 +1183,10 @@ function projectResultReviewSession(body: GatewayResultReviewBody): PlanSessionR
             plan_card: {
                 plain_title: 'More information needed',
                 plain_summary: 'Ask the manual worker or reviewer for clearer plain-English context outside the cockpit.',
-                plain_steps: ['Ask for clearer plain-English context outside this page.', 'Use an approved review path when the result is ready.'],
+                plain_steps: [
+                    'Ask for clearer plain-English context outside this page.',
+                    'Use an approved review path when the result is ready.'
+                ],
                 will_not_do: ['No automatic retry here', 'No resume control here', 'No repo write here']
             },
             safe_error: null
@@ -1150,7 +1220,11 @@ function projectResultReviewUnavailableSession(): PlanSessionResponse {
         plain_summary: 'Sentinel could not complete the review safely. Nothing was accepted and no action occurred here.',
         next_safe_action: 'review_unavailable',
         allowed_user_actions: ['none'],
-        blocked_actions: ['No files were edited here.', 'No worker was launched here.', 'No repo write, commit, publish, or deploy action ran here.'],
+        blocked_actions: [
+            'No files were edited here.',
+            'No worker was launched here.',
+            'No repo write, commit, publish, or deploy action ran here.'
+        ],
         cockpit_ref: null,
         plan_card: {
             plain_title: 'Sentinel review unavailable',
@@ -1211,9 +1285,7 @@ function readGatewayString(value: unknown, minLength: number, maxLength: number)
 }
 
 function readGatewayId(value: unknown, prefix: string): string | null {
-    return typeof value === 'string' && value.length >= prefix.length + 1 && value.length <= 128 && value.startsWith(prefix)
-        ? value
-        : null
+    return typeof value === 'string' && value.length >= prefix.length + 1 && value.length <= 128 && value.startsWith(prefix) ? value : null
 }
 
 function readGatewayHash(value: unknown): string | null {

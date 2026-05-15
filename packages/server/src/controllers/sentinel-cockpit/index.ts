@@ -229,7 +229,7 @@ async function handleSnapshot(req: Request, res: Response): Promise<void> {
             cockpitRequest.request_kind === 'resume' && resumeBridge.resumeBridgeIsRequested()
                 ? await resumeBridge.createResumeSnapshot(cockpitRequest)
                 : cockpitRequest.request_kind === 'goal' && classifyBridge.classifyBridgeIsRequested()
-                  ? await classifyBridge.createClassifySnapshot(cockpitRequest)
+                ? await classifyBridge.createClassifySnapshot(cockpitRequest)
                 : snapshotStatic.createStaticSnapshot(cockpitRequest)
         if (isPlanSessionResponse(snapshot)) {
             sendJson(res, 200, validatePlanSession(snapshot))
@@ -247,7 +247,9 @@ async function handleSnapshot(req: Request, res: Response): Promise<void> {
 
 export function admitRequest(req: Request): AdmissionResult {
     if (
-        ![COCKPIT_SNAPSHOT_PATH, COCKPIT_PLAN_DECISION_PATH, COCKPIT_MANUAL_WORKER_PACKET_PATH, COCKPIT_RESULT_REVIEW_PATH].includes(req.path) ||
+        ![COCKPIT_SNAPSHOT_PATH, COCKPIT_PLAN_DECISION_PATH, COCKPIT_MANUAL_WORKER_PACKET_PATH, COCKPIT_RESULT_REVIEW_PATH].includes(
+            req.path
+        ) ||
         hasQueryString(req)
     ) {
         return { ok: false, statusCode: 404, code: 'not_found' }
@@ -553,7 +555,10 @@ function validateGoalText(value: unknown): string {
     if (typeof value !== 'string') {
         throw httpError(400, 'invalid_request')
     }
-    const normalized = value.replace(/[\t\r\n]+/g, ' ').replace(/\s+/g, ' ').trim()
+    const normalized = value
+        .replace(/[\t\r\n]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
     if (!normalized || normalized.length > 1024 || hasDisallowedControlCharacter(normalized) || hasHiddenControlCharacter(normalized)) {
         throw httpError(400, 'invalid_request')
     }
@@ -722,7 +727,11 @@ function validatePlanSession(planSession: classifyBridge.PlanSessionResponse) {
     return planSession
 }
 
-function assertResponseKeys(body: Record<string, unknown>, requiredKeys: readonly string[], optionalKeys: readonly string[] = Object.freeze([])) {
+function assertResponseKeys(
+    body: Record<string, unknown>,
+    requiredKeys: readonly string[],
+    optionalKeys: readonly string[] = Object.freeze([])
+) {
     const keys = Object.keys(body)
     const allowedKeys = new Set([...requiredKeys, ...optionalKeys])
     if (requiredKeys.some((key) => !keys.includes(key)) || keys.some((key) => !allowedKeys.has(key))) {
@@ -790,7 +799,10 @@ function sendJson(res: Response, statusCode: number, body: unknown) {
     res.setHeader('Cache-Control', 'no-store')
     res.setHeader('X-Content-Type-Options', 'nosniff')
     res.setHeader('Referrer-Policy', 'no-referrer')
-    res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; connect-src 'none'")
+    res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; connect-src 'none'"
+    )
     res.end(serialized)
 }
 
@@ -813,48 +825,50 @@ function getErrorStatusCode(error: unknown): number {
 function getErrorCode(error: unknown): ErrorCode {
     const maybe = error as { code?: unknown }
     const code = typeof maybe?.code === 'string' ? maybe.code : 'internal_error'
-    if ([
-        'method_not_allowed',
-        'not_found',
-        'preflight_denied',
-        'header_denied',
-        'unsupported_media_type',
-        'unsupported_content_encoding',
-        'body_too_large',
-        'invalid_json',
-        'invalid_request',
-        'invalid_snapshot',
-        'sentinel_classify_unavailable',
-        'sentinel_classify_malformed',
-        'sentinel_resume_disabled',
-        'sentinel_resume_binding_invalid',
-        'sentinel_resume_binding_not_found',
-        'sentinel_resume_unavailable',
-        'sentinel_resume_malformed',
-        'feature_disabled',
-        'plan_session_not_found',
-        'plan_session_expired',
-        'plan_session_consumed',
-        'plan_session_owner_mismatch',
-        'plan_session_nonce_mismatch',
-        'plan_session_state_mismatch',
-        'manual_packet_invalid_input',
-        'manual_packet_not_found',
-        'manual_packet_expired',
-        'manual_packet_consumed',
-        'manual_packet_nonce_mismatch',
-        'manual_packet_state_mismatch',
-        'result_review_invalid_input',
-        'result_review_not_found',
-        'result_review_expired',
-        'result_review_consumed',
-        'result_review_nonce_mismatch',
-        'result_review_state_mismatch',
-        'plan_decision_invalid_input',
-        'gateway_unavailable',
-        'gateway_rejected',
-        'internal_error'
-    ].includes(code)) {
+    if (
+        [
+            'method_not_allowed',
+            'not_found',
+            'preflight_denied',
+            'header_denied',
+            'unsupported_media_type',
+            'unsupported_content_encoding',
+            'body_too_large',
+            'invalid_json',
+            'invalid_request',
+            'invalid_snapshot',
+            'sentinel_classify_unavailable',
+            'sentinel_classify_malformed',
+            'sentinel_resume_disabled',
+            'sentinel_resume_binding_invalid',
+            'sentinel_resume_binding_not_found',
+            'sentinel_resume_unavailable',
+            'sentinel_resume_malformed',
+            'feature_disabled',
+            'plan_session_not_found',
+            'plan_session_expired',
+            'plan_session_consumed',
+            'plan_session_owner_mismatch',
+            'plan_session_nonce_mismatch',
+            'plan_session_state_mismatch',
+            'manual_packet_invalid_input',
+            'manual_packet_not_found',
+            'manual_packet_expired',
+            'manual_packet_consumed',
+            'manual_packet_nonce_mismatch',
+            'manual_packet_state_mismatch',
+            'result_review_invalid_input',
+            'result_review_not_found',
+            'result_review_expired',
+            'result_review_consumed',
+            'result_review_nonce_mismatch',
+            'result_review_state_mismatch',
+            'plan_decision_invalid_input',
+            'gateway_unavailable',
+            'gateway_rejected',
+            'internal_error'
+        ].includes(code)
+    ) {
         return code as ErrorCode
     }
     return 'internal_error'
@@ -884,17 +898,24 @@ function assertRequestTextSafeWithoutAuthorityRefs(request: Record<string, strin
 }
 
 function forbiddenTextPresent(value: string): boolean {
-    return /\b(?:SENTINEL_GATEWAY_TOKEN|authorization|bearer|token|secret|password|api[-_]?key|approval_challenge|task_packet|result_packet|callback_url|webhook|runtime[-_]?ingest|worker|mcp|tool|shell|command|commit|publish|send|deploy|risk_class|authority_ladder|artifact_registry|persona|DTO)\b/i.test(value)
-        || containsTokenShapedText(value)
+    return (
+        /\b(?:SENTINEL_GATEWAY_TOKEN|authorization|bearer|token|secret|password|api[-_]?key|approval_challenge|task_packet|result_packet|callback_url|webhook|runtime[-_]?ingest|worker|mcp|tool|shell|command|commit|publish|send|deploy|risk_class|authority_ladder|artifact_registry|persona|DTO)\b/i.test(
+            value
+        ) || containsTokenShapedText(value)
+    )
 }
 
 function secretTextPresent(value: string): boolean {
-    return /\b(?:SENTINEL_GATEWAY_TOKEN|authorization|bearer|token|secret|password|passwd|api[-_]?key|apikey|cookie|private\s+key)\b/i.test(value)
-        || /BEGIN [A-Z ]*PRIVATE KEY/i.test(value)
-        || /\b(?:sk-|ghp_|github_pat_|xoxb-|AKIA)[A-Za-z0-9_./+=-]{8,}\b/.test(value)
-        || /\b[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/.test(value)
-        || /https?:\/\/[^/\s:@]+:[^/\s@]+@/i.test(value)
-        || containsTokenShapedText(value)
+    return (
+        /\b(?:SENTINEL_GATEWAY_TOKEN|authorization|bearer|token|secret|password|passwd|api[-_]?key|apikey|cookie|private\s+key)\b/i.test(
+            value
+        ) ||
+        /BEGIN [A-Z ]*PRIVATE KEY/i.test(value) ||
+        /\b(?:sk-|ghp_|github_pat_|xoxb-|AKIA)[A-Za-z0-9_./+=-]{8,}\b/.test(value) ||
+        /\b[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/.test(value) ||
+        /https?:\/\/[^/\s:@]+:[^/\s@]+@/i.test(value) ||
+        containsTokenShapedText(value)
+    )
 }
 
 function looksLikeTopLevelJson(value: string): boolean {
@@ -909,8 +930,11 @@ function looksLikeTopLevelJson(value: string): boolean {
 }
 
 function resultTextHasProtocolAuthority(value: string): boolean {
-    return /\b(?:run_id|sentinel_session_id|session_id|decision_id|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|result_packet|evidence_manifest|gateway_url|client_nonce|cockpit_ref|action_inputs|task_packet|copyable_worker_prompt|authorization|bearer|token)\b/i.test(value)
-        || /127\.0\.0\.1:39173/i.test(value)
+    return (
+        /\b(?:run_id|sentinel_session_id|session_id|decision_id|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|result_packet|evidence_manifest|gateway_url|client_nonce|cockpit_ref|action_inputs|task_packet|copyable_worker_prompt|authorization|bearer|token)\b/i.test(
+            value
+        ) || /127\.0\.0\.1:39173/i.test(value)
+    )
 }
 
 function containsTokenShapedText(value: string): boolean {

@@ -16,7 +16,13 @@ export const GOAL_REQUEST_BODY_KEYS = Object.freeze(['request_kind', 'plain_goal
 export const PLAN_DECISION_BODY_KEYS = Object.freeze(['request_kind', 'cockpit_ref', 'client_nonce', 'decision'])
 export const PLAN_DECISION_REVISE_BODY_KEYS = Object.freeze(['request_kind', 'cockpit_ref', 'client_nonce', 'decision', 'revision_text'])
 export const MANUAL_PACKET_BODY_KEYS = Object.freeze(['request_kind', 'cockpit_ref', 'client_nonce'])
-export const RESULT_REVIEW_BODY_KEYS = Object.freeze(['request_kind', 'cockpit_ref', 'client_nonce', 'result_text', 'review_only_confirmation'])
+export const RESULT_REVIEW_BODY_KEYS = Object.freeze([
+    'request_kind',
+    'cockpit_ref',
+    'client_nonce',
+    'result_text',
+    'review_only_confirmation'
+])
 export const SNAPSHOT_KEYS = Object.freeze([
     'schema_version',
     'status',

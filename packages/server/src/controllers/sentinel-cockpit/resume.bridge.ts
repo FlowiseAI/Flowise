@@ -1,10 +1,5 @@
 import { Buffer } from 'buffer'
-import {
-    COCKPIT_SNAPSHOT_SCHEMA_VERSION,
-    CockpitRequest,
-    CockpitSnapshot,
-    createStaticSnapshot
-} from './snapshot.static'
+import { COCKPIT_SNAPSHOT_SCHEMA_VERSION, CockpitRequest, CockpitSnapshot, createStaticSnapshot } from './snapshot.static'
 
 export const RESUME_BRIDGE_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_RESUME_BRIDGE'
 export const RESUME_BRIDGE_TOKEN_ENV = 'BEZZTY_FLOWISE_SENTINEL_GATEWAY_TOKEN'
@@ -288,7 +283,11 @@ function readClosedStatusToken(value: unknown, allowedValues: readonly string[],
     if (typeof value !== 'string') return fallback
     const trimmed = value.trim().toLowerCase()
     if (!/^[a-z0-9_:-]{1,64}$/.test(trimmed)) return fallback
-    if (/(?:authorization|bearer|token|secret|approval_challenge|task_packet|result_packet|action_inputs|run_id|sentinel_session_id)/i.test(trimmed)) {
+    if (
+        /(?:authorization|bearer|token|secret|approval_challenge|task_packet|result_packet|action_inputs|run_id|sentinel_session_id)/i.test(
+            trimmed
+        )
+    ) {
         return fallback
     }
     return allowedValues.includes(trimmed) ? trimmed : fallback

@@ -1,6 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react'
+/* eslint-disable react/prop-types */
+import { useEffect, useRef, useState } from 'react'
 
-import { requestGoalSnapshot, requestManualWorkerPacket, requestPlanDecision, requestResultReview, requestResumeSnapshot } from '@/api/sentinelCockpit'
+import {
+    requestGoalSnapshot,
+    requestManualWorkerPacket,
+    requestPlanDecision,
+    requestResultReview,
+    requestResumeSnapshot
+} from '@/api/sentinelCockpit'
 
 export const EMPTY_MESSAGE = 'Paste a checkpoint reference to continue the last work safely.'
 export const LOADING_MESSAGE = 'Checking the last saved work.'
@@ -437,7 +444,10 @@ export default function SentinelResumeStatus() {
             })
             setError(result.error)
             setSnapshot(result.snapshot)
-            if (isPlanDecisionRequiredSession(result.snapshot, clientNonceRef.current) || isManualPacketRequiredSession(result.snapshot, clientNonceRef.current)) {
+            if (
+                isPlanDecisionRequiredSession(result.snapshot, clientNonceRef.current) ||
+                isManualPacketRequiredSession(result.snapshot, clientNonceRef.current)
+            ) {
                 cockpitRef.current = result.snapshot.cockpit_ref
             } else {
                 clearPlanAuthority()
@@ -464,7 +474,10 @@ export default function SentinelResumeStatus() {
             })
             setError(result.error)
             setSnapshot(result.snapshot)
-            if (isManualPacketRequiredSession(result.snapshot, clientNonceRef.current) || isResultReviewRequiredSession(result.snapshot, clientNonceRef.current)) {
+            if (
+                isManualPacketRequiredSession(result.snapshot, clientNonceRef.current) ||
+                isResultReviewRequiredSession(result.snapshot, clientNonceRef.current)
+            ) {
                 cockpitRef.current = result.snapshot.cockpit_ref
             } else {
                 clearPlanAuthority()
@@ -514,9 +527,12 @@ export default function SentinelResumeStatus() {
         }
     }
 
-    const planDecisionReady = isPlanDecisionRequiredSession(snapshot, clientNonceRef.current) && cockpitRef.current === snapshot?.cockpit_ref
-    const manualPacketReady = isManualPacketRequiredSession(snapshot, clientNonceRef.current) && cockpitRef.current === snapshot?.cockpit_ref
-    const resultReviewReady = isResultReviewRequiredSession(snapshot, clientNonceRef.current) && cockpitRef.current === snapshot?.cockpit_ref
+    const planDecisionReady =
+        isPlanDecisionRequiredSession(snapshot, clientNonceRef.current) && cockpitRef.current === snapshot?.cockpit_ref
+    const manualPacketReady =
+        isManualPacketRequiredSession(snapshot, clientNonceRef.current) && cockpitRef.current === snapshot?.cockpit_ref
+    const resultReviewReady =
+        isResultReviewRequiredSession(snapshot, clientNonceRef.current) && cockpitRef.current === snapshot?.cockpit_ref
 
     return (
         <main style={pageStyles.root}>
@@ -526,8 +542,8 @@ export default function SentinelResumeStatus() {
                     Quality Vibe Coding Cockpit
                 </h1>
                 <p style={pageStyles.copy}>
-                    Continue from a saved checkpoint and see the plain-English status Sentinel says is safe to show. This page cannot run tools,
-                    launch workers, or change files.
+                    Continue from a saved checkpoint and see the plain-English status Sentinel says is safe to show. This page cannot run
+                    tools, launch workers, or change files.
                 </p>
 
                 <div style={pageStyles.guidance} aria-label='Cockpit safety boundaries'>
@@ -587,7 +603,11 @@ export default function SentinelResumeStatus() {
                 </form>
 
                 {error ? <div style={pageStyles.error}>{error}</div> : null}
-                {!error && !snapshot ? <div style={pageStyles.status}>{isLoading ? (loadingMode === 'goal' ? GOAL_LOADING_MESSAGE : LOADING_MESSAGE) : EMPTY_MESSAGE}</div> : null}
+                {!error && !snapshot ? (
+                    <div style={pageStyles.status}>
+                        {isLoading ? (loadingMode === 'goal' ? GOAL_LOADING_MESSAGE : LOADING_MESSAGE) : EMPTY_MESSAGE}
+                    </div>
+                ) : null}
                 {!error && snapshot && isPlanSessionResponse(snapshot) ? (
                     <PlanSessionCard
                         snapshot={snapshot}
@@ -631,13 +651,19 @@ export function ResumeSnapshot({ snapshot }) {
             </div>
             <div style={pageStyles.row}>
                 <div style={pageStyles.rowLabel}>Evidence</div>
-                <div style={pageStyles.rowValue}>{Array.isArray(snapshot.evidence_refs) && snapshot.evidence_refs.length === 0 ? 'No evidence references displayed' : 'Display blocked'}</div>
+                <div style={pageStyles.rowValue}>
+                    {Array.isArray(snapshot.evidence_refs) && snapshot.evidence_refs.length === 0
+                        ? 'No evidence references displayed'
+                        : 'Display blocked'}
+                </div>
             </div>
             <div style={{ ...pageStyles.row, borderBottom: 'none' }}>
                 <div style={pageStyles.rowLabel}>Manual handoff preview</div>
                 <div style={pageStyles.rowValue}>{snapshot.manual_handoff_preview === null ? 'No preview' : 'Display blocked'}</div>
             </div>
-            <p style={pageStyles.blockedNote}>This view is for guidance only. It does not expose approval, execution, worker, or review controls.</p>
+            <p style={pageStyles.blockedNote}>
+                This view is for guidance only. It does not expose approval, execution, worker, or review controls.
+            </p>
         </section>
     )
 }
@@ -711,14 +737,26 @@ export function PlanSessionCard({
                         <button type='button' style={pageStyles.button} disabled={isLoading} onClick={() => onPlanDecision('approve_plan')}>
                             Approve plan
                         </button>
-                        <button type='button' style={pageStyles.secondaryButton} disabled={isLoading} onClick={() => onPlanDecision('revise_plan')}>
+                        <button
+                            type='button'
+                            style={pageStyles.secondaryButton}
+                            disabled={isLoading}
+                            onClick={() => onPlanDecision('revise_plan')}
+                        >
                             Revise plan
                         </button>
-                        <button type='button' style={pageStyles.secondaryButton} disabled={isLoading} onClick={() => onPlanDecision('stop')}>
+                        <button
+                            type='button'
+                            style={pageStyles.secondaryButton}
+                            disabled={isLoading}
+                            onClick={() => onPlanDecision('stop')}
+                        >
                             Stop
                         </button>
                     </div>
-                    <p style={pageStyles.note}>These controls only record your plan decision. They do not run tools, launch workers, or change files.</p>
+                    <p style={pageStyles.note}>
+                        These controls only record your plan decision. They do not run tools, launch workers, or change files.
+                    </p>
                 </>
             ) : canPrepareManualPacket ? (
                 <>
@@ -753,8 +791,8 @@ export function PlanSessionCard({
                                 onChange={(event) => onReviewOnlyConfirmedChange(event.target.checked)}
                             />
                             <span>
-                                I understand this only sends the pasted worker result for Sentinel review. This screen will not edit files, run commands,
-                                launch workers, use MCP, Agentflow, or HITL, commit, publish, deploy, or continue the work.
+                                I understand this only sends the pasted worker result for Sentinel review. This screen will not edit files,
+                                run commands, launch workers, use MCP, Agentflow, or HITL, commit, publish, deploy, or continue the work.
                             </span>
                         </label>
                     </div>
@@ -999,7 +1037,8 @@ export function validateRevisionText(revisionText) {
 export function validateResultReviewText(resultText) {
     if (typeof resultText !== 'string' || resultText.trim().length === 0) return RESULT_REVIEW_EMPTY_MESSAGE
     const trimmed = resultText.trim()
-    if (trimmed.length < RESULT_REVIEW_TEXT_MIN_LENGTH || trimmed.length > RESULT_REVIEW_TEXT_MAX_LENGTH) return RESULT_REVIEW_UNSAFE_MESSAGE
+    if (trimmed.length < RESULT_REVIEW_TEXT_MIN_LENGTH || trimmed.length > RESULT_REVIEW_TEXT_MAX_LENGTH)
+        return RESULT_REVIEW_UNSAFE_MESSAGE
     if (/^[{[]/.test(trimmed)) return RESULT_REVIEW_UNSAFE_MESSAGE
     if (RESULT_REVIEW_FORBIDDEN_TEXT.test(trimmed)) return RESULT_REVIEW_UNSAFE_MESSAGE
     if (/<\s*\/?\s*[a-z][^>]*>|on[a-z]+\s*=/i.test(trimmed)) return RESULT_REVIEW_UNSAFE_MESSAGE

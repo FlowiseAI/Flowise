@@ -179,7 +179,16 @@ describe('sentinelCockpit API wrapper', () => {
     })
 
     it('posts only the plan-decision request body whitelist', async () => {
-        const fetchImpl = jest.fn().mockResolvedValue(fetchResponse(validPlanSession({ state: 'plan_drafted', next_safe_action: 'plan_display_only', allowed_user_actions: ['none'], cockpit_ref: null })))
+        const fetchImpl = jest.fn().mockResolvedValue(
+            fetchResponse(
+                validPlanSession({
+                    state: 'plan_drafted',
+                    next_safe_action: 'plan_display_only',
+                    allowed_user_actions: ['none'],
+                    cockpit_ref: null
+                })
+            )
+        )
 
         await requestPlanDecision(
             {
@@ -222,12 +231,16 @@ describe('sentinelCockpit API wrapper', () => {
             decision: 'revise_plan',
             revision_text: 'Please narrow the plan.'
         })
-        expect(Object.keys(buildPlanDecisionBody({
-            cockpitRef: 'cockpit_safe_ref',
-            clientNonce: 'nonce_abcdefghijklmnop',
-            decision: 'revise_plan',
-            revisionText: 'Please narrow the plan.'
-        })).sort()).toEqual([...PLAN_DECISION_REVISE_BODY_KEYS].sort())
+        expect(
+            Object.keys(
+                buildPlanDecisionBody({
+                    cockpitRef: 'cockpit_safe_ref',
+                    clientNonce: 'nonce_abcdefghijklmnop',
+                    decision: 'revise_plan',
+                    revisionText: 'Please narrow the plan.'
+                })
+            ).sort()
+        ).toEqual([...PLAN_DECISION_REVISE_BODY_KEYS].sort())
         expect(() =>
             buildPlanDecisionBody({
                 cockpitRef: 'cockpit_safe_ref',
@@ -393,52 +406,77 @@ describe('sentinelCockpit API wrapper', () => {
         async (key) => {
             const fetchImpl = jest.fn()
 
-            await expect(requestGoalSnapshot({ plainGoal: 'Plan the next safe step', [key]: 'blocked' }, { fetchImpl })).rejects.toMatchObject({
+            await expect(
+                requestGoalSnapshot({ plainGoal: 'Plan the next safe step', [key]: 'blocked' }, { fetchImpl })
+            ).rejects.toMatchObject({
                 code: 'invalid_request'
             })
             expect(fetchImpl).not.toHaveBeenCalled()
         }
     )
 
-    it.each(['run_id', 'plan_id', 'approval_id', 'task_id', 'task_packet_hash', 'workerType', 'copyable_worker_prompt', 'result_packet', 'gatewayUrl', 'command', 'mcp', 'shell'])(
-        'rejects forbidden manual packet caller key %s before any network call',
-        async (key) => {
-            const fetchImpl = jest.fn()
+    it.each([
+        'run_id',
+        'plan_id',
+        'approval_id',
+        'task_id',
+        'task_packet_hash',
+        'workerType',
+        'copyable_worker_prompt',
+        'result_packet',
+        'gatewayUrl',
+        'command',
+        'mcp',
+        'shell'
+    ])('rejects forbidden manual packet caller key %s before any network call', async (key) => {
+        const fetchImpl = jest.fn()
 
-            await expect(
-                requestManualWorkerPacket({ cockpitRef: 'cockpit_safe_ref', clientNonce: 'nonce_abcdefghijklmnop', [key]: 'blocked' }, { fetchImpl })
-            ).rejects.toMatchObject({ code: 'invalid_request' })
-            expect(fetchImpl).not.toHaveBeenCalled()
-        }
-    )
+        await expect(
+            requestManualWorkerPacket(
+                { cockpitRef: 'cockpit_safe_ref', clientNonce: 'nonce_abcdefghijklmnop', [key]: 'blocked' },
+                { fetchImpl }
+            )
+        ).rejects.toMatchObject({ code: 'invalid_request' })
+        expect(fetchImpl).not.toHaveBeenCalled()
+    })
 
-    it.each(['run_id', 'sentinel_session_id', 'task_id', 'task_packet_hash', 'result_packet', 'evidence_manifest', 'gatewayUrl', 'token', 'copyable_worker_prompt', 'shell'])(
-        'rejects forbidden result review caller key %s before any network call',
-        async (key) => {
-            const fetchImpl = jest.fn()
+    it.each([
+        'run_id',
+        'sentinel_session_id',
+        'task_id',
+        'task_packet_hash',
+        'result_packet',
+        'evidence_manifest',
+        'gatewayUrl',
+        'token',
+        'copyable_worker_prompt',
+        'shell'
+    ])('rejects forbidden result review caller key %s before any network call', async (key) => {
+        const fetchImpl = jest.fn()
 
-            await expect(
-                requestResultReview(
-                    {
-                        cockpitRef: 'cockpit_safe_ref',
-                        clientNonce: 'nonce_abcdefghijklmnop',
-                        resultText: 'Manual worker completed a plain text review outside this page.',
-                        reviewOnlyConfirmation: true,
-                        [key]: 'blocked'
-                    },
-                    { fetchImpl }
-                )
-            ).rejects.toMatchObject({ code: 'invalid_request' })
-            expect(fetchImpl).not.toHaveBeenCalled()
-        }
-    )
+        await expect(
+            requestResultReview(
+                {
+                    cockpitRef: 'cockpit_safe_ref',
+                    clientNonce: 'nonce_abcdefghijklmnop',
+                    resultText: 'Manual worker completed a plain text review outside this page.',
+                    reviewOnlyConfirmation: true,
+                    [key]: 'blocked'
+                },
+                { fetchImpl }
+            )
+        ).rejects.toMatchObject({ code: 'invalid_request' })
+        expect(fetchImpl).not.toHaveBeenCalled()
+    })
 
     it.each(['plainConstraints', 'displayedPromptRef', 'checkpointRef'])(
         'rejects out-of-scope goal caller key %s before any network call',
         async (key) => {
             const fetchImpl = jest.fn()
 
-            await expect(requestGoalSnapshot({ plainGoal: 'Plan the next safe step', [key]: 'blocked' }, { fetchImpl })).rejects.toMatchObject({
+            await expect(
+                requestGoalSnapshot({ plainGoal: 'Plan the next safe step', [key]: 'blocked' }, { fetchImpl })
+            ).rejects.toMatchObject({
                 code: 'invalid_request'
             })
             expect(fetchImpl).not.toHaveBeenCalled()
@@ -472,7 +510,9 @@ describe('sentinelCockpit API wrapper', () => {
     })
 
     it('preserves only a sanitized route card from snapshot responses', async () => {
-        const fetchImpl = jest.fn().mockResolvedValue(fetchResponse(validSnapshot({ route_card: validRouteCard(), raw_gateway_body: 'blocked' })))
+        const fetchImpl = jest
+            .fn()
+            .mockResolvedValue(fetchResponse(validSnapshot({ route_card: validRouteCard(), raw_gateway_body: 'blocked' })))
 
         const snapshot = await requestGoalSnapshot({ plainGoal: 'Plan the next safe step' }, { fetchImpl })
 
@@ -500,7 +540,9 @@ describe('sentinelCockpit API wrapper', () => {
     })
 
     it('returns only frozen plan-session keys and drops extra response fields', async () => {
-        const fetchImpl = jest.fn().mockResolvedValue(fetchResponse(validPlanSession({ run_id: 'run_hidden_123', approval_challenge: 'hidden' })))
+        const fetchImpl = jest
+            .fn()
+            .mockResolvedValue(fetchResponse(validPlanSession({ run_id: 'run_hidden_123', approval_challenge: 'hidden' })))
 
         const session = await requestPlanDecision(
             {
@@ -518,7 +560,9 @@ describe('sentinelCockpit API wrapper', () => {
     })
 
     it('preserves only a sanitized route card from plan-session responses', async () => {
-        const fetchImpl = jest.fn().mockResolvedValue(fetchResponse(validPlanSession({ route_card: validRouteCard(), raw_gateway_body: 'blocked' })))
+        const fetchImpl = jest
+            .fn()
+            .mockResolvedValue(fetchResponse(validPlanSession({ route_card: validRouteCard(), raw_gateway_body: 'blocked' })))
 
         const session = await requestGoalSnapshot(
             {
@@ -599,8 +643,14 @@ describe('sentinelCockpit API wrapper', () => {
             },
             { fetchImpl: prepareFetch }
         )
-        const ready = await requestManualWorkerPacket({ cockpitRef: 'cockpit_safe_ref', clientNonce: 'nonce_abcdefghijklmnop' }, { fetchImpl: readyFetch })
-        const reviewRequired = await requestManualWorkerPacket({ cockpitRef: 'cockpit_safe_ref', clientNonce: 'nonce_abcdefghijklmnop' }, { fetchImpl: reviewFetch })
+        const ready = await requestManualWorkerPacket(
+            { cockpitRef: 'cockpit_safe_ref', clientNonce: 'nonce_abcdefghijklmnop' },
+            { fetchImpl: readyFetch }
+        )
+        const reviewRequired = await requestManualWorkerPacket(
+            { cockpitRef: 'cockpit_safe_ref', clientNonce: 'nonce_abcdefghijklmnop' },
+            { fetchImpl: reviewFetch }
+        )
 
         expect(prepare.allowed_user_actions).toEqual(['prepare_manual_worker_packet'])
         expect(prepare.cockpit_ref).toBe('cockpit_safe_ref')

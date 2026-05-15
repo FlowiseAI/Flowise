@@ -6,4 +6,3 @@ const router = express.Router()
 router.use(sentinelCockpitController.handleSnapshot)
 
 export default router
-

@@ -51,7 +51,11 @@ export function createStaticSnapshot(request: CockpitRequest): CockpitSnapshot {
             plain_summary: 'Your goal was received by the local cockpit. Planning is not available yet, and no file changes were made.',
             next_safe_action: 'planning_deferred',
             allowed_user_actions: ['none'],
-            blocked_actions: ['Planning approval is not available here.', 'Execution is not available here.', 'Manual handoff and result intake are deferred.'],
+            blocked_actions: [
+                'Planning approval is not available here.',
+                'Execution is not available here.',
+                'Manual handoff and result intake are deferred.'
+            ],
             checkpoint_ref: null,
             evidence_refs: [],
             manual_handoff_preview: null,

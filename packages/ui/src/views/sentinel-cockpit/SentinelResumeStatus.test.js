@@ -1,8 +1,13 @@
-import React from 'react'
 import { JSDOM } from 'jsdom'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-import { requestGoalSnapshot, requestManualWorkerPacket, requestPlanDecision, requestResultReview, requestResumeSnapshot } from '@/api/sentinelCockpit'
+import {
+    requestGoalSnapshot,
+    requestManualWorkerPacket,
+    requestPlanDecision,
+    requestResultReview,
+    requestResumeSnapshot
+} from '@/api/sentinelCockpit'
 
 import SentinelResumeStatus, {
     DISPLAY_BLOCKED_ERROR,
@@ -298,7 +303,10 @@ describe('SentinelResumeStatus', () => {
         const result = await loadGoalSnapshot(' Plan the next safe step ', requestGoalSnapshotImpl, 'nonce_abcdefghijklmnop')
 
         expect(requestGoalSnapshotImpl).toHaveBeenCalledTimes(1)
-        expect(requestGoalSnapshotImpl).toHaveBeenCalledWith({ plainGoal: 'Plan the next safe step', clientNonce: 'nonce_abcdefghijklmnop' })
+        expect(requestGoalSnapshotImpl).toHaveBeenCalledWith({
+            plainGoal: 'Plan the next safe step',
+            clientNonce: 'nonce_abcdefghijklmnop'
+        })
         expect(result.snapshot.state).toBe('plan_decision_required')
         expect(result.error).toBe('')
     })
@@ -322,7 +330,10 @@ describe('SentinelResumeStatus', () => {
         const result = await loadGoalSnapshot(' Plan the next safe step ', requestGoalSnapshotImpl, 'nonce_abcdefghijklmnop')
 
         expect(requestGoalSnapshotImpl).toHaveBeenCalledTimes(2)
-        expect(requestGoalSnapshotImpl.mock.calls[0][0]).toEqual({ plainGoal: 'Plan the next safe step', clientNonce: 'nonce_abcdefghijklmnop' })
+        expect(requestGoalSnapshotImpl.mock.calls[0][0]).toEqual({
+            plainGoal: 'Plan the next safe step',
+            clientNonce: 'nonce_abcdefghijklmnop'
+        })
         expect(requestGoalSnapshotImpl.mock.calls[1][0]).toEqual({ plainGoal: 'Plan the next safe step' })
         expect(result.snapshot.state).toBe('goal_intake')
         expect(result.error).toBe('')
@@ -414,7 +425,9 @@ describe('SentinelResumeStatus', () => {
         expect(html).toContain('What will not happen')
         expect(html).toContain('No plan, work, or review starts from an unclear goal.')
         expect(html).toContain('Clarification needed')
-        expect(html).not.toMatch(/Approve plan|Revise plan|Stop|Prepare manual worker packet|Send for Sentinel review|client_nonce|cockpit_ref|gateway|bearer|authorization/)
+        expect(html).not.toMatch(
+            /Approve plan|Revise plan|Stop|Prepare manual worker packet|Send for Sentinel review|client_nonce|cockpit_ref|gateway|bearer|authorization/
+        )
     })
 
     it('omits unsafe snapshot route guidance without rendering raw content', () => {
@@ -701,7 +714,9 @@ describe('SentinelResumeStatus', () => {
         expect(html).toContain('Approve plan')
         expect(html).toContain('Revise plan')
         expect(html).toContain('Stop')
-        expect(html).not.toMatch(/cockpit_hidden_ref|run_hidden|sentinel_session_hidden|decision_hidden|approval_challenge_hidden|client_nonce|gateway|bearer|authorization/)
+        expect(html).not.toMatch(
+            /cockpit_hidden_ref|run_hidden|sentinel_session_hidden|decision_hidden|approval_challenge_hidden|client_nonce|gateway|bearer|authorization/
+        )
     })
 
     it('renders sanitized Sentinel-owned route guidance without adding controls', () => {
@@ -725,7 +740,9 @@ describe('SentinelResumeStatus', () => {
         expect(html).toContain('Approve plan')
         expect(html).toContain('Revise plan')
         expect(html).toContain('Stop')
-        expect(html).not.toMatch(/run_hidden|sentinel_session|decision_id|approval_challenge|client_nonce|cockpit_ref|gateway|bearer|authorization|task_packet|result_packet/)
+        expect(html).not.toMatch(
+            /run_hidden|sentinel_session|decision_id|approval_challenge|client_nonce|cockpit_ref|gateway|bearer|authorization|task_packet|result_packet/
+        )
     })
 
     it('omits unsafe route guidance instead of rendering raw routing details', () => {
@@ -753,8 +770,15 @@ describe('SentinelResumeStatus', () => {
         expect(isPlanDecisionRequiredSession(safePlanSession({ schema_version: 'wrong' }), 'nonce_abcdefghijklmnop')).toBe(false)
         expect(isPlanDecisionRequiredSession(safePlanSession({ state: 'plan_drafted' }), 'nonce_abcdefghijklmnop')).toBe(false)
         expect(isPlanDecisionRequiredSession(safePlanSession({ cockpit_ref: '' }), 'nonce_abcdefghijklmnop')).toBe(false)
-        expect(isPlanDecisionRequiredSession(safePlanSession({ allowed_user_actions: ['approve_plan', 'stop'] }), 'nonce_abcdefghijklmnop')).toBe(false)
-        expect(isPlanDecisionRequiredSession(safePlanSession({ allowed_user_actions: ['approve_plan', 'revise_plan', 'stop', 'execute'] }), 'nonce_abcdefghijklmnop')).toBe(false)
+        expect(
+            isPlanDecisionRequiredSession(safePlanSession({ allowed_user_actions: ['approve_plan', 'stop'] }), 'nonce_abcdefghijklmnop')
+        ).toBe(false)
+        expect(
+            isPlanDecisionRequiredSession(
+                safePlanSession({ allowed_user_actions: ['approve_plan', 'revise_plan', 'stop', 'execute'] }),
+                'nonce_abcdefghijklmnop'
+            )
+        ).toBe(false)
         expect(isPlanDecisionRequiredSession(safePlanSession(), '')).toBe(false)
     })
 
@@ -767,7 +791,12 @@ describe('SentinelResumeStatus', () => {
         })
 
         expect(isManualPacketRequiredSession(manualSession, 'nonce_abcdefghijklmnop')).toBe(true)
-        expect(isManualPacketRequiredSession({ ...manualSession, allowed_user_actions: ['prepare_manual_worker_packet', 'execute'] }, 'nonce_abcdefghijklmnop')).toBe(false)
+        expect(
+            isManualPacketRequiredSession(
+                { ...manualSession, allowed_user_actions: ['prepare_manual_worker_packet', 'execute'] },
+                'nonce_abcdefghijklmnop'
+            )
+        ).toBe(false)
         expect(isManualPacketRequiredSession({ ...manualSession, cockpit_ref: '' }, 'nonce_abcdefghijklmnop')).toBe(false)
         expect(isManualPacketRequiredSession({ ...manualSession, state: 'manual_packet_ready' }, 'nonce_abcdefghijklmnop')).toBe(false)
         expect(isManualPacketRequiredSession(manualSession, '')).toBe(false)
@@ -782,9 +811,19 @@ describe('SentinelResumeStatus', () => {
         })
 
         expect(isResultReviewRequiredSession(reviewSession, 'nonce_abcdefghijklmnop')).toBe(true)
-        expect(isResultReviewRequiredSession({ ...reviewSession, allowed_user_actions: ['submit_result_review', 'execute'] }, 'nonce_abcdefghijklmnop')).toBe(false)
+        expect(
+            isResultReviewRequiredSession(
+                { ...reviewSession, allowed_user_actions: ['submit_result_review', 'execute'] },
+                'nonce_abcdefghijklmnop'
+            )
+        ).toBe(false)
         expect(isResultReviewRequiredSession({ ...reviewSession, cockpit_ref: '' }, 'nonce_abcdefghijklmnop')).toBe(false)
-        expect(isResultReviewRequiredSession({ ...reviewSession, state: 'result_review_accepted', allowed_user_actions: ['none'], cockpit_ref: null }, 'nonce_abcdefghijklmnop')).toBe(false)
+        expect(
+            isResultReviewRequiredSession(
+                { ...reviewSession, state: 'result_review_accepted', allowed_user_actions: ['none'], cockpit_ref: null },
+                'nonce_abcdefghijklmnop'
+            )
+        ).toBe(false)
         expect(isResultReviewRequiredSession(reviewSession, '')).toBe(false)
     })
 
@@ -820,7 +859,9 @@ describe('SentinelResumeStatus', () => {
         await waitForAssertion(() => expect(container.textContent).toContain('Approve plan'))
         expect(container.textContent).toContain('Revise plan')
         expect(container.textContent).toContain('Stop')
-        expect(container.textContent).not.toMatch(/qvc-plan-session-goal|cockpit_safe_ref|client_nonce|run_|sentinel_session|decision_id|approval_challenge|gateway|bearer|authorization/)
+        expect(container.textContent).not.toMatch(
+            /qvc-plan-session-goal|cockpit_safe_ref|client_nonce|run_|sentinel_session|decision_id|approval_challenge|gateway|bearer|authorization/
+        )
 
         const goalInput = requestGoalSnapshot.mock.calls[0][0]
         expect(goalInput.plainGoal).toBe('qvc-plan-session-goal')
@@ -885,7 +926,9 @@ describe('SentinelResumeStatus', () => {
         clickButton('Approve plan')
 
         await waitForAssertion(() => expect(container.textContent).toContain('Prepare manual worker packet'))
-        expect(container.textContent).not.toMatch(/qvc-manual-packet-goal|cockpit_packet_ref|client_nonce|run_|sentinel_session|decision_id|approval_id|plan_id|task_id|task_packet|copyable_worker_prompt|gateway|bearer|authorization/)
+        expect(container.textContent).not.toMatch(
+            /qvc-manual-packet-goal|cockpit_packet_ref|client_nonce|run_|sentinel_session|decision_id|approval_id|plan_id|task_id|task_packet|copyable_worker_prompt|gateway|bearer|authorization/
+        )
 
         clickButton('Prepare manual worker packet')
 
@@ -897,7 +940,9 @@ describe('SentinelResumeStatus', () => {
         await waitForAssertion(() => expect(container.textContent).toContain('Manual packet ready'))
         expect(container.textContent).toContain('Use the governed out-of-band manual handoff process.')
         expect(container.textContent).not.toContain('Prepare manual worker packet')
-        expect(container.textContent).not.toMatch(/cockpit_packet_ref|client_nonce|task_hidden|hash_hidden|task_packet|copyable_worker_prompt|127\.0\.0\.1:39173/)
+        expect(container.textContent).not.toMatch(
+            /cockpit_packet_ref|client_nonce|task_hidden|hash_hidden|task_packet|copyable_worker_prompt|127\.0\.0\.1:39173/
+        )
     })
 
     it('renders result review controls after manual packet preparation and calls the wrapper with pasted text only', async () => {
@@ -929,13 +974,15 @@ describe('SentinelResumeStatus', () => {
         requestResultReview.mockResolvedValue(
             safePlanSession({
                 state: 'result_review_accepted',
-                plain_summary: 'Sentinel accepted this pasted result for the prepared manual packet. This page did not apply code, publish work, or start a continuation.',
+                plain_summary:
+                    'Sentinel accepted this pasted result for the prepared manual packet. This page did not apply code, publish work, or start a continuation.',
                 next_safe_action: 'review_complete',
                 allowed_user_actions: ['none'],
                 cockpit_ref: null,
                 plan_card: {
                     plain_title: 'Sentinel review accepted',
-                    plain_summary: 'Sentinel accepted this pasted result for the prepared manual packet. This page did not apply code, publish work, or start a continuation.',
+                    plain_summary:
+                        'Sentinel accepted this pasted result for the prepared manual packet. This page did not apply code, publish work, or start a continuation.',
                     plain_steps: ['Record or hand off this verdict using your normal out-of-band process.'],
                     will_not_do: ['No code applied here']
                 },
@@ -944,15 +991,8 @@ describe('SentinelResumeStatus', () => {
                 shield_review_id: 'shield_hidden'
             })
         )
-        const {
-            container,
-            setGoalInput,
-            submitGoalForm,
-            clickButton,
-            setResultReviewInput,
-            setReviewOnlyConfirmed,
-            getResultReviewInput
-        } = renderInteractive()
+        const { container, setGoalInput, submitGoalForm, clickButton, setResultReviewInput, setReviewOnlyConfirmed, getResultReviewInput } =
+            renderInteractive()
 
         setGoalInput('qvc-result-review-goal')
         submitGoalForm()
@@ -963,7 +1003,9 @@ describe('SentinelResumeStatus', () => {
         await waitForAssertion(() => expect(container.textContent).toContain('Prepare manual worker packet'))
         clickButton('Prepare manual worker packet')
         await waitForAssertion(() => expect(container.textContent).toContain('Pasted manual worker result'))
-        expect(container.textContent).not.toMatch(/qvc-result-review-goal|cockpit_review_ref|client_nonce|run_|sentinel_session|task_id|task_packet_hash|result_packet|gateway|bearer|authorization/)
+        expect(container.textContent).not.toMatch(
+            /qvc-result-review-goal|cockpit_review_ref|client_nonce|run_|sentinel_session|task_id|task_packet_hash|result_packet|gateway|bearer|authorization/
+        )
 
         setResultReviewInput('Manual worker completed a plain text review outside this page.')
         setReviewOnlyConfirmed(true)
@@ -979,7 +1021,9 @@ describe('SentinelResumeStatus', () => {
         expect(getResultReviewInput()).toBeNull()
         await waitForAssertion(() => expect(container.textContent).toContain('Sentinel review accepted'))
         expect(container.textContent).not.toContain('Send for Sentinel review')
-        expect(container.textContent).not.toMatch(/cockpit_review_ref|client_nonce|task_hidden|shield_hidden|result_packet|127\.0\.0\.1:39173/)
+        expect(container.textContent).not.toMatch(
+            /cockpit_review_ref|client_nonce|task_hidden|shield_hidden|result_packet|127\.0\.0\.1:39173/
+        )
         expect(JSON.stringify(requestResultReview.mock.calls)).not.toContain('127.0.0.1:39173')
     })
 
@@ -1012,9 +1056,21 @@ describe('SentinelResumeStatus', () => {
     })
 
     it.each([
-        ['result_review_needs_more_information', 'More information needed', 'Ask the manual worker or reviewer for clearer plain-English context outside the cockpit.'],
-        ['result_review_rejected', 'Sentinel review rejected', 'Do not treat this as accepted work. Stop and use human review outside the cockpit.'],
-        ['result_review_unavailable', 'Sentinel review unavailable', 'Nothing was accepted. Keep the result outside this page and use an approved retry or review path.']
+        [
+            'result_review_needs_more_information',
+            'More information needed',
+            'Ask the manual worker or reviewer for clearer plain-English context outside the cockpit.'
+        ],
+        [
+            'result_review_rejected',
+            'Sentinel review rejected',
+            'Do not treat this as accepted work. Stop and use human review outside the cockpit.'
+        ],
+        [
+            'result_review_unavailable',
+            'Sentinel review unavailable',
+            'Nothing was accepted. Keep the result outside this page and use an approved retry or review path.'
+        ]
     ])('renders fixed safe copy for %s verdict states', (state, title, summary) => {
         const html = renderToStaticMarkup(
             <PlanSessionCard
@@ -1043,7 +1099,9 @@ describe('SentinelResumeStatus', () => {
     })
 
     it('maps manual packet errors to fixed copy without raw detail', async () => {
-        const requestManualWorkerPacketImpl = jest.fn().mockRejectedValue({ code: 'manual_packet_nonce_mismatch', message: 'raw packet mismatch detail' })
+        const requestManualWorkerPacketImpl = jest
+            .fn()
+            .mockRejectedValue({ code: 'manual_packet_nonce_mismatch', message: 'raw packet mismatch detail' })
 
         const result = await loadManualPacketSession(
             {
@@ -1059,24 +1117,30 @@ describe('SentinelResumeStatus', () => {
     })
 
     it('sends bounded revise text and rejects empty, over-limit, or unsafe revision text', async () => {
-        expect(await loadPlanDecisionSession({
-            cockpitRef: 'cockpit_safe_ref',
-            clientNonce: 'nonce_abcdefghijklmnop',
-            decision: 'revise_plan',
-            revisionText: ''
-        })).toEqual({ snapshot: null, error: REVISION_EMPTY_MESSAGE })
-        expect(await loadPlanDecisionSession({
-            cockpitRef: 'cockpit_safe_ref',
-            clientNonce: 'nonce_abcdefghijklmnop',
-            decision: 'revise_plan',
-            revisionText: 'a'.repeat(1001)
-        })).toEqual({ snapshot: null, error: REVISION_TOO_LONG_MESSAGE })
-        expect(await loadPlanDecisionSession({
-            cockpitRef: 'cockpit_safe_ref',
-            clientNonce: 'nonce_abcdefghijklmnop',
-            decision: 'revise_plan',
-            revisionText: 'use run_hidden in the plan'
-        })).toEqual({ snapshot: null, error: REVISION_UNSAFE_MESSAGE })
+        expect(
+            await loadPlanDecisionSession({
+                cockpitRef: 'cockpit_safe_ref',
+                clientNonce: 'nonce_abcdefghijklmnop',
+                decision: 'revise_plan',
+                revisionText: ''
+            })
+        ).toEqual({ snapshot: null, error: REVISION_EMPTY_MESSAGE })
+        expect(
+            await loadPlanDecisionSession({
+                cockpitRef: 'cockpit_safe_ref',
+                clientNonce: 'nonce_abcdefghijklmnop',
+                decision: 'revise_plan',
+                revisionText: 'a'.repeat(1001)
+            })
+        ).toEqual({ snapshot: null, error: REVISION_TOO_LONG_MESSAGE })
+        expect(
+            await loadPlanDecisionSession({
+                cockpitRef: 'cockpit_safe_ref',
+                clientNonce: 'nonce_abcdefghijklmnop',
+                decision: 'revise_plan',
+                revisionText: 'use run_hidden in the plan'
+            })
+        ).toEqual({ snapshot: null, error: REVISION_UNSAFE_MESSAGE })
 
         const requestPlanDecisionImpl = jest.fn().mockResolvedValue(
             safePlanSession({
@@ -1146,7 +1210,9 @@ describe('SentinelResumeStatus', () => {
     })
 
     it('maps plan-decision errors to fixed copy without raw detail', async () => {
-        const requestPlanDecisionImpl = jest.fn().mockRejectedValue({ code: 'plan_session_nonce_mismatch', message: 'raw nonce mismatch detail' })
+        const requestPlanDecisionImpl = jest
+            .fn()
+            .mockRejectedValue({ code: 'plan_session_nonce_mismatch', message: 'raw nonce mismatch detail' })
 
         const result = await loadPlanDecisionSession(
             {

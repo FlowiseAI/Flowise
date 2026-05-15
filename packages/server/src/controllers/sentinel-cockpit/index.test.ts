@@ -2,9 +2,6 @@ import { Readable } from 'stream'
 import { Request, Response } from 'express'
 import sentinelCockpitController, {
     COCKPIT_ERROR_SCHEMA_VERSION,
-    COCKPIT_MANUAL_WORKER_PACKET_PATH,
-    COCKPIT_PLAN_DECISION_PATH,
-    COCKPIT_RESULT_REVIEW_PATH,
     COCKPIT_ROUTE_PREFIX,
     COCKPIT_SNAPSHOT_PATH,
     FLOWISE_LOCAL_HOST,
@@ -160,7 +157,9 @@ describe('sentinel cockpit request validation', () => {
         })
         expect(() => validateCockpitRequest({ request_kind: 'goal', plain_goal: 'use bearer token safely' })).toThrow('invalid_request')
         expect(() => validateCockpitRequest({ request_kind: 'goal', plain_goal: 'safe\u200Bgoal' })).toThrow('invalid_request')
-        expect(() => validateCockpitRequest({ request_kind: 'goal', plain_goal: 'abcd1234abcd1234abcd1234abcd1234' })).toThrow('invalid_request')
+        expect(() => validateCockpitRequest({ request_kind: 'goal', plain_goal: 'abcd1234abcd1234abcd1234abcd1234' })).toThrow(
+            'invalid_request'
+        )
         expect(() => validateCockpitRequest({ request_kind: 'goal', plain_goal: 'safe\u0007goal' })).toThrow('invalid_request')
         expect(() => validateCockpitRequest({ request_kind: 'resume', checkpoint_ref: 'checkpoint_123', run_id: 'run_123' })).toThrow(
             'invalid_request'
@@ -172,7 +171,9 @@ describe('sentinel cockpit request validation', () => {
         const cockpitRef = 'cockpit_a1b2c3d4e5f60718293a4b5c6d7e8f90'
 
         jest.spyOn(classifyBridge, 'planDecisionBridgeIsRequested').mockReturnValue(false)
-        expect(() => validateCockpitRequest({ request_kind: 'goal', plain_goal: 'x', client_nonce: clientNonce })).toThrow('invalid_request')
+        expect(() => validateCockpitRequest({ request_kind: 'goal', plain_goal: 'x', client_nonce: clientNonce })).toThrow(
+            'invalid_request'
+        )
 
         jest.spyOn(classifyBridge, 'planDecisionBridgeIsRequested').mockReturnValue(true)
         expect(validateCockpitRequest({ request_kind: 'goal', plain_goal: 'x', client_nonce: clientNonce })).toEqual({
@@ -195,20 +196,42 @@ describe('sentinel cockpit request validation', () => {
         expect(() => validateCockpitRequest({ request_kind: 'goal', plain_goal: 'x', client_nonce: 'nonce_abcdefghijklmnop!' })).toThrow(
             'plan_decision_invalid_input'
         )
-        expect(validatePlanDecisionRequest({ request_kind: 'plan_decision', cockpit_ref: cockpitRef, client_nonce: clientNonce, decision: 'approve_plan' })).toEqual({
+        expect(
+            validatePlanDecisionRequest({
+                request_kind: 'plan_decision',
+                cockpit_ref: cockpitRef,
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            })
+        ).toEqual({
             request_kind: 'plan_decision',
             cockpit_ref: cockpitRef,
             client_nonce: clientNonce,
             decision: 'approve_plan'
         })
-        expect(() => validatePlanDecisionRequest({ request_kind: 'plan_decision', cockpit_ref: '', client_nonce: clientNonce, decision: 'approve_plan' })).toThrow(
-            'plan_decision_invalid_input'
-        )
-        expect(() => validatePlanDecisionRequest({ request_kind: 'plan_decision', cockpit_ref: 123, client_nonce: clientNonce, decision: 'approve_plan' })).toThrow(
-            'plan_decision_invalid_input'
-        )
         expect(() =>
-            validatePlanDecisionRequest({ request_kind: 'plan_decision', cockpit_ref: 'cockpit_short', client_nonce: clientNonce, decision: 'approve_plan' })
+            validatePlanDecisionRequest({
+                request_kind: 'plan_decision',
+                cockpit_ref: '',
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            })
+        ).toThrow('plan_decision_invalid_input')
+        expect(() =>
+            validatePlanDecisionRequest({
+                request_kind: 'plan_decision',
+                cockpit_ref: 123,
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            })
+        ).toThrow('plan_decision_invalid_input')
+        expect(() =>
+            validatePlanDecisionRequest({
+                request_kind: 'plan_decision',
+                cockpit_ref: 'cockpit_short',
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            })
         ).toThrow('plan_decision_invalid_input')
         expect(() =>
             validatePlanDecisionRequest({
@@ -266,23 +289,35 @@ describe('sentinel cockpit request validation', () => {
         const clientNonce = 'a1b2c3d4e5f60718293a4b5c6d7e8f90'
         const cockpitRef = 'cockpit_a1b2c3d4e5f60718293a4b5c6d7e8f90'
 
-        expect(validateManualPacketRequest({ request_kind: 'manual_worker_packet', cockpit_ref: cockpitRef, client_nonce: clientNonce })).toEqual({
+        expect(
+            validateManualPacketRequest({ request_kind: 'manual_worker_packet', cockpit_ref: cockpitRef, client_nonce: clientNonce })
+        ).toEqual({
             request_kind: 'manual_worker_packet',
             cockpit_ref: cockpitRef,
             client_nonce: clientNonce
         })
-        expect(() => validateManualPacketRequest({ request_kind: 'manual_worker_packet', cockpit_ref: cockpitRef, client_nonce: clientNonce, worker_type: 'manual_codex' })).toThrow(
-            'manual_packet_invalid_input'
-        )
-        expect(() => validateManualPacketRequest({ request_kind: 'manual_worker_packet', cockpit_ref: cockpitRef, client_nonce: clientNonce, plan_id: 'plan_hidden' })).toThrow(
-            'manual_packet_invalid_input'
-        )
-        expect(() => validateManualPacketRequest({ request_kind: 'manual_worker_packet', cockpit_ref: 'cockpit_short', client_nonce: clientNonce })).toThrow(
-            'manual_packet_invalid_input'
-        )
-        expect(() => validateManualPacketRequest({ request_kind: 'manual_worker_packet', cockpit_ref: cockpitRef, client_nonce: 'short' })).toThrow(
-            'manual_packet_invalid_input'
-        )
+        expect(() =>
+            validateManualPacketRequest({
+                request_kind: 'manual_worker_packet',
+                cockpit_ref: cockpitRef,
+                client_nonce: clientNonce,
+                worker_type: 'manual_codex'
+            })
+        ).toThrow('manual_packet_invalid_input')
+        expect(() =>
+            validateManualPacketRequest({
+                request_kind: 'manual_worker_packet',
+                cockpit_ref: cockpitRef,
+                client_nonce: clientNonce,
+                plan_id: 'plan_hidden'
+            })
+        ).toThrow('manual_packet_invalid_input')
+        expect(() =>
+            validateManualPacketRequest({ request_kind: 'manual_worker_packet', cockpit_ref: 'cockpit_short', client_nonce: clientNonce })
+        ).toThrow('manual_packet_invalid_input')
+        expect(() =>
+            validateManualPacketRequest({ request_kind: 'manual_worker_packet', cockpit_ref: cockpitRef, client_nonce: 'short' })
+        ).toThrow('manual_packet_invalid_input')
     })
 
     it('validates result review requests with pasted text only', () => {
@@ -306,7 +341,12 @@ describe('sentinel cockpit request validation', () => {
             review_only_confirmation: true
         })
         expect(() =>
-            validateResultReviewRequest({ request_kind: 'result_review', cockpit_ref: cockpitRef, client_nonce: clientNonce, result_text: resultText })
+            validateResultReviewRequest({
+                request_kind: 'result_review',
+                cockpit_ref: cockpitRef,
+                client_nonce: clientNonce,
+                result_text: resultText
+            })
         ).toThrow('result_review_invalid_input')
         expect(() =>
             validateResultReviewRequest({
@@ -966,7 +1006,12 @@ describe('sentinel cockpit classify bridge', () => {
             { config, fetchImpl: fetchImpl as any, requestId: 'req_classify_123' }
         )
         const draftSession = await classifyBridge.createPlanDecisionSession(
-            { request_kind: 'plan_decision', cockpit_ref: planSession.cockpit_ref as string, client_nonce: clientNonce, decision: 'approve_plan' },
+            {
+                request_kind: 'plan_decision',
+                cockpit_ref: planSession.cockpit_ref as string,
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            },
             { config, fetchImpl: fetchImpl as any, requestId: 'req_draft_123' }
         )
         const [draftUrl, draftInit] = fetchImpl.mock.calls[1]
@@ -1020,7 +1065,12 @@ describe('sentinel cockpit classify bridge', () => {
             { config, fetchImpl: fetchImpl as any, requestId: 'req_classify_123' }
         )
         const packetPrepSession: any = await classifyBridge.createPlanDecisionSession(
-            { request_kind: 'plan_decision', cockpit_ref: planSession.cockpit_ref as string, client_nonce: clientNonce, decision: 'approve_plan' },
+            {
+                request_kind: 'plan_decision',
+                cockpit_ref: planSession.cockpit_ref as string,
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            },
             { config, fetchImpl: fetchImpl as any, requestId: 'req_draft_123' }
         )
         const packetRef = packetPrepSession.cockpit_ref as string
@@ -1084,7 +1134,12 @@ describe('sentinel cockpit classify bridge', () => {
             { config, fetchImpl: fetchImpl as any, requestId: 'req_classify_123' }
         )
         const packetPrepSession: any = await classifyBridge.createPlanDecisionSession(
-            { request_kind: 'plan_decision', cockpit_ref: planSession.cockpit_ref as string, client_nonce: clientNonce, decision: 'approve_plan' },
+            {
+                request_kind: 'plan_decision',
+                cockpit_ref: planSession.cockpit_ref as string,
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            },
             { config, fetchImpl: fetchImpl as any, requestId: 'req_draft_123' }
         )
         const reviewRequired: any = await classifyBridge.createManualPacketSession(
@@ -1172,14 +1227,21 @@ describe('sentinel cockpit classify bridge', () => {
             .mockResolvedValueOnce(gatewayResponse(validGatewayClassify()))
             .mockResolvedValueOnce(gatewayResponse(validGatewayDraftPlan()))
             .mockResolvedValueOnce(gatewayResponse(validGatewayManualPacket({ task_packet_hash: `sha256:${'a'.repeat(64)}` })))
-            .mockResolvedValueOnce(gatewayResponse(validGatewayResultReview({ review_state: reviewState, next_safe_action: nextSafeAction })))
+            .mockResolvedValueOnce(
+                gatewayResponse(validGatewayResultReview({ review_state: reviewState, next_safe_action: nextSafeAction }))
+            )
 
         const planSession: any = await classifyBridge.createClassifySnapshot(
             { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
             { config, fetchImpl: fetchImpl as any }
         )
         const packetPrepSession: any = await classifyBridge.createPlanDecisionSession(
-            { request_kind: 'plan_decision', cockpit_ref: planSession.cockpit_ref as string, client_nonce: clientNonce, decision: 'approve_plan' },
+            {
+                request_kind: 'plan_decision',
+                cockpit_ref: planSession.cockpit_ref as string,
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            },
             { config, fetchImpl: fetchImpl as any }
         )
         const reviewRequired: any = await classifyBridge.createManualPacketSession(
@@ -1241,7 +1303,12 @@ describe('sentinel cockpit classify bridge', () => {
             { config, fetchImpl: mismatchFetch as any }
         )
         const mismatchPrep: any = await classifyBridge.createPlanDecisionSession(
-            { request_kind: 'plan_decision', cockpit_ref: mismatchPlan.cockpit_ref as string, client_nonce: clientNonce, decision: 'approve_plan' },
+            {
+                request_kind: 'plan_decision',
+                cockpit_ref: mismatchPlan.cockpit_ref as string,
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            },
             { config, fetchImpl: mismatchFetch as any }
         )
         const mismatchReviewRequired: any = await classifyBridge.createManualPacketSession(
@@ -1284,7 +1351,12 @@ describe('sentinel cockpit classify bridge', () => {
             { config, fetchImpl: unavailableFetch as any }
         )
         const unavailablePrep: any = await classifyBridge.createPlanDecisionSession(
-            { request_kind: 'plan_decision', cockpit_ref: unavailablePlan.cockpit_ref as string, client_nonce: clientNonce, decision: 'approve_plan' },
+            {
+                request_kind: 'plan_decision',
+                cockpit_ref: unavailablePlan.cockpit_ref as string,
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            },
             { config, fetchImpl: unavailableFetch as any }
         )
         const unavailableReviewRequired: any = await classifyBridge.createManualPacketSession(
@@ -1334,7 +1406,11 @@ describe('sentinel cockpit classify bridge', () => {
         expect(revised.cockpit_ref).toBeNull()
         await expect(
             classifyBridge.createManualPacketSession(
-                { request_kind: 'manual_worker_packet', cockpit_ref: 'cockpit_a1b2c3d4e5f60718293a4b5c6d7e8f90', client_nonce: clientNonce },
+                {
+                    request_kind: 'manual_worker_packet',
+                    cockpit_ref: 'cockpit_a1b2c3d4e5f60718293a4b5c6d7e8f90',
+                    client_nonce: clientNonce
+                },
                 { config, fetchImpl: fetchImpl as any }
             )
         ).rejects.toThrow('manual_packet_not_found')
@@ -1350,7 +1426,11 @@ describe('sentinel cockpit classify bridge', () => {
 
         await expect(
             classifyBridge.createManualPacketSession(
-                { request_kind: 'manual_worker_packet', cockpit_ref: 'cockpit_a1b2c3d4e5f60718293a4b5c6d7e8f90', client_nonce: clientNonce },
+                {
+                    request_kind: 'manual_worker_packet',
+                    cockpit_ref: 'cockpit_a1b2c3d4e5f60718293a4b5c6d7e8f90',
+                    client_nonce: clientNonce
+                },
                 { config, fetchImpl: missingFetch as any }
             )
         ).rejects.toThrow('manual_packet_not_found')
@@ -1365,12 +1445,21 @@ describe('sentinel cockpit classify bridge', () => {
             { config, fetchImpl: mismatchFetch as any }
         )
         const mismatchPrep: any = await classifyBridge.createPlanDecisionSession(
-            { request_kind: 'plan_decision', cockpit_ref: mismatchPlan.cockpit_ref as string, client_nonce: clientNonce, decision: 'approve_plan' },
+            {
+                request_kind: 'plan_decision',
+                cockpit_ref: mismatchPlan.cockpit_ref as string,
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            },
             { config, fetchImpl: mismatchFetch as any }
         )
         await expect(
             classifyBridge.createManualPacketSession(
-                { request_kind: 'manual_worker_packet', cockpit_ref: mismatchPrep.cockpit_ref as string, client_nonce: 'nonce_wrongabcdefghijkl' },
+                {
+                    request_kind: 'manual_worker_packet',
+                    cockpit_ref: mismatchPrep.cockpit_ref as string,
+                    client_nonce: 'nonce_wrongabcdefghijkl'
+                },
                 { config, fetchImpl: mismatchFetch as any }
             )
         ).rejects.toThrow('manual_packet_nonce_mismatch')
@@ -1392,7 +1481,12 @@ describe('sentinel cockpit classify bridge', () => {
             { config, fetchImpl: duplicateFetch as any }
         )
         const duplicatePrep: any = await classifyBridge.createPlanDecisionSession(
-            { request_kind: 'plan_decision', cockpit_ref: duplicatePlan.cockpit_ref as string, client_nonce: clientNonce, decision: 'approve_plan' },
+            {
+                request_kind: 'plan_decision',
+                cockpit_ref: duplicatePlan.cockpit_ref as string,
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            },
             { config, fetchImpl: duplicateFetch as any }
         )
         const duplicateReady = await classifyBridge.createManualPacketSession(
@@ -1417,7 +1511,12 @@ describe('sentinel cockpit classify bridge', () => {
             { config, fetchImpl: malformedFetch as any }
         )
         const malformedPrep: any = await classifyBridge.createPlanDecisionSession(
-            { request_kind: 'plan_decision', cockpit_ref: malformedPlan.cockpit_ref as string, client_nonce: clientNonce, decision: 'approve_plan' },
+            {
+                request_kind: 'plan_decision',
+                cockpit_ref: malformedPlan.cockpit_ref as string,
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            },
             { config, fetchImpl: malformedFetch as any }
         )
         await expect(
@@ -1441,7 +1540,12 @@ describe('sentinel cockpit classify bridge', () => {
 
         await expect(
             classifyBridge.createPlanDecisionSession(
-                { request_kind: 'plan_decision', cockpit_ref: cockpitRef, client_nonce: 'nonce_wrongabcdefghijkl', decision: 'approve_plan' },
+                {
+                    request_kind: 'plan_decision',
+                    cockpit_ref: cockpitRef,
+                    client_nonce: 'nonce_wrongabcdefghijkl',
+                    decision: 'approve_plan'
+                },
                 { config, fetchImpl: fetchImpl as any }
             )
         ).rejects.toThrow('plan_session_nonce_mismatch')
@@ -1466,7 +1570,8 @@ describe('sentinel cockpit classify bridge', () => {
                         title: 'Blocked for safety',
                         summary: 'Sentinel understood this as asking for behavior outside the current safety boundary.',
                         what_can_happen_next: 'Rewrite the goal as planning, review, diagnosis, or manual handoff guidance.',
-                        what_will_not_happen: 'No execution, worker launch, repository write, commit, publish, deploy, or MCP action will start here.',
+                        what_will_not_happen:
+                            'No execution, worker launch, repository write, commit, publish, deploy, or MCP action will start here.',
                         blocked_reason: 'The request includes an action that the current cockpit is not allowed to perform.'
                     })
                 }),
@@ -1490,7 +1595,8 @@ describe('sentinel cockpit classify bridge', () => {
                 title: 'Blocked for safety',
                 summary: 'Sentinel understood this as asking for behavior outside the current safety boundary.',
                 what_can_happen_next: 'Rewrite the goal as planning, review, diagnosis, or manual handoff guidance.',
-                what_will_not_happen: 'No execution, worker launch, repository write, commit, publish, deploy, or MCP action will start here.',
+                what_will_not_happen:
+                    'No execution, worker launch, repository write, commit, publish, deploy, or MCP action will start here.',
                 blocked_reason: 'The request includes an action that the current cockpit is not allowed to perform.'
             })
         )

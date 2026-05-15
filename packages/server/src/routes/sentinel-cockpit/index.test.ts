@@ -193,13 +193,71 @@ describe('sentinel cockpit router', () => {
     it.each([
         ['OPTIONS', () => request(app).options(snapshotPath).set('Host', host).set('Origin', origin)],
         ['GET', () => request(app).get(snapshotPath).set('Host', host).set('Origin', origin)],
-        ['wrong path', () => request(app).post(`${mount}/wrong`).set('Host', host).set('Origin', origin).set('Content-Type', 'application/json').send(validBody())],
-        ['bad origin', () => request(app).post(snapshotPath).set('Host', host).set('Origin', 'http://127.0.0.1:3001').set('Content-Type', 'application/json').send(validBody())],
-        ['missing origin', () => request(app).post(snapshotPath).set('Host', host).set('Content-Type', 'application/json').send(validBody())],
-        ['bad host', () => request(app).post(snapshotPath).set('Host', 'localhost:3000').set('Origin', origin).set('Content-Type', 'application/json').send(validBody())],
-        ['bad content type', () => request(app).post(snapshotPath).set('Host', host).set('Origin', origin).set('Content-Type', 'text/plain').send(JSON.stringify(validBody()))],
-        ['bad content encoding', () => request(app).post(snapshotPath).set('Host', host).set('Origin', origin).set('Content-Type', 'application/json').set('Content-Encoding', 'gzip').send(validBody())],
-        ['forbidden field', () => request(app).post(snapshotPath).set('Host', host).set('Origin', origin).set('Content-Type', 'application/json').send(validBody({ token: 'blocked' }))]
+        [
+            'wrong path',
+            () =>
+                request(app)
+                    .post(`${mount}/wrong`)
+                    .set('Host', host)
+                    .set('Origin', origin)
+                    .set('Content-Type', 'application/json')
+                    .send(validBody())
+        ],
+        [
+            'bad origin',
+            () =>
+                request(app)
+                    .post(snapshotPath)
+                    .set('Host', host)
+                    .set('Origin', 'http://127.0.0.1:3001')
+                    .set('Content-Type', 'application/json')
+                    .send(validBody())
+        ],
+        [
+            'missing origin',
+            () => request(app).post(snapshotPath).set('Host', host).set('Content-Type', 'application/json').send(validBody())
+        ],
+        [
+            'bad host',
+            () =>
+                request(app)
+                    .post(snapshotPath)
+                    .set('Host', 'localhost:3000')
+                    .set('Origin', origin)
+                    .set('Content-Type', 'application/json')
+                    .send(validBody())
+        ],
+        [
+            'bad content type',
+            () =>
+                request(app)
+                    .post(snapshotPath)
+                    .set('Host', host)
+                    .set('Origin', origin)
+                    .set('Content-Type', 'text/plain')
+                    .send(JSON.stringify(validBody()))
+        ],
+        [
+            'bad content encoding',
+            () =>
+                request(app)
+                    .post(snapshotPath)
+                    .set('Host', host)
+                    .set('Origin', origin)
+                    .set('Content-Type', 'application/json')
+                    .set('Content-Encoding', 'gzip')
+                    .send(validBody())
+        ],
+        [
+            'forbidden field',
+            () =>
+                request(app)
+                    .post(snapshotPath)
+                    .set('Host', host)
+                    .set('Origin', origin)
+                    .set('Content-Type', 'application/json')
+                    .send(validBody({ token: 'blocked' }))
+        ]
     ])('returns route-local JSON for %s', async (_label, runRequest) => {
         const res = await runRequest()
 
@@ -226,16 +284,19 @@ describe('sentinel cockpit router', () => {
 
     it('rejects duplicate raw Origin headers through an in-process raw HTTP harness', async () => {
         const body = '{"request_kind":"goal","plain_goal":"audit this repo"}'
-        const response = await rawRequest(buildApp(), [
-            'POST /sentinel-cockpit/v1/snapshot HTTP/1.1',
-            `Host: ${host}`,
-            `Origin: ${origin}`,
-            `Origin: ${origin}`,
-            'Content-Type: application/json',
-            `Content-Length: ${Buffer.byteLength(body)}`,
-            '',
-            body
-        ].join('\r\n'))
+        const response = await rawRequest(
+            buildApp(),
+            [
+                'POST /sentinel-cockpit/v1/snapshot HTTP/1.1',
+                `Host: ${host}`,
+                `Origin: ${origin}`,
+                `Origin: ${origin}`,
+                'Content-Type: application/json',
+                `Content-Length: ${Buffer.byteLength(body)}`,
+                '',
+                body
+            ].join('\r\n')
+        )
 
         expect(response).toContain('HTTP/1.1 403')
         expect(response).toContain('application/json; charset=utf-8')
