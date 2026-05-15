@@ -20,6 +20,7 @@ import assemblyAIPng from '@/assets/images/assemblyai.png'
 import localAiPng from '@/assets/images/localai.png'
 import azureSvg from '@/assets/images/azure_openai.svg'
 import groqPng from '@/assets/images/groq.png'
+import telnyxPng from '@/assets/images/telnyx.png'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -34,7 +35,8 @@ const SpeechToTextType = {
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
     LOCALAI_STT: 'localAISTT',
     AZURE_COGNITIVE: 'azureCognitive',
-    GROQ_WHISPER: 'groqWhisper'
+    GROQ_WHISPER: 'groqWhisper',
+    TELNYX_STT: 'telnyxStt'
 }
 
 // Weird quirk - the key must match the name property value.
@@ -56,7 +58,7 @@ const speechToTextProviders = {
                 name: 'language',
                 type: 'string',
                 description:
-                    'The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency.',
+                    'Optional language of the input audio. Supplying the language can improve recognition accuracy. Supplying the input language in ISO-639-1 format will improve accuracy and latency.',
                 placeholder: 'en',
                 optional: true
             },
@@ -115,7 +117,7 @@ const speechToTextProviders = {
                 name: 'language',
                 type: 'string',
                 description:
-                    'The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency.',
+                    'Optional language of the input audio. Supplying the language can improve recognition accuracy. Supplying the input language in ISO-639-1 format will improve accuracy and latency.',
                 placeholder: 'en',
                 optional: true
             },
@@ -197,6 +199,52 @@ const speechToTextProviders = {
             }
         ]
     },
+    [SpeechToTextType.TELNYX_STT]: {
+        label: 'Telnyx STT',
+        name: SpeechToTextType.TELNYX_STT,
+        icon: telnyxPng,
+        url: 'https://developers.telnyx.com/docs/voice/stt/models',
+        inputs: [
+            {
+                label: 'Model',
+                name: 'model',
+                type: 'string',
+                description: 'Speech-to-text model to use. Defaults to openai/whisper-large-v3-turbo when left blank.',
+                placeholder: 'openai/whisper-large-v3-turbo',
+                optional: true
+            },
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['telnyxApi']
+            },
+            {
+                label: 'Language',
+                name: 'language',
+                type: 'string',
+                description: 'Optional language of the input audio. Supplying the language can improve recognition accuracy.',
+                placeholder: 'en',
+                optional: true
+            },
+            {
+                label: 'Prompt',
+                name: 'prompt',
+                type: 'string',
+                rows: 4,
+                description: 'Optional prompt to guide the transcription style or continue a previous audio segment.',
+                optional: true
+            },
+            {
+                label: 'Temperature',
+                name: 'temperature',
+                type: 'number',
+                step: 0.1,
+                description: 'Optional sampling temperature between 0 and 1. Lower values are more deterministic.',
+                optional: true
+            }
+        ]
+    },
     [SpeechToTextType.GROQ_WHISPER]: {
         label: 'Groq Whisper',
         name: SpeechToTextType.GROQ_WHISPER,
@@ -222,7 +270,7 @@ const speechToTextProviders = {
                 name: 'language',
                 type: 'string',
                 description:
-                    'The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency.',
+                    'Optional language of the input audio. Supplying the language can improve recognition accuracy. Supplying the input language in ISO-639-1 format will improve accuracy and latency.',
                 placeholder: 'en',
                 optional: true
             },

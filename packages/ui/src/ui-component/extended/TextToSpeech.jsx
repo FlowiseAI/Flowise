@@ -31,6 +31,7 @@ import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import AudioWaveform from '@/ui-component/extended/AudioWaveform'
 import openAISVG from '@/assets/images/openai.svg'
 import elevenLabsSVG from '@/assets/images/elevenlabs.svg'
+import telnyxPng from '@/assets/images/telnyx.png'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -41,7 +42,8 @@ import ttsApi from '@/api/tts'
 
 const TextToSpeechType = {
     OPENAI_TTS: 'openai',
-    ELEVEN_LABS_TTS: 'elevenlabs'
+    ELEVEN_LABS_TTS: 'elevenlabs',
+    TELNYX_TTS: 'telnyxTts'
 }
 
 // Weird quirk - the key must match the name property value.
@@ -84,8 +86,61 @@ const textToSpeechProviders = {
                 label: 'Voice',
                 name: 'voice',
                 type: 'voice_select',
-                description: 'The voice to use for text-to-speech',
+                description: 'Voice to use for text-to-speech synthesis',
                 default: '21m00Tcm4TlvDq8ikWAM',
+                optional: true
+            }
+        ]
+    },
+
+    [TextToSpeechType.TELNYX_TTS]: {
+        label: 'Telnyx TTS',
+        name: TextToSpeechType.TELNYX_TTS,
+        icon: telnyxPng,
+        url: 'https://developers.telnyx.com/docs/voice/programmable-voice/tts',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['telnyxApi']
+            },
+            {
+                label: 'Voice',
+                name: 'voice',
+                type: 'voice_select',
+                description: 'Voice to use for text-to-speech synthesis',
+                default: 'Telnyx.NaturalHD.astra',
+                optional: true
+            },
+            {
+                label: 'Output Format',
+                name: 'output_format',
+                type: 'string',
+                description: 'Audio output format returned by the Telnyx TTS API',
+                default: 'mp3',
+                optional: true
+            },
+            {
+                label: 'Sample Rate',
+                name: 'sample_rate',
+                type: 'number',
+                description: 'Optional audio sample rate for the generated output.',
+                optional: true
+            },
+            {
+                label: 'Language Code',
+                name: 'language_code',
+                type: 'string',
+                description: 'Optional language code to guide pronunciation or locale-specific speech output.',
+                optional: true
+            },
+            {
+                label: 'Speed',
+                name: 'speed',
+                type: 'number',
+                step: 0.1,
+                description: 'Optional speech speed multiplier.',
                 optional: true
             }
         ]

@@ -3,11 +3,13 @@ import { getCredentialData } from './utils'
 import OpenAI from 'openai'
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
 import { Readable } from 'node:stream'
+import axios from 'axios'
 import type { ReadableStream } from 'node:stream/web'
 
 const TextToSpeechType = {
     OPENAI_TTS: 'openai',
-    ELEVEN_LABS_TTS: 'elevenlabs'
+    ELEVEN_LABS_TTS: 'elevenlabs',
+    TELNYX_TTS: 'telnyxTts'
 }
 
 export const convertTextToSpeechStream = async (
@@ -96,6 +98,39 @@ export const convertTextToSpeechStream = async (
                             }
 
                             await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 40, abortController, () => {
+                                streamDestroyed = true
+                            })
+                            break
+                        }
+
+
+                        case TextToSpeechType.TELNYX_TTS: {
+                            onStart((textToSpeechConfig.output_format || 'mp3') as string)
+
+                            const response = await axios.post(
+                                'https://api.telnyx.com/v2/text-to-speech/speech',
+                                {
+                                    text,
+                                    voice: textToSpeechConfig.voice || 'Telnyx.NaturalHD.astra',
+                                    output_format: textToSpeechConfig.output_format || 'mp3',
+                                    sample_rate: textToSpeechConfig.sample_rate ? Number(textToSpeechConfig.sample_rate) : undefined,
+                                    language_code: textToSpeechConfig.language_code || undefined,
+                                    speed: textToSpeechConfig.speed ? Number(textToSpeechConfig.speed) : undefined
+                                },
+                                {
+                                    headers: {
+                                        Authorization: `Bearer ${credentialData.apiKey}`,
+                                        'Content-Type': 'application/json',
+                                        Accept: 'audio/mpeg'
+                                    },
+                                    responseType: 'arraybuffer',
+                                    signal: abortController.signal
+                                }
+                            )
+
+                            const buffer = Buffer.from(response.data)
+                            const stream = Readable.from(buffer)
+                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 20, abortController, () => {
                                 streamDestroyed = true
                             })
                             break
