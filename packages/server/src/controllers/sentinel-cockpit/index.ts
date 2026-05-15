@@ -13,8 +13,12 @@ export const COCKPIT_MANUAL_WORKER_PACKET_PATH = '/manual-worker-packet'
 export const COCKPIT_RESULT_REVIEW_PATH = '/result-review'
 export const COCKPIT_BODY_LIMIT_BYTES = 16 * 1024
 export const COCKPIT_RESPONSE_LIMIT_BYTES = 64 * 1024
-export const FLOWISE_LOCAL_ORIGIN = 'http://127.0.0.1:3000'
-export const FLOWISE_LOCAL_HOST = '127.0.0.1:3000'
+export const FLOWISE_LOCAL_ORIGIN_ENV = 'FLOWISE_LOCAL_ORIGIN'
+export const FLOWISE_LOCAL_HOST_ENV = 'FLOWISE_LOCAL_HOST'
+export const DEFAULT_FLOWISE_LOCAL_ORIGIN = 'http://127.0.0.1:3000'
+export const DEFAULT_FLOWISE_LOCAL_HOST = '127.0.0.1:3000'
+export const FLOWISE_LOCAL_ORIGIN = readFlowiseLocalConfig(process.env).origin
+export const FLOWISE_LOCAL_HOST = readFlowiseLocalConfig(process.env).host
 
 const REQUEST_KINDS = Object.freeze(['goal', 'choice', 'resume'])
 const PLAN_DECISION_REQUEST_KINDS = Object.freeze(['plan_decision'])
@@ -189,6 +193,12 @@ type AdmissionResult = Readonly<{
     ok: boolean
     statusCode?: number
     code?: ErrorCode
+}>
+
+type FlowiseLocalConfig = Readonly<{
+    ok: boolean
+    origin: string
+    host: string
 }>
 
 const okAdmission: AdmissionResult = Object.freeze({ ok: true })
@@ -432,8 +442,10 @@ export function validateResultReviewRequest(body: unknown): classifyBridge.Resul
 }
 
 function normalizedHeadersAreSafe(headers: Request['headers']): boolean {
-    if (headers.host !== FLOWISE_LOCAL_HOST) return false
-    if (headers.origin !== FLOWISE_LOCAL_ORIGIN) return false
+    const localConfig = readFlowiseLocalConfig(process.env)
+    if (!localConfig.ok) return false
+    if (readSafeLocalHost(headers.host) !== localConfig.host) return false
+    if (readSafeLocalOrigin(headers.origin)?.origin !== localConfig.origin) return false
     if (headers.referer !== undefined) return false
     if (headers.authorization !== undefined || headers.cookie !== undefined || headers['proxy-authorization'] !== undefined) return false
     if (headers['transfer-encoding'] !== undefined || headers.expect !== undefined) return false
@@ -515,6 +527,12 @@ function readJsonBody(req: Request): Promise<unknown> {
             }
         })
         req.on('error', () => {
+            if (!settled) {
+                settled = true
+                reject(httpError(400, 'invalid_json'))
+            }
+        })
+        req.on('aborted', () => {
             if (!settled) {
                 settled = true
                 reject(httpError(400, 'invalid_json'))
@@ -740,7 +758,7 @@ function assertResponseKeys(
 }
 
 function validateRouteCard(routeCard: unknown) {
-    if (routeCard === undefined || routeCard === null) {
+    if (routeCard == null) {
         return
     }
     if (!routeCard || typeof routeCard !== 'object' || Array.isArray(routeCard)) {
@@ -815,6 +833,61 @@ function sendError(res: Response, statusCode: number, code: ErrorCode) {
             message: ERROR_MESSAGE
         }
     })
+}
+
+export function readFlowiseLocalConfig(env: NodeJS.ProcessEnv): FlowiseLocalConfig {
+    const origin = readSafeLocalOrigin(env[FLOWISE_LOCAL_ORIGIN_ENV] || DEFAULT_FLOWISE_LOCAL_ORIGIN)
+    if (!origin) {
+        return { ok: false, origin: DEFAULT_FLOWISE_LOCAL_ORIGIN, host: DEFAULT_FLOWISE_LOCAL_HOST }
+    }
+    const host = readSafeLocalHost(env[FLOWISE_LOCAL_HOST_ENV] || origin.host)
+    if (!host || host !== origin.host) {
+        return { ok: false, origin: origin.origin, host: origin.host }
+    }
+    return { ok: true, origin: origin.origin, host }
+}
+
+function readSafeLocalOrigin(value: unknown): { origin: string; host: string } | null {
+    if (typeof value !== 'string') return null
+    const trimmed = value.trim()
+    if (!trimmed || trimmed.length > 160 || hasDisallowedControlCharacter(trimmed) || hasHiddenControlCharacter(trimmed)) return null
+    let parsed: URL
+    try {
+        parsed = new URL(trimmed)
+    } catch {
+        return null
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol)) return null
+    if (parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash) return null
+    if (!isLocalOrPrivateHostname(parsed.hostname)) return null
+    return { origin: parsed.origin, host: parsed.host }
+}
+
+function readSafeLocalHost(value: unknown): string | null {
+    if (typeof value !== 'string') return null
+    const trimmed = value.trim()
+    if (!trimmed || trimmed.length > 128 || hasDisallowedControlCharacter(trimmed) || hasHiddenControlCharacter(trimmed)) return null
+    if (/[/?#@\\]/.test(trimmed)) return null
+    let parsed: URL
+    try {
+        parsed = new URL(`http://${trimmed}`)
+    } catch {
+        return null
+    }
+    if (parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash) return null
+    if (!isLocalOrPrivateHostname(parsed.hostname)) return null
+    return parsed.host
+}
+
+function isLocalOrPrivateHostname(hostname: string): boolean {
+    const host = hostname.toLowerCase().replace(/^\[/, '').replace(/\]$/, '')
+    if (host === 'localhost' || host === '::1') return true
+    const parts = host.split('.')
+    if (parts.length !== 4 || parts.some((part) => !/^[0-9]+$/.test(part))) return false
+    const octets = parts.map((part) => Number(part))
+    if (octets.some((part) => part < 0 || part > 255)) return false
+    const [first, second] = octets
+    return first === 127 || first === 10 || (first === 192 && second === 168) || (first === 172 && second >= 16 && second <= 31)
 }
 
 function getErrorStatusCode(error: unknown): number {

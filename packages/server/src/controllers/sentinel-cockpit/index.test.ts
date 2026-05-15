@@ -4,10 +4,15 @@ import sentinelCockpitController, {
     COCKPIT_ERROR_SCHEMA_VERSION,
     COCKPIT_ROUTE_PREFIX,
     COCKPIT_SNAPSHOT_PATH,
+    DEFAULT_FLOWISE_LOCAL_HOST,
+    DEFAULT_FLOWISE_LOCAL_ORIGIN,
     FLOWISE_LOCAL_HOST,
+    FLOWISE_LOCAL_HOST_ENV,
     FLOWISE_LOCAL_ORIGIN,
+    FLOWISE_LOCAL_ORIGIN_ENV,
     admitRequest,
     rawGuardedHeadersAreSafe,
+    readFlowiseLocalConfig,
     validateCockpitRequest,
     validateManualPacketRequest,
     validatePlanDecisionRequest,
@@ -104,6 +109,69 @@ describe('sentinel cockpit controller admission', () => {
         const req = buildReq(JSON.stringify({ request_kind: 'goal', plain_goal: 'audit this repo' }))
 
         expect(admitRequest(req).ok).toBe(true)
+    })
+
+    it('supports validated local Flowise origin and host overrides', () => {
+        const originalOrigin = process.env[FLOWISE_LOCAL_ORIGIN_ENV]
+        const originalHost = process.env[FLOWISE_LOCAL_HOST_ENV]
+        const localOrigin = 'http://127.0.0.1:4300'
+        const localHost = '127.0.0.1:4300'
+        const body = JSON.stringify({ request_kind: 'goal', plain_goal: 'audit this repo' })
+        try {
+            process.env[FLOWISE_LOCAL_ORIGIN_ENV] = localOrigin
+            process.env[FLOWISE_LOCAL_HOST_ENV] = localHost
+            const req = buildReq(body, {
+                rawHeaders: [
+                    'Host',
+                    localHost,
+                    'Origin',
+                    localOrigin,
+                    'Content-Type',
+                    'application/json',
+                    'Content-Length',
+                    String(Buffer.byteLength(body))
+                ],
+                headers: {
+                    host: localHost,
+                    origin: localOrigin,
+                    'content-type': 'application/json',
+                    'content-length': String(Buffer.byteLength(body))
+                }
+            } as Partial<Request>)
+
+            expect(readFlowiseLocalConfig(process.env)).toEqual({ ok: true, origin: localOrigin, host: localHost })
+            expect(admitRequest(req).ok).toBe(true)
+        } finally {
+            if (originalOrigin === undefined) delete process.env[FLOWISE_LOCAL_ORIGIN_ENV]
+            else process.env[FLOWISE_LOCAL_ORIGIN_ENV] = originalOrigin
+            if (originalHost === undefined) delete process.env[FLOWISE_LOCAL_HOST_ENV]
+            else process.env[FLOWISE_LOCAL_HOST_ENV] = originalHost
+        }
+    })
+
+    it('fails closed for malformed or non-local Flowise origin and host overrides', () => {
+        const originalOrigin = process.env[FLOWISE_LOCAL_ORIGIN_ENV]
+        const originalHost = process.env[FLOWISE_LOCAL_HOST_ENV]
+        try {
+            process.env[FLOWISE_LOCAL_ORIGIN_ENV] = 'https://example.com'
+            process.env[FLOWISE_LOCAL_HOST_ENV] = 'example.com'
+
+            expect(readFlowiseLocalConfig(process.env)).toEqual({
+                ok: false,
+                origin: DEFAULT_FLOWISE_LOCAL_ORIGIN,
+                host: DEFAULT_FLOWISE_LOCAL_HOST
+            })
+            expect(admitRequest(buildReq(JSON.stringify({ request_kind: 'goal', plain_goal: 'audit this repo' })))).toEqual({
+                ok: false,
+                statusCode: 403,
+                code: 'header_denied'
+            })
+        } finally {
+            if (originalOrigin === undefined) delete process.env[FLOWISE_LOCAL_ORIGIN_ENV]
+            else process.env[FLOWISE_LOCAL_ORIGIN_ENV] = originalOrigin
+            if (originalHost === undefined) delete process.env[FLOWISE_LOCAL_HOST_ENV]
+            else process.env[FLOWISE_LOCAL_HOST_ENV] = originalHost
+        }
     })
 
     it('rejects unsafe normalized headers', () => {
@@ -426,6 +494,28 @@ describe('sentinel cockpit controller responses', () => {
         expect(res.bodyText).not.toContain('audit this repo')
         expect(res.bodyText).not.toContain('revise')
         expect(res.bodyText).not.toContain('continue')
+    })
+
+    it('rejects aborted request bodies as invalid JSON', async () => {
+        const body = JSON.stringify({ request_kind: 'goal', plain_goal: 'audit this repo' })
+        const req = buildReq(body) as Request & {
+            on: jest.Mock
+            setEncoding: jest.Mock
+        }
+        req.setEncoding = jest.fn()
+        req.on = jest.fn((event: string, handler: () => void) => {
+            if (event === 'aborted') {
+                setImmediate(handler)
+            }
+            return req
+        })
+        const res = buildRes()
+
+        await sentinelCockpitController.handleSnapshot(req, res)
+
+        const parsed = JSON.parse(res.bodyText)
+        expect(res.statusCode).toBe(400)
+        expect(parsed.error.code).toBe('invalid_json')
     })
 
     it('redacts status-only result confirmation details', async () => {
@@ -851,6 +941,38 @@ describe('sentinel cockpit classify bridge', () => {
         expect(serialized).not.toContain('risk_hidden')
     })
 
+    it('uses a configured safe server-only Gateway origin for classify requests', async () => {
+        const gatewayOrigin = 'http://127.0.0.1:49173'
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_GATEWAY_ORIGIN: gatewayOrigin
+        })
+        const fetchImpl = jest.fn().mockResolvedValue(gatewayResponse(validGatewayClassify()))
+
+        await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText },
+            { config, fetchImpl: fetchImpl as any, requestId: 'req_test_123' }
+        )
+
+        expect(config.gatewayOrigin).toBe(gatewayOrigin)
+        expect(fetchImpl.mock.calls[0][0]).toBe(`${gatewayOrigin}/v1/intent/classify`)
+    })
+
+    it('fails closed for unsafe configured Gateway origins before any Gateway call', async () => {
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_GATEWAY_ORIGIN: 'https://example.com'
+        })
+        const fetchImpl = jest.fn()
+
+        expect(config.errorCode).toBe('sentinel_classify_unavailable')
+        await expect(
+            classifyBridge.createClassifySnapshot(
+                { request_kind: 'goal', plain_goal: goalText },
+                { config, fetchImpl: fetchImpl as any, requestId: 'req_test_123' }
+            )
+        ).rejects.toThrow('sentinel_classify_unavailable')
+        expect(fetchImpl).not.toHaveBeenCalled()
+    })
+
     it('projects a display-only plan-readiness card when the plan-readiness flag is enabled', async () => {
         const config = buildClassifyConfig({
             BEZZTY_FLOWISE_SENTINEL_PLAN_READINESS_CARD: '1'
@@ -1210,6 +1332,58 @@ describe('sentinel cockpit classify bridge', () => {
                 { config, fetchImpl: fetchImpl as any }
             )
         ).rejects.toThrow('result_review_not_found')
+    })
+
+    it('reuses the configured safe Gateway origin for draft-plan, manual-packet, and result-review calls', async () => {
+        const gatewayOrigin = 'http://127.0.0.1:49174'
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1',
+            BEZZTY_FLOWISE_SENTINEL_MANUAL_PACKET_BRIDGE: '1',
+            BEZZTY_FLOWISE_SENTINEL_RESULT_REVIEW_BRIDGE: '1',
+            BEZZTY_FLOWISE_SENTINEL_GATEWAY_ORIGIN: gatewayOrigin
+        })
+        const resultText = 'Manual worker completed a plain text review outside this page.'
+        const fetchImpl = jest
+            .fn()
+            .mockResolvedValueOnce(gatewayResponse(validGatewayClassify()))
+            .mockResolvedValueOnce(gatewayResponse(validGatewayDraftPlan()))
+            .mockResolvedValueOnce(gatewayResponse(validGatewayManualPacket({ task_packet_hash: `sha256:${'a'.repeat(64)}` })))
+            .mockResolvedValueOnce(gatewayResponse(validGatewayResultReview()))
+
+        const planSession: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
+            { config, fetchImpl: fetchImpl as any }
+        )
+        const packetPrepSession: any = await classifyBridge.createPlanDecisionSession(
+            {
+                request_kind: 'plan_decision',
+                cockpit_ref: planSession.cockpit_ref as string,
+                client_nonce: clientNonce,
+                decision: 'approve_plan'
+            },
+            { config, fetchImpl: fetchImpl as any }
+        )
+        const reviewRequired: any = await classifyBridge.createManualPacketSession(
+            { request_kind: 'manual_worker_packet', cockpit_ref: packetPrepSession.cockpit_ref as string, client_nonce: clientNonce },
+            { config, fetchImpl: fetchImpl as any }
+        )
+        await classifyBridge.createResultReviewSession(
+            {
+                request_kind: 'result_review',
+                cockpit_ref: reviewRequired.cockpit_ref as string,
+                client_nonce: clientNonce,
+                result_text: resultText,
+                review_only_confirmation: true
+            },
+            { config, fetchImpl: fetchImpl as any }
+        )
+
+        expect(fetchImpl.mock.calls.map(([url]) => url)).toEqual([
+            `${gatewayOrigin}/v1/intent/classify`,
+            `${gatewayOrigin}/v1/runs/draft-plan`,
+            `${gatewayOrigin}/v1/tasks/manual-worker-packet`,
+            `${gatewayOrigin}/v1/results/review`
+        ])
     })
 
     it.each([
@@ -1704,6 +1878,20 @@ describe('sentinel cockpit resume bridge', () => {
             text: async () => (typeof body === 'string' ? body : JSON.stringify(body))
         }
     }
+
+    it('reads resume bridge configuration without mutating the token environment', () => {
+        const env = {
+            BEZZTY_FLOWISE_SENTINEL_RESUME_BRIDGE: '1',
+            BEZZTY_FLOWISE_SENTINEL_GATEWAY_TOKEN: gatewayToken,
+            BEZZTY_FLOWISE_SENTINEL_RESUME_BINDINGS: JSON.stringify([binding])
+        } as NodeJS.ProcessEnv
+
+        const config = resumeBridge.readResumeBridgeConfig(env)
+
+        expect(config.requested).toBe(true)
+        expect(config.token).toBe(gatewayToken)
+        expect(env.BEZZTY_FLOWISE_SENTINEL_GATEWAY_TOKEN).toBe(gatewayToken)
+    })
 
     it('requires a server-held checkpoint binding before any gateway call', async () => {
         const config = buildResumeConfig()

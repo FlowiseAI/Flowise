@@ -4,11 +4,14 @@ import { COCKPIT_SNAPSHOT_SCHEMA_VERSION, CockpitRequest, CockpitSnapshot, creat
 
 export const CLASSIFY_BRIDGE_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_CLASSIFY_BRIDGE'
 export const CLASSIFY_BRIDGE_TOKEN_ENV = 'BEZZTY_FLOWISE_SENTINEL_GATEWAY_TOKEN'
+export const CLASSIFY_BRIDGE_GATEWAY_ORIGIN_ENV = 'BEZZTY_FLOWISE_SENTINEL_GATEWAY_ORIGIN'
 export const PLAN_READINESS_CARD_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_PLAN_READINESS_CARD'
 export const PLAN_DECISION_BRIDGE_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE'
 export const MANUAL_PACKET_BRIDGE_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_MANUAL_PACKET_BRIDGE'
 export const RESULT_REVIEW_BRIDGE_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_RESULT_REVIEW_BRIDGE'
-export const CLASSIFY_BRIDGE_GATEWAY_ORIGIN = 'http://127.0.0.1:39173'
+export const DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN = 'http://127.0.0.1:39173'
+export const CLASSIFY_BRIDGE_GATEWAY_ORIGIN =
+    readGatewayOrigin(process.env[CLASSIFY_BRIDGE_GATEWAY_ORIGIN_ENV]) || DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN
 export const PLAN_SESSION_SCHEMA_VERSION = 'sentinel.cockpit_bridge.plan_session.v1'
 export const GOAL_ROUTE_CARD_SCHEMA_VERSION = 'sentinel.qvc.route_card.v1'
 const GOAL_ROUTE_CATEGORIES = Object.freeze([
@@ -75,6 +78,7 @@ export type ClassifyBridgeConfig = Readonly<{
     planDecisionBridge: boolean
     manualPacketBridge: boolean
     resultReviewBridge: boolean
+    gatewayOrigin: string
     token?: string
     errorCode?: ClassifyBridgeErrorCode
 }>
@@ -241,8 +245,28 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
     const planDecisionBridge = env[PLAN_DECISION_BRIDGE_FLAG_ENV] === '1'
     const manualPacketBridge = env[MANUAL_PACKET_BRIDGE_FLAG_ENV] === '1'
     const resultReviewBridge = env[RESULT_REVIEW_BRIDGE_FLAG_ENV] === '1'
+    const configuredGatewayOrigin = env[CLASSIFY_BRIDGE_GATEWAY_ORIGIN_ENV]
+    const gatewayOrigin = readGatewayOrigin(configuredGatewayOrigin)
     if (env[CLASSIFY_BRIDGE_FLAG_ENV] !== '1') {
-        return { requested: false, planReadinessCard, planDecisionBridge, manualPacketBridge, resultReviewBridge }
+        return {
+            requested: false,
+            planReadinessCard,
+            planDecisionBridge,
+            manualPacketBridge,
+            resultReviewBridge,
+            gatewayOrigin: gatewayOrigin || DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN
+        }
+    }
+    if (configuredGatewayOrigin !== undefined && !gatewayOrigin) {
+        return {
+            requested: true,
+            planReadinessCard,
+            planDecisionBridge,
+            manualPacketBridge,
+            resultReviewBridge,
+            gatewayOrigin: DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN,
+            errorCode: 'sentinel_classify_unavailable'
+        }
     }
 
     const token = env[CLASSIFY_BRIDGE_TOKEN_ENV]
@@ -253,11 +277,20 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
             planDecisionBridge,
             manualPacketBridge,
             resultReviewBridge,
+            gatewayOrigin: gatewayOrigin || DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN,
             errorCode: 'sentinel_classify_unavailable'
         }
     }
 
-    return { requested: true, planReadinessCard, planDecisionBridge, manualPacketBridge, resultReviewBridge, token }
+    return {
+        requested: true,
+        planReadinessCard,
+        planDecisionBridge,
+        manualPacketBridge,
+        resultReviewBridge,
+        gatewayOrigin: gatewayOrigin || DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN,
+        token
+    }
 }
 
 export async function createClassifySnapshot(
@@ -280,7 +313,13 @@ export async function createClassifySnapshot(
         throw classifyBridgeError(503, 'sentinel_classify_unavailable')
     }
 
-    const gatewayClassify = await fetchGatewayClassify(request.plain_goal, config.token, runtimeFetch, options.requestId)
+    const gatewayClassify = await fetchGatewayClassify(
+        request.plain_goal,
+        config.token,
+        config.gatewayOrigin,
+        runtimeFetch,
+        options.requestId
+    )
     if (config.planDecisionBridge && gatewayClassify.status !== 'blocked') {
         if (request.client_nonce) {
             const planSession = createPlanDecisionRequiredSession(gatewayClassify, request.client_nonce)
@@ -316,7 +355,14 @@ export async function createPlanDecisionSession(
 
     const binding = claimPlanBinding(request.cockpit_ref, request.client_nonce)
     try {
-        const gatewayDraftPlan = await fetchGatewayDraftPlan(binding, request, config.token, runtimeFetch, options.requestId)
+        const gatewayDraftPlan = await fetchGatewayDraftPlan(
+            binding,
+            request,
+            config.token,
+            config.gatewayOrigin,
+            runtimeFetch,
+            options.requestId
+        )
         binding.state = 'consumed'
         const planSession = projectPlanDecisionSession(request, gatewayDraftPlan, binding, config)
         assertPlanSessionSafe(planSession, config.token, request.revision_text || '', request.client_nonce)
@@ -348,7 +394,13 @@ export async function createManualPacketSession(
 
     const binding = claimManualPacketBinding(request.cockpit_ref, request.client_nonce)
     try {
-        const gatewayPacket = await fetchGatewayManualWorkerPacket(binding, config.token, runtimeFetch, options.requestId)
+        const gatewayPacket = await fetchGatewayManualWorkerPacket(
+            binding,
+            config.token,
+            config.gatewayOrigin,
+            runtimeFetch,
+            options.requestId
+        )
         binding.state = 'consumed'
         const planSession = projectManualPacketSession(
             gatewayPacket.alreadyPrepared,
@@ -386,7 +438,14 @@ export async function createResultReviewSession(
 
     const binding = claimResultReviewBinding(request.cockpit_ref, request.client_nonce)
     try {
-        const gatewayReview = await fetchGatewayResultReview(binding, request.result_text, config.token, runtimeFetch, options.requestId)
+        const gatewayReview = await fetchGatewayResultReview(
+            binding,
+            request.result_text,
+            config.token,
+            config.gatewayOrigin,
+            runtimeFetch,
+            options.requestId
+        )
         binding.state = 'consumed'
         const planSession = projectResultReviewSession(gatewayReview)
         assertPlanSessionSafe(planSession, config.token, request.result_text, request.client_nonce)
@@ -405,13 +464,14 @@ export async function createResultReviewSession(
 async function fetchGatewayClassify(
     goalText: string,
     token: string,
+    gatewayOrigin: string,
     fetchImpl: FetchLike,
     requestId?: string
 ): Promise<GatewayClassifyBody> {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
     try {
-        const response = await fetchImpl(`${CLASSIFY_BRIDGE_GATEWAY_ORIGIN}/v1/intent/classify`, {
+        const response = await fetchImpl(`${gatewayOrigin}/v1/intent/classify`, {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -645,13 +705,14 @@ async function fetchGatewayDraftPlan(
     binding: PlanBinding,
     request: PlanDecisionRequest,
     token: string,
+    gatewayOrigin: string,
     fetchImpl: FetchLike,
     requestId?: string
 ): Promise<GatewayDraftPlanBody> {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
     try {
-        const response = await fetchImpl(`${CLASSIFY_BRIDGE_GATEWAY_ORIGIN}/v1/runs/draft-plan`, {
+        const response = await fetchImpl(`${gatewayOrigin}/v1/runs/draft-plan`, {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -860,13 +921,14 @@ function claimManualPacketBinding(cockpitRef: string, clientNonce: string): Manu
 async function fetchGatewayManualWorkerPacket(
     binding: ManualPacketBinding,
     token: string,
+    gatewayOrigin: string,
     fetchImpl: FetchLike,
     requestId?: string
 ): Promise<{ alreadyPrepared: boolean; body: GatewayManualPacketBody | null }> {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
     try {
-        const response = await fetchImpl(`${CLASSIFY_BRIDGE_GATEWAY_ORIGIN}/v1/tasks/manual-worker-packet`, {
+        const response = await fetchImpl(`${gatewayOrigin}/v1/tasks/manual-worker-packet`, {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -1047,13 +1109,14 @@ async function fetchGatewayResultReview(
     binding: ResultReviewBinding,
     resultText: string,
     token: string,
+    gatewayOrigin: string,
     fetchImpl: FetchLike,
     requestId?: string
 ): Promise<GatewayResultReviewBody> {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
     try {
-        const response = await fetchImpl(`${CLASSIFY_BRIDGE_GATEWAY_ORIGIN}/v1/results/review`, {
+        const response = await fetchImpl(`${gatewayOrigin}/v1/results/review`, {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -1403,6 +1466,53 @@ export function __resetPlanSessionBindingsForTest() {
 
 function isSafeBearerToken(value: unknown): value is string {
     return typeof value === 'string' && value.length >= 24 && value.length <= 512 && /^[\x21-\x7E]+$/.test(value)
+}
+
+function readGatewayOrigin(value: unknown): string | null {
+    if (value === undefined || value === null || value === '') {
+        return DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN
+    }
+    if (typeof value !== 'string') {
+        return null
+    }
+    const trimmed = value.trim()
+    if (!trimmed || trimmed.length > 160 || !/^[\x21-\x7E]+$/.test(trimmed)) {
+        return null
+    }
+
+    let parsed: URL
+    try {
+        parsed = new URL(trimmed)
+    } catch {
+        return null
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+        return null
+    }
+    if (parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash) {
+        return null
+    }
+    if (!isLocalOrPrivateHostname(parsed.hostname)) {
+        return null
+    }
+    return parsed.origin
+}
+
+function isLocalOrPrivateHostname(hostname: string): boolean {
+    const host = hostname.toLowerCase().replace(/^\[/, '').replace(/\]$/, '')
+    if (host === 'localhost' || host === '::1') {
+        return true
+    }
+    const parts = host.split('.')
+    if (parts.length !== 4 || parts.some((part) => !/^[0-9]+$/.test(part))) {
+        return false
+    }
+    const octets = parts.map((part) => Number(part))
+    if (octets.some((part) => part < 0 || part > 255)) {
+        return false
+    }
+    const [first, second] = octets
+    return first === 127 || first === 10 || (first === 192 && second === 168) || (first === 172 && second >= 16 && second <= 31)
 }
 
 function classifyBridgeError(statusCode: number, code: ClassifyBridgeErrorCode) {

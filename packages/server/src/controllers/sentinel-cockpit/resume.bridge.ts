@@ -59,7 +59,6 @@ const RESUME_RESULT_DISPLAY_STATES = Object.freeze(['accepted_work', 'not_accept
 const RESUME_REVIEW_STATES = Object.freeze(['accepted', 'not_reviewed'])
 
 const defaultConfig = readResumeBridgeConfig(process.env)
-delete process.env[RESUME_BRIDGE_TOKEN_ENV]
 
 export function resumeBridgeIsRequested(): boolean {
     return defaultConfig.requested
