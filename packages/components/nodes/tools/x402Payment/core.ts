@@ -99,7 +99,7 @@ export class X402PaymentTool extends DynamicStructuredTool {
     }
 
     private async signSolanaPayment(paymentReq: X402PaymentRequired): Promise<{ signature: string; envelope: string }> {
-        const { Keypair, Connection, PublicKey, Transaction } = require('@solana/web3.js')
+        const { Keypair, Connection, PublicKey, Transaction, SystemProgram } = require('@solana/web3.js')
         const { createTransferCheckedInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } = require('@solana/spl-token')
 
         if (paymentReq.chain !== 'solana') {
@@ -133,9 +133,14 @@ export class X402PaymentTool extends DynamicStructuredTool {
         )
 
         const transaction = new Transaction().add(instruction)
-        const signature = await connection.sendTransaction(transaction, [keypair])
 
-        await connection.confirmTransaction(signature, 'confirmed')
+        const { blockhash } = await connection.getLatestBlockhash()
+        transaction.recentBlockhash = blockhash
+        transaction.feePayer = fromAddress
+
+        transaction.sign(keypair)
+
+        const serializedTransaction = transaction.serialize().toString('base64')
 
         const envelope = JSON.stringify({
             version: '1.0',
@@ -143,11 +148,11 @@ export class X402PaymentTool extends DynamicStructuredTool {
             currency: 'usdc',
             amount: paymentReq.price,
             to: paymentReq.payTo,
-            signature: signature,
+            transaction: serializedTransaction,
             memo: paymentReq.memo
         })
 
-        return { signature, envelope }
+        return { signature: serializedTransaction, envelope }
     }
 
     private async signBasePayment(paymentReq: X402PaymentRequired): Promise<{ signature: string; envelope: string }> {
@@ -163,16 +168,31 @@ export class X402PaymentTool extends DynamicStructuredTool {
 
         const wallet = new ethers.Wallet(this.privateKey)
         const provider = new ethers.JsonRpcProvider('https://mainnet.base.org')
-        const signer = wallet.connect(provider)
 
         const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
         const amount = ethers.parseUnits(paymentReq.price.toString(), 6)
 
         const abi = ['function transfer(address to, uint256 amount) returns (bool)']
-        const contract = new ethers.Contract(usdcAddress, abi, signer)
+        const contract = new ethers.Contract(usdcAddress, abi, wallet)
 
-        const tx = await contract.transfer(paymentReq.payTo, amount)
-        const receipt = await tx.wait()
+        const nonce = await provider.getTransactionCount(wallet.address, 'pending')
+        const gasLimit = await contract.transfer.estimateGas(paymentReq.payTo, amount)
+        const feeData = await provider.getFeeData()
+
+        const unsignedTx = await contract.transfer.populateTransaction(paymentReq.payTo, amount)
+
+        const transaction = {
+            to: usdcAddress,
+            from: wallet.address,
+            data: unsignedTx.data,
+            nonce: nonce,
+            gasLimit: gasLimit,
+            maxFeePerGas: feeData.maxFeePerGas,
+            maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+            chainId: 8453
+        }
+
+        const signedTx = await wallet.signTransaction(transaction)
 
         const envelope = JSON.stringify({
             version: '1.0',
@@ -180,11 +200,11 @@ export class X402PaymentTool extends DynamicStructuredTool {
             currency: 'usdc',
             amount: paymentReq.price,
             to: paymentReq.payTo,
-            txHash: receipt.hash,
+            transaction: signedTx,
             memo: paymentReq.memo
         })
 
-        return { signature: receipt.hash, envelope }
+        return { signature: signedTx, envelope }
     }
 
     private async signPayment(paymentReq: X402PaymentRequired): Promise<{ signature: string; envelope: string }> {
