@@ -29,12 +29,15 @@ export interface X402PaymentResponse {
 }
 
 export interface X402PaymentRequired {
-    price: number
-    currency: string
-    chain: string
+    maxAmountRequired: number
+    asset: string
     payTo: string
-    accepts: string[]
-    memo?: string
+    network: string
+    scheme: string
+    extra?: {
+        decimals: number
+        mint: string
+    }
 }
 
 export class X402PaymentTool extends DynamicStructuredTool {
@@ -69,45 +72,36 @@ export class X402PaymentTool extends DynamicStructuredTool {
         this.maxOutputLength = args?.maxOutputLength ?? this.maxOutputLength
     }
 
-    private parsePaymentRequired(headers: Record<string, string>): X402PaymentRequired {
-        const payToHeader = headers['x-pay-to'] || headers['X-Pay-To']
-        const priceHeader = headers['x-price'] || headers['X-Price']
-        const currencyHeader = headers['x-currency'] || headers['X-Currency']
-        const chainHeader = headers['x-chain'] || headers['X-Chain']
-        const acceptsHeader = headers['x-accepts'] || headers['X-Accepts']
-        const memoHeader = headers['x-memo'] || headers['X-Memo']
-
-        if (!payToHeader || !priceHeader || !currencyHeader || !chainHeader) {
-            throw new Error('Invalid 402 response: missing required payment headers')
+    private parsePaymentRequired(body: any): X402PaymentRequired {
+        if (!body.maxAmountRequired || !body.asset || !body.payTo || !body.network || !body.scheme) {
+            throw new Error('Invalid 402 response: missing required fields in response body')
         }
 
-        const price = parseFloat(priceHeader)
-        if (isNaN(price)) {
-            throw new Error('Invalid price in 402 response')
+        const maxAmountRequired = parseFloat(body.maxAmountRequired)
+        if (isNaN(maxAmountRequired)) {
+            throw new Error('Invalid maxAmountRequired in 402 response')
         }
-
-        const accepts = acceptsHeader ? acceptsHeader.split(',').map(s => s.trim()) : ['usdc']
 
         return {
-            price,
-            currency: currencyHeader.toLowerCase(),
-            chain: chainHeader.toLowerCase(),
-            payTo: payToHeader,
-            accepts,
-            memo: memoHeader
+            maxAmountRequired,
+            asset: body.asset.toLowerCase(),
+            payTo: body.payTo,
+            network: body.network.toLowerCase(),
+            scheme: body.scheme,
+            extra: body.extra
         }
     }
 
     private async signSolanaPayment(paymentReq: X402PaymentRequired): Promise<{ signature: string; envelope: string }> {
         const { Keypair, Connection, PublicKey, Transaction, SystemProgram } = require('@solana/web3.js')
-        const { createTransferCheckedInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } = require('@solana/spl-token')
+        const { createTransferCheckedInstruction, getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } = require('@solana/spl-token')
 
-        if (paymentReq.chain !== 'solana') {
-            throw new Error(`Unsupported chain: ${paymentReq.chain}`)
+        if (paymentReq.network !== 'solana') {
+            throw new Error(`Unsupported network: ${paymentReq.network}`)
         }
 
-        if (paymentReq.currency !== 'usdc') {
-            throw new Error(`Unsupported currency: ${paymentReq.currency}`)
+        if (paymentReq.asset !== 'usdc') {
+            throw new Error(`Unsupported asset: ${paymentReq.asset}`)
         }
 
         const keypair = Keypair.fromSecretKey(Buffer.from(this.privateKey, 'base64'))
@@ -116,17 +110,18 @@ export class X402PaymentTool extends DynamicStructuredTool {
         const usdcMint = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
         const fromAddress = keypair.publicKey
         const toAddress = new PublicKey(paymentReq.payTo)
-        const amount = Math.floor(paymentReq.price * 1e6)
 
-        const fromATA = await getAssociatedTokenAddress(usdcMint, fromAddress)
-        const toATA = await getAssociatedTokenAddress(usdcMint, toAddress)
+        const rawAmount = BigInt(Math.round(paymentReq.maxAmountRequired * 1e6))
+
+        const fromATA = getAssociatedTokenAddressSync(usdcMint, fromAddress)
+        const toATA = getAssociatedTokenAddressSync(usdcMint, toAddress)
 
         const instruction = createTransferCheckedInstruction(
             fromATA,
             usdcMint,
             toATA,
             fromAddress,
-            amount,
+            rawAmount,
             6,
             [],
             TOKEN_PROGRAM_ID
@@ -146,22 +141,21 @@ export class X402PaymentTool extends DynamicStructuredTool {
             version: '1.0',
             chain: 'solana',
             currency: 'usdc',
-            amount: paymentReq.price,
+            amount: paymentReq.maxAmountRequired,
             to: paymentReq.payTo,
-            transaction: serializedTransaction,
-            memo: paymentReq.memo
+            transaction: serializedTransaction
         })
 
         return { signature: serializedTransaction, envelope }
     }
 
     private async signBasePayment(paymentReq: X402PaymentRequired): Promise<{ signature: string; envelope: string }> {
-        if (paymentReq.chain !== 'base') {
-            throw new Error(`Unsupported chain: ${paymentReq.chain}`)
+        if (paymentReq.network !== 'base') {
+            throw new Error(`Unsupported network: ${paymentReq.network}`)
         }
 
-        if (paymentReq.currency !== 'usdc') {
-            throw new Error(`Unsupported currency: ${paymentReq.currency}`)
+        if (paymentReq.asset !== 'usdc') {
+            throw new Error(`Unsupported asset: ${paymentReq.asset}`)
         }
 
         const { ethers } = require('ethers')
@@ -170,7 +164,7 @@ export class X402PaymentTool extends DynamicStructuredTool {
         const provider = new ethers.JsonRpcProvider('https://mainnet.base.org')
 
         const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
-        const amount = ethers.parseUnits(paymentReq.price.toString(), 6)
+        const amount = ethers.parseUnits(paymentReq.maxAmountRequired.toString(), 6)
 
         const abi = ['function transfer(address to, uint256 amount) returns (bool)']
         const contract = new ethers.Contract(usdcAddress, abi, wallet)
@@ -198,26 +192,25 @@ export class X402PaymentTool extends DynamicStructuredTool {
             version: '1.0',
             chain: 'base',
             currency: 'usdc',
-            amount: paymentReq.price,
+            amount: paymentReq.maxAmountRequired,
             to: paymentReq.payTo,
-            transaction: signedTx,
-            memo: paymentReq.memo
+            transaction: signedTx
         })
 
         return { signature: signedTx, envelope }
     }
 
     private async signPayment(paymentReq: X402PaymentRequired): Promise<{ signature: string; envelope: string }> {
-        if (paymentReq.price > this.maxPrice) {
-            throw new Error(`Price ${paymentReq.price} ${paymentReq.currency} exceeds maximum allowed price of ${this.maxPrice}`)
+        if (paymentReq.maxAmountRequired > this.maxPrice) {
+            throw new Error(`Max amount ${paymentReq.maxAmountRequired} ${paymentReq.asset} exceeds maximum allowed price of ${this.maxPrice}`)
         }
 
-        if (paymentReq.chain === 'solana') {
+        if (paymentReq.network === 'solana') {
             return this.signSolanaPayment(paymentReq)
-        } else if (paymentReq.chain === 'base') {
+        } else if (paymentReq.network === 'base') {
             return this.signBasePayment(paymentReq)
         } else {
-            throw new Error(`Unsupported chain: ${paymentReq.chain}`)
+            throw new Error(`Unsupported network: ${paymentReq.network}`)
         }
     }
 
@@ -257,7 +250,7 @@ export class X402PaymentTool extends DynamicStructuredTool {
             })
 
             if (res.status === 402) {
-                const paymentReq = this.parsePaymentRequired(Object.fromEntries(res.headers.entries()))
+                const paymentReq = this.parsePaymentRequired(await res.json())
                 const { signature, envelope } = await this.signPayment(paymentReq)
 
                 const paymentHeaders = {
@@ -281,9 +274,9 @@ export class X402PaymentTool extends DynamicStructuredTool {
                     data: text,
                     txHash: signature,
                     payment: {
-                        amount: paymentReq.price,
-                        currency: paymentReq.currency,
-                        chain: paymentReq.chain,
+                        amount: paymentReq.maxAmountRequired,
+                        currency: paymentReq.asset,
+                        chain: paymentReq.network,
                         txHash: signature
                     }
                 }
