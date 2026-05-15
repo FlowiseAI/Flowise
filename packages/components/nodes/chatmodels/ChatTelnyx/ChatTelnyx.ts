@@ -2,12 +2,13 @@ import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { secureFetch } from '../../../src/httpSecurity'
 
 const TELNYX_OPENAI_BASE = 'https://api.telnyx.com/v2/ai/openai'
 const TELNYX_CHAT_MODELS_URL = 'https://api.telnyx.com/v2/ai/openai/models'
 
 const fetchTelnyxModels = async (apiKey: string) => {
-    const response = await fetch(TELNYX_CHAT_MODELS_URL, {
+    const response = await secureFetch(TELNYX_CHAT_MODELS_URL, {
         headers: {
             Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
@@ -105,8 +106,13 @@ class ChatTelnyx_ChatModels implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
 
+        const parsedTemperature = temperature ? parseFloat(temperature) : 0.9
+        if (Number.isNaN(parsedTemperature)) {
+            throw new Error('Temperature must be a valid number')
+        }
+
         const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
+            temperature: parsedTemperature,
             modelName,
             openAIApiKey: apiKey,
             apiKey,

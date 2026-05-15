@@ -1,12 +1,13 @@
 import { ClientOptions, OpenAIEmbeddings, OpenAIEmbeddingsParams } from '@langchain/openai'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { secureFetch } from '../../../src/httpSecurity'
 
 const TELNYX_OPENAI_BASE = 'https://api.telnyx.com/v2/ai/openai'
 const TELNYX_EMBEDDINGS_MODELS_URL = 'https://api.telnyx.com/v2/ai/embeddings/models'
 
 const fetchTelnyxModels = async (apiKey: string) => {
-    const response = await fetch(TELNYX_EMBEDDINGS_MODELS_URL, {
+    const response = await secureFetch(TELNYX_EMBEDDINGS_MODELS_URL, {
         headers: {
             Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
