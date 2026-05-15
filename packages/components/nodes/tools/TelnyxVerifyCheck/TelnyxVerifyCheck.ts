@@ -32,13 +32,12 @@ class TelnyxVerifyCheckTool extends DynamicStructuredTool {
         }
 
         const body = {
-            phone_number: arg.phoneNumber,
             verify_profile_id: verifyProfileId,
             code: arg.code
         }
 
         try {
-            const res = await secureFetch('https://api.telnyx.com/v2/verifications/by_phone_number/actions/verify', {
+            const res = await secureFetch(`https://api.telnyx.com/v2/verifications/by_phone_number/${encodeURIComponent(arg.phoneNumber)}/actions/verify`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${this.apiKey}`,
