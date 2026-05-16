@@ -59,13 +59,16 @@ const Agentflows = () => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
         localStorage.setItem('agentFlowPageSize', pageLimit)
-        refresh(page, pageLimit, agentflowVersion)
+        refresh(page, pageLimit, agentflowVersion, search)
     }
 
-    const refresh = (page, limit, nextView) => {
+    const refresh = (page, limit, nextView, searchTerm) => {
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
+        }
+        if (searchTerm) {
+            params.search = searchTerm
         }
         getAllAgentflows.request(nextView === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT', params)
     }
@@ -84,16 +87,25 @@ const Agentflows = () => {
     }
 
     const onSearchChange = (event) => {
-        setSearch(event.target.value)
+        const searchValue = event.target.value
+        setSearch(searchValue)
+        // Reset to page 1 when search changes
+        setCurrentPage(1)
+        // Debounce API call
+        if (window.searchTimeout) clearTimeout(window.searchTimeout)
+        window.searchTimeout = setTimeout(() => {
+            refresh(1, pageLimit, agentflowVersion, searchValue)
+        }, 300)
     }
 
-    function filterFlows(data) {
-        return (
-            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
-            (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
-            data.id.toLowerCase().indexOf(search.toLowerCase()) > -1
-        )
-    }
+    // Remove client-side filter function - now using server-side search
+    // function filterFlows(data) {
+    //     return (
+    //         data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
+    //         (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
+    //         data.id.toLowerCase().indexOf(search.toLowerCase()) > -1
+    //     )
+    // }
 
     const addNew = () => {
         if (agentflowVersion === 'v2') {
@@ -346,7 +358,7 @@ const Agentflows = () => {
                         <>
                             {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllAgentflows.data?.data.filter(filterFlows).map((data, index) => (
+                                    {getAllAgentflows.data?.data.map((data, index) => (
                                         <ItemCard
                                             key={index}
                                             onClick={() => goToCanvas(data)}
@@ -366,7 +378,6 @@ const Agentflows = () => {
                                     icons={icons}
                                     scheduleStatuses={scheduleStatuses}
                                     isLoading={isLoading}
-                                    filterFunction={filterFlows}
                                     updateFlowsApi={getAllAgentflows}
                                     setError={setError}
                                     currentPage={currentPage}
