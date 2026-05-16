@@ -23,7 +23,8 @@ export interface FollowUpPromptResult {
 export const generateFollowUpPrompts = async (
     followUpPromptsConfig: FollowUpPromptConfig,
     apiMessageContent: string,
-    options: ICommonObject
+    options: ICommonObject,
+    sessionHistory?: string
 ): Promise<FollowUpPromptResult | undefined> => {
     if (followUpPromptsConfig) {
         if (!followUpPromptsConfig.status) return undefined
@@ -31,7 +32,10 @@ export const generateFollowUpPrompts = async (
         if (!providerConfig) return undefined
         const credentialId = providerConfig.credentialId as string
         const credentialData = await getCredentialData(credentialId ?? '', options)
-        const followUpPromptsPrompt = providerConfig.prompt.replace('{history}', apiMessageContent)
+        let followUpPromptsPrompt = providerConfig.prompt.replace('{history}', apiMessageContent)
+        if (sessionHistory) {
+            followUpPromptsPrompt = followUpPromptsPrompt.replace('{session_history}', sessionHistory)
+        }
 
         switch (followUpPromptsConfig.selectedProvider) {
             case FollowUpPromptProvider.ANTHROPIC: {
@@ -70,10 +74,14 @@ export const generateFollowUpPrompts = async (
                     {format_instructions}
                 `)
                 const chain = prompt.pipe(llm).pipe(parser)
-                const structuredResponse = await chain.invoke({
+                const invokeParams: ICommonObject = {
                     history: apiMessageContent,
                     format_instructions: formatInstructions
-                })
+                }
+                if (sessionHistory) {
+                    invokeParams.session_history = sessionHistory
+                }
+                const structuredResponse = await chain.invoke(invokeParams)
                 return structuredResponse as FollowUpPromptResult
             }
             case FollowUpPromptProvider.GOOGLE_GENAI: {

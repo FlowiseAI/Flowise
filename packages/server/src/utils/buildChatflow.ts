@@ -662,12 +662,25 @@ export const executeFlow = async ({
 
             if (agentflow.followUpPrompts) {
                 const followUpPromptsConfig = JSON.parse(agentflow.followUpPrompts)
-                const generatedFollowUpPrompts = await generateFollowUpPrompts(followUpPromptsConfig, apiMessage.content, {
-                    chatId,
-                    chatflowid: agentflow.id,
-                    appDataSource,
-                    databaseEntities
-                })
+                // Format session history for the prompt
+                const formattedSessionHistory = chatHistory
+                    .map((msg) => {
+                        const role = msg.type === 'apiMessage' ? 'Assistant' : 'User'
+                        const content = msg.message || msg.content || ''
+                        return `${role}: ${content}`
+                    })
+                    .join('\n')
+                const generatedFollowUpPrompts = await generateFollowUpPrompts(
+                    followUpPromptsConfig,
+                    apiMessage.content,
+                    {
+                        chatId,
+                        chatflowid: agentflow.id,
+                        appDataSource,
+                        databaseEntities
+                    },
+                    formattedSessionHistory
+                )
                 if (generatedFollowUpPrompts?.questions) {
                     apiMessage.followUpPrompts = JSON.stringify(generatedFollowUpPrompts.questions)
                 }
@@ -875,12 +888,25 @@ export const executeFlow = async ({
         if (result?.action) apiMessage.action = typeof result.action === 'string' ? result.action : JSON.stringify(result.action)
         if (chatflow.followUpPrompts) {
             const followUpPromptsConfig = JSON.parse(chatflow.followUpPrompts)
-            const followUpPrompts = await generateFollowUpPrompts(followUpPromptsConfig, apiMessage.content, {
-                chatId,
-                chatflowid,
-                appDataSource,
-                databaseEntities
-            })
+            // Format session history for the prompt
+            const formattedSessionHistory = chatHistory
+                .map((msg) => {
+                    const role = msg.type === 'apiMessage' ? 'Assistant' : 'User'
+                    const content = msg.message || msg.content || ''
+                    return `${role}: ${content}`
+                })
+                .join('\n')
+            const followUpPrompts = await generateFollowUpPrompts(
+                followUpPromptsConfig,
+                apiMessage.content,
+                {
+                    chatId,
+                    chatflowid,
+                    appDataSource,
+                    databaseEntities
+                },
+                formattedSessionHistory
+            )
             if (followUpPrompts?.questions) {
                 apiMessage.followUpPrompts = JSON.stringify(followUpPrompts.questions)
             }
