@@ -1,4 +1,5 @@
 import { JSDOM } from 'jsdom'
+import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 import {
@@ -259,8 +260,18 @@ describe('SentinelResumeStatus', () => {
         expect(html).toContain('What do you want to do?')
         expect(html).toContain('Record goal')
         expect(html).toContain('Continue last work')
-        expect(html).toContain('Review the status')
-        expect(html).toContain('Decide outside this page')
+        expect(html).toContain('Start here')
+        expect(html).toContain('Say what you want.')
+        expect(html).toContain('Safe plan')
+        expect(html).toContain('Read before deciding.')
+        expect(html).toContain('You decide')
+        expect(html).toContain('Nothing happens by itself.')
+        expect(html).toContain('background:#020617')
+        expect(html).toContain('background:#0f172a')
+        expect(html).not.toMatch(/background:#(?:fff|ffffff|f8fafc)/i)
+        expect(html).not.toContain('Review the status')
+        expect(html).not.toContain('Decide outside this page')
+        expect(html).not.toContain('Approved work still happens through the governed manual process.')
         expect(html).toContain(EMPTY_MESSAGE)
         expect(html).not.toMatch(/run_|sentinel_session|checkpoint_safe_hidden|snapshot_safe_hidden/)
     })
@@ -418,13 +429,13 @@ describe('SentinelResumeStatus', () => {
         )
 
         expect(html).toContain('Sentinel route guidance')
-        expect(html).toContain('I understood this as')
+        expect(html).toContain('Understood as')
         expect(html).toContain('Needs clarification')
-        expect(html).toContain('What can happen next')
+        expect(html).toContain('Next')
         expect(html).toContain('Clarify the goal in plain English')
-        expect(html).toContain('What will not happen')
+        expect(html).toContain('Not doing')
         expect(html).toContain('No plan, work, or review starts from an unclear goal.')
-        expect(html).toContain('Clarification needed')
+        expect(html).toContain('Need')
         expect(html).not.toMatch(
             /Approve plan|Revise plan|Stop|Prepare manual worker packet|Send for Sentinel review|client_nonce|cockpit_ref|gateway|bearer|authorization/
         )
@@ -731,11 +742,11 @@ describe('SentinelResumeStatus', () => {
         )
 
         expect(html).toContain('Sentinel route guidance')
-        expect(html).toContain('I understood this as')
+        expect(html).toContain('Understood as')
         expect(html).toContain('Planning')
-        expect(html).toContain('What can happen next')
+        expect(html).toContain('Next')
         expect(html).toContain('Sentinel can prepare a safe plain-English plan for your review.')
-        expect(html).toContain('What will not happen')
+        expect(html).toContain('Not doing')
         expect(html).toContain('No files are edited, no commands run, and no workers are launched.')
         expect(html).toContain('Approve plan')
         expect(html).toContain('Revise plan')

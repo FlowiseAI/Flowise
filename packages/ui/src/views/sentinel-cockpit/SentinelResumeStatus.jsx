@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import {
     requestGoalSnapshot,
@@ -70,18 +70,18 @@ const pageStyles = {
     root: {
         minHeight: '100%',
         padding: '32px',
-        background: '#f8fafc',
-        color: '#111827'
+        background: '#020617',
+        color: '#e5eefb'
     },
     panel: {
         width: '100%',
         maxWidth: '920px',
         margin: '0 auto',
-        border: '1px solid #d7dde8',
+        border: '1px solid #334155',
         borderRadius: '8px',
-        background: '#ffffff',
+        background: '#0f172a',
         padding: '24px',
-        boxShadow: '0 1px 2px rgba(15, 23, 42, 0.06)'
+        boxShadow: '0 18px 40px rgba(0, 0, 0, 0.28)'
     },
     title: {
         margin: '0 0 8px',
@@ -90,12 +90,12 @@ const pageStyles = {
     },
     copy: {
         margin: '0 0 20px',
-        color: '#475569',
+        color: '#cbd5e1',
         lineHeight: 1.5
     },
     eyebrow: {
         margin: '0 0 6px',
-        color: '#0369a1',
+        color: '#67e8f9',
         fontSize: '0.78rem',
         fontWeight: 700,
         letterSpacing: 0,
@@ -108,20 +108,20 @@ const pageStyles = {
         marginBottom: '20px'
     },
     guidanceItem: {
-        border: '1px solid #e2e8f0',
+        border: '1px solid #334155',
         borderRadius: '6px',
-        background: '#f8fafc',
+        background: '#111827',
         padding: '12px'
     },
     guidanceTitle: {
         margin: '0 0 4px',
-        color: '#0f172a',
+        color: '#f8fafc',
         fontSize: '0.92rem',
         fontWeight: 700
     },
     guidanceCopy: {
         margin: 0,
-        color: '#475569',
+        color: '#cbd5e1',
         fontSize: '0.88rem',
         lineHeight: 1.4
     },
@@ -142,15 +142,17 @@ const pageStyles = {
     label: {
         display: 'block',
         marginBottom: '6px',
-        color: '#334155',
+        color: '#dbeafe',
         fontSize: '0.9rem',
         fontWeight: 600
     },
     input: {
         width: '100%',
         boxSizing: 'border-box',
-        border: '1px solid #cbd5e1',
+        border: '1px solid #475569',
         borderRadius: '6px',
+        background: '#020617',
+        color: '#f8fafc',
         padding: '10px 12px',
         fontSize: '0.95rem'
     },
@@ -158,54 +160,56 @@ const pageStyles = {
         width: '100%',
         minHeight: '76px',
         boxSizing: 'border-box',
-        border: '1px solid #cbd5e1',
+        border: '1px solid #475569',
         borderRadius: '6px',
+        background: '#020617',
+        color: '#f8fafc',
         padding: '10px 12px',
         fontSize: '0.95rem',
         resize: 'vertical'
     },
     button: {
-        border: '1px solid #1f2937',
+        border: '1px solid #38bdf8',
         borderRadius: '6px',
-        background: '#1f2937',
-        color: '#ffffff',
+        background: '#0ea5e9',
+        color: '#04111d',
         minHeight: '40px',
         padding: '0 14px',
         fontWeight: 600,
         cursor: 'pointer'
     },
     secondaryButton: {
-        border: '1px solid #cbd5e1',
+        border: '1px solid #475569',
         borderRadius: '6px',
-        background: '#ffffff',
-        color: '#1f2937',
+        background: '#111827',
+        color: '#e5eefb',
         minHeight: '40px',
         padding: '0 14px',
         fontWeight: 600,
         cursor: 'pointer'
     },
     status: {
-        border: '1px solid #d7dde8',
+        border: '1px solid #334155',
         borderRadius: '8px',
         padding: '16px',
-        background: '#f8fafc'
+        background: '#111827'
     },
     error: {
-        border: '1px solid #fecaca',
+        border: '1px solid #fca5a5',
         borderRadius: '8px',
         padding: '16px',
-        background: '#fff1f2',
-        color: '#991b1b'
+        background: '#450a0a',
+        color: '#fecaca'
     },
     row: {
         display: 'grid',
         gridTemplateColumns: '180px minmax(0, 1fr)',
         gap: '14px',
         padding: '10px 0',
-        borderBottom: '1px solid #e5e7eb'
+        borderBottom: '1px solid #334155'
     },
     rowLabel: {
-        color: '#475569',
+        color: '#bfdbfe',
         fontWeight: 600
     },
     rowValue: {
@@ -214,48 +218,48 @@ const pageStyles = {
     },
     recommendation: {
         margin: '0 0 14px',
-        color: '#334155',
+        color: '#dbeafe',
         fontWeight: 600
     },
     blockedNote: {
         marginTop: '14px',
-        color: '#475569',
+        color: '#cbd5e1',
         fontSize: '0.9rem'
     },
     planCard: {
-        border: '1px solid #d7dde8',
+        border: '1px solid #334155',
         borderRadius: '8px',
         padding: '16px',
-        background: '#f8fafc'
+        background: '#111827'
     },
     routeBlock: {
         display: 'grid',
         gap: '8px',
         margin: '0 0 14px',
         paddingBottom: '14px',
-        borderBottom: '1px solid #d7dde8'
+        borderBottom: '1px solid #334155'
     },
     routeLabel: {
         margin: 0,
-        color: '#475569',
+        color: '#93c5fd',
         fontSize: '0.88rem',
         fontWeight: 700
     },
     routeValue: {
         margin: 0,
-        color: '#0f172a',
+        color: '#e5eefb',
         lineHeight: 1.45
     },
     planTitle: {
         margin: '0 0 8px',
-        color: '#0f172a',
+        color: '#f8fafc',
         fontSize: '1rem',
         fontWeight: 700
     },
     planList: {
         margin: '8px 0 0',
         paddingLeft: '20px',
-        color: '#334155'
+        color: '#dbeafe'
     },
     decisionControls: {
         display: 'flex',
@@ -271,13 +275,13 @@ const pageStyles = {
         alignItems: 'flex-start',
         gap: '8px',
         marginTop: '10px',
-        color: '#334155',
+        color: '#dbeafe',
         fontSize: '0.9rem',
         lineHeight: 1.4
     },
     note: {
         margin: '12px 0 0',
-        color: '#475569',
+        color: '#cbd5e1',
         fontSize: '0.9rem'
     }
 }
@@ -542,22 +546,22 @@ export default function SentinelResumeStatus() {
                     Quality Vibe Coding Cockpit
                 </h1>
                 <p style={pageStyles.copy}>
-                    Continue from a saved checkpoint and see the plain-English status Sentinel says is safe to show. This page cannot run
-                    tools, launch workers, or change files.
+                    Say what you want, read the safe status, and decide the next manual step. This page cannot run tools, launch workers,
+                    or change files.
                 </p>
 
                 <div style={pageStyles.guidance} aria-label='Cockpit safety boundaries'>
                     <div style={pageStyles.guidanceItem}>
-                        <p style={pageStyles.guidanceTitle}>Continue last work</p>
-                        <p style={pageStyles.guidanceCopy}>Use a checkpoint from your previous session.</p>
+                        <p style={pageStyles.guidanceTitle}>Start here</p>
+                        <p style={pageStyles.guidanceCopy}>Say what you want.</p>
                     </div>
                     <div style={pageStyles.guidanceItem}>
-                        <p style={pageStyles.guidanceTitle}>Review the status</p>
-                        <p style={pageStyles.guidanceCopy}>Read the safe summary and current recommendation.</p>
+                        <p style={pageStyles.guidanceTitle}>Safe plan</p>
+                        <p style={pageStyles.guidanceCopy}>Read before deciding.</p>
                     </div>
                     <div style={pageStyles.guidanceItem}>
-                        <p style={pageStyles.guidanceTitle}>Decide outside this page</p>
-                        <p style={pageStyles.guidanceCopy}>Approved work still happens through the governed manual process.</p>
+                        <p style={pageStyles.guidanceTitle}>You decide</p>
+                        <p style={pageStyles.guidanceCopy}>Nothing happens by itself.</p>
                     </div>
                 </div>
 
@@ -814,30 +818,30 @@ function RouteGuidanceCard({ routeCard }) {
     return (
         <div style={pageStyles.routeBlock} aria-label='Sentinel route guidance'>
             <div>
-                <p style={pageStyles.routeLabel}>I understood this as</p>
+                <p style={pageStyles.routeLabel}>Understood as</p>
                 <p style={pageStyles.routeValue}>{formatValue(routeCard.title)}</p>
             </div>
             <div>
-                <p style={pageStyles.routeLabel}>Route summary</p>
+                <p style={pageStyles.routeLabel}>Summary</p>
                 <p style={pageStyles.routeValue}>{formatValue(routeCard.summary)}</p>
             </div>
             <div>
-                <p style={pageStyles.routeLabel}>What can happen next</p>
+                <p style={pageStyles.routeLabel}>Next</p>
                 <p style={pageStyles.routeValue}>{formatValue(routeCard.what_can_happen_next)}</p>
             </div>
             <div>
-                <p style={pageStyles.routeLabel}>What will not happen</p>
+                <p style={pageStyles.routeLabel}>Not doing</p>
                 <p style={pageStyles.routeValue}>{formatValue(routeCard.what_will_not_happen)}</p>
             </div>
             {routeCard.needs_clarification && routeCard.clarification_question ? (
                 <div>
-                    <p style={pageStyles.routeLabel}>Clarification needed</p>
+                    <p style={pageStyles.routeLabel}>Need</p>
                     <p style={pageStyles.routeValue}>{formatValue(routeCard.clarification_question)}</p>
                 </div>
             ) : null}
             {routeCard.blocked_reason ? (
                 <div>
-                    <p style={pageStyles.routeLabel}>Safety note</p>
+                    <p style={pageStyles.routeLabel}>Blocked</p>
                     <p style={pageStyles.routeValue}>{formatValue(routeCard.blocked_reason)}</p>
                 </div>
             ) : null}
