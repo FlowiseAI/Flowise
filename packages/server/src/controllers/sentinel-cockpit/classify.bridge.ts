@@ -611,8 +611,7 @@ function projectPolicyHelpGuidanceSnapshot(routeCard: GoalRouteCard): CockpitSna
         status: 'ok',
         snapshot_ref: 'snapshot_goal_policy_help_guidance',
         state: 'policy_help_guidance',
-        plain_summary:
-            'Sentinel understood this as a guidance request. No task was created, no plan was approved, and no work started.',
+        plain_summary: 'Sentinel understood this as a guidance request. No task was created, no plan was approved, and no work started.',
         next_safe_action: 'guidance_only',
         allowed_user_actions: ['none'],
         blocked_actions: [
