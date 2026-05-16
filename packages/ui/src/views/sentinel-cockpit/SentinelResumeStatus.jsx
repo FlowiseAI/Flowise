@@ -546,8 +546,8 @@ export default function SentinelResumeStatus() {
                     Quality Vibe Coding Cockpit
                 </h1>
                 <p style={pageStyles.copy}>
-                    Say what you want, read the safe status, and decide the next manual step. This page cannot run tools, launch workers,
-                    or change files.
+                    Say what you want, read the safe status, and decide the next manual step. This page cannot run tools, launch workers, or
+                    change files.
                 </p>
 
                 <div style={pageStyles.guidance} aria-label='Cockpit safety boundaries'>
