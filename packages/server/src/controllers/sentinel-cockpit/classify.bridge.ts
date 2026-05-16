@@ -321,6 +321,12 @@ export async function createClassifySnapshot(
         options.requestId
     )
     if (config.planDecisionBridge && gatewayClassify.status !== 'blocked') {
+        const routeCard = projectGoalRouteCard(gatewayClassify)
+        if (routeCard?.category === 'policy_help') {
+            const guidanceSnapshot = projectPolicyHelpGuidanceSnapshot(routeCard)
+            assertClassifySnapshotSafe(guidanceSnapshot, config.token, request.plain_goal)
+            return guidanceSnapshot
+        }
         if (request.client_nonce) {
             const planSession = createPlanDecisionRequiredSession(gatewayClassify, request.client_nonce)
             if (planSession) {
@@ -587,6 +593,33 @@ function projectClassifySnapshot(body: GatewayClassifyBody, planReadinessCard: b
                   'Execution is not available here.',
                   'Manual handoff and result intake are deferred.'
               ],
+        checkpoint_ref: null,
+        evidence_refs: [],
+        manual_handoff_preview: null,
+        worker_status: 'none',
+        result_status: 'not_started',
+        shield_summary: 'not_reviewed',
+        accepted_state: 'not_accepted',
+        stale_doc_warning: 'none',
+        route_card: routeCard
+    }
+}
+
+function projectPolicyHelpGuidanceSnapshot(routeCard: GoalRouteCard): CockpitSnapshot {
+    return {
+        schema_version: COCKPIT_SNAPSHOT_SCHEMA_VERSION,
+        status: 'ok',
+        snapshot_ref: 'snapshot_goal_policy_help_guidance',
+        state: 'policy_help_guidance',
+        plain_summary:
+            'Sentinel understood this as a guidance request. No task was created, no plan was approved, and no work started.',
+        next_safe_action: 'guidance_only',
+        allowed_user_actions: ['none'],
+        blocked_actions: [
+            'Plan approval is not needed for this guidance request.',
+            'No files are edited here.',
+            'No system actions start here.'
+        ],
         checkpoint_ref: null,
         evidence_refs: [],
         manual_handoff_preview: null,

@@ -441,6 +441,42 @@ describe('SentinelResumeStatus', () => {
         )
     })
 
+    it('renders policy/help guidance as display-only without plan controls', () => {
+        const html = renderToStaticMarkup(
+            <ResumeSnapshot
+                snapshot={safeSnapshot({
+                    snapshot_ref: 'snapshot_goal_policy_help_guidance',
+                    state: 'policy_help_guidance',
+                    plain_summary:
+                        'Sentinel understood this as a guidance request. No task was created, no plan was approved, and no work started.',
+                    next_safe_action: 'guidance_only',
+                    blocked_actions: [
+                        'Plan approval is not needed for this guidance request.',
+                        'No files are edited here.',
+                        'No system actions start here.'
+                    ],
+                    route_card: safeRouteCard({
+                        category: 'policy_help',
+                        title: 'Policy or help',
+                        summary: 'Sentinel understood this as a request for guidance.',
+                        what_can_happen_next: 'Sentinel can explain the safe process in plain English.',
+                        what_will_not_happen: 'This does not create a task, launch work, or change any files.'
+                    })
+                })}
+            />
+        )
+
+        expect(html).toContain('Policy or help')
+        expect(html).toContain('Sentinel understood this as a request for guidance.')
+        expect(html).toContain('Sentinel can explain the safe process in plain English.')
+        expect(html).toContain('This does not create a task, launch work, or change any files.')
+        expect(html).toContain('Next safe action: Use this guidance only. Enter a specific work goal if you want a plan.')
+        expect(html).toContain('Plan approval is not needed for this guidance request.')
+        expect(html).not.toMatch(
+            /Approve plan|Revise plan|Stop|Prepare manual worker packet|Send for Sentinel review|client_nonce|cockpit_ref|gateway|bearer|authorization/
+        )
+    })
+
     it('omits unsafe snapshot route guidance without rendering raw content', () => {
         const html = renderToStaticMarkup(
             <ResumeSnapshot

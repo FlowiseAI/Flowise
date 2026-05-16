@@ -1044,6 +1044,54 @@ describe('sentinel cockpit classify bridge', () => {
         expect(serialized).not.toContain('challenge_hidden_123')
     })
 
+    it('keeps policy/help classify results display-only when the plan-decision bridge is enabled', async () => {
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1'
+        })
+        const fetchImpl = jest.fn().mockResolvedValue(
+            gatewayResponse(
+                validGatewayClassify({
+                    route_card: validGatewayRouteCard({
+                        category: 'policy_help',
+                        title: 'Policy or help',
+                        summary: 'Sentinel understood this as a request for guidance.',
+                        what_can_happen_next: 'Sentinel can explain the safe process in plain English.',
+                        what_will_not_happen: 'This does not create a task, launch work, or change any files.'
+                    })
+                })
+            )
+        )
+
+        const snapshot: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
+            { config, fetchImpl: fetchImpl as any, requestId: 'req_test_123' }
+        )
+        const serialized = JSON.stringify(snapshot)
+
+        expect(snapshot.schema_version).toBe('sentinel.cockpit_bridge.snapshot.v1')
+        expect(snapshot.snapshot_ref).toBe('snapshot_goal_policy_help_guidance')
+        expect(snapshot.state).toBe('policy_help_guidance')
+        expect(snapshot.next_safe_action).toBe('guidance_only')
+        expect(snapshot.allowed_user_actions).toEqual(['none'])
+        expect(snapshot.cockpit_ref).toBeUndefined()
+        expect(snapshot.route_card).toEqual(
+            validGatewayRouteCard({
+                category: 'policy_help',
+                title: 'Policy or help',
+                summary: 'Sentinel understood this as a request for guidance.',
+                what_can_happen_next: 'Sentinel can explain the safe process in plain English.',
+                what_will_not_happen: 'This does not create a task, launch work, or change any files.'
+            })
+        )
+        expect(snapshot.plain_summary).toContain('No task was created')
+        expect(snapshot.blocked_actions).toContain('Plan approval is not needed for this guidance request.')
+        expect(serialized).not.toContain(clientNonce)
+        expect(serialized).not.toContain('run_hidden_123')
+        expect(serialized).not.toContain('session_hidden_123')
+        expect(serialized).not.toContain('decision_hidden_123')
+        expect(serialized).not.toContain('challenge_hidden_123')
+    })
+
     it('drops unsafe Gateway route guidance before projecting a plan session', async () => {
         const config = buildClassifyConfig({
             BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1'

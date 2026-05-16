@@ -1137,6 +1137,7 @@ function readRouteCardString(value, maxLength) {
 function formatValue(value) {
     if (value === null || value === undefined || value === '') return 'None'
     if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+    if (value === 'guidance_only') return 'Use this guidance only. Enter a specific work goal if you want a plan.'
     return String(value)
 }
 
