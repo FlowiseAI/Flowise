@@ -2,7 +2,7 @@ import { Tooltip, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import PropTypes from 'prop-types'
 
-const StyledOl = styled('ol')(() => ({
+const StyledUl = styled('ul')(() => ({
     paddingLeft: 20,
     margin: 0
 }))
@@ -17,13 +17,13 @@ const MoreItemsTooltip = ({ images, children }) => {
     return (
         <Tooltip
             title={
-                <StyledOl>
+                <StyledUl>
                     {images.map((img) => (
                         <StyledLi key={img.imageSrc || img.label}>
                             <Typography>{img.label}</Typography>
                         </StyledLi>
                     ))}
-                </StyledOl>
+                </StyledUl>
             }
             placement='top'
         >
