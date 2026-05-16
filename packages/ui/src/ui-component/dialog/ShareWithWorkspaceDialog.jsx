@@ -6,7 +6,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import { cloneDeep } from 'lodash'
 
 // Material
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Stack, OutlinedInput, Typography } from '@mui/material'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Stack, OutlinedInput, Typography, Checkbox, FormControlLabel } from '@mui/material'
 
 // Project imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -47,6 +47,28 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
     const [outputSchema, setOutputSchema] = useState([])
 
     const [name, setName] = useState('')
+    const [selectAll, setSelectAll] = useState(false)
+
+    // Handle select all / deselect all
+    const handleSelectAllChange = (event) => {
+        const checked = event.target.checked
+        setSelectAll(checked)
+        setOutputSchema((prevRows) => {
+            return prevRows.map((row) => ({
+                ...row,
+                shared: checked
+            }))
+        })
+    }
+
+    // Update selectAll state when individual rows change
+    useEffect(() => {
+        if (outputSchema.length > 0) {
+            const allSelected = outputSchema.every((row) => row.shared)
+            const noneSelected = outputSchema.every((row) => !row.shared)
+            setSelectAll(allSelected ? true : noneSelected ? false : false)
+        }
+    }, [outputSchema])
 
     const onRowUpdate = (newRow) => {
         setTimeout(() => {
@@ -187,6 +209,13 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
                     <OutlinedInput id='name' type='string' disabled={true} fullWidth placeholder={name} value={name} name='name' />
                 </Box>
                 <Box sx={{ p: 2 }}>
+                    <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mb: 1 }}>
+                        <Typography variant='overline'>Workspaces</Typography>
+                        <FormControlLabel
+                            control={<Checkbox checked={selectAll} onChange={handleSelectAllChange} size='small' />}
+                            label={<Typography variant='body2'>Select All</Typography>}
+                        />
+                    </Stack>
                     <Grid columns={columns} rows={outputSchema} onRowUpdate={onRowUpdate} />
                 </Box>
             </DialogContent>
