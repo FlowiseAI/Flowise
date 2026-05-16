@@ -115,7 +115,9 @@ export const utilGetChatMessage = async ({
         },
         order: {
             createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
-        }
+        },
+        skip: page > -1 && pageSize > -1 ? page * pageSize : undefined,
+        take: page > -1 && pageSize > -1 ? pageSize : undefined
     })
 
     return messages
