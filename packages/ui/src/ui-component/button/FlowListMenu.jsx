@@ -178,6 +178,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
     }
 
     const saveFlowRename = async (chatflowName) => {
+        setFlowDialogOpen(false)
         const updateBody = {
             name: chatflowName,
             chatflow
