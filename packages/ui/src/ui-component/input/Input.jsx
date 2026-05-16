@@ -17,7 +17,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlu
     const selectionRangeRef = useRef({ start: null, end: null })
 
     const openPopOver = Boolean(anchorEl)
-    const hasPasswordToggle = (inputParam?.type === 'password' || inputParam?.type === 'url') && !!inputParam?.enablePasswordToggle
+    const hasPasswordToggle = inputParam?.type === 'password' || inputParam?.type === 'url'
 
     const handleClosePopOver = () => {
         setAnchorEl(null)
