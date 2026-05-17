@@ -1583,7 +1583,7 @@ const _createEmbeddingsObject = async (
 ): Promise<any> => {
     // prepare embedding node data
     const embeddingComponent = componentNodes[data.embeddingName]
-    if (!embeddingComponent) {
+    if (!embeddingComponent || !embeddingComponent.filePath) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Embedding "${data.embeddingName}" not found in component nodes`)
     }
     const embeddingNodeData: any = {
@@ -1621,7 +1621,7 @@ const _createRecordManagerObject = async (
 ) => {
     // prepare record manager node data
     const recordManagerComponent = componentNodes[data.recordManagerName]
-    if (!recordManagerComponent) {
+    if (!recordManagerComponent || !recordManagerComponent.filePath) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Record Manager "${data.recordManagerName}" not found in component nodes`
