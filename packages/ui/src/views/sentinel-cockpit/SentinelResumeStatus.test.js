@@ -455,6 +455,9 @@ describe('SentinelResumeStatus', () => {
                         'No files are edited here.',
                         'No system actions start here.'
                     ],
+                    result_status: 'not_started',
+                    shield_summary: 'not_reviewed',
+                    accepted_state: 'not_accepted',
                     route_card: safeRouteCard({
                         category: 'policy_help',
                         title: 'Policy or help',
@@ -471,7 +474,18 @@ describe('SentinelResumeStatus', () => {
         expect(html).toContain('Sentinel can explain the safe process in plain English.')
         expect(html).toContain('This does not create a task, launch work, or change any files.')
         expect(html).toContain('Next safe action: Use this guidance only. Enter a specific work goal if you want a plan.')
+        expect(html).toContain('Guidance only')
+        expect(html).toContain('No manual work')
+        expect(html).toContain('Not started')
+        expect(html).toContain('Not reviewed')
+        expect(html).toContain('Not accepted')
         expect(html).toContain('Plan approval is not needed for this guidance request.')
+        expect(html).toContain('<li>Plan approval is not needed for this guidance request.</li>')
+        expect(html).toContain('<li>No files are edited here.</li>')
+        expect(html).not.toContain('policy_help_guidance')
+        expect(html).not.toContain('not_started')
+        expect(html).not.toContain('not_reviewed')
+        expect(html).not.toContain('not_accepted')
         expect(html).not.toMatch(
             /Approve plan|Revise plan|Stop|Prepare manual worker packet|Send for Sentinel review|client_nonce|cockpit_ref|gateway|bearer|authorization/
         )

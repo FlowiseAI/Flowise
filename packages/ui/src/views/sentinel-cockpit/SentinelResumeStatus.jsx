@@ -261,6 +261,11 @@ const pageStyles = {
         paddingLeft: '20px',
         color: '#dbeafe'
     },
+    blockedList: {
+        margin: 0,
+        paddingLeft: '18px',
+        color: '#e5eefb'
+    },
     decisionControls: {
         display: 'flex',
         flexWrap: 'wrap',
@@ -646,7 +651,7 @@ export function ResumeSnapshot({ snapshot }) {
             {displayRows.map(([label, key]) => (
                 <div key={key} style={pageStyles.row}>
                     <div style={pageStyles.rowLabel}>{label}</div>
-                    <div style={pageStyles.rowValue}>{formatValue(snapshot[key])}</div>
+                    <div style={pageStyles.rowValue}>{formatSnapshotField(key, snapshot[key])}</div>
                 </div>
             ))}
             <div style={pageStyles.row}>
@@ -1141,6 +1146,16 @@ function formatValue(value) {
     return String(value)
 }
 
+function formatSnapshotField(key, value) {
+    if (key === 'state' && value === 'policy_help_guidance') return 'Guidance only'
+    if (key === 'worker_status' && value === 'none') return 'No manual work'
+    if (key === 'result_status' && value === 'not_started') return 'Not started'
+    if (key === 'shield_summary' && value === 'not_reviewed') return 'Not reviewed'
+    if (key === 'accepted_state' && value === 'not_accepted') return 'Not accepted'
+    if (value === 'none') return 'None'
+    return formatValue(value)
+}
+
 function formatPlanAction(value) {
     if (value === 'user_plan_decision_required') return 'Choose whether to approve, revise, or stop this plan.'
     if (value === 'plan_display_only') return 'Review the plan outside this page before manual work begins.'
@@ -1159,7 +1174,13 @@ function formatPlanAction(value) {
 
 function formatList(value) {
     if (!Array.isArray(value) || value.length === 0) return 'None'
-    return value.join(', ')
+    return (
+        <ul style={pageStyles.blockedList}>
+            {value.map((item) => (
+                <li key={item}>{formatValue(item)}</li>
+            ))}
+        </ul>
+    )
 }
 
 function isPlainRecord(value) {
