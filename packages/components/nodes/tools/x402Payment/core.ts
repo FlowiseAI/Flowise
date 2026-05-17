@@ -126,11 +126,20 @@ export class X402PaymentTool extends DynamicStructuredTool {
             // Determine asset (use mint if available, otherwise asset field)
             const asset = compatibleReq.extra?.mint || compatibleReq.asset || 'usdc'
 
+            // Normalize network to base name for routing (strip CAIP-2 prefix)
+            const normalizedNetwork = (() => {
+                const net = compatibleReq.network.toLowerCase()
+                if (net.startsWith('solana')) return 'solana'
+                if (net.startsWith('eip155')) return 'base'
+                if (net.startsWith('base')) return 'base'
+                return net
+            })()
+
             return {
                 maxAmountRequired: compatibleReq.price,
                 asset: asset.toLowerCase(),
                 payTo: compatibleReq.payTo,
-                network: compatibleReq.network.toLowerCase(),
+                network: normalizedNetwork,
                 scheme: compatibleReq.scheme.toLowerCase(),
                 decimals: decimals,
                 mint: compatibleReq.extra?.mint
@@ -154,11 +163,19 @@ export class X402PaymentTool extends DynamicStructuredTool {
         // Convert decimal to atomic units
         const atomicAmount = (BigInt(Math.round(maxAmountDecimal * 1e6))).toString()
 
+        // For V1, normalize network to base name
+        const v1Network = body.network.toLowerCase()
+        const normalizedNetwork = (() => {
+            if (v1Network.startsWith('solana')) return 'solana'
+            if (v1Network.startsWith('eip155') || v1Network.startsWith('base')) return 'base'
+            return v1Network
+        })()
+
         return {
             maxAmountRequired: atomicAmount,
             asset: (body.extra?.mint || body.asset).toLowerCase(),
             payTo: body.payTo,
-            network: body.network.toLowerCase(),
+            network: normalizedNetwork,
             scheme: body.scheme.toLowerCase(),
             decimals: decimals,
             mint: body.extra?.mint
