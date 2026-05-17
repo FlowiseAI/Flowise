@@ -1,5 +1,5 @@
 import { z } from 'zod/v3'
-import { secureFetch } from '../../../src/utils'
+import { secureFetch } from '../../../src/httpSecurity'
 import { StructuredTool } from '@langchain/core/tools'
 
 export const desc = `A wrapper around Perplexity's Search API. Useful for retrieving up-to-date, ranked web results with title, URL, and snippet for a given query.`
@@ -26,24 +26,20 @@ const createPerplexitySearchSchema = () => {
     })
 }
 
-export class PerplexitySearchTool extends DynamicStructuredTool {
+export class PerplexitySearchTool extends StructuredTool {
+    name = 'perplexity_search'
+    description = desc
+    schema = createPerplexitySearchSchema()
+
     apiKey: string
     maxResults: number
     searchDomainFilter?: string[]
     searchRecencyFilter?: 'hour' | 'day' | 'week' | 'month' | 'year'
 
     constructor(args: PerplexitySearchParameters) {
-        const schema = createPerplexitySearchSchema()
-
-        const toolInput = {
-            name: args.name || 'perplexity_search',
-            description: args.description || desc,
-            schema: schema,
-            baseUrl: '',
-            method: 'POST',
-            headers: {}
-        }
-        super(toolInput)
+        super()
+        this.name = args.name || this.name
+        this.description = args.description || this.description
         this.apiKey = args.apiKey
         this.maxResults = args.maxResults ?? 5
         this.searchDomainFilter = args.searchDomainFilter
@@ -65,7 +61,7 @@ export class PerplexitySearchTool extends DynamicStructuredTool {
     }
 
     /** @ignore */
-    async _call(arg: any): Promise<string> {
+    async _call(arg: z.infer<typeof this.schema>): Promise<string> {
         const { query } = arg
 
         if (!query) {
