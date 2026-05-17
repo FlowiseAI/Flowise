@@ -41,9 +41,9 @@
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"
     },
     "devDependencies": {
-        "@changesets/cli": "^2.27.0",
         "@babel/preset-env": "^7.19.4",
         "@babel/preset-typescript": "7.18.6",
+        "@changesets/cli": "^2.27.0",
         "@types/express": "^4.17.13",
         "@typescript-eslint/typescript-estree": "^7.13.1",
         "eslint": "^8.24.0",
@@ -67,8 +67,26 @@
     },
     "pnpm": {
         "onlyBuiltDependencies": [
+            "@swc/core",
+            "bufferutil",
+            "canvas",
+            "core-js",
+            "core-js-pure",
+            "couchbase",
+            "cpu-features",
+            "cypress",
+            "es5-ext",
+            "esbuild",
             "faiss-node",
-            "sqlite3"
+            "grpc-tools",
+            "msgpackr-extract",
+            "protobufjs",
+            "puppeteer",
+            "sharp",
+            "sqlite3",
+            "ssh2",
+            "unrs-resolver",
+            "utf-8-validate"
         ],
         "overrides": {
             "axios": "1.15.0",
