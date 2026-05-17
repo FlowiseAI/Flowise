@@ -1,40 +1,42 @@
 /**
- * Skill — per-file family recipe registry.
+ * Skill — recipe registry for shell-only files.
  *
- * Skill authors typically write natural-language prose that points at a
- * file ("Execute the scripts at ./scoring-algorithm.js", "Job description
- * at ./job-description.txt") rather than the literal shell command the
- * LLM has to issue. The model is supposed to infer "…so run `node` on
- * it" or "…so `cat` it", but that inference step is flaky under pressure
- * — and even when the model picks `cat`, it ends up streaming the entire
- * file when a targeted `grep` / `head` / `jq` would have done the job
- * for a fraction of the tokens.
+ * Most skill assets (markdown, text, JSON, CSV, YAML, XML, HTML, logs,
+ * …) are fully covered by the structured filesystem tools — the agent
+ * loop reaches for `read_file_<Skill>` / `grep_<Skill>` / `glob_<Skill>`
+ * and never needs a shell command. The recipe registry therefore only
+ * has to cover the cases where the shell is *irreplaceable*:
  *
- * This module centralises that inference into a small registry keyed on
- * file extension. For each *family* (a coarser bucket than extension —
- * `data-json`, `binary-pdf`, …) we describe one **primary** command and
- * a curated list of **alternative** tasks tagged by intent (`peek` /
- * `tail` / `search` / `count` / `query` / `info`). The output is consumed
- * in two places:
+ *   1. **Code execution** — `.js` needs `node`, `.py` needs `python3`,
+ *      `.sh` needs `bash`, `.rb` needs `ruby`. Structured tools cannot
+ *      run code.
  *
- *   1. `buildBashToolDescription` — renders a top-level "Suggested
- *      invocations" cheat-sheet for every reachable file plus a per-family
- *      "Productive commands" mini-block teaching the LLM the productive
- *      moves (`grep -nE`, `jq`, `pdfgrep`, `head -n N`, `wc -l`, …).
+ *   2. **Binary content extraction** — `.pdf`, `.docx`, `.xlsx`,
+ *      `.pptx`, `.zip` (and friends), `.png`/`.jpg`/… need a specialized
+ *      decoder (built-in Python helper or `pdftotext`/`unzip -l`/`file`)
+ *      because the raw bytes are not human-readable. Structured tools
+ *      can fetch the bytes but can't make them useful to the LLM.
  *
- *   2. `buildToolHint` (via `renderReferenceRecipes`) — appends an
- *      "Execution helpers" block to each skill-file tool's response. Exec
- *      references emit a single line; data/binary references emit up to
- *      three lines (primary + 1–2 productive alternatives) so the LLM
- *      sees the productive options right next to the prose that
- *      mentioned the file.
+ * For any other extension, `recipeForEntry` returns `null` — the caller
+ * (`renderReferenceRecipes`, `groupByRecipeFamily`) skips the entry, and
+ * the LLM consults the structured tools instead.
+ *
+ * Output is consumed in two places:
+ *
+ *   1. `buildExecuteToolDescription` — renders the per-file cheat-sheet
+ *      and per-family productive-commands block for the `execute` tool's
+ *      description.
+ *
+ *   2. `renderReferenceRecipes` — appends an "Execution helpers" block
+ *      to each skill-file tool's hint, addressed via the concrete bash
+ *      tool name so the LLM can copy-paste the JSON call.
  *
  * Design constraints:
  *   - Pure, I/O-free, deterministic: same manifest → same text.
  *   - No attempt to run the command; we only *describe* it. The sandbox
- *     can still reject anything that isn't on PATH (the bash tool's JSON
- *     envelope surfaces "command not found" cleanly so the LLM can pick
- *     the next alternative).
+ *     can still reject anything that isn't on PATH; the bash tool's
+ *     response surfaces "command not found" so the LLM can pick the
+ *     next alternative.
  *   - Extensible: adding a new productive command is a one-liner in the
  *     family's `alternatives` array.
  */
@@ -49,7 +51,7 @@ import type { SkillBundleEntry, SkillKind } from '../utils'
 // ---------------------------------------------------------------------------
 
 /** The intent tag carried by each task inside a family. */
-export type RecipeTaskId = 'exec' | 'read' | 'peek' | 'tail' | 'search' | 'count' | 'query' | 'info'
+export type RecipeTaskId = 'exec' | 'read' | 'peek' | 'search' | 'count' | 'info'
 
 /**
  * One concrete, render-ready command template inside a family.
@@ -62,8 +64,8 @@ export type RecipeTaskId = 'exec' | 'read' | 'peek' | 'tail' | 'search' | 'count
  *                       directory; defaults to `DEFAULT_HELPERS_DIR`
  *                       when no manifest is supplied at render time.
  *
- * Other placeholders (`<pattern>`, `<query>`, `<inner-path>`) are kept
- * verbatim — the LLM substitutes them when it issues the call.
+ * Other placeholders (`<pattern>`, `<inner-path>`) are kept verbatim —
+ * the LLM substitutes them when it issues the call.
  */
 export interface RecipeTask {
     id: RecipeTaskId
@@ -77,23 +79,18 @@ export interface RecipeTask {
 
 /**
  * The full list of file families. Each family is a coarser bucket than
- * an extension — every JSON-like extension maps onto `data-json`, every
+ * an extension — every JS-like extension maps onto `exec-node`, every
  * PDF onto `binary-pdf`, etc.
+ *
+ * The set is intentionally narrow: text-format files (md/text/log/
+ * json/csv/tsv/yaml/xml/html) are NOT represented because the
+ * structured filesystem tools cover them natively.
  */
 export type RecipeFamily =
     | 'exec-node'
     | 'exec-python'
     | 'exec-shell'
     | 'exec-ruby'
-    | 'data-md'
-    | 'data-text'
-    | 'data-log'
-    | 'data-json'
-    | 'data-csv'
-    | 'data-tsv'
-    | 'data-yaml'
-    | 'data-xml'
-    | 'data-html'
     | 'binary-pdf'
     | 'binary-docx'
     | 'binary-xlsx'
@@ -105,20 +102,19 @@ export type RecipeFamily =
 /** Family definition: coarse label, the recommended primary task, and alternatives. */
 export interface FamilyDef {
     family: RecipeFamily
-    /** Human label used in grouped headings ("Markdown skill files", "JSON data", …). */
+    /** Human label used in grouped headings ("PDF documents", "Archives", …). */
     label: string
     primary: RecipeTask
     /**
      * Productive commands the LLM should reach for instead of running the
-     * primary template on every interaction (grep, head, jq, pdfgrep …).
+     * primary template on every interaction (pdfgrep, unzip -p, …).
      * Order matters: rendered top-to-bottom in the bash tool description.
      */
     alternatives: RecipeTask[]
 }
 
 // ---------------------------------------------------------------------------
-// Backwards-compatibility shapes — older imports refer to `CommandRecipe`
-// and the legacy `RecipeFamily` literals (`read-text` / `read-binary`).
+// Backwards-compatibility shapes — older imports refer to `CommandRecipe`.
 // We keep the alias around but every consumer in this package now uses
 // `FamilyDef` / `RecipeTask`.
 // ---------------------------------------------------------------------------
@@ -142,44 +138,8 @@ const execTask = (id: RecipeTaskId, label: string, template: string, description
     description
 })
 
-// Reusable productive-command primitives shared across families.
-const PEEK_HEAD = (n: number): RecipeTask => ({
-    id: 'peek',
-    label: `Peek (first ${n} lines)`,
-    template: `head -n ${n} {path}`,
-    description: `First ${n} lines — cheap probe before \`cat\`.`
-})
-
-const PEEK_TAIL = (n: number): RecipeTask => ({
-    id: 'tail',
-    label: `Tail (last ${n} lines)`,
-    template: `tail -n ${n} {path}`,
-    description: `Last ${n} lines — useful for logs and trailing summaries.`
-})
-
-const SEARCH_GREP: RecipeTask = {
-    id: 'search',
-    label: 'Search',
-    template: "grep -nE '<pattern>' {path}",
-    description: 'Locate a regex pattern with line numbers; replace `<pattern>` before issuing.'
-}
-
-const COUNT_LINES: RecipeTask = {
-    id: 'count',
-    label: 'Count lines',
-    template: 'wc -l {path}',
-    description: 'Line count — use to size a file before reading it whole.'
-}
-
-const COUNT_BYTES: RecipeTask = {
-    id: 'count',
-    label: 'Count bytes',
-    template: 'wc -c {path}',
-    description: 'Byte count — use to size a file before reading it whole.'
-}
-
 // ---------------------------------------------------------------------------
-// Family registry
+// Exec families — irreplaceable because structured tools cannot run code.
 // ---------------------------------------------------------------------------
 
 const EXEC_NODE: FamilyDef = {
@@ -210,147 +170,13 @@ const EXEC_RUBY: FamilyDef = {
     alternatives: []
 }
 
-// Reusable "read full" task — kept once so every family that demotes
-// `cat` to an alternative shares the same canonical entry.
-const READ_FULL_CAT: RecipeTask = {
-    id: 'read',
-    label: 'Read full',
-    template: 'cat {path}',
-    description: 'Streams the entire file to stdout — escalate here only after a peek/search proves you need the whole content.'
-}
-
-const DATA_MD: FamilyDef = {
-    family: 'data-md',
-    label: 'Markdown skill files',
-    // The skill markdown is already inlined in the SkillFileTool's
-    // response, so reaching for `cat` is almost always wasted tokens.
-    // Default to a peek; the LLM can escalate to `cat` via the alt.
-    primary: PEEK_HEAD(80),
-    alternatives: [SEARCH_GREP, READ_FULL_CAT]
-}
-
-const DATA_TEXT: FamilyDef = {
-    family: 'data-text',
-    label: 'Plain text data',
-    primary: PEEK_HEAD(50),
-    alternatives: [SEARCH_GREP, READ_FULL_CAT, COUNT_LINES]
-}
-
-const DATA_LOG: FamilyDef = {
-    family: 'data-log',
-    label: 'Log files',
-    primary: PEEK_TAIL(50),
-    alternatives: [SEARCH_GREP, COUNT_LINES, PEEK_HEAD(50)]
-}
-
-const DATA_JSON: FamilyDef = {
-    family: 'data-json',
-    label: 'JSON data',
-    // `head -c 2048` is a safer default than `head -n N` for JSON: it
-    // works for both pretty-printed and minified documents and reveals
-    // enough of the top-level structure for the LLM to plan a `jq` query.
-    primary: {
-        id: 'peek',
-        label: 'Peek (first 2 KB)',
-        template: 'head -c 2048 {path}',
-        description: 'First 2 KB of the document — enough to see the top-level keys without parsing the whole file.'
-    },
-    alternatives: [
-        {
-            id: 'query',
-            label: 'jq query',
-            template: "jq '<query>' {path}",
-            description: 'Run a `jq` expression (e.g. `.candidates | length`) instead of cat-ing the whole document.'
-        },
-        SEARCH_GREP,
-        READ_FULL_CAT,
-        COUNT_BYTES
-    ]
-}
-
-const DATA_CSV: FamilyDef = {
-    family: 'data-csv',
-    label: 'CSV data',
-    primary: {
-        id: 'peek',
-        label: 'Peek (first 20 rows, columnised)',
-        template: 'head -n 20 {path} | column -t -s,',
-        description: 'Show the first 20 rows as an aligned table for quick schema discovery.'
-    },
-    alternatives: [
-        {
-            id: 'search',
-            label: 'awk search',
-            template: "awk -F',' '/<pattern>/ {print NR\": \"$0}' {path}",
-            description: 'Print rows whose any field matches `<pattern>` with the row number — replace `<pattern>` before issuing.'
-        },
-        COUNT_LINES,
-        READ_FULL_CAT
-    ]
-}
-
-const DATA_TSV: FamilyDef = {
-    family: 'data-tsv',
-    label: 'TSV data',
-    primary: {
-        id: 'peek',
-        label: 'Peek (first 20 rows, columnised)',
-        template: 'head -n 20 {path} | column -t',
-        description: 'Show the first 20 rows as an aligned table for quick schema discovery.'
-    },
-    alternatives: [SEARCH_GREP, COUNT_LINES, READ_FULL_CAT]
-}
-
-const DATA_YAML: FamilyDef = {
-    family: 'data-yaml',
-    label: 'YAML data',
-    primary: PEEK_HEAD(80),
-    alternatives: [
-        {
-            id: 'query',
-            label: 'yq query',
-            template: "yq '<query>' {path}",
-            description: 'Run a `yq` expression instead of cat-ing the whole document. Falls back to `python3 -c` if `yq` is missing.'
-        },
-        SEARCH_GREP,
-        READ_FULL_CAT
-    ]
-}
-
-const DATA_XML: FamilyDef = {
-    family: 'data-xml',
-    label: 'XML data',
-    primary: PEEK_HEAD(80),
-    alternatives: [
-        SEARCH_GREP,
-        {
-            id: 'query',
-            label: 'XPath query',
-            template: "xmllint --xpath '<query>' {path}",
-            description: 'Evaluate an XPath expression — replace `<query>` (e.g. `//book[1]/title/text()`).'
-        },
-        READ_FULL_CAT
-    ]
-}
-
-const DATA_HTML: FamilyDef = {
-    family: 'data-html',
-    label: 'HTML data',
-    primary: PEEK_HEAD(80),
-    alternatives: [SEARCH_GREP, READ_FULL_CAT]
-}
-
-const DATA_HTML_WITH_HELPER: FamilyDef = {
-    family: 'data-html',
-    label: 'HTML data',
-    primary: {
-        id: 'read',
-        label: 'Strip to plain text (built-in helper)',
-        template: 'python3 {helpers_dir}/html_to_text.py {path}',
-        description: 'Stdlib-only HTML→text converter that ships with the runtime — drops `<script>`/`<style>`, collapses whitespace.'
-    },
-    alternatives: [SEARCH_GREP, PEEK_HEAD(80), READ_FULL_CAT]
-}
+// ---------------------------------------------------------------------------
+// Binary families — irreplaceable because the raw bytes are not useful to
+// the LLM without a decoder. Where a built-in Python helper exists we
+// promote it to `primary` when the runtime has materialised the helper
+// bundle; the native binary (pdftotext / unzip / file) stays as an
+// alternative so the LLM can escalate.
+// ---------------------------------------------------------------------------
 
 const BINARY_PDF: FamilyDef = {
     family: 'binary-pdf',
@@ -655,15 +481,6 @@ const FAMILIES: Record<RecipeFamily, FamilyDef> = {
     'exec-python': EXEC_PYTHON,
     'exec-shell': EXEC_SHELL,
     'exec-ruby': EXEC_RUBY,
-    'data-md': DATA_MD,
-    'data-text': DATA_TEXT,
-    'data-log': DATA_LOG,
-    'data-json': DATA_JSON,
-    'data-csv': DATA_CSV,
-    'data-tsv': DATA_TSV,
-    'data-yaml': DATA_YAML,
-    'data-xml': DATA_XML,
-    'data-html': DATA_HTML,
     'binary-pdf': BINARY_PDF,
     'binary-docx': BINARY_DOCX,
     'binary-xlsx': BINARY_XLSX,
@@ -683,30 +500,18 @@ const HELPER_FAMILIES: Partial<Record<RecipeFamily, FamilyDef>> = {
     'binary-pdf': BINARY_PDF_WITH_HELPER,
     'binary-docx': BINARY_DOCX_WITH_HELPER,
     'binary-xlsx': BINARY_XLSX_WITH_HELPER,
-    'binary-pptx': BINARY_PPTX_WITH_HELPER,
-    'data-html': DATA_HTML_WITH_HELPER
+    'binary-pptx': BINARY_PPTX_WITH_HELPER
 }
 
 /**
  * Stable rendering order: exec families first (loudest signal), then
- * data families ordered roughly by how often the LLM hits them in
- * practice (markdown / text / log / json before csv / tsv / yaml / xml /
- * html), then binary families.
+ * binary families ordered by how often the LLM hits them in practice.
  */
 export const RECIPE_ORDER: RecipeFamily[] = [
     'exec-node',
     'exec-python',
     'exec-shell',
     'exec-ruby',
-    'data-md',
-    'data-text',
-    'data-log',
-    'data-json',
-    'data-csv',
-    'data-tsv',
-    'data-yaml',
-    'data-xml',
-    'data-html',
     'binary-pdf',
     'binary-docx',
     'binary-xlsx',
@@ -716,6 +521,13 @@ export const RECIPE_ORDER: RecipeFamily[] = [
     'binary-other'
 ]
 
+/**
+ * Extension → family lookup. **Intentionally narrow**: only extensions
+ * that need shell execution or a binary decoder appear here. Text-format
+ * extensions (md, txt, log, json, csv, tsv, yaml, xml, html, …) are
+ * omitted because the structured filesystem tools (`read_file`, `grep`,
+ * `glob`) handle them natively.
+ */
 const BY_EXT: Record<string, RecipeFamily> = {
     js: 'exec-node',
     mjs: 'exec-node',
@@ -727,26 +539,6 @@ const BY_EXT: Record<string, RecipeFamily> = {
     bash: 'exec-shell',
 
     rb: 'exec-ruby',
-
-    md: 'data-md',
-    markdown: 'data-md',
-
-    txt: 'data-text',
-
-    log: 'data-log',
-
-    json: 'data-json',
-
-    csv: 'data-csv',
-    tsv: 'data-tsv',
-
-    yaml: 'data-yaml',
-    yml: 'data-yaml',
-
-    xml: 'data-xml',
-
-    html: 'data-html',
-    htm: 'data-html',
 
     pdf: 'binary-pdf',
 
@@ -785,19 +577,22 @@ export interface RecipeSelectionOptions {
 }
 
 /**
- * Return the family definition for a manifest entry.
+ * Return the family definition for a manifest entry, or `null` when
+ * the entry is fully covered by the structured filesystem tools and no
+ * shell recipe is needed.
  *
  * Resolution order:
- *   1. Exact extension match against `BY_EXT`.
+ *   1. Exact extension match against `BY_EXT` (exec + binary only).
  *   2. `SkillKind` fallback: `code` → exec-node (a reasonable default
- *      for the author to correct), `data` → data-text, `skill` →
- *      data-md, `binary` → binary-other.
+ *      for the author to correct), `binary` → binary-other. Other
+ *      kinds (`data`, `skill`) return null — those are markdown / text
+ *      / JSON / CSV / … and belong to the structured tools.
  *
  * When `opts.helpersAvailable` is true, families that ship a built-in
  * helper variant (see `HELPER_FAMILIES`) return the helper-promoted
  * definition instead. Other families are unaffected.
  */
-export const recipeForEntry = (entry: SandboxManifestEntry, opts?: RecipeSelectionOptions): FamilyDef => {
+export const recipeForEntry = (entry: SandboxManifestEntry, opts?: RecipeSelectionOptions): FamilyDef | null => {
     const fam = BY_EXT[entry.extension]
     if (fam) {
         if (opts?.helpersAvailable) {
@@ -809,17 +604,17 @@ export const recipeForEntry = (entry: SandboxManifestEntry, opts?: RecipeSelecti
     return fallbackForKind(entry.kind)
 }
 
-const fallbackForKind = (kind: SkillKind): FamilyDef => {
+const fallbackForKind = (kind: SkillKind): FamilyDef | null => {
     switch (kind) {
         case 'code':
             return EXEC_NODE
-        case 'skill':
-            return DATA_MD
-        case 'data':
-            return DATA_TEXT
         case 'binary':
-        default:
             return BINARY_OTHER
+        case 'data':
+        case 'skill':
+        default:
+            // Text-shaped content — structured tools cover it.
+            return null
     }
 }
 
@@ -869,8 +664,11 @@ export const formatRecipeCommand = (
 }
 
 /**
- * Group manifest entries by their family. Preserves the insertion order
- * defined by `RECIPE_ORDER` so rendering is stable between runs.
+ * Group manifest entries by their family, **dropping entries that have
+ * no recipe** (text-shaped data covered by the structured tools).
+ *
+ * Preserves the insertion order defined by `RECIPE_ORDER` so rendering
+ * is stable between runs.
  *
  * Pass `{ helpersAvailable: true }` to route helper-eligible families
  * (see `HELPER_FAMILIES`) to their helper-promoted definitions. Other
@@ -883,6 +681,7 @@ export const groupByRecipeFamily = (
     const buckets = new Map<RecipeFamily, { def: FamilyDef; entries: SandboxManifestEntry[] }>()
     for (const entry of entries) {
         const def = recipeForEntry(entry, opts)
+        if (!def) continue
         const bucket = buckets.get(def.family) ?? { def, entries: [] }
         bucket.entries.push(entry)
         buckets.set(def.family, bucket)
@@ -900,17 +699,19 @@ export const groupByRecipeFamily = (
 
 /**
  * For one skill bundle entry, walk its `files.references` and render
- * human-readable recipe lines for each reachable file, addressed via
- * the concrete bash tool name so the LLM can copy-paste the JSON call.
+ * human-readable recipe lines for each reachable file *that needs the
+ * shell*, addressed via the concrete bash tool name so the LLM can
+ * copy-paste the JSON call.
  *
  * Output shape (one block per reference):
- *   - exec families         → 1 line  (the primary `node`/`python3`/… command)
- *   - data / binary families → 1–3 lines (primary + up to 2 productive
- *                              alternatives, capped to keep the appended
- *                              tool hint bounded)
+ *   - exec families     → 1 line  (the primary `node`/`python3`/… command)
+ *   - binary families   → 1–3 lines (primary + up to 2 productive
+ *                          alternatives, capped to keep the appended
+ *                          tool hint bounded)
+ *   - text-shaped data  → no lines (the LLM uses the structured tools)
  *
- * Returns an empty array when the skill has no materialised references;
- * the caller can then skip injecting the helper section entirely.
+ * Returns an empty array when no reference needs the shell — the caller
+ * can then skip injecting the helper section entirely.
  */
 export const renderReferenceRecipes = (
     entry: SkillBundleEntry,
@@ -934,6 +735,7 @@ export const renderReferenceRecipes = (
         if (!target) continue
 
         const def = recipeForEntry(target, { helpersAvailable })
+        if (!def) continue // text-shaped — structured tools handle it.
         const abs = absolutePath(manifest, target)
 
         // Primary command — always emitted.
@@ -955,7 +757,7 @@ export const renderReferenceRecipes = (
 
 // ---------------------------------------------------------------------------
 // Built-in helper rendering — feeds the dedicated section in
-// `buildBashToolDescription`.
+// `buildExecuteToolDescription`.
 // ---------------------------------------------------------------------------
 
 /**
@@ -984,14 +786,10 @@ const MAX_PRODUCTIVE_PER_REF = 2
 
 /**
  * Pick up to `n` alternatives biased toward the highest-leverage moves
- * for token-efficiency. The order is `search`/`query` first (locate the
- * data without re-reading the file), then `peek`/`tail` (probe more of
- * the file), then `read` (full `cat` — explicit escalation path), then
- * `info`/`count` (metadata), then `exec`.
- *
- * `read` is deliberately surfaced before `info`/`count` so the LLM
- * always sees the escalation route on the per-skill helper block, even
- * with the `MAX_PRODUCTIVE_PER_REF=2` cap.
+ * for binary inspection: `search` first (locate the data without
+ * re-extracting), then `peek` (probe inner contents), then `read`
+ * (escalation to a full text extraction), then `info`/`count`, then
+ * `exec`.
  */
 const pickProductiveAlternatives = (def: FamilyDef, n: number): RecipeTask[] => {
     if (n <= 0 || !def.alternatives.length) return []
@@ -1003,19 +801,15 @@ const priority = (id: RecipeTaskId): number => {
     switch (id) {
         case 'search':
             return 0
-        case 'query':
-            return 1
         case 'peek':
-            return 2
-        case 'tail':
-            return 3
+            return 1
         case 'read':
-            return 4
+            return 2
         case 'info':
-            return 5
+            return 3
         case 'count':
-            return 6
+            return 4
         case 'exec':
-            return 7
+            return 5
     }
 }

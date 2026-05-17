@@ -1,29 +1,54 @@
 /**
- * Skill — E2B bash session.
+ * Skill — pluggable sandbox session.
  *
- * A `SandboxSession` owns one E2B VM for the lifetime of one agent run.
- * It is the bridge between the manifest (what-should-be-on-disk) and
- * the `SandboxBashTool` (how-the-LLM-reaches-it). The design mirrors
+ * A `SandboxSession` owns one resolved sandbox backend (E2B, local
+ * subprocess, …) for the lifetime of one agent run. It is the bridge
+ * between the manifest (what-should-be-on-disk) and the LLM-facing
+ * `ExecuteTool` / structured filesystem tools.
  *
- *   1. `ensureStarted()` is idempotent and lazy — nothing hits the wire
- *      until the LLM actually calls the bash tool.
- *   2. The manifest is materialized under `/home/user/skills/` and an
- *      `/home/user/output/` directory is prepared for artefacts.
- *   3. `exec()` runs one shell command, always returning a
- *      `CommandRunResult` envelope; non-zero exits never throw out.
- *   4. `close()` is best-effort; the remote sandbox also has its own
- *      timeout so leaked sessions self-heal.
+ *   1. `ensureStarted()` is idempotent and lazy — the backend's
+ *      `initialize()` is only invoked when the LLM actually reaches for
+ *      execution.
+ *   2. The manifest is materialised under `manifest.skillsDir` and an
+ *      `manifest.outputDir` directory is prepared for artefacts. The
+ *      built-in helpers go under `manifest.helpersDir`.
+ *   3. `exec()` runs one shell command through the backend protocol's
+ *      `execute(...)`. The result is mapped onto the legacy
+ *      `CommandRunResult` envelope so existing call sites keep
+ *      compiling; new call sites should consume the typed
+ *      `ExecuteResponse` directly via `backend.execute(...)`.
+ *   4. `close()` is best-effort and idempotent.
  *
  * Safety:
- *   - Per-file and total-byte upload caps prevent accidentally shipping
- *     a 4 GB binary asset into the VM.
- *   - Output per-stream is head/tail clipped so the LLM can't be DoSed
- *     by a chatty command.
- *   - An idle timer auto-kills the session after prolonged silence even
- *     if the Skill node forgets to call `close()`.
+ *   - Per-file and total-byte upload caps prevent shipping a 4 GB
+ *     binary asset into the VM. Helpers are first-party trusted code
+ *     and exempt from the budgets.
+ *   - Output per-stream is head-clipped via `clampOutput` so the LLM
+ *     can't be DoSed by a chatty command.
+ *   - An idle timer auto-kills the session after prolonged silence
+ *     even if the Skill node forgets to call `close()`.
+ *
+ * Backend agnostic — nothing in this file imports `@e2b/code-interpreter`.
+ * The backend instance is supplied by the caller (Skill.ts) via the
+ * `resolveBackend` resolver.
  */
 
-import { Sandbox } from '@e2b/code-interpreter'
+import {
+    isSandboxBackend,
+    SandboxBackendProtocol,
+    SandboxFileTransfer,
+    SandboxRuntime,
+    BackendProtocol,
+    EditResult,
+    FileDownloadResponse,
+    FileUploadResponse,
+    GlobResult,
+    GrepResult,
+    LsResult,
+    ReadRawResult,
+    ReadResult,
+    WriteResult
+} from '../../../../src/sandbox'
 import type { SkillBundle } from '../utils'
 import { BUILTIN_HELPERS, BuiltinHelper } from './builtinHelpers'
 import { clampOutput, SandboxCapability } from './capability'
@@ -40,8 +65,6 @@ const MAX_BYTES_PER_FILE = parseIntEnv(process.env.SKILL_V2_SANDBOX_MAX_BYTES_PE
 const MAX_TOTAL_BYTES = parseIntEnv(process.env.SKILL_V2_SANDBOX_MAX_TOTAL_BYTES, 20 * 1024 * 1024)
 /** Kill the session after this many ms of inactivity. Default 5 minutes. */
 const IDLE_SHUTDOWN_MS = parseIntEnv(process.env.SKILL_V2_SANDBOX_IDLE_MS, 5 * 60 * 1000)
-/** How long E2B keeps the VM alive server-side. Default 15 minutes. */
-const SESSION_LIFETIME_MS = parseIntEnv(process.env.SKILL_V2_SANDBOX_LIFETIME_MS, 15 * 60 * 1000)
 
 function parseIntEnv(v: string | undefined, fallback: number): number {
     if (!v) return fallback
@@ -79,8 +102,16 @@ export interface SandboxSessionOptions {
     bundle: SkillBundle
     manifest: SandboxManifest
     capability: SandboxCapability
-    /** Override for tests; production always uses `@e2b/code-interpreter`. */
-    createSandbox?: (opts: { apiKey: string | undefined; timeoutMs: number }) => Promise<Sandbox>
+    /**
+     * Resolved sandbox backend. The session never constructs one itself;
+     * the caller (Skill.ts) goes through `resolveBackend(env)` so the
+     * choice between E2B / local / future backends stays in a single
+     * place. File-transfer support is required because the session has
+     * to materialise manifest entries and harvest output artefacts.
+     */
+    backend: SandboxBackendProtocol & SandboxFileTransfer
+    /** Optional lifecycle handle — present when the backend is long-lived. */
+    runtime?: SandboxRuntime | null
     /**
      * Optional override for the built-in helper registry. Production
      * always uses `BUILTIN_HELPERS`. Tests inject a stub registry so
@@ -93,9 +124,9 @@ export interface SandboxSessionOptions {
 type LifecycleState = 'idle' | 'starting' | 'ready' | 'closed'
 
 /**
- * Thin, deterministic wrapper around a single E2B VM. Construction is
- * free; all network activity is deferred until the first `exec()` call
- * (or an explicit `ensureStarted()`).
+ * Thin, deterministic wrapper around a resolved sandbox backend.
+ * Construction is free; all network activity is deferred until the
+ * first `exec()` call (or an explicit `ensureStarted()`).
  */
 export class SandboxSession {
     readonly workspaceId: string
@@ -104,22 +135,27 @@ export class SandboxSession {
     readonly capability: SandboxCapability
 
     private readonly bundle: SkillBundle
-    private readonly createSandbox: NonNullable<SandboxSessionOptions['createSandbox']>
+    private readonly backend: SandboxBackendProtocol & SandboxFileTransfer
+    private readonly runtime: SandboxRuntime | null
     private readonly helperRegistry: readonly BuiltinHelper[]
 
     private state: LifecycleState = 'idle'
-    private sandbox: Sandbox | null = null
     private startPromise: Promise<void> | null = null
     private idleTimer: NodeJS.Timeout | null = null
     private closeReason: string | null = null
+    private cachedReadyBackend: (BackendProtocol & SandboxFileTransfer) | null = null
 
     constructor(options: SandboxSessionOptions) {
+        if (!isSandboxBackend(options.backend)) {
+            throw new Error('SandboxSession requires a backend that satisfies SandboxBackendProtocol (id + execute).')
+        }
         this.workspaceId = options.workspaceId
         this.skillId = options.skillId
         this.bundle = options.bundle
         this.manifest = options.manifest
         this.capability = options.capability
-        this.createSandbox = options.createSandbox ?? (async ({ apiKey, timeoutMs }) => Sandbox.create({ apiKey, timeoutMs }))
+        this.backend = options.backend
+        this.runtime = options.runtime ?? null
         this.helperRegistry = options.helperRegistry ?? BUILTIN_HELPERS
     }
 
@@ -127,14 +163,19 @@ export class SandboxSession {
         return this.state === 'closed'
     }
 
+    /** Stable id of the resolved backend — useful for logs and telemetry. */
+    get backendId(): string {
+        return this.backend.id
+    }
+
     // -----------------------------------------------------------------------
     // Lifecycle
     // -----------------------------------------------------------------------
 
     /**
-     * Lazily boot the E2B VM and materialize the manifest on its
+     * Lazily boot the backend and materialize the manifest on its
      * filesystem. Safe to call repeatedly — a single in-flight promise is
-     * shared across concurrent callers so parallel bash invocations don't
+     * shared across concurrent callers so parallel exec invocations don't
      * start two sandboxes.
      */
     async ensureStarted(): Promise<void> {
@@ -144,7 +185,6 @@ export class SandboxSession {
 
         this.state = 'starting'
         this.startPromise = this.bootAndMaterialize().finally(() => {
-            // bootAndMaterialize updates state on success/failure itself.
             this.startPromise = null
         })
         return this.startPromise
@@ -182,77 +222,210 @@ export class SandboxSession {
             }
         }
 
-        if (!this.sandbox) {
-            return {
-                ok: false,
-                stdout: '',
-                stderr: '',
-                exitCode: 1,
-                error: { kind: 'internal', message: 'SandboxSession has no active VM after ensureStarted' },
-                durationMs: Date.now() - started
-            }
-        }
-
         this.bumpIdleTimer()
         const effectiveTimeout = this.clampTimeout(timeoutMs)
 
         try {
-            // `commands.run` throws a CommandExitError on non-zero exit by
-            // default. That class implements CommandResult, so we can read
-            // stdout/stderr/exitCode off the thrown error and treat the
-            // whole thing as a guest-side failure instead of a host crash.
-            const result = await this.sandbox.commands.run(command, {
-                cwd: '/home/user',
-                timeoutMs: effectiveTimeout
-            })
-            const stdout = clampOutput(result.stdout ?? '', this.capability.maxOutputBytes)
-            const stderr = clampOutput(result.stderr ?? '', this.capability.maxOutputBytes)
+            const response = await this.runWithTimeout(this.backend.execute(command), effectiveTimeout)
+            const { output, exitCode, truncated } = response
+            // Map the new combined-stream `ExecuteResponse` back onto the
+            // legacy two-stream envelope so existing callers keep compiling.
+            // We surface the whole combined output through `stdout` and
+            // leave `stderr` empty; the architecture explicitly argues for
+            // one combined stream so this is the canonical shape going
+            // forward.
+            const clampedStdout = clampOutput(output, this.capability.maxOutputBytes)
+            const ok = exitCode === 0
             return {
-                ok: result.exitCode === 0,
-                stdout,
-                stderr,
-                exitCode: result.exitCode,
+                ok,
+                stdout: clampedStdout,
+                stderr: truncated ? '[Output was truncated due to size limits]' : '',
+                exitCode: typeof exitCode === 'number' ? exitCode : 1,
+                error:
+                    exitCode === null
+                        ? { kind: 'timeout', message: 'command did not report an exit code (killed or timed out)' }
+                        : undefined,
                 durationMs: Date.now() - started
             }
         } catch (err) {
-            return this.translateExecError(err, started)
+            const message = (err as Error)?.message ?? String(err)
+            return {
+                ok: false,
+                stdout: '',
+                stderr: message,
+                exitCode: 1,
+                error: { kind: classifyHostError(message), message },
+                durationMs: Date.now() - started
+            }
         } finally {
             this.bumpIdleTimer()
         }
     }
 
     /**
-     * List and download any files the LLM wrote under `/home/user/output/`.
+     * Public accessor for a "materializing" view of the backend.
+     *
+     * Why this exists: in the legacy design, every interaction with the
+     * sandbox went through `exec()`, which always called
+     * `ensureStarted()` first — that's where manifest entries (skill
+     * files, code references, helpers) get uploaded into the VM. With
+     * the new architecture, the LLM can call structured FS tools
+     * (`read_file`, `ls`, `grep`, …) directly. If those calls hit the
+     * raw backend, the sandbox is empty and they all return
+     * `file_not_found`.
+     *
+     * The proxy returned here intercepts every `BackendProtocol`
+     * (and `SandboxFileTransfer`) method, `await`s
+     * `ensureStarted()` (which is idempotent — paid once per session),
+     * then delegates to the underlying backend. Boot failures are
+     * surfaced as the protocol's tagged-union `error?` field rather
+     * than thrown exceptions, keeping the agent loop deterministic.
+     *
+     * The proxy is cached for stable identity — useful for tests and
+     * for downstream consumers (the eviction decorator) that want to
+     * compare references.
+     *
+     * Note: the proxy intentionally does NOT expose `execute()` — Layer
+     * 4 callers that need shell execution must go through `session.exec()`
+     * which handles the legacy `CommandRunResult` envelope (timeouts,
+     * stderr clamping, host-error classification).
+     */
+    getBackend(): BackendProtocol & SandboxFileTransfer {
+        if (!this.cachedReadyBackend) {
+            this.cachedReadyBackend = this.makeMaterializingBackend()
+        }
+        return this.cachedReadyBackend
+    }
+
+    private makeMaterializingBackend(): BackendProtocol & SandboxFileTransfer {
+        const inner = this.backend
+        // Tagged-union error fallbacks. Each method returns the same shape
+        // its concrete backend would have produced; only `error?` differs.
+        const ensureOrError = async (): Promise<string | null> => {
+            if (this.state === 'closed') return `sandbox is closed (${this.closeReason ?? 'unknown reason'})`
+            try {
+                await this.ensureStarted()
+                return null
+            } catch (err) {
+                return (err as Error)?.message ?? String(err)
+            }
+        }
+        const bump = () => this.bumpIdleTimer()
+        return {
+            ls: async (path: string): Promise<LsResult> => {
+                const e = await ensureOrError()
+                if (e) return { path, entries: [], error: `sandbox not ready: ${e}` }
+                try {
+                    return await inner.ls(path)
+                } finally {
+                    bump()
+                }
+            },
+            read: async (path: string, offset?: number, limit?: number): Promise<ReadResult> => {
+                const e = await ensureOrError()
+                if (e) return { path, content: null, error: `sandbox not ready: ${e}` }
+                try {
+                    return await inner.read(path, offset, limit)
+                } finally {
+                    bump()
+                }
+            },
+            readRaw: async (path: string): Promise<ReadRawResult> => {
+                const e = await ensureOrError()
+                if (e) return { path, content: null, error: `sandbox not ready: ${e}` }
+                try {
+                    return await inner.readRaw(path)
+                } finally {
+                    bump()
+                }
+            },
+            write: async (path: string, content: string): Promise<WriteResult> => {
+                const e = await ensureOrError()
+                if (e) return { path, error: `sandbox not ready: ${e}` }
+                try {
+                    return await inner.write(path, content)
+                } finally {
+                    bump()
+                }
+            },
+            edit: async (path: string, oldString: string, newString: string, replaceAll?: boolean): Promise<EditResult> => {
+                const e = await ensureOrError()
+                if (e) return { path, replacements: 0, error: `sandbox not ready: ${e}` }
+                try {
+                    return await inner.edit(path, oldString, newString, replaceAll)
+                } finally {
+                    bump()
+                }
+            },
+            glob: async (pattern: string, path?: string): Promise<GlobResult> => {
+                const e = await ensureOrError()
+                if (e) return { pattern, path: path ?? this.manifest.skillsDir, matches: [], error: `sandbox not ready: ${e}` }
+                try {
+                    return await inner.glob(pattern, path)
+                } finally {
+                    bump()
+                }
+            },
+            grep: async (pattern: string, path?: string, glob?: string | null): Promise<GrepResult> => {
+                const e = await ensureOrError()
+                if (e) return { pattern, path: path ?? this.manifest.skillsDir, hits: [], error: `sandbox not ready: ${e}` }
+                try {
+                    return await inner.grep(pattern, path, glob)
+                } finally {
+                    bump()
+                }
+            },
+            uploadFiles: async (files: Array<[string, Uint8Array]>): Promise<FileUploadResponse[]> => {
+                const e = await ensureOrError()
+                if (e) return files.map(([p]) => ({ path: p, error: 'io_error' as const, message: `sandbox not ready: ${e}` }))
+                try {
+                    return await inner.uploadFiles(files)
+                } finally {
+                    bump()
+                }
+            },
+            downloadFiles: async (paths: string[]): Promise<FileDownloadResponse[]> => {
+                const e = await ensureOrError()
+                if (e) return paths.map((p) => ({ path: p, content: null, error: 'io_error' as const, message: `sandbox not ready: ${e}` }))
+                try {
+                    return await inner.downloadFiles(paths)
+                } finally {
+                    bump()
+                }
+            }
+        }
+    }
+
+    /**
+     * List and download any files the LLM wrote under `outputDir`.
      *
      * Returned buffers are un-clipped — the caller decides how to surface
      * them to downstream nodes. Safe to call before `close()`; after
      * `close()` it returns an empty array.
      */
     async harvestOutputs(limit = 32): Promise<Array<{ path: string; bytes: Buffer }>> {
-        if (this.state !== 'ready' || !this.sandbox) return []
+        if (this.state !== 'ready') return []
         const out: Array<{ path: string; bytes: Buffer }> = []
         try {
-            const listed = await this.sandbox.files.list(this.manifest.outputDir)
-            const files = listed.filter((e) => e.type === 'file').slice(0, Math.max(0, limit))
-            for (const f of files) {
-                try {
-                    const remotePath = `${this.manifest.outputDir}/${f.name}`.replace(/\/+/g, '/')
-                    const data = await this.sandbox.files.read(remotePath, { format: 'bytes' })
-                    out.push({ path: remotePath, bytes: Buffer.from(data) })
-                } catch {
-                    // Best-effort — skip unreadable entries.
-                }
+            const listing = await this.backend.ls(this.manifest.outputDir)
+            if (listing.error) return []
+            const files = listing.entries.filter((e) => e.type === 'file').slice(0, Math.max(0, limit))
+            const paths = files.map((f) => f.path)
+            const responses = await this.backend.downloadFiles(paths)
+            for (const r of responses) {
+                if (r.error || !r.content) continue
+                out.push({ path: r.path, bytes: Buffer.from(r.content) })
             }
         } catch {
-            // The output dir may not exist (LLM never wrote anything) — that's fine.
+            // Best-effort — the output dir may not exist (LLM never wrote).
         }
         return out
     }
 
     /**
-     * Tear the VM down. Idempotent; safe from finalisers / signal handlers.
-     * A reason is recorded so subsequent `exec()` calls surface a clear
-     * message to the LLM.
+     * Tear the backend down. Idempotent; safe from finalisers / signal
+     * handlers. A reason is recorded so subsequent `exec()` calls surface
+     * a clear message to the LLM.
      */
     async close(reason = 'session closed'): Promise<void> {
         if (this.state === 'closed') return
@@ -262,13 +435,11 @@ export class SandboxSession {
             clearTimeout(this.idleTimer)
             this.idleTimer = null
         }
-        const sbx = this.sandbox
-        this.sandbox = null
-        if (sbx) {
+        if (this.runtime) {
             try {
-                await sbx.kill()
+                await this.runtime.close()
             } catch {
-                // noop — best-effort cleanup
+                // best-effort cleanup.
             }
         }
     }
@@ -278,27 +449,24 @@ export class SandboxSession {
     // -----------------------------------------------------------------------
 
     /**
-     * Boot the sandbox and materialize all manifest entries.
-     * Clone the manifest files into the VM's filesystem so the bash tool can
-     * reach them without extra storage round-trips. The manifest is the
-     * single source of truth for what should be on disk, so we don't allow
-     * the session to start until all files are in place.
+     * Boot the backend (if it carries a `SandboxRuntime` lifecycle) and
+     * materialize all manifest entries.
      */
     private async bootAndMaterialize(): Promise<void> {
-        let sbx: Sandbox | null = null
         try {
-            sbx = await this.createSandbox({
-                apiKey: process.env.E2B_APIKEY,
-                timeoutMs: SESSION_LIFETIME_MS
-            })
-            this.sandbox = sbx
-            await sbx.files.makeDir(this.manifest.skillsDir)
-            await sbx.files.makeDir(this.manifest.outputDir)
-            if (this.manifest.helpers.length) {
-                await sbx.files.makeDir(this.manifest.helpersDir)
+            if (this.runtime && !this.runtime.isRunning) {
+                await this.runtime.initialize()
             }
-            await this.materializeManifest(sbx)
-            await this.materializeHelpers(sbx)
+            // Create the canonical layout in one shot. POSIX `mkdir -p`
+            // is non-throwing on already-present dirs.
+            const dirs = [this.manifest.skillsDir, this.manifest.outputDir]
+            if (this.manifest.helpers.length) dirs.push(this.manifest.helpersDir)
+            const mkResp = await this.backend.execute(`mkdir -p ${dirs.map(shellQuote).join(' ')}`)
+            if (mkResp.exitCode !== 0 && mkResp.exitCode !== null) {
+                throw new Error(`Failed to create sandbox directories: ${truncate(mkResp.output, 256)}`)
+            }
+            await this.materializeManifest()
+            await this.materializeHelpers()
             this.state = 'ready'
             this.bumpIdleTimer()
         } catch (err) {
@@ -306,30 +474,25 @@ export class SandboxSession {
                 `Failed to boot sandbox for skill ${this.skillId}:`,
                 err instanceof Error ? err.stack || err.message : String(err)
             )
-            // Roll back to a clean state so the next ensureStarted() call
-            // can retry (e.g. transient network blip during boot).
             this.state = 'idle'
-            if (sbx) {
+            if (this.runtime) {
                 try {
-                    await sbx.kill()
-                } catch (err) {
+                    await this.runtime.close()
+                } catch (closeErr) {
                     console.error(
-                        `Failed to kill sandbox for skill ${this.skillId}:`,
-                        err instanceof Error ? err.stack || err.message : String(err)
+                        `Failed to close sandbox runtime for skill ${this.skillId}:`,
+                        closeErr instanceof Error ? closeErr.stack || closeErr.message : String(closeErr)
                     )
                 }
             }
-            this.sandbox = null
             throw err
         }
     }
 
-    private async materializeManifest(sbx: Sandbox): Promise<void> {
+    private async materializeManifest(): Promise<void> {
         if (!this.manifest.entries.length) return
 
-        // Group into a single bulk write where possible — the E2B API has
-        // an overload that accepts an array of `{path, data}` entries.
-        const writeEntries: Array<{ path: string; data: Buffer }> = []
+        const writeEntries: Array<[string, Uint8Array]> = []
         let totalBytes = 0
 
         for (const entry of this.manifest.entries) {
@@ -346,18 +509,19 @@ export class SandboxSession {
                 throw new Error(`Skill sandbox upload exceeded total budget (${MAX_TOTAL_BYTES} bytes); last file "${entry.relPath}"`)
             }
 
-            writeEntries.push({ path: absolutePath(this.manifest, entry), data: bytes })
+            writeEntries.push([absolutePath(this.manifest, entry), new Uint8Array(bytes)])
         }
 
         if (!writeEntries.length) return
 
-        // NOTE: `files.write` accepts either a single path+data pair OR an
-        // array of entries. We pass the array form; the SDK types accept
-        // Buffer (extends Uint8Array extends ArrayBufferView → ArrayBuffer
-        // interop). Cast through `unknown` keeps strict-mode happy because
-        // the SDK's declared element type is `string | ArrayBuffer | Blob |
-        // ReadableStream` and Buffer isn't listed by name.
-        await sbx.files.write(writeEntries as unknown as { path: string; data: ArrayBuffer }[])
+        const responses = await this.backend.uploadFiles(writeEntries)
+        const failures = responses.filter((r) => r.error)
+        if (failures.length) {
+            const first = failures[0]
+            throw new Error(
+                `Failed to materialise ${failures.length}/${responses.length} skill assets (first: ${first.path} → ${first.error})`
+            )
+        }
     }
 
     /**
@@ -374,10 +538,10 @@ export class SandboxSession {
      * keys, drift detection) can read the same numbers the session
      * actually uploaded.
      */
-    private async materializeHelpers(sbx: Sandbox): Promise<void> {
+    private async materializeHelpers(): Promise<void> {
         if (!this.manifest.helpers.length) return
 
-        const writeEntries: Array<{ path: string; data: Buffer }> = []
+        const writeEntries: Array<[string, Uint8Array]> = []
         let totalBytes = 0
 
         for (const helperMeta of this.manifest.helpers) {
@@ -388,26 +552,24 @@ export class SandboxSession {
             }
             const bytes = await registered.bytes()
             const digest = await registered.digest()
-            // Enrich the manifest in place so callers (cache keys, drift
-            // detection) can read the same numbers we actually uploaded.
             helperMeta.digest = digest
             helperMeta.sizeBytes = bytes.length
             totalBytes += bytes.length
-            writeEntries.push({
-                path: joinPosix(this.manifest.helpersDir, helperMeta.relPath),
-                data: bytes
-            })
+            writeEntries.push([joinPosix(this.manifest.helpersDir, helperMeta.relPath), new Uint8Array(bytes)])
         }
 
         if (!writeEntries.length) return
 
-        await sbx.files.write(writeEntries as unknown as { path: string; data: ArrayBuffer }[])
+        const responses = await this.backend.uploadFiles(writeEntries)
+        const failures = responses.filter((r) => r.error)
+        if (failures.length) {
+            const first = failures[0]
+            throw new Error(`Failed to materialise ${failures.length}/${responses.length} helpers (first: ${first.path} → ${first.error})`)
+        }
         console.log(`[SandboxSession] Materialized ${writeEntries.length} helpers (${totalBytes} bytes) for skill ${this.skillId}`)
     }
 
     private async loadEntryBytes(entry: SandboxManifestEntry): Promise<Buffer | null> {
-        // For skill-kind markdown, the compiled content is already in the
-        // bundle — no need for another round-trip to storage.
         const bundleEntry = this.bundle.entries?.[entry.nodeId]
         const inlineContent =
             entry.kind === 'skill' && bundleEntry && typeof bundleEntry.content === 'string' ? bundleEntry.content : undefined
@@ -429,34 +591,27 @@ export class SandboxSession {
         return this.capability.maxTimeoutMs
     }
 
-    private translateExecError(err: unknown, started: number): CommandRunResult {
-        // CommandExitError is the only *expected* throw from commands.run.
-        // Its shape is {exitCode, stdout, stderr, error?} so we can fall
-        // through to the normal envelope and leave `error` null.
-        const e = err as { stdout?: string; stderr?: string; exitCode?: number; error?: string; message?: string; name?: string } | null
-        if (
-            e &&
-            typeof e === 'object' &&
-            typeof e.exitCode === 'number' &&
-            (typeof e.stdout === 'string' || typeof e.stderr === 'string')
-        ) {
-            return {
-                ok: false,
-                stdout: clampOutput(e.stdout ?? '', this.capability.maxOutputBytes),
-                stderr: clampOutput(e.stderr ?? '', this.capability.maxOutputBytes),
-                exitCode: e.exitCode,
-                error: e.error ? { kind: 'runtime', message: e.error } : undefined,
-                durationMs: Date.now() - started
-            }
-        }
-        const message = e?.message ?? String(err)
-        return {
-            ok: false,
-            stdout: '',
-            stderr: message,
-            exitCode: 1,
-            error: { kind: classifyHostError(message), message },
-            durationMs: Date.now() - started
+    /**
+     * Wrap a backend call in a `Promise.race` against a per-session
+     * timeout. The architecture's `ExecuteResponse.exitCode = null` path
+     * is what we hand back to callers when this trips.
+     */
+    private async runWithTimeout<T>(p: Promise<T> | T, timeoutMs: number): Promise<T> {
+        const value = Promise.resolve(p)
+        if (!timeoutMs || timeoutMs <= 0) return value
+        let timer: NodeJS.Timeout | null = null
+        try {
+            return await Promise.race<T>([
+                value,
+                new Promise<T>((_, reject) => {
+                    timer = setTimeout(() => reject(new Error(`command exceeded sandbox timeout (${timeoutMs} ms)`)), timeoutMs)
+                    if (typeof (timer as { unref?: () => void }).unref === 'function') {
+                        ;(timer as { unref: () => void }).unref()
+                    }
+                })
+            ])
+        } finally {
+            if (timer) clearTimeout(timer)
         }
     }
 
@@ -466,7 +621,6 @@ export class SandboxSession {
         this.idleTimer = setTimeout(() => {
             void this.close('idle timeout')
         }, IDLE_SHUTDOWN_MS)
-        // Don't keep the process alive just for this timer in CLI contexts.
         if (typeof (this.idleTimer as { unref?: () => void }).unref === 'function') {
             ;(this.idleTimer as { unref: () => void }).unref()
         }
@@ -479,7 +633,11 @@ export class SandboxSession {
 
 const classifyHostError = (message: string): NonNullable<CommandRunResult['error']>['kind'] => {
     const m = (message || '').toLowerCase()
-    if (m.includes('timeout') || m.includes('timed out')) return 'timeout'
+    if (m.includes('timeout') || m.includes('timed out') || m.includes('exceeded')) return 'timeout'
     if (m.includes('closed') || m.includes('killed')) return 'disabled'
     return 'internal'
 }
+
+const shellQuote = (s: string): string => "'" + s.replace(/'/g, `'\\''`) + "'"
+
+const truncate = (s: string, max: number): string => (s.length <= max ? s : `${s.slice(0, max)}…`)

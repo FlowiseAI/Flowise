@@ -88,7 +88,8 @@ export interface SkillBundle {
 export const classifyKindForTreeNode = (extension: string): SkillKind => {
     const ext = (extension || '').trim().toLowerCase()
     if (ext === 'md' || ext === 'markdown') return 'skill'
-    if (['py', 'js', 'ts', 'tsx', 'jsx', 'mjs', 'sh', 'bash', 'rb', 'go', 'java', 'kt', 'rs', 'cpp', 'c', 'h', 'hpp'].includes(ext)) return 'code'
+    if (['py', 'js', 'ts', 'tsx', 'jsx', 'mjs', 'sh', 'bash', 'rb', 'go', 'java', 'kt', 'rs', 'cpp', 'c', 'h', 'hpp'].includes(ext))
+        return 'code'
     if (['txt', 'json', 'csv', 'tsv', 'yaml', 'yml', 'xml', 'html', 'log'].includes(ext)) return 'data'
     if (ext === '') return 'data'
     return 'binary'
@@ -139,14 +140,17 @@ export const formatToolName = (name: string): string => (name || 'skill').trim()
  *   2. "Sandbox shell is available…" — one-liner that names the bash
  *      tool and points at the skills / output roots. Only emitted when
  *      `options.bashMode` is supplied.
- *   3. "Execution helpers" — one block per referenced file. Exec
- *      references emit a single line (e.g. `./scoring-algorithm.js →
- *      node /home/user/skills/...`); data and binary references emit up
- *      to three lines (primary + 1–2 productive alternatives such as
- *      `grep`, `jq`, `pdfgrep`, `head`) so the LLM sees the productive
- *      moves right next to the prose that referenced the file.
- *      Pre-rendered by the caller so `utils.ts` stays free of sandbox
- *      imports; the concrete renderer lives in
+ *   3. "Execution helpers" — one block per referenced file *that needs
+ *      the shell*. Exec references emit a single line (e.g.
+ *      `./scoring-algorithm.js → node /home/user/skills/...`); binary
+ *      references emit up to three lines (primary + 1–2 productive
+ *      alternatives such as `pdfgrep`, `unzip -p`, `pdfinfo`) so the
+ *      LLM sees the productive moves right next to the prose that
+ *      referenced the file. Text-shaped references (markdown, JSON,
+ *      CSV, …) are silent here — the structured filesystem tools
+ *      (`read_file_*`, `grep_*`, `glob_*`) handle them. Pre-rendered
+ *      by the caller so `utils.ts` stays free of sandbox imports; the
+ *      concrete renderer lives in
  *      `sandbox/commandRecipes.ts#renderReferenceRecipes`.
  *
  * In fallback / read-only mode (no bash tool), the hint reduces back to

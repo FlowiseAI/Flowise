@@ -29,18 +29,19 @@ import {
     getPastChatHistoryImageMessages,
     getUniqueImageMessages,
     processMessagesWithImages,
+    processSandboxLinks,
     revertBase64ImagesToFileRefs,
     normalizeMessagesForStorage,
     replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
+import { SkillSandboxArtifactResolver } from '../../../src/sandbox'
 import {
     convertMultiOptionsToStringArray,
     processTemplateVariables,
     configureStructuredOutput,
     extractResponseContent
 } from '../../../src/utils'
-import { sanitizeFileName } from '../../../src/validator'
 import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
 
 interface ITool {
@@ -1379,9 +1380,31 @@ class Agent_Agentflow implements INode {
                 }
             }
 
-            // Replace sandbox links with proper download URLs. Example: [Download the script](sandbox:/mnt/data/dummy_bar_graph.py)
+            // Replace sandbox links with proper download URLs and lazily
+            // upload any LLM-written skill sandbox artifacts that the
+            // final response actually references. Example:
+            //   [Download the script](sandbox:/mnt/data/dummy_bar_graph.py)
+            // The link points at a file inside the sandbox; this step
+            // copies the bytes into chat-scoped storage and rewrites the
+            // link to the API URL the chat UI can resolve.
             if (finalResponse.includes('sandbox:/')) {
-                finalResponse = await this.processSandboxLinks(finalResponse, options.baseURL, options.chatflowid, chatId)
+                const resolvers = Array.isArray(options.skillSandboxArtifactResolvers)
+                    ? (options.skillSandboxArtifactResolvers as SkillSandboxArtifactResolver[])
+                    : []
+                const { text, fileAnnotations: sandboxFileAnnotations } = await processSandboxLinks(finalResponse, {
+                    baseURL: options.baseURL as string,
+                    chatflowId: options.chatflowid as string,
+                    chatId,
+                    orgId: options.orgId as string,
+                    resolvers
+                })
+                finalResponse = text
+                if (sandboxFileAnnotations.length > 0) {
+                    fileAnnotations = [...fileAnnotations, ...sandboxFileAnnotations]
+                    if (isLastNode && sseStreamer) {
+                        sseStreamer.streamFileAnnotationsEvent(chatId, fileAnnotations)
+                    }
+                }
             }
 
             // If is structured output, then invoke LLM again with structured output at the very end after all tool calls
@@ -2873,36 +2896,6 @@ class Agent_Agentflow implements INode {
     /**
      * Processes sandbox links in the response text and converts them to file annotations
      */
-    private async processSandboxLinks(text: string, baseURL: string, chatflowId: string, chatId: string): Promise<string> {
-        let processedResponse = text
-
-        // Regex to match sandbox links: [text](sandbox:/path/to/file)
-        const sandboxLinkRegex = /\[([^\]]+)\]\(sandbox:\/([^)]+)\)/g
-        const matches = Array.from(text.matchAll(sandboxLinkRegex))
-
-        for (const match of matches) {
-            const fullMatch = match[0]
-            const linkText = match[1]
-            const filePath = match[2]
-
-            try {
-                // Extract and sanitize filename from the file path (LLM-generated, untrusted)
-                const fileName = sanitizeFileName(filePath)
-
-                // Replace sandbox link with proper download URL
-                const downloadUrl = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowId}&chatId=${chatId}&fileName=${fileName}&download=true`
-                const newLink = `[${linkText}](${downloadUrl})`
-
-                processedResponse = processedResponse.replace(fullMatch, newLink)
-            } catch (error) {
-                console.error('Error processing sandbox link:', error)
-                // If there's an error, remove the sandbox link as fallback
-                processedResponse = processedResponse.replace(fullMatch, linkText)
-            }
-        }
-
-        return processedResponse
-    }
 }
 
 module.exports = { nodeClass: Agent_Agentflow }

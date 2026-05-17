@@ -35,8 +35,12 @@ describe('detectSandboxCapability — happy path', () => {
 })
 
 describe('detectSandboxCapability — opt-outs', () => {
-    it('returns null when E2B_APIKEY is unset', () => {
-        expect(detectSandboxCapability({} as NodeJS.ProcessEnv)).toBeNull()
+    it('returns null when no backend can be resolved (no E2B key, docker explicitly off)', () => {
+        // Explicit `SKILL_SANDBOX_BACKEND=none` so the test does not
+        // accidentally pick up a real Docker daemon present on the CI/dev
+        // host — the resolver now auto-selects Docker when the socket is
+        // reachable.
+        expect(detectSandboxCapability({ SKILL_SANDBOX_BACKEND: 'none' } as NodeJS.ProcessEnv)).toBeNull()
     })
 
     it('returns null when SKILL_ALLOW_EXEC=false (the hard kill switch)', () => {

@@ -1,16 +1,20 @@
-import { Tool } from '@langchain/core/tools'
+import { StructuredTool, Tool } from '@langchain/core/tools'
 import { DataSource } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { isSandboxBackend, resolveBackend, SandboxBackendProtocol, SandboxFileTransfer, SandboxRuntime } from '../../../src/sandbox'
 import { SkillFileTool } from './SkillFileTool'
 import { loadPublishedBundle } from './bundleLoader'
 import { buildCustomToolsFromBundle } from './customToolFactory'
 import {
-    buildBashToolDescription,
+    buildExecuteToolDescription,
     buildManifest,
-    detectSandboxCapability,
+    buildSkillSandboxArtifactResolver,
+    buildStructuredFsTools,
+    EvictingExecuteTool,
+    ExecuteTool,
     indexManifestByNodeId,
+    registerSandboxArtifactResolver,
     renderReferenceRecipes,
-    SandboxBashTool,
     SandboxCapability,
     SandboxManifest,
     SandboxSession
@@ -38,17 +42,21 @@ import {
  *
  * Execution model (two modes, no middle ground):
  *
- *   1. **Sandbox shell** — when the server has `E2B_APIKEY` (and the
- *      sandbox kill-switches are on) the node also registers a single
- *      `bash_<SkillName>` tool that materialises the reachable file tree
- *      inside an E2B VM and lets the LLM issue arbitrary shell commands
- *      against it (python3, node, cat, pdftotext, …).
+ *   1. **Sandbox shell + structured filesystem tools** — when
+ *      `resolveBackend(process.env)` returns a backend that satisfies
+ *      `isSandboxBackend`, the node registers six structured FS tools
+ *      (`ls`, `read_file`, `write_file`, `edit_file`, `glob`, `grep`)
+ *      plus a single `execute` tool wrapped in a large-output eviction
+ *      decorator. This is the architecture-canonical Layer 4 surface.
  *
- *   2. **Fallback (read-only)** — no E2B key, or execution is disabled
+ *   2. **Fallback (read-only)** — no backend, or execution is disabled
  *      via `SKILL_ALLOW_EXEC=false` / the `Enable Sandbox Shell`
  *      toggle. Only the per-file skill tools are registered; the LLM
  *      sees the compiled markdown verbatim. Any code the skill references
  *      becomes documentation the LLM must reason about by hand.
+ *
+ * Backend selection (E2B / Docker / future) is the resolver's job;
+ * the node itself is engine-agnostic.
  */
 class Skill_Tools implements INode {
     label: string
@@ -87,7 +95,7 @@ class Skill_Tools implements INode {
                 label: 'Enable Sandbox Shell',
                 name: 'enableBash',
                 description:
-                    'When the server has an E2B sandbox configured, register a companion bash tool that can run arbitrary shell commands (python3, node, cat, pdftotext, …) against the reachable skill files. Turn this off to run in read-only fallback mode.',
+                    'When a sandbox backend is configured (E2B, local, …), register the structured filesystem tools and an `execute` tool that can run shell commands against the reachable skill files. Turn this off to run in read-only fallback mode.',
                 type: 'boolean',
                 default: true,
                 optional: true,
@@ -97,7 +105,7 @@ class Skill_Tools implements INode {
                 label: 'Exec Timeout (ms)',
                 name: 'execTimeoutMs',
                 description:
-                    'Per-call timeout in milliseconds for the bash tool. Clamped against the server ceiling (SKILL_EXEC_TIMEOUT_MS, default 15000).',
+                    'Per-call timeout in milliseconds for the execute tool. Clamped against the server ceiling (SKILL_EXEC_TIMEOUT_MS, default 15000).',
                 type: 'number',
                 optional: true,
                 additionalParams: true
@@ -169,11 +177,6 @@ class Skill_Tools implements INode {
                     ]
                 }
 
-                // Best-effort: pull the published bundle so we can surface
-                // each file's YAML frontmatter (`name`, `description`) in the
-                // dropdown. When no bundle is published yet — or the lookup
-                // fails for any reason — we silently fall back to the
-                // filename + path labels used historically.
                 let bundleEntries: Record<string, SkillBundleEntry> | null = null
                 const publishedBundleId = (row as any).publishedBundleId as string | undefined
                 if (publishedBundleId) {
@@ -240,11 +243,28 @@ class Skill_Tools implements INode {
         }
 
         // ------------------------------------------------------------------
-        // Capability + manifest. The manifest is only needed for the bash
-        // path, so building it when the user opted out keeps init() cheap.
+        // Layer 3 middleware — resolve the backend, gate on the structural
+        // capability guard, build the manifest. Construction is free; the
+        // backend's runtime is not initialised until the LLM actually
+        // reaches for execution.
         // ------------------------------------------------------------------
         const bashEnabledByUser = nodeData.inputs?.enableBash === false ? false : true
-        const capability = bashEnabledByUser ? detectSandboxCapability(process.env) : null
+        const resolved = bashEnabledByUser
+            ? resolveBackend(process.env)
+            : {
+                  backend: null as SandboxBackendProtocol | null,
+                  runtime: null as SandboxRuntime | null,
+                  capability: null as { label: string; maxTimeoutMs: number; maxOutputBytes: number; backendId: string } | null
+              }
+        const backend: SandboxBackendProtocol | null = resolved.backend
+        const runtime: SandboxRuntime | null = resolved.runtime
+        const capability: SandboxCapability | null = resolved.capability
+            ? {
+                  label: resolved.capability.label,
+                  maxTimeoutMs: resolved.capability.maxTimeoutMs,
+                  maxOutputBytes: resolved.capability.maxOutputBytes
+              }
+            : null
 
         if (capability) {
             const userTimeout = Number(nodeData.inputs?.execTimeoutMs)
@@ -253,13 +273,11 @@ class Skill_Tools implements INode {
             }
         }
 
-        const manifest: SandboxManifest | null = capability ? buildManifest(bundle, selectedIds) : null
-        const bashAvailable = !!capability && !!manifest && manifest.entries.length > 0
+        const sandboxReady = isSandboxBackend(backend) && capability !== null
+        const manifest: SandboxManifest | null = sandboxReady ? buildManifest(bundle, selectedIds) : null
+        const bashAvailable = sandboxReady && !!manifest && manifest.entries.length > 0
 
-        // Precompute bash tool name and node-id index once so every per-
-        // skill hint shares the same values. When bash is not available,
-        // both stay unused.
-        const bashToolName = bashAvailable ? formatToolName(`bash_${row.name || 'skill'}`) : null
+        const bashToolName = bashAvailable ? resolveExecuteToolName(row.name) : null
         const nodeIdIndex = bashAvailable && manifest ? indexManifestByNodeId(manifest) : null
 
         // ------------------------------------------------------------------
@@ -301,13 +319,7 @@ class Skill_Tools implements INode {
         }
 
         // ------------------------------------------------------------------
-        // Custom tools referenced by the selected skill files. The compiled
-        // bundle records each `{{tool.<provider>.<toolName>.<uuid>}}`
-        // placeholder as a `ToolReference`; here we resolve every enabled
-        // `type: 'custom'` reference back to the live `Tool` DB row and
-        // expose it as a `DynamicStructuredTool`, exactly like the standalone
-        // `CustomTool` node would. Other reference types (mcp / http /
-        // builtin) are still only surfaced through the textual hint.
+        // Custom tools referenced by the selected skill files.
         // ------------------------------------------------------------------
         const customTools = await buildCustomToolsFromBundle({
             bundle,
@@ -318,30 +330,85 @@ class Skill_Tools implements INode {
             options
         })
         for (const t of customTools) {
-            // DynamicStructuredTool extends StructuredTool which shares the
-            // BaseTool interface with Tool — safe to widen for the agent.
             tools.push(t as unknown as Tool)
         }
 
         // ------------------------------------------------------------------
-        // Companion sandbox shell — only registered when E2B is available
-        // and the manifest has at least one materialisable entry. In every
-        // other case the node runs in fallback/read-only mode: the LLM sees
-        // the compiled markdown and acts on it without execution.
+        // Layer 4 — structured filesystem tools and the `execute` tool.
+        // Registered in that order so the implicit hierarchy matches the
+        // architecture's "structured tools first, shell as escape hatch"
+        // recommendation. Eviction wraps only the execute tool —
+        // structured FS tools already have their own truncation
+        // semantics.
         // ------------------------------------------------------------------
-        if (bashAvailable && capability && manifest && bashToolName) {
-            const bashTool = buildBashSessionTool({
+        if (bashAvailable && backend && capability && manifest && bashToolName) {
+            // Both shipped backends (E2BBackend, DockerBackend) satisfy
+            // SandboxFileTransfer through BaseSandbox. Cast once so the
+            // session gets the narrower contract it needs to materialise
+            // the manifest.
+            const fullBackend = backend as SandboxBackendProtocol & SandboxFileTransfer
+            const session = new SandboxSession({
                 workspaceId: row.workspaceId,
                 skillId: row.id,
-                toolName: bashToolName,
                 bundle,
                 manifest,
-                capability
+                capability,
+                backend: fullBackend,
+                runtime
             })
-            // StructuredTool extends BaseTool; it's safe to push into Tool[]
-            // for the downstream agent which only requires the shared Tool
-            // interface.
-            tools.push(bashTool as unknown as Tool)
+
+            // Hand the structured FS tools (and the eviction decorator) a
+            // materializing proxy of the backend. The proxy `ensureStarted()`s
+            // the session before every protocol call, so an LLM that opens
+            // with `read_file_<Skill>` triggers the same one-time
+            // bootAndMaterialize() that `exec()` always paid for in the
+            // legacy design. Without this, structured-tool-only conversations
+            // would hit an empty sandbox and get `file_not_found` for every
+            // manifest entry.
+            const readyBackend = session.getBackend()
+            const skillSlug = formatToolName(row.name || 'skill')
+            const fsTools = buildStructuredFsTools({
+                backend: readyBackend,
+                skillSlug,
+                skillsDir: manifest.skillsDir,
+                outputDir: manifest.outputDir
+            })
+            for (const t of fsTools) {
+                tools.push(t as unknown as Tool)
+            }
+
+            const executeTool = new ExecuteTool({
+                name: bashToolName,
+                description: buildExecuteToolDescription(manifest, capability.label),
+                session,
+                engineLabel: resolved.capability?.backendId ?? 'sandbox'
+            })
+            const wrapped = new EvictingExecuteTool({
+                inner: executeTool as unknown as StructuredTool,
+                // The eviction decorator only needs SandboxFileTransfer to
+                // write the evicted payload. Reusing the materializing proxy
+                // means eviction works even if the LLM evicts before any
+                // execute call — which can happen for very chatty structured
+                // tool runs.
+                backend: readyBackend,
+                outputDir: manifest.outputDir,
+                readToolName: formatToolName(`read_file_${skillSlug}`)
+            })
+            tools.push(wrapped as unknown as Tool)
+
+            // Register a per-execution artifact resolver so the agent's
+            // sandbox-link rewrite step (Agent#processSandboxLinks) can
+            // copy LLM-written files out of /home/user/output/ and into
+            // chat-scoped upload storage. Lazy: only files the LLM
+            // explicitly links in its final response ever leave the
+            // sandbox. Scope-clamped: a resolver only owns paths inside
+            // its own outputDir, so multi-skill agents cannot cross
+            // sandboxes via this surface. Implementation lives in
+            // `sandbox/artifactResolver.ts` so the URI clamp can be
+            // exercised directly by tests (this file's CommonJS
+            // `module.exports = …` at the bottom would otherwise wipe
+            // any named ES export declared here).
+            registerSandboxArtifactResolver(options, buildSkillSandboxArtifactResolver(skillSlug, readyBackend, manifest.outputDir))
         }
 
         return tools
@@ -368,35 +435,23 @@ const parseSkillFilesInput = (raw: unknown): string[] => {
 }
 
 /**
- * Wire up one `SandboxSession` + `SandboxBashTool` pair for a Skill node.
+ * Pick the LLM-visible tool name for the execute tool.
  *
- * The session is lazy — nothing hits the E2B API until the LLM actually
- * calls the bash tool. When the node goes out of scope (agent run ends),
- * the session's idle timer will eventually close the VM; if the process
- * exits first, the remote sandbox's own lifetime timer reaps it.
+ * Defaults to `bash_<SkillName>` so prompts written against the legacy
+ * `SandboxBashTool` continue to bind. Set `SKILL_EXEC_TOOL_NAME=execute`
+ * to switch to the architecture-canonical name.
  */
-const buildBashSessionTool = (args: {
-    workspaceId: string
-    skillId: string
-    /** Pre-formatted LangChain tool name, shared with the skill tools' hints. */
-    toolName: string
-    bundle: SkillBundle
-    manifest: SandboxManifest
-    capability: SandboxCapability
-}): SandboxBashTool => {
-    const { workspaceId, skillId, toolName, bundle, manifest, capability } = args
-    const session = new SandboxSession({
-        workspaceId,
-        skillId,
-        bundle,
-        manifest,
-        capability
-    })
-    return new SandboxBashTool({
-        name: toolName,
-        description: buildBashToolDescription(manifest, capability.label),
-        session
-    })
+const resolveExecuteToolName = (skillName: string | undefined): string => {
+    const slug = formatToolName(skillName || 'skill')
+    const override = (process.env.SKILL_EXEC_TOOL_NAME || '').trim()
+    if (override) {
+        // Allow either a fully-qualified name override or a verb prefix
+        // (e.g. `execute` → `execute_<SkillName>`).
+        return /^[a-zA-Z0-9_-]+$/.test(override)
+            ? formatToolName(override === 'execute' ? `execute_${slug}` : override)
+            : formatToolName(`bash_${slug}`)
+    }
+    return formatToolName(`bash_${slug}`)
 }
 
 module.exports = { nodeClass: Skill_Tools }

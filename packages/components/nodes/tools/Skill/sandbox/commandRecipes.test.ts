@@ -44,11 +44,12 @@ const makeManifest = (entries: SandboxManifestEntry[], helpers: SandboxHelperEnt
 })
 
 // ---------------------------------------------------------------------------
-// recipeForEntry
+// recipeForEntry — only exec + binary families get a recipe; everything
+// else is delegated to the structured filesystem tools and returns null.
 // ---------------------------------------------------------------------------
 
 describe('recipeForEntry', () => {
-    const cases: Array<{ ext: string; kind: SandboxManifestEntry['kind']; expected: RecipeFamily }> = [
+    const recipeCases: Array<{ ext: string; kind: SandboxManifestEntry['kind']; expected: RecipeFamily }> = [
         { ext: 'js', kind: 'code', expected: 'exec-node' },
         { ext: 'mjs', kind: 'code', expected: 'exec-node' },
         { ext: 'cjs', kind: 'code', expected: 'exec-node' },
@@ -56,24 +57,10 @@ describe('recipeForEntry', () => {
         { ext: 'sh', kind: 'code', expected: 'exec-shell' },
         { ext: 'bash', kind: 'code', expected: 'exec-shell' },
         { ext: 'rb', kind: 'code', expected: 'exec-ruby' },
-        { ext: 'md', kind: 'skill', expected: 'data-md' },
-        { ext: 'markdown', kind: 'skill', expected: 'data-md' },
-        { ext: 'txt', kind: 'data', expected: 'data-text' },
-        { ext: 'log', kind: 'data', expected: 'data-log' },
-        { ext: 'json', kind: 'data', expected: 'data-json' },
-        { ext: 'csv', kind: 'data', expected: 'data-csv' },
-        { ext: 'tsv', kind: 'data', expected: 'data-tsv' },
-        { ext: 'yaml', kind: 'data', expected: 'data-yaml' },
-        { ext: 'yml', kind: 'data', expected: 'data-yaml' },
-        { ext: 'xml', kind: 'data', expected: 'data-xml' },
-        { ext: 'html', kind: 'data', expected: 'data-html' },
-        { ext: 'htm', kind: 'data', expected: 'data-html' },
         { ext: 'pdf', kind: 'binary', expected: 'binary-pdf' },
         { ext: 'zip', kind: 'binary', expected: 'binary-archive' },
         { ext: 'jar', kind: 'binary', expected: 'binary-archive' },
         { ext: 'whl', kind: 'binary', expected: 'binary-archive' },
-        // M3 split: each Office Open XML format gets its own family so
-        // helper-promoted variants can route per-extension.
         { ext: 'docx', kind: 'binary', expected: 'binary-docx' },
         { ext: 'xlsx', kind: 'binary', expected: 'binary-xlsx' },
         { ext: 'pptx', kind: 'binary', expected: 'binary-pptx' },
@@ -82,60 +69,60 @@ describe('recipeForEntry', () => {
         { ext: 'svg', kind: 'binary', expected: 'binary-image' }
     ]
 
-    for (const { ext, kind, expected } of cases) {
+    for (const { ext, kind, expected } of recipeCases) {
         it(`maps .${ext} (${kind}) -> ${expected}`, () => {
             const def = recipeForEntry(makeEntry({ relPath: `foo.${ext}`, extension: ext, kind }))
-            expect(def.family).toBe(expected)
+            expect(def?.family).toBe(expected)
+        })
+    }
+
+    // Text-shaped extensions are intentionally absent from BY_EXT — the
+    // structured filesystem tools cover them.
+    const structuredOnly = ['md', 'markdown', 'txt', 'log', 'json', 'csv', 'tsv', 'yaml', 'yml', 'xml', 'html', 'htm']
+
+    for (const ext of structuredOnly) {
+        it(`returns null for .${ext} (handled by the structured tools)`, () => {
+            expect(recipeForEntry(makeEntry({ relPath: `foo.${ext}`, extension: ext, kind: 'data' }))).toBeNull()
         })
     }
 
     it('falls back to exec-node for unknown code extensions', () => {
         const def = recipeForEntry(makeEntry({ relPath: 'foo.zzz', extension: 'zzz', kind: 'code' }))
-        expect(def.family).toBe('exec-node')
-    })
-
-    it('falls back to data-md for unknown skill extensions', () => {
-        const def = recipeForEntry(makeEntry({ relPath: 'foo.zzz', extension: 'zzz', kind: 'skill' }))
-        expect(def.family).toBe('data-md')
-    })
-
-    it('falls back to data-text for unknown data extensions', () => {
-        const def = recipeForEntry(makeEntry({ relPath: 'foo.zzz', extension: 'zzz', kind: 'data' }))
-        expect(def.family).toBe('data-text')
+        expect(def?.family).toBe('exec-node')
     })
 
     it('falls back to binary-other for unknown binary extensions', () => {
         const def = recipeForEntry(makeEntry({ relPath: 'foo.zzz', extension: 'zzz', kind: 'binary' }))
-        expect(def.family).toBe('binary-other')
+        expect(def?.family).toBe('binary-other')
+    })
+
+    it('returns null for unknown data extensions (structured tools handle text)', () => {
+        expect(recipeForEntry(makeEntry({ relPath: 'foo.zzz', extension: 'zzz', kind: 'data' }))).toBeNull()
+    })
+
+    it('returns null for unknown skill extensions (structured tools handle markdown)', () => {
+        expect(recipeForEntry(makeEntry({ relPath: 'foo.zzz', extension: 'zzz', kind: 'skill' }))).toBeNull()
     })
 })
 
 // ---------------------------------------------------------------------------
-// Family invariants
+// Family invariants — exec families have no alternatives, binary families
+// always carry at least one productive alternative.
 // ---------------------------------------------------------------------------
 
 describe('FamilyDef invariants', () => {
     it('exec families have no alternatives', () => {
         const execFams: RecipeFamily[] = ['exec-node', 'exec-python', 'exec-shell', 'exec-ruby']
         for (const fam of execFams) {
-            const def = recipeForEntry(makeEntry({ relPath: 'foo', extension: pickExtFor(fam), kind: 'code' }))
+            const def = recipeForEntry(makeEntry({ relPath: 'foo', extension: pickExtFor(fam), kind: 'code' }))!
             expect(def.family).toBe(fam)
             expect(def.primary.id).toBe('exec')
             expect(def.alternatives).toHaveLength(0)
         }
     })
 
-    it('every data/binary family carries at least one alternative', () => {
-        const dataFams: RecipeFamily[] = [
-            'data-md',
-            'data-text',
-            'data-log',
-            'data-json',
-            'data-csv',
-            'data-tsv',
-            'data-yaml',
-            'data-xml',
-            'data-html',
+    it('every binary family carries at least one alternative', () => {
+        const binFams: RecipeFamily[] = [
             'binary-pdf',
             'binary-docx',
             'binary-xlsx',
@@ -144,8 +131,8 @@ describe('FamilyDef invariants', () => {
             'binary-image',
             'binary-other'
         ]
-        for (const fam of dataFams) {
-            const def = recipeForEntry(makeEntry({ relPath: 'foo', extension: pickExtFor(fam), kind: pickKindFor(fam) }))
+        for (const fam of binFams) {
+            const def = recipeForEntry(makeEntry({ relPath: 'foo', extension: pickExtFor(fam), kind: 'binary' }))!
             expect(def.family).toBe(fam)
             expect(def.alternatives.length).toBeGreaterThan(0)
         }
@@ -158,33 +145,32 @@ describe('FamilyDef invariants', () => {
 
 describe('formatTaskCommand', () => {
     it('substitutes {path} for non-exec tasks and drops {args}', () => {
-        const def = recipeForEntry(makeEntry({ relPath: 'a.txt', extension: 'txt', kind: 'data' }))
-        expect(formatTaskCommand(def.primary, '/home/user/skills/a.txt')).toBe('head -n 50 /home/user/skills/a.txt')
+        const def = recipeForEntry(makeEntry({ relPath: 'spec.pdf', extension: 'pdf', kind: 'binary' }))!
+        expect(formatTaskCommand(def.primary, '/home/user/skills/spec.pdf')).toBe('pdftotext -layout /home/user/skills/spec.pdf -')
     })
 
     it('appends [args...] to exec tasks when no argsHint provided', () => {
-        const def = recipeForEntry(makeEntry({ relPath: 'a.js', extension: 'js', kind: 'code' }))
+        const def = recipeForEntry(makeEntry({ relPath: 'a.js', extension: 'js', kind: 'code' }))!
         expect(formatTaskCommand(def.primary, '/home/user/skills/a.js')).toBe('node /home/user/skills/a.js [args...]')
     })
 
     it('substitutes the argsHint when provided', () => {
-        const def = recipeForEntry(makeEntry({ relPath: 'a.js', extension: 'js', kind: 'code' }))
+        const def = recipeForEntry(makeEntry({ relPath: 'a.js', extension: 'js', kind: 'code' }))!
         expect(formatTaskCommand(def.primary, '/home/user/skills/a.js', '"resume" "jd"')).toBe('node /home/user/skills/a.js "resume" "jd"')
     })
 
     it('keeps verbatim placeholders the LLM substitutes itself', () => {
-        const def = recipeForEntry(makeEntry({ relPath: 'a.json', extension: 'json', kind: 'data' }))
-        const queryTask = def.alternatives.find((t) => t.id === 'query')!
-        const cmd = formatTaskCommand(queryTask, '/home/user/skills/a.json')
-        expect(cmd).toBe("jq '<query>' /home/user/skills/a.json")
+        const def = recipeForEntry(makeEntry({ relPath: 'spec.pdf', extension: 'pdf', kind: 'binary' }))!
+        const searchTask = def.alternatives.find((t) => t.id === 'search')!
+        const cmd = formatTaskCommand(searchTask, '/home/user/skills/spec.pdf')
+        expect(cmd).toBe("pdfgrep -n '<pattern>' /home/user/skills/spec.pdf")
     })
 })
 
 describe('formatRecipeCommand (legacy shim)', () => {
     it('renders a primary task by template', () => {
-        const def = recipeForEntry(makeEntry({ relPath: 'a.json', extension: 'json', kind: 'data' }))
-        // JSON primary is a byte peek so the LLM never starts with `cat`.
-        expect(formatRecipeCommand(def.primary, '/home/user/skills/a.json')).toBe('head -c 2048 /home/user/skills/a.json')
+        const def = recipeForEntry(makeEntry({ relPath: 'spec.pdf', extension: 'pdf', kind: 'binary' }))!
+        expect(formatRecipeCommand(def.primary, '/home/user/skills/spec.pdf')).toBe('pdftotext -layout /home/user/skills/spec.pdf -')
     })
 
     it('handles legacy CommandRecipe shape with {args}', () => {
@@ -194,33 +180,45 @@ describe('formatRecipeCommand (legacy shim)', () => {
 })
 
 // ---------------------------------------------------------------------------
-// groupByRecipeFamily
+// groupByRecipeFamily — text entries are dropped, exec/binary entries
+// survive and are ordered by RECIPE_ORDER.
 // ---------------------------------------------------------------------------
 
 describe('groupByRecipeFamily', () => {
     it('orders groups by RECIPE_ORDER and bundles entries per family', () => {
         const entries = [
-            makeEntry({ relPath: 'b.json', extension: 'json', kind: 'data' }),
+            makeEntry({ relPath: 'spec.pdf', extension: 'pdf', kind: 'binary' }),
             makeEntry({ relPath: 'a.js', extension: 'js', kind: 'code' }),
-            makeEntry({ relPath: 'c.json', extension: 'json', kind: 'data' }),
+            makeEntry({ relPath: 'other.pdf', extension: 'pdf', kind: 'binary' }),
             makeEntry({ relPath: 'd.py', extension: 'py', kind: 'code' })
         ]
         const groups = groupByRecipeFamily(entries)
         const families = groups.map((g) => g.family)
-        const expectedOrder = RECIPE_ORDER.filter((f) => f === 'exec-node' || f === 'exec-python' || f === 'data-json')
+        const expectedOrder = RECIPE_ORDER.filter((f) => f === 'exec-node' || f === 'exec-python' || f === 'binary-pdf')
         expect(families).toEqual(expectedOrder)
-        const json = groups.find((g) => g.family === 'data-json')!
-        expect(json.entries.map((e) => e.relPath)).toEqual(['b.json', 'c.json'])
+        const pdf = groups.find((g) => g.family === 'binary-pdf')!
+        expect(pdf.entries.map((e) => e.relPath)).toEqual(['spec.pdf', 'other.pdf'])
+    })
+
+    it('drops entries whose family is null (text-shaped data)', () => {
+        const entries = [
+            makeEntry({ relPath: 'jd.txt', extension: 'txt', kind: 'data' }),
+            makeEntry({ relPath: 'doc.md', extension: 'md', kind: 'skill' }),
+            makeEntry({ relPath: 'data.json', extension: 'json', kind: 'data' }),
+            makeEntry({ relPath: 'a.js', extension: 'js', kind: 'code' })
+        ]
+        const groups = groupByRecipeFamily(entries)
+        expect(groups.map((g) => g.family)).toEqual(['exec-node'])
     })
 })
 
 // ---------------------------------------------------------------------------
-// renderReferenceRecipes
+// renderReferenceRecipes — only exec + binary references get lines.
 // ---------------------------------------------------------------------------
 
 describe('renderReferenceRecipes', () => {
-    const buildContext = (entries: SandboxManifestEntry[]) => {
-        const manifest = makeManifest(entries)
+    const buildContext = (entries: SandboxManifestEntry[], helpers: SandboxHelperEntry[] = []) => {
+        const manifest = makeManifest(entries, helpers)
         const idx = new Map<string, SandboxManifestEntry>(entries.map((e) => [e.nodeId, e]))
         return { manifest, idx }
     }
@@ -245,47 +243,37 @@ describe('renderReferenceRecipes', () => {
         expect(lines[0]).toContain('`bash_skill`')
     })
 
-    it('emits primary + 2 productive alternatives for data references (peek primary, search + read alts)', () => {
-        const txt = makeEntry({ relPath: 'jd.txt', extension: 'txt', kind: 'data', nodeId: 'jd-1' })
-        const { manifest, idx } = buildContext([txt])
-        const lines = renderReferenceRecipes(skillEntry(['jd-1']), manifest, idx, 'bash_skill')
-        expect(lines).toHaveLength(3)
-        // Primary is a peek so the LLM doesn't start by cat-ing the whole JD.
-        expect(lines[0]).toContain('head -n 50 /home/user/skills/jd.txt')
-        expect(lines[0]).not.toContain('cat /home/user/skills/jd.txt')
-        // Productive alternatives include search (highest priority) and the
-        // `cat` escalation (`read` ranks above `count`).
-        expect(lines.slice(1).some((l) => l.includes('grep -nE'))).toBe(true)
-        expect(lines.slice(1).some((l) => l.includes('cat /home/user/skills/jd.txt'))).toBe(true)
-    })
-
-    it('emits a peek primary for markdown references (cat is demoted to an alt)', () => {
-        const md = makeEntry({ relPath: 'doc.md', extension: 'md', kind: 'skill', nodeId: 'md-1' })
-        const { manifest, idx } = buildContext([md])
-        const lines = renderReferenceRecipes(skillEntry(['md-1']), manifest, idx, 'bash_skill')
-        expect(lines[0]).toContain('head -n 80 /home/user/skills/doc.md')
-        expect(lines[0]).not.toContain('cat /home/user/skills/doc.md')
-        // The escalation path (cat) is still surfaced as an alternative.
-        expect(lines.slice(1).some((l) => l.includes('cat /home/user/skills/doc.md'))).toBe(true)
-    })
-
-    it('emits a byte-peek primary for JSON references (jq + search as alts)', () => {
-        const json = makeEntry({ relPath: 'data.json', extension: 'json', kind: 'data', nodeId: 'json-1' })
-        const { manifest, idx } = buildContext([json])
-        const lines = renderReferenceRecipes(skillEntry(['json-1']), manifest, idx, 'bash_skill')
-        expect(lines[0]).toContain('head -c 2048 /home/user/skills/data.json')
-        expect(lines[0]).not.toContain('cat /home/user/skills/data.json')
-        expect(lines.slice(1).some((l) => l.includes("jq '<query>'"))).toBe(true)
-    })
-
-    it('emits primary + 2 productive alternatives for binary references', () => {
+    it('emits primary + up to 2 productive alternatives for binary references', () => {
         const pdf = makeEntry({ relPath: 'spec.pdf', extension: 'pdf', kind: 'binary', nodeId: 'pdf-1' })
         const { manifest, idx } = buildContext([pdf])
         const lines = renderReferenceRecipes(skillEntry(['pdf-1']), manifest, idx, 'bash_skill')
         expect(lines).toHaveLength(3)
         expect(lines[0]).toContain('pdftotext -layout /home/user/skills/spec.pdf -')
+        // `search` ranks above `info` so pdfgrep shows up first.
         expect(lines.slice(1).some((l) => l.includes('pdfgrep'))).toBe(true)
         expect(lines.slice(1).some((l) => l.includes('pdfinfo'))).toBe(true)
+    })
+
+    it('skips text-shaped references (handled by the structured tools)', () => {
+        const txt = makeEntry({ relPath: 'jd.txt', extension: 'txt', kind: 'data', nodeId: 'jd-1' })
+        const md = makeEntry({ relPath: 'doc.md', extension: 'md', kind: 'skill', nodeId: 'md-1' })
+        const json = makeEntry({ relPath: 'data.json', extension: 'json', kind: 'data', nodeId: 'json-1' })
+        const { manifest, idx } = buildContext([txt, md, json])
+        const lines = renderReferenceRecipes(skillEntry(['jd-1', 'md-1', 'json-1']), manifest, idx, 'bash_skill')
+        expect(lines).toEqual([])
+    })
+
+    it('mixed references: only exec/binary surface, text is silent', () => {
+        const js = makeEntry({ relPath: 'a.js', extension: 'js', kind: 'code', nodeId: 'js-1' })
+        const txt = makeEntry({ relPath: 'jd.txt', extension: 'txt', kind: 'data', nodeId: 'jd-1' })
+        const pdf = makeEntry({ relPath: 'spec.pdf', extension: 'pdf', kind: 'binary', nodeId: 'pdf-1' })
+        const { manifest, idx } = buildContext([js, txt, pdf])
+        const lines = renderReferenceRecipes(skillEntry(['js-1', 'jd-1', 'pdf-1']), manifest, idx, 'bash_skill')
+        // 1 line for js + 3 lines for pdf (primary + 2 alts); txt contributes nothing.
+        expect(lines).toHaveLength(4)
+        expect(lines.some((l) => l.includes('node'))).toBe(true)
+        expect(lines.some((l) => l.includes('pdftotext'))).toBe(true)
+        expect(lines.some((l) => l.includes('jd.txt'))).toBe(false)
     })
 
     it('dedupes references and skips unknown nodeIds', () => {
@@ -303,17 +291,18 @@ describe('renderReferenceRecipes', () => {
 })
 
 // ---------------------------------------------------------------------------
-// buildBashToolDescription — snapshot
+// buildBashToolDescription — intro, productivity rules, per-file cheat
+// sheet, and per-family productive block.
 // ---------------------------------------------------------------------------
 
 describe('buildBashToolDescription', () => {
     it('renders intro + productivity tips + per-file primary + per-family productive sections', () => {
+        // Mix of text-shaped (covered by structured tools — no per-file
+        // line expected) and exec / binary entries (shell-only).
         const manifest = makeManifest([
             makeEntry({ relPath: 'resume-screener.md', extension: 'md', kind: 'skill' }),
             makeEntry({ relPath: 'job-description.txt', extension: 'txt', kind: 'data' }),
             makeEntry({ relPath: 'data.json', extension: 'json', kind: 'data' }),
-            makeEntry({ relPath: 'rows.csv', extension: 'csv', kind: 'data' }),
-            makeEntry({ relPath: 'app.log', extension: 'log', kind: 'data' }),
             makeEntry({ relPath: 'scoring_algorithm.js', extension: 'js', kind: 'code' }),
             makeEntry({ relPath: 'analyze.py', extension: 'py', kind: 'code' }),
             makeEntry({ relPath: 'spec.pdf', extension: 'pdf', kind: 'binary' }),
@@ -327,52 +316,54 @@ describe('buildBashToolDescription', () => {
         // Intro
         expect(description).toContain('Run a shell command inside the skill sandbox VM (engine: E2B (Bash session))')
         expect(description).toContain('/home/user/skills')
+        expect(description).toContain('Prefer the structured filesystem tools')
 
-        // Productivity rules
+        // Productivity rules — point the LLM at structured tools first.
         expect(description).toContain('Productivity rules')
-        expect(description).toContain('DO NOT default to `cat` for data files')
-        expect(description).toContain('grep -nE')
-        expect(description).toContain('jq')
-        expect(description).toContain('wc -c')
+        expect(description).toContain('read_file_*')
+        expect(description).toContain('grep_*')
+        expect(description).toContain('glob_*')
 
-        // Per-file starter commands — none of the data/markdown entries
-        // should start with `cat`; the LLM is steered toward peeks/probes.
+        // Per-file starter commands — only exec / binary entries show up.
         expect(description).toContain('Starter commands per file')
-        expect(description).toContain('resume-screener.md → head -n 80 /home/user/skills/resume-screener.md')
-        expect(description).toContain('job-description.txt → head -n 50 /home/user/skills/job-description.txt')
-        expect(description).toContain('data.json → head -c 2048 /home/user/skills/data.json')
         expect(description).toContain('scoring_algorithm.js → node /home/user/skills/scoring_algorithm.js [args...]')
         expect(description).toContain('analyze.py → python3 /home/user/skills/analyze.py [args...]')
         expect(description).toContain('spec.pdf → pdftotext -layout /home/user/skills/spec.pdf -')
         expect(description).toContain('archive.zip → unzip -l /home/user/skills/archive.zip')
-        expect(description).toContain('app.log → tail -n 50 /home/user/skills/app.log')
 
-        // No `cat` should appear in the per-file starter section. Every
-        // family that used to default to `cat` now defaults to a peek.
-        const starterSection = description.slice(
-            description.indexOf('Starter commands per file'),
-            description.indexOf('Productive commands per family')
-        )
-        expect(starterSection).not.toMatch(/→ cat /)
+        // Text-shaped files are intentionally absent from the per-file
+        // cheat-sheet — the LLM uses the structured tools for them.
+        expect(description).not.toContain('resume-screener.md')
+        expect(description).not.toContain('job-description.txt')
+        expect(description).not.toContain('data.json')
 
-        // Per-family productive commands — `cat` is still reachable here
-        // as the explicit "Read full" escalation.
+        // Per-family productive commands — only binary families have alts.
         expect(description).toContain('Productive commands per family')
-        expect(description).toContain("jq '<query>' <path>")
         expect(description).toContain("pdfgrep -n '<pattern>' <path>")
-        expect(description).toContain('cat <path>')
+        expect(description).toContain('unzip -p <path>')
 
-        // Stays under ~6 KB even with this maximally-varied 11-family
-        // manifest. Realistic manifests touch 2–4 families and stay well
-        // under 3 KB; the productive-commands block + the explicit
-        // "Read full (cat)" escalation alt is what dominates when every
-        // family is exercised.
-        expect(description.length).toBeLessThan(6000)
+        // Stays under ~5 KB even with this maximally-varied manifest.
+        // Trimming the data-* families pulled the worst case down by
+        // roughly 1.5 KB compared to the legacy design.
+        expect(description.length).toBeLessThan(5000)
     })
 
     it('handles an empty manifest gracefully', () => {
         const description = buildBashToolDescription(makeManifest([]), 'E2B')
         expect(description).toContain('No skill files were reachable')
+        expect(description).not.toContain('Productive commands per family')
+    })
+
+    it('omits the per-file cheat-sheet when no entry needs the shell', () => {
+        // All entries are text-shaped — the structured tools cover them
+        // entirely and the per-file / per-family blocks should disappear.
+        const manifest = makeManifest([
+            makeEntry({ relPath: 'doc.md', extension: 'md', kind: 'skill' }),
+            makeEntry({ relPath: 'data.json', extension: 'json', kind: 'data' })
+        ])
+        const description = buildBashToolDescription(manifest, 'E2B')
+        expect(description).toContain('Productivity rules')
+        expect(description).not.toContain('Starter commands per file')
         expect(description).not.toContain('Productive commands per family')
     })
 
@@ -419,7 +410,7 @@ describe('recipeForEntry — helper awareness', () => {
     it('returns the helper-promoted binary-pdf family when helpersAvailable=true', () => {
         const def = recipeForEntry(makeEntry({ relPath: 'doc.pdf', extension: 'pdf', kind: 'binary' }), {
             helpersAvailable: true
-        })
+        })!
         expect(def.family).toBe('binary-pdf')
         expect(def.primary.template).toMatch(/pdf_extract\.py/)
         expect(def.primary.label).toMatch(/built-in helper/i)
@@ -428,7 +419,7 @@ describe('recipeForEntry — helper awareness', () => {
     })
 
     it('returns the legacy native binary-pdf family when helpersAvailable is omitted/false', () => {
-        const def = recipeForEntry(makeEntry({ relPath: 'doc.pdf', extension: 'pdf', kind: 'binary' }))
+        const def = recipeForEntry(makeEntry({ relPath: 'doc.pdf', extension: 'pdf', kind: 'binary' }))!
         expect(def.family).toBe('binary-pdf')
         expect(def.primary.template).toBe('pdftotext -layout {path} -')
     })
@@ -436,18 +427,16 @@ describe('recipeForEntry — helper awareness', () => {
     it('does not affect families without a helper override (e.g. binary-image)', () => {
         const a = recipeForEntry(makeEntry({ relPath: 'pic.png', extension: 'png', kind: 'binary' }), {
             helpersAvailable: true
-        })
-        const b = recipeForEntry(makeEntry({ relPath: 'pic.png', extension: 'png', kind: 'binary' }))
+        })!
+        const b = recipeForEntry(makeEntry({ relPath: 'pic.png', extension: 'png', kind: 'binary' }))!
         expect(a.primary.template).toBe(b.primary.template)
     })
 
-    // M3 — DOCX / XLSX / PPTX / HTML each get their own helper-promoted variant.
+    // DOCX / XLSX / PPTX each get their own helper-promoted variant.
     const helperPromotedCases: Array<{ ext: string; family: string; expectedTemplateContains: string; nativeContains: string }> = [
         { ext: 'docx', family: 'binary-docx', expectedTemplateContains: 'docx_extract.py', nativeContains: 'unzip -l' },
         { ext: 'xlsx', family: 'binary-xlsx', expectedTemplateContains: 'xlsx_extract.py', nativeContains: 'unzip -l' },
-        { ext: 'pptx', family: 'binary-pptx', expectedTemplateContains: 'pptx_extract.py', nativeContains: 'unzip -l' },
-        { ext: 'html', family: 'data-html', expectedTemplateContains: 'html_to_text.py', nativeContains: 'head -n 80' },
-        { ext: 'htm', family: 'data-html', expectedTemplateContains: 'html_to_text.py', nativeContains: 'head -n 80' }
+        { ext: 'pptx', family: 'binary-pptx', expectedTemplateContains: 'pptx_extract.py', nativeContains: 'unzip -l' }
     ]
 
     for (const { ext, family, expectedTemplateContains, nativeContains } of helperPromotedCases) {
@@ -456,10 +445,10 @@ describe('recipeForEntry — helper awareness', () => {
                 makeEntry({
                     relPath: `f.${ext}`,
                     extension: ext,
-                    kind: ext === 'html' || ext === 'htm' ? 'data' : 'binary'
+                    kind: 'binary'
                 }),
                 { helpersAvailable: true }
-            )
+            )!
             expect(def.family).toBe(family)
             expect(def.primary.template).toContain(expectedTemplateContains)
             // Native fallback is preserved as an alternative so the LLM can escalate.
@@ -471,13 +460,22 @@ describe('recipeForEntry — helper awareness', () => {
                 makeEntry({
                     relPath: `f.${ext}`,
                     extension: ext,
-                    kind: ext === 'html' || ext === 'htm' ? 'data' : 'binary'
+                    kind: 'binary'
                 })
-            )
+            )!
             expect(def.family).toBe(family)
             expect(def.primary.template).not.toContain(expectedTemplateContains)
         })
     }
+
+    it('html/htm files have no recipe — the structured read_file tool covers them', () => {
+        // The `html_to_text` helper still ships and shows up in the
+        // built-in helpers catalog, but per-file shell hints for HTML
+        // are deliberately silent: the structured tools read raw HTML
+        // bytes and the LLM strips tags itself.
+        expect(recipeForEntry(makeEntry({ relPath: 'index.html', extension: 'html', kind: 'data' }))).toBeNull()
+        expect(recipeForEntry(makeEntry({ relPath: 'index.html', extension: 'html', kind: 'data' }), { helpersAvailable: true })).toBeNull()
+    })
 })
 
 describe('groupByRecipeFamily — helper awareness', () => {
@@ -595,24 +593,6 @@ const pickExtFor = (fam: RecipeFamily): string => {
             return 'sh'
         case 'exec-ruby':
             return 'rb'
-        case 'data-md':
-            return 'md'
-        case 'data-text':
-            return 'txt'
-        case 'data-log':
-            return 'log'
-        case 'data-json':
-            return 'json'
-        case 'data-csv':
-            return 'csv'
-        case 'data-tsv':
-            return 'tsv'
-        case 'data-yaml':
-            return 'yaml'
-        case 'data-xml':
-            return 'xml'
-        case 'data-html':
-            return 'html'
         case 'binary-pdf':
             return 'pdf'
         case 'binary-docx':
@@ -628,13 +608,6 @@ const pickExtFor = (fam: RecipeFamily): string => {
         case 'binary-other':
             return 'bin'
     }
-}
-
-const pickKindFor = (fam: RecipeFamily): SandboxManifestEntry['kind'] => {
-    if (fam.startsWith('exec-')) return 'code'
-    if (fam === 'data-md') return 'skill'
-    if (fam.startsWith('data-')) return 'data'
-    return 'binary'
 }
 
 // Reference unused-import safe symbols so TypeScript doesn't warn under
