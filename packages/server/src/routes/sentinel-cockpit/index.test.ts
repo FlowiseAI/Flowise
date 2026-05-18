@@ -29,6 +29,20 @@ function validBody(overrides: Record<string, unknown> = {}) {
     }
 }
 
+function validServerIdePreview() {
+    return {
+        status_label: 'Backend preview ready',
+        workflow_label: 'Safe planning workflow',
+        persona_label: 'Planning reviewer',
+        skill_label: 'Plain-English planning',
+        summary: 'Sentinel can preview a safe planning path.',
+        what_can_happen_next: 'Sentinel can show labels before any backend work is approved.',
+        what_will_not_happen: 'No files change and no backend work starts.',
+        approval_copy: 'Backend work would require a separate reviewed approval step.',
+        expires_at_label: 'No preview timer'
+    }
+}
+
 describe('sentinel cockpit router', () => {
     let app: express.Application
 
@@ -75,6 +89,44 @@ describe('sentinel cockpit router', () => {
         expect(res.body.allowed_user_actions).toEqual(['none'])
     })
 
+    it('can return reduced IDE preview only through the existing snapshot route', async () => {
+        jest.spyOn(classifyBridge, 'classifyBridgeIsRequested').mockReturnValue(true)
+        jest.spyOn(classifyBridge, 'createClassifySnapshot').mockResolvedValue({
+            schema_version: 'sentinel.cockpit_bridge.snapshot.v1',
+            status: 'ok',
+            snapshot_ref: 'snapshot_goal_classify_display',
+            state: 'goal_classified',
+            plain_summary: 'Sentinel classified this goal for intake. Planning remains deferred, and no file changes were made.',
+            next_safe_action: 'planning_deferred',
+            allowed_user_actions: ['none'],
+            blocked_actions: ['Plan approval is not available here.', 'Execution is not available here.'],
+            checkpoint_ref: null,
+            evidence_refs: [],
+            manual_handoff_preview: null,
+            worker_status: 'none',
+            result_status: 'not_started',
+            shield_summary: 'not_reviewed',
+            accepted_state: 'not_accepted',
+            stale_doc_warning: 'none',
+            ide_preview: validServerIdePreview()
+        } as any)
+
+        const res = await request(app)
+            .post(snapshotPath)
+            .set('Host', host)
+            .set('Origin', origin)
+            .set('Content-Type', 'application/json')
+            .send(validBody({ plain_goal: 'plan safely' }))
+
+        expect(res.status).toBe(200)
+        expect(res.body.ide_preview).toEqual(validServerIdePreview())
+        const serializedPreview = JSON.stringify(res.body.ide_preview)
+        expect(res.text).not.toContain('sentinel.qvc.ide_preview.v1')
+        expect(serializedPreview).not.toContain('allowed_user_actions')
+        expect(serializedPreview).not.toContain('approval_required')
+        expect(serializedPreview).not.toContain('blocked_reason')
+    })
+
     it('keeps classify errors route-local without raw goal or gateway detail', async () => {
         jest.spyOn(classifyBridge, 'classifyBridgeIsRequested').mockReturnValue(true)
         jest.spyOn(classifyBridge, 'createClassifySnapshot').mockRejectedValue(
@@ -98,6 +150,7 @@ describe('sentinel cockpit router', () => {
         expect(res.body.schema_version).toBe('sentinel.cockpit_bridge.error.v1')
         expect(res.body.status).toBe('error')
         expect(res.body.error.code).toBe('sentinel_classify_unavailable')
+        expect(res.text).not.toContain('ide_preview')
         expect(res.text).not.toContain('classify this local goal')
         expect(res.text).not.toContain('raw gateway detail')
         expect(res.text).not.toContain('<html>')
@@ -138,6 +191,7 @@ describe('sentinel cockpit router', () => {
         expect(res.body.schema_version).toBe('sentinel.cockpit_bridge.error.v1')
         expect(res.body.status).toBe('error')
         expect(res.body.error.code).toBe('feature_disabled')
+        expect(res.text).not.toContain('ide_preview')
         expect(res.text).not.toContain('cockpit_abcdefghijklmnopqrstuvwx')
         expect(res.text).not.toContain('nonce_abcdefghijklmnop')
         expect(res.text).not.toContain('<html>')
@@ -160,6 +214,7 @@ describe('sentinel cockpit router', () => {
         expect(res.body.schema_version).toBe('sentinel.cockpit_bridge.error.v1')
         expect(res.body.status).toBe('error')
         expect(res.body.error.code).toBe('feature_disabled')
+        expect(res.text).not.toContain('ide_preview')
         expect(res.text).not.toContain('cockpit_abcdefghijklmnopqrstuvwx')
         expect(res.text).not.toContain('nonce_abcdefghijklmnop')
         expect(res.text).not.toContain('<html>')
@@ -184,6 +239,7 @@ describe('sentinel cockpit router', () => {
         expect(res.body.schema_version).toBe('sentinel.cockpit_bridge.error.v1')
         expect(res.body.status).toBe('error')
         expect(res.body.error.code).toBe('feature_disabled')
+        expect(res.text).not.toContain('ide_preview')
         expect(res.text).not.toContain('cockpit_abcdefghijklmnopqrstuvwx')
         expect(res.text).not.toContain('nonce_abcdefghijklmnop')
         expect(res.text).not.toContain('Manual worker result text')

@@ -57,6 +57,18 @@ const PLAN_SESSION_KEYS = Object.freeze([
     'safe_error'
 ])
 const ROUTE_CARD_KEY = 'route_card'
+const IDE_PREVIEW_KEY = 'ide_preview'
+const IDE_PREVIEW_KEYS = Object.freeze([
+    'status_label',
+    'workflow_label',
+    'persona_label',
+    'skill_label',
+    'summary',
+    'what_can_happen_next',
+    'what_will_not_happen',
+    'approval_copy',
+    'expires_at_label'
+])
 const ROUTE_CARD_KEYS = Object.freeze([
     'schema_version',
     'category',
@@ -103,6 +115,47 @@ const ROUTE_CARD_FORBIDDEN_FRAGMENTS = Object.freeze([
     'cockpit_ref',
     'sha256:',
     'dto'
+])
+const IDE_PREVIEW_FORBIDDEN_FRAGMENTS = Object.freeze([
+    ...ROUTE_CARD_FORBIDDEN_FRAGMENTS,
+    'schema_version',
+    'allowed_user_actions',
+    'approval_required',
+    'blocked_reason',
+    'unsafe_goal',
+    'ide_preview_',
+    'sentinel.qvc.ide_preview',
+    'raw dto',
+    'json dto',
+    'provider output',
+    'worker output',
+    'tool trace',
+    'confidence',
+    'command line',
+    'environment variable',
+    'source snippet',
+    'codex',
+    'opencode',
+    'hermes',
+    'mcp',
+    'agentflow',
+    'hitl',
+    'worker_type',
+    'worker_launch',
+    'subprocess',
+    'shell',
+    'command',
+    'provider',
+    'model',
+    'repo-write',
+    'commit',
+    'publish',
+    'deploy',
+    '127.0.0.1',
+    'localhost',
+    ':39173',
+    'c:\\',
+    '/mnt/'
 ])
 const PLAN_CARD_KEYS = Object.freeze(['plain_title', 'plain_summary', 'plain_steps', 'will_not_do'])
 const REQUEST_KEYS_BY_KIND: Record<string, readonly string[]> = Object.freeze({
@@ -646,8 +699,9 @@ function validateCockpitRef(value: unknown, code: ErrorCode = 'plan_decision_inv
 }
 
 function validateSnapshot(snapshot: ReturnType<typeof snapshotStatic.createStaticSnapshot>, request: CockpitRequest) {
-    assertResponseKeys(snapshot as Record<string, unknown>, SNAPSHOT_KEYS, Object.freeze([ROUTE_CARD_KEY]))
+    assertResponseKeys(snapshot as Record<string, unknown>, SNAPSHOT_KEYS, Object.freeze([ROUTE_CARD_KEY, IDE_PREVIEW_KEY]))
     validateRouteCard((snapshot as { route_card?: unknown }).route_card)
+    validateIdePreview((snapshot as { ide_preview?: unknown }).ide_preview)
     if (snapshot.schema_version !== COCKPIT_SNAPSHOT_SCHEMA_VERSION || snapshot.status !== 'ok') {
         throw httpError(500, 'invalid_snapshot')
     }
@@ -669,7 +723,10 @@ function validateSnapshot(snapshot: ReturnType<typeof snapshotStatic.createStati
     if (Buffer.byteLength(serialized) > COCKPIT_RESPONSE_LIMIT_BYTES) {
         throw httpError(500, 'invalid_snapshot')
     }
-    const { route_card: _routeCard, ...snapshotWithoutRouteCard } = snapshot as typeof snapshot & { route_card?: unknown }
+    const { route_card: _routeCard, ide_preview: _idePreview, ...snapshotWithoutRouteCard } = snapshot as typeof snapshot & {
+        route_card?: unknown
+        ide_preview?: unknown
+    }
     assertNoForbiddenText(JSON.stringify(snapshotWithoutRouteCard))
     return snapshot
 }
@@ -785,6 +842,47 @@ function validateRouteCard(routeCard: unknown) {
 
     const lower = JSON.stringify(card).toLowerCase()
     if (ROUTE_CARD_FORBIDDEN_FRAGMENTS.some((fragment) => lower.includes(fragment))) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validateIdePreview(idePreview: unknown) {
+    if (idePreview == null) {
+        return
+    }
+    if (!idePreview || typeof idePreview !== 'object' || Array.isArray(idePreview)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const preview = idePreview as Record<string, unknown>
+    assertResponseKeys(preview, IDE_PREVIEW_KEYS)
+    validateIdePreviewText(preview.status_label, 80)
+    validateIdePreviewText(preview.workflow_label, 80)
+    validateIdePreviewText(preview.persona_label, 80)
+    validateIdePreviewText(preview.skill_label, 80)
+    validateIdePreviewText(preview.summary, 260)
+    validateIdePreviewText(preview.what_can_happen_next, 260)
+    validateIdePreviewText(preview.what_will_not_happen, 260)
+    validateIdePreviewText(preview.approval_copy, 160)
+    validateIdePreviewText(preview.expires_at_label, 80)
+    if (Buffer.byteLength(JSON.stringify(preview)) > 2048) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const lower = JSON.stringify(preview).toLowerCase()
+    if (IDE_PREVIEW_FORBIDDEN_FRAGMENTS.some((fragment) => lower.includes(fragment))) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validateIdePreviewText(value: unknown, maxLength: number) {
+    if (
+        typeof value !== 'string' ||
+        !value.trim() ||
+        value.length > maxLength ||
+        hasDisallowedControlCharacter(value) ||
+        hasHiddenControlCharacter(value) ||
+        /[^\x20-\x7e]/.test(value) ||
+        secretTextPresent(value)
+    ) {
         throw httpError(500, 'invalid_snapshot')
     }
 }

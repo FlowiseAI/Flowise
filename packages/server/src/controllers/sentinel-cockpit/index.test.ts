@@ -97,6 +97,21 @@ function validRouteCard(overrides: Record<string, unknown> = {}) {
     }
 }
 
+function validServerIdePreview(overrides: Record<string, unknown> = {}) {
+    return {
+        status_label: 'Backend preview ready',
+        workflow_label: 'Safe planning workflow',
+        persona_label: 'Planning reviewer',
+        skill_label: 'Plain-English planning',
+        summary: 'Sentinel can preview a safe planning path.',
+        what_can_happen_next: 'Sentinel can show labels before any backend work is approved.',
+        what_will_not_happen: 'No files change and no backend work starts.',
+        approval_copy: 'Backend work would require a separate reviewed approval step.',
+        expires_at_label: 'No preview timer',
+        ...overrides
+    }
+}
+
 describe('sentinel cockpit controller admission', () => {
     it('rejects duplicate guarded raw headers before normalized header reliance', () => {
         for (const header of guardedHeaders) {
@@ -646,6 +661,80 @@ describe('sentinel cockpit controller responses', () => {
         expect(res.bodyText).not.toContain('deploy through shell')
     })
 
+    it('preserves reduced IDE preview projection on classify snapshot responses', async () => {
+        jest.spyOn(classifyBridge, 'classifyBridgeIsRequested').mockReturnValue(true)
+        jest.spyOn(classifyBridge, 'createClassifySnapshot').mockResolvedValue({
+            schema_version: 'sentinel.cockpit_bridge.snapshot.v1',
+            status: 'ok',
+            snapshot_ref: 'snapshot_goal_classify_display',
+            state: 'goal_classified',
+            plain_summary: 'Sentinel classified this goal for intake. Planning remains deferred, and no file changes were made.',
+            next_safe_action: 'planning_deferred',
+            allowed_user_actions: ['none'],
+            blocked_actions: ['Plan approval is not available here.', 'Execution is not available here.'],
+            checkpoint_ref: null,
+            evidence_refs: [],
+            manual_handoff_preview: null,
+            worker_status: 'none',
+            result_status: 'not_started',
+            shield_summary: 'not_reviewed',
+            accepted_state: 'not_accepted',
+            stale_doc_warning: 'none',
+            route_card: validRouteCard(),
+            ide_preview: validServerIdePreview()
+        } as any)
+        const body = JSON.stringify({ request_kind: 'goal', plain_goal: 'classify this goal' })
+        const req = buildReq(body)
+        const res = buildRes()
+
+        await sentinelCockpitController.handleSnapshot(req, res)
+
+        const parsed = JSON.parse(res.bodyText)
+        expect(res.statusCode).toBe(200)
+        expect(Object.keys(parsed.ide_preview)).toEqual(Object.keys(validServerIdePreview()))
+        expect(parsed.ide_preview).toEqual(validServerIdePreview())
+        const serializedPreview = JSON.stringify(parsed.ide_preview)
+        expect(res.bodyText).not.toContain('sentinel.qvc.ide_preview.v1')
+        expect(serializedPreview).not.toContain('allowed_user_actions')
+        expect(serializedPreview).not.toContain('approval_required')
+        expect(serializedPreview).not.toContain('blocked_reason')
+    })
+
+    it('fails closed for unsafe IDE preview projection on classify snapshot responses', async () => {
+        jest.spyOn(classifyBridge, 'classifyBridgeIsRequested').mockReturnValue(true)
+        jest.spyOn(classifyBridge, 'createClassifySnapshot').mockResolvedValue({
+            schema_version: 'sentinel.cockpit_bridge.snapshot.v1',
+            status: 'ok',
+            snapshot_ref: 'snapshot_goal_classify_display',
+            state: 'goal_classified',
+            plain_summary: 'Sentinel classified this goal for intake. Planning remains deferred, and no file changes were made.',
+            next_safe_action: 'planning_deferred',
+            allowed_user_actions: ['none'],
+            blocked_actions: ['Plan approval is not available here.', 'Execution is not available here.'],
+            checkpoint_ref: null,
+            evidence_refs: [],
+            manual_handoff_preview: null,
+            worker_status: 'none',
+            result_status: 'not_started',
+            shield_summary: 'not_reviewed',
+            accepted_state: 'not_accepted',
+            stale_doc_warning: 'none',
+            ide_preview: validServerIdePreview({
+                summary: 'Provider output with token material must never display.'
+            })
+        } as any)
+        const body = JSON.stringify({ request_kind: 'goal', plain_goal: 'classify this goal' })
+        const req = buildReq(body)
+        const res = buildRes()
+
+        await sentinelCockpitController.handleSnapshot(req, res)
+
+        const parsed = JSON.parse(res.bodyText)
+        expect(res.statusCode).toBe(500)
+        expect(parsed.error.code).toBe('invalid_snapshot')
+        expect(res.bodyText).not.toContain('Provider output')
+    })
+
     it('fails closed for unsafe route guidance on classify snapshot responses', async () => {
         jest.spyOn(classifyBridge, 'classifyBridgeIsRequested').mockReturnValue(true)
         jest.spyOn(classifyBridge, 'createClassifySnapshot').mockResolvedValue({
@@ -821,6 +910,24 @@ describe('sentinel cockpit classify bridge', () => {
         }
     }
 
+    function validGatewayIdePreview(overrides: Record<string, unknown> = {}) {
+        return {
+            schema_version: 'sentinel.qvc.ide_preview.v1',
+            status: 'ide_preview_ready',
+            workflow_label: 'Safe planning workflow',
+            persona_label: 'Planning reviewer',
+            skill_label: 'Plain-English planning',
+            summary: 'Sentinel can preview a safe planning path.',
+            what_can_happen_next: 'Sentinel can show labels before any backend work is approved.',
+            what_will_not_happen: 'No files change and no backend work starts.',
+            approval_required: true,
+            allowed_user_actions: ['none'],
+            blocked_reason: null,
+            expires_at_label: 'No preview timer',
+            ...overrides
+        }
+    }
+
     function validGatewayDraftPlan(overrides: Record<string, unknown> = {}) {
         return {
             schema_version: 'sentinel.gateway.v1',
@@ -941,6 +1048,126 @@ describe('sentinel cockpit classify bridge', () => {
         expect(serialized).not.toContain('risk_hidden')
     })
 
+    it('projects reduced IDE preview only behind the Flowise projection flag', async () => {
+        const validClassify = validGatewayClassify({ ide_preview: validGatewayIdePreview() })
+        const flagOffFetch = jest.fn().mockResolvedValue(gatewayResponse(validClassify))
+        const flagOffSnapshot: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText },
+            { config: buildClassifyConfig(), fetchImpl: flagOffFetch as any }
+        )
+        expect(flagOffSnapshot.ide_preview).toBeUndefined()
+
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_IDE_PREVIEW_PROJECTION: '1'
+        })
+        const fetchImpl = jest.fn().mockResolvedValue(gatewayResponse(validClassify))
+        const snapshot: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText },
+            { config, fetchImpl: fetchImpl as any }
+        )
+        const serialized = JSON.stringify(snapshot)
+
+        expect(snapshot.ide_preview).toEqual(validServerIdePreview())
+        expect(Object.keys(snapshot.ide_preview)).toEqual(Object.keys(validServerIdePreview()))
+        const serializedPreview = JSON.stringify(snapshot.ide_preview)
+        expect(serialized).not.toContain('sentinel.qvc.ide_preview.v1')
+        expect(serialized).not.toContain('ide_preview_ready')
+        expect(serializedPreview).not.toContain('approval_required')
+        expect(serializedPreview).not.toContain('allowed_user_actions')
+        expect(serializedPreview).not.toContain('blocked_reason')
+        expect(serialized).not.toContain(goalText)
+    })
+
+    it.each([
+        ['disabled', 'ide_preview_disabled', 'Backend preview is off'],
+        ['unavailable', 'ide_preview_unavailable', 'Backend preview unavailable'],
+        ['ready', 'ide_preview_ready', 'Backend preview ready'],
+        ['clarification', 'ide_preview_needs_clarification', 'Backend preview needs clarification'],
+        ['blocked', 'ide_preview_blocked', 'Backend preview blocked'],
+        ['expired', 'ide_preview_expired', 'Backend preview expired'],
+        ['stopped', 'ide_preview_stopped', 'Backend preview stopped']
+    ])('maps IDE preview status %s to a static browser label', async (_label, status, statusLabel) => {
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_IDE_PREVIEW_PROJECTION: '1'
+        })
+        const fetchImpl = jest.fn().mockResolvedValue(
+            gatewayResponse(
+                validGatewayClassify({
+                    ide_preview: validGatewayIdePreview({
+                        status,
+                        workflow_label: status === 'ide_preview_ready' ? 'Safe planning workflow' : 'No backend preview',
+                        persona_label: status === 'ide_preview_ready' ? 'Planning reviewer' : 'No expert selected',
+                        skill_label: status === 'ide_preview_ready' ? 'Plain-English planning' : 'No skill selected',
+                        approval_required: status === 'ide_preview_ready',
+                        blocked_reason: status === 'ide_preview_blocked' ? 'unsafe_goal' : null
+                    })
+                })
+            )
+        )
+
+        const snapshot: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText },
+            { config, fetchImpl: fetchImpl as any }
+        )
+
+        expect(snapshot.ide_preview.status_label).toBe(statusLabel)
+        expect(snapshot.ide_preview.approval_copy).toBe('Backend work would require a separate reviewed approval step.')
+        expect(snapshot.ide_preview).not.toHaveProperty('blocked_reason')
+    })
+
+    it.each([
+        ['missing raw preview', undefined],
+        ['array raw preview', []],
+        ['wrong schema', validGatewayIdePreview({ schema_version: 'sentinel.gateway.v1' })],
+        ['bad status', validGatewayIdePreview({ status: 'ide_preview_run_worker' })],
+        ['bad workflow label', validGatewayIdePreview({ workflow_label: 'Worker launch workflow' })],
+        ['bad persona label', validGatewayIdePreview({ persona_label: 'Codex executor' })],
+        ['bad skill label', validGatewayIdePreview({ skill_label: 'Shell commands' })],
+        ['bad approval flag', validGatewayIdePreview({ approval_required: 'true' })],
+        ['bad allowed actions', validGatewayIdePreview({ allowed_user_actions: ['start_worker'] })],
+        ['bad blocked reason', validGatewayIdePreview({ blocked_reason: 'provider_error' })],
+        ['extra key', { ...validGatewayIdePreview(), raw_dto: true }],
+        ['non-ascii text', validGatewayIdePreview({ summary: 'Preview café.' })],
+        ['hidden text', validGatewayIdePreview({ summary: 'Preview\u200bhidden.' })],
+        ['oversize text', validGatewayIdePreview({ summary: 'a'.repeat(261) })],
+        ['forbidden fragment', validGatewayIdePreview({ summary: 'Provider output with command line details.' })]
+    ])('omits invalid IDE preview while preserving classify snapshot: %s', async (_label, idePreview) => {
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_IDE_PREVIEW_PROJECTION: '1'
+        })
+        const fetchImpl = jest.fn().mockResolvedValue(
+            gatewayResponse(
+                validGatewayClassify({
+                    ...(idePreview === undefined ? {} : { ide_preview: idePreview })
+                })
+            )
+        )
+
+        const snapshot: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText },
+            { config, fetchImpl: fetchImpl as any }
+        )
+
+        expect(snapshot.schema_version).toBe('sentinel.cockpit_bridge.snapshot.v1')
+        expect(snapshot.route_card).toEqual(validGatewayRouteCard())
+        expect(snapshot.ide_preview).toBeUndefined()
+    })
+
+    it('never synthesizes IDE preview from route guidance alone', async () => {
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_IDE_PREVIEW_PROJECTION: '1'
+        })
+        const fetchImpl = jest.fn().mockResolvedValue(gatewayResponse(validGatewayClassify()))
+
+        const snapshot: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText },
+            { config, fetchImpl: fetchImpl as any }
+        )
+
+        expect(snapshot.route_card).toEqual(validGatewayRouteCard())
+        expect(snapshot.ide_preview).toBeUndefined()
+    })
+
     it('uses a configured safe server-only Gateway origin for classify requests', async () => {
         const gatewayOrigin = 'http://127.0.0.1:49173'
         const config = buildClassifyConfig({
@@ -1022,9 +1249,10 @@ describe('sentinel cockpit classify bridge', () => {
 
     it('creates a nonce-bound plan session only when the plan-decision bridge is enabled and nonce is present', async () => {
         const config = buildClassifyConfig({
-            BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1'
+            BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_PREVIEW_PROJECTION: '1'
         })
-        const fetchImpl = jest.fn().mockResolvedValue(gatewayResponse(validGatewayClassify()))
+        const fetchImpl = jest.fn().mockResolvedValue(gatewayResponse(validGatewayClassify({ ide_preview: validGatewayIdePreview() })))
 
         const planSession: any = await classifyBridge.createClassifySnapshot(
             { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
@@ -1037,6 +1265,7 @@ describe('sentinel cockpit classify bridge', () => {
         expect(planSession.allowed_user_actions).toEqual(['approve_plan', 'revise_plan', 'stop'])
         expect(planSession.cockpit_ref).toMatch(/^cockpit_[A-Za-z0-9_-]+$/)
         expect(planSession.route_card).toEqual(validGatewayRouteCard())
+        expect(planSession.ide_preview).toBeUndefined()
         expect(serialized).not.toContain(clientNonce)
         expect(serialized).not.toContain('run_hidden_123')
         expect(serialized).not.toContain('session_hidden_123')

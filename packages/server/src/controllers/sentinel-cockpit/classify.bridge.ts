@@ -9,11 +9,26 @@ export const PLAN_READINESS_CARD_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_PLAN_READIN
 export const PLAN_DECISION_BRIDGE_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE'
 export const MANUAL_PACKET_BRIDGE_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_MANUAL_PACKET_BRIDGE'
 export const RESULT_REVIEW_BRIDGE_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_RESULT_REVIEW_BRIDGE'
+export const IDE_PREVIEW_PROJECTION_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_IDE_PREVIEW_PROJECTION'
 export const DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN = 'http://127.0.0.1:39173'
 export const CLASSIFY_BRIDGE_GATEWAY_ORIGIN =
     readGatewayOrigin(process.env[CLASSIFY_BRIDGE_GATEWAY_ORIGIN_ENV]) || DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN
 export const PLAN_SESSION_SCHEMA_VERSION = 'sentinel.cockpit_bridge.plan_session.v1'
 export const GOAL_ROUTE_CARD_SCHEMA_VERSION = 'sentinel.qvc.route_card.v1'
+export const IDE_PREVIEW_SCHEMA_VERSION = 'sentinel.qvc.ide_preview.v1'
+export const IDE_PREVIEW_KEY = 'ide_preview'
+export const IDE_PREVIEW_REDUCED_KEYS = Object.freeze([
+    'status_label',
+    'workflow_label',
+    'persona_label',
+    'skill_label',
+    'summary',
+    'what_can_happen_next',
+    'what_will_not_happen',
+    'approval_copy',
+    'expires_at_label'
+])
+export const IDE_PREVIEW_APPROVAL_COPY = 'Backend work would require a separate reviewed approval step.'
 const GOAL_ROUTE_CATEGORIES = Object.freeze([
     'planning',
     'review',
@@ -24,6 +39,109 @@ const GOAL_ROUTE_CATEGORIES = Object.freeze([
     'policy_help',
     'unclear',
     'blocked_unsafe'
+])
+const IDE_PREVIEW_RAW_KEYS = Object.freeze([
+    'schema_version',
+    'status',
+    'workflow_label',
+    'persona_label',
+    'skill_label',
+    'summary',
+    'what_can_happen_next',
+    'what_will_not_happen',
+    'approval_required',
+    'allowed_user_actions',
+    'blocked_reason',
+    'expires_at_label'
+])
+const IDE_PREVIEW_STATUS_LABELS = Object.freeze({
+    ide_preview_disabled: 'Backend preview is off',
+    ide_preview_unavailable: 'Backend preview unavailable',
+    ide_preview_ready: 'Backend preview ready',
+    ide_preview_needs_clarification: 'Backend preview needs clarification',
+    ide_preview_blocked: 'Backend preview blocked',
+    ide_preview_expired: 'Backend preview expired',
+    ide_preview_stopped: 'Backend preview stopped'
+})
+const IDE_PREVIEW_WORKFLOW_LABELS = Object.freeze([
+    'No backend preview',
+    'Safe planning workflow',
+    'Safe review workflow',
+    'Policy guidance workflow',
+    'Clarification workflow'
+])
+const IDE_PREVIEW_PERSONA_LABELS = Object.freeze([
+    'No expert selected',
+    'Planning reviewer',
+    'Review helper',
+    'Policy guide',
+    'Clarification helper'
+])
+const IDE_PREVIEW_SKILL_LABELS = Object.freeze([
+    'No skill selected',
+    'Plain-English planning',
+    'Safe review',
+    'Policy guidance',
+    'Clarifying questions'
+])
+const IDE_PREVIEW_FORBIDDEN_FRAGMENTS = Object.freeze([
+    'run_',
+    'sess_',
+    'dec_',
+    'plan_',
+    'ap_',
+    'task_',
+    'result_',
+    'shield_',
+    'cockpit_',
+    'req_',
+    'sentinel_session',
+    'session_id',
+    'decision_id',
+    'approval_challenge',
+    'approval_id',
+    'task_packet',
+    'task_packet_hash',
+    'result_packet',
+    'result_id',
+    'shield_review_id',
+    'evidence_manifest',
+    'client_nonce',
+    'cockpit_ref',
+    'sha256:',
+    'bearer',
+    'authorization',
+    'token',
+    'gateway',
+    '127.0.0.1',
+    'localhost',
+    ':39173',
+    'goal_text',
+    'action_inputs',
+    'allowed_actions',
+    'copyable_worker_prompt',
+    'worker_type',
+    'raw dto',
+    'json dto',
+    'provider output',
+    'worker output',
+    'tool trace',
+    'confidence',
+    'command line',
+    'environment variable',
+    'source snippet',
+    'codex',
+    'opencode',
+    'hermes',
+    'mcp',
+    'agentflow',
+    'hitl',
+    'repo-write',
+    'commit',
+    'publish',
+    'deploy',
+    'c:\\',
+    '/mnt/'
 ])
 
 export type GoalRouteCard = Readonly<{
@@ -45,6 +163,18 @@ export type GoalRouteCard = Readonly<{
     needs_clarification: boolean
     clarification_question: string | null
     blocked_reason: string | null
+}>
+
+export type IdePreviewProjection = Readonly<{
+    status_label: string
+    workflow_label: string
+    persona_label: string
+    skill_label: string
+    summary: string
+    what_can_happen_next: string
+    what_will_not_happen: string
+    approval_copy: string
+    expires_at_label: string
 }>
 
 export type ClassifyBridgeErrorCode =
@@ -78,6 +208,7 @@ export type ClassifyBridgeConfig = Readonly<{
     planDecisionBridge: boolean
     manualPacketBridge: boolean
     resultReviewBridge: boolean
+    idePreviewProjection: boolean
     gatewayOrigin: string
     token?: string
     errorCode?: ClassifyBridgeErrorCode
@@ -245,6 +376,7 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
     const planDecisionBridge = env[PLAN_DECISION_BRIDGE_FLAG_ENV] === '1'
     const manualPacketBridge = env[MANUAL_PACKET_BRIDGE_FLAG_ENV] === '1'
     const resultReviewBridge = env[RESULT_REVIEW_BRIDGE_FLAG_ENV] === '1'
+    const idePreviewProjection = env[IDE_PREVIEW_PROJECTION_FLAG_ENV] === '1'
     const configuredGatewayOrigin = env[CLASSIFY_BRIDGE_GATEWAY_ORIGIN_ENV]
     const gatewayOrigin = readGatewayOrigin(configuredGatewayOrigin)
     if (env[CLASSIFY_BRIDGE_FLAG_ENV] !== '1') {
@@ -254,6 +386,7 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
             planDecisionBridge,
             manualPacketBridge,
             resultReviewBridge,
+            idePreviewProjection,
             gatewayOrigin: gatewayOrigin || DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN
         }
     }
@@ -264,6 +397,7 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
             planDecisionBridge,
             manualPacketBridge,
             resultReviewBridge,
+            idePreviewProjection,
             gatewayOrigin: DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN,
             errorCode: 'sentinel_classify_unavailable'
         }
@@ -277,6 +411,7 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
             planDecisionBridge,
             manualPacketBridge,
             resultReviewBridge,
+            idePreviewProjection,
             gatewayOrigin: gatewayOrigin || DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN,
             errorCode: 'sentinel_classify_unavailable'
         }
@@ -288,6 +423,7 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
         planDecisionBridge,
         manualPacketBridge,
         resultReviewBridge,
+        idePreviewProjection,
         gatewayOrigin: gatewayOrigin || DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN,
         token
     }
@@ -323,7 +459,7 @@ export async function createClassifySnapshot(
     if (config.planDecisionBridge && gatewayClassify.status !== 'blocked') {
         const routeCard = projectGoalRouteCard(gatewayClassify)
         if (routeCard?.category === 'policy_help') {
-            const guidanceSnapshot = projectPolicyHelpGuidanceSnapshot(routeCard)
+            const guidanceSnapshot = projectPolicyHelpGuidanceSnapshot(routeCard, projectIdePreview(gatewayClassify, config.idePreviewProjection))
             assertClassifySnapshotSafe(guidanceSnapshot, config.token, request.plain_goal)
             return guidanceSnapshot
         }
@@ -334,11 +470,11 @@ export async function createClassifySnapshot(
                 return planSession
             }
         }
-        const readinessSnapshot = projectClassifySnapshot(gatewayClassify, true)
+        const readinessSnapshot = projectClassifySnapshot(gatewayClassify, true, config.idePreviewProjection)
         assertClassifySnapshotSafe(readinessSnapshot, config.token, request.plain_goal)
         return readinessSnapshot
     }
-    const snapshot = projectClassifySnapshot(gatewayClassify, config.planReadinessCard)
+    const snapshot = projectClassifySnapshot(gatewayClassify, config.planReadinessCard, config.idePreviewProjection)
     assertClassifySnapshotSafe(snapshot, config.token, request.plain_goal)
     return snapshot
 }
@@ -542,9 +678,10 @@ function assertGatewayClassifyDto(body: GatewayClassifyBody, httpStatus: number)
     }
 }
 
-function projectClassifySnapshot(body: GatewayClassifyBody, planReadinessCard: boolean): CockpitSnapshot {
+function projectClassifySnapshot(body: GatewayClassifyBody, planReadinessCard: boolean, idePreviewProjection: boolean): CockpitSnapshot {
     const blocked = body.status === 'blocked'
     const routeCard = projectGoalRouteCard(body)
+    const idePreview = projectIdePreview(body, idePreviewProjection)
     if (!blocked && planReadinessCard) {
         return {
             schema_version: COCKPIT_SNAPSHOT_SCHEMA_VERSION,
@@ -568,7 +705,8 @@ function projectClassifySnapshot(body: GatewayClassifyBody, planReadinessCard: b
             shield_summary: 'not_reviewed',
             accepted_state: 'not_accepted',
             stale_doc_warning: 'none',
-            route_card: routeCard
+            route_card: routeCard,
+            ...(idePreview ? { [IDE_PREVIEW_KEY]: idePreview } : {})
         }
     }
 
@@ -601,11 +739,12 @@ function projectClassifySnapshot(body: GatewayClassifyBody, planReadinessCard: b
         shield_summary: 'not_reviewed',
         accepted_state: 'not_accepted',
         stale_doc_warning: 'none',
-        route_card: routeCard
+        route_card: routeCard,
+        ...(idePreview ? { [IDE_PREVIEW_KEY]: idePreview } : {})
     }
 }
 
-function projectPolicyHelpGuidanceSnapshot(routeCard: GoalRouteCard): CockpitSnapshot {
+function projectPolicyHelpGuidanceSnapshot(routeCard: GoalRouteCard, idePreview: IdePreviewProjection | null): CockpitSnapshot {
     return {
         schema_version: COCKPIT_SNAPSHOT_SCHEMA_VERSION,
         status: 'ok',
@@ -627,7 +766,8 @@ function projectPolicyHelpGuidanceSnapshot(routeCard: GoalRouteCard): CockpitSna
         shield_summary: 'not_reviewed',
         accepted_state: 'not_accepted',
         stale_doc_warning: 'none',
-        route_card: routeCard
+        route_card: routeCard,
+        ...(idePreview ? { [IDE_PREVIEW_KEY]: idePreview } : {})
     }
 }
 
@@ -663,6 +803,95 @@ function assertClassifySnapshotSafe(snapshot: CockpitSnapshot, token: string, go
     if (blockedFragments.some((fragment) => fragment && serialized.includes(fragment))) {
         throw classifyBridgeError(502, 'sentinel_classify_malformed')
     }
+}
+
+function projectIdePreview(body: GatewayClassifyBody, enabled: boolean): IdePreviewProjection | null {
+    if (!enabled) return null
+    const preview = body[IDE_PREVIEW_KEY]
+    if (!preview || typeof preview !== 'object' || Array.isArray(preview)) {
+        return null
+    }
+    const input = preview as Record<string, unknown>
+    if (!keysMatch(input, IDE_PREVIEW_RAW_KEYS)) {
+        return null
+    }
+    if (input.schema_version !== IDE_PREVIEW_SCHEMA_VERSION || typeof input.status !== 'string') {
+        return null
+    }
+    const statusLabel = IDE_PREVIEW_STATUS_LABELS[input.status as keyof typeof IDE_PREVIEW_STATUS_LABELS]
+    if (!statusLabel) {
+        return null
+    }
+    const workflowLabel = readIdePreviewString(input.workflow_label, 80)
+    const personaLabel = readIdePreviewString(input.persona_label, 80)
+    const skillLabel = readIdePreviewString(input.skill_label, 80)
+    const summary = readIdePreviewString(input.summary, 260)
+    const whatCanHappenNext = readIdePreviewString(input.what_can_happen_next, 260)
+    const whatWillNotHappen = readIdePreviewString(input.what_will_not_happen, 260)
+    const expiresAtLabel = readIdePreviewString(input.expires_at_label, 80)
+    if (
+        !workflowLabel ||
+        !personaLabel ||
+        !skillLabel ||
+        !summary ||
+        !whatCanHappenNext ||
+        !whatWillNotHappen ||
+        !expiresAtLabel
+    ) {
+        return null
+    }
+    if (
+        !IDE_PREVIEW_WORKFLOW_LABELS.includes(workflowLabel) ||
+        !IDE_PREVIEW_PERSONA_LABELS.includes(personaLabel) ||
+        !IDE_PREVIEW_SKILL_LABELS.includes(skillLabel)
+    ) {
+        return null
+    }
+    if (input.approval_required !== true && input.approval_required !== false) {
+        return null
+    }
+    if (!Array.isArray(input.allowed_user_actions) || input.allowed_user_actions.length !== 1 || input.allowed_user_actions[0] !== 'none') {
+        return null
+    }
+    if (input.blocked_reason !== null && input.blocked_reason !== 'unsafe_goal') {
+        return null
+    }
+    const output: IdePreviewProjection = {
+        status_label: statusLabel,
+        workflow_label: workflowLabel,
+        persona_label: personaLabel,
+        skill_label: skillLabel,
+        summary,
+        what_can_happen_next: whatCanHappenNext,
+        what_will_not_happen: whatWillNotHappen,
+        approval_copy: IDE_PREVIEW_APPROVAL_COPY,
+        expires_at_label: expiresAtLabel
+    }
+    return idePreviewHasForbiddenText(output) ? null : output
+}
+
+function readIdePreviewString(value: unknown, maxLength: number): string | null {
+    if (typeof value !== 'string') return null
+    const normalized = value.trim().replace(/\s+/g, ' ')
+    if (!normalized || normalized.length > maxLength) return null
+    if (/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e]/.test(normalized)) return null
+    if (/[^\x20-\x7e]/.test(normalized)) return null
+    return idePreviewTextHasForbiddenFragment(normalized) ? null : normalized
+}
+
+function idePreviewHasForbiddenText(preview: IdePreviewProjection): boolean {
+    return !keysMatch(preview as unknown as Record<string, unknown>, IDE_PREVIEW_REDUCED_KEYS) || idePreviewTextHasForbiddenFragment(JSON.stringify(preview))
+}
+
+function idePreviewTextHasForbiddenFragment(value: string): boolean {
+    const lower = value.toLowerCase()
+    return IDE_PREVIEW_FORBIDDEN_FRAGMENTS.some((fragment) => lower.includes(fragment))
+}
+
+function keysMatch(body: Record<string, unknown>, expectedKeys: readonly string[]): boolean {
+    const keys = Object.keys(body).sort()
+    const expected = [...expectedKeys].sort()
+    return keys.length === expected.length && keys.every((key, index) => key === expected[index])
 }
 
 function createPlanDecisionRequiredSession(body: GatewayClassifyBody, clientNonce: string): PlanSessionResponse | null {
