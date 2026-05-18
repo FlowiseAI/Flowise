@@ -183,7 +183,7 @@ class ExaSearch_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const description = nodeData.inputs?.description as string
         const numResults = nodeData.inputs?.numResults as string
-        const type = nodeData.inputs?.type as string | undefined
+        const type = nodeData.inputs?.type as 'auto' | 'fast' | 'instant' | 'deep' | undefined
         const category = nodeData.inputs?.category as string
         const maxAgeHours = nodeData.inputs?.maxAgeHours as string
         const includeDomains = nodeData.inputs?.includeDomains as string
@@ -197,16 +197,13 @@ class ExaSearch_Tools implements INode {
         const exaSearchApiKey = getCredentialParam('exaSearchApiKey', credentialData, nodeData)
 
         const client = new Exa(exaSearchApiKey)
-        ;(client as any).headers = {
-            ...(client as any).headers,
-            'x-exa-integration': 'flowise-integration'
-        }
+        ;(client as any).headers.set('x-exa-integration', 'flowise-integration')
 
         const tool = new ExaSearchResults({
             client,
             searchArgs: {
                 numResults: numResults ? parseFloat(numResults) : undefined,
-                type: (type as any) || undefined,
+                type: type || undefined,
                 category: (category as any) || undefined,
                 includeDomains: includeDomains ? includeDomains.split(',') : undefined,
                 excludeDomains: excludeDomains ? excludeDomains.split(',') : undefined,
