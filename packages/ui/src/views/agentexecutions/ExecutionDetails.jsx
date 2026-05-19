@@ -791,23 +791,21 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                         )}
 
                         {!isPublic && localMetadata.isPublic && (
-                            <Available permission='executions:update'>
-                                <Chip
-                                    sx={{ ml: 1, pl: 1 }}
-                                    icon={
-                                        updateExecutionApi.loading ? (
-                                            <IconLoader size={15} className='spin-animation' />
-                                        ) : (
-                                            <IconWorld size={15} />
-                                        )
-                                    }
-                                    variant='outlined'
-                                    label={updateExecutionApi.loading ? 'Updating...' : 'Public'}
-                                    className={'button'}
-                                    onClick={() => setShowShareDialog(true)}
-                                    disabled={updateExecutionApi.loading}
-                                />
-                            </Available>
+                            <Chip
+                                sx={{ ml: 1, pl: 1 }}
+                                icon={
+                                    updateExecutionApi.loading ? (
+                                        <IconLoader size={15} className='spin-animation' />
+                                    ) : (
+                                        <IconWorld size={15} />
+                                    )
+                                }
+                                variant='outlined'
+                                label={updateExecutionApi.loading ? 'Updating...' : 'Public'}
+                                className={'button'}
+                                onClick={() => setShowShareDialog(true)}
+                                disabled={updateExecutionApi.loading}
+                            />
                         )}
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', alignContent: 'center' }}>
