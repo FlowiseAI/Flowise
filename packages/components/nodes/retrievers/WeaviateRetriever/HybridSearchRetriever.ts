@@ -7,7 +7,7 @@ type WeaviateHybridInput<V extends WeaviateStore> = Omit<VectorStoreRetrieverInp
     alpha: number
     topK: number
     resultFormat?: string
-    fusionType?: 'RankedFusion' | 'RelativeScoreFusion'
+    fusionType?: string
 }
 
 export class HybridSearchRetriever<V extends WeaviateStore> extends VectorStoreRetriever<V> {
@@ -21,13 +21,14 @@ export class HybridSearchRetriever<V extends WeaviateStore> extends VectorStoreR
         this.vectorStore = input.vectorStore
         this.alpha = input.alpha
         this.topK = input.topK
-        this.fusionType = input.fusionType ? this.fusionType : 'RankedFusion'
+        this.fusionType = input.fusionType ?? 'RelativeScore'
     }
 
     async _getRelevantDocuments(query: string): Promise<Document[]> {
         const results = await this.vectorStore.hybridSearch(query, {
             limit: this.topK,
             alpha: this.alpha,
+            fusionType: this.fusionType,
             filters: this.filter
         })
         if (this.resultFormat != undefined) {

@@ -71,17 +71,17 @@ class WeaviateRetriever_Retrievers implements INode {
                 label: 'fusionType',
                 name: 'fusionType',
                 type: 'options',
-                default: 'RankedFusion',
+                default: 'RelativeScore',
                 description:
-                    "Method to merge results: 'RankedFusion' combines by document rank, while 'RelativeScoreFusion' combines by normalized scores.",
+                    "Method to merge results: 'Ranked' combines by document rank, while 'RelativeScore' combines by normalized scores.",
                 options: [
                     {
-                        label: 'RankedFusion',
-                        name: 'RankedFusion'
+                        label: 'RelativeScore',
+                        name: 'RelativeScore'
                     },
                     {
-                        label: 'RelativeScoreFusion',
-                        name: 'RelativeScoreFusion'
+                        label: 'Ranked',
+                        name: 'Ranked'
                     }
                 ],
                 optional: true
@@ -114,12 +114,14 @@ class WeaviateRetriever_Retrievers implements INode {
         const topK = nodeData.inputs?.topK as string
         const alpha = nodeData.inputs?.alpha as string
         const resultFormat = nodeData.inputs?.resultFormat as string
+        const fusionType = nodeData.inputs?.fusionType as string
         const output = nodeData.outputs?.output as string
 
         const retriever = HybridSearchRetriever.fromVectorStore(vectorStore, {
             resultFormat,
             alpha: alpha ? parseFloat(alpha) : 0.5,
-            topK: topK ? parseInt(topK, 10) : 4
+            topK: topK ? parseInt(topK, 10) : 4,
+            fusionType: fusionType ?? 'RelativeScore'
         })
 
         const searchPath = query ? query : input

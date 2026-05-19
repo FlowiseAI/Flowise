@@ -295,17 +295,17 @@ class Weaviate_VectorStores implements INode {
                 label: 'fusionType',
                 name: 'fusionType',
                 type: 'options',
-                default: 'RankedFusion',
+                default: 'RelativeScore',
                 description:
-                    "Method to merge results: 'RankedFusion' combines by document rank, while 'RelativeScoreFusion' combines by normalized scores.",
+                    "Method to merge results: 'Ranked' combines by document rank, while 'RelativeScore' combines by normalized scores.",
                 options: [
                     {
-                        label: 'RankedFusion',
-                        name: 'RankedFusion'
+                        label: 'RelativeScore',
+                        name: 'RelativeScore'
                     },
                     {
-                        label: 'RelativeScoreFusion',
-                        name: 'RelativeScoreFusion'
+                        label: 'Ranked',
+                        name: 'Ranked'
                     }
                 ],
                 additionalParams: true,
@@ -468,8 +468,9 @@ class Weaviate_VectorStores implements INode {
         const weaviateMetadataKeys = nodeData.inputs?.weaviateMetadataKeys as string
         const output = nodeData.outputs?.output as string
         const searchType = nodeData.inputs?.searchType as string
+        const fusionType = nodeData.inputs?.fusionType as string
         const topK = nodeData.inputs?.topK as string
-        const k = topK ? parseFloat(topK) : 4
+        const k = topK ? parseInt(topK, 10) : 4
         const alpha = nodeData.inputs?.alpha
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         let weaviateFilter = nodeData.inputs?.weaviateFilter
@@ -519,8 +520,9 @@ class Weaviate_VectorStores implements INode {
             } else if ('hybrid' === searchType) {
                 return new HybridSearchRetriever({
                     vectorStore: vectorStore,
-                    alpha: alpha,
+                    alpha: alpha ? parseFloat(alpha) : 1,
                     topK: k,
+                    fusionType: fusionType ?? 'RelativeScore',
                     filter: weaviateFilter
                 })
             } else {
