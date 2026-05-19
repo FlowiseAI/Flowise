@@ -34,7 +34,7 @@ const message = `The full contents of uploaded files will be converted to text a
 <br />
 Refer <a href='https://docs.flowiseai.com/using-flowise/uploads#files' target='_blank' style='color: #2196f3'>docs</a> for more details.`
 
-const availableFileTypes = [
+export const availableFileTypes = [
     { name: 'CSS', ext: 'text/css', extension: '.css' },
     { name: 'CSV', ext: 'text/csv', extension: '.csv' },
     { name: 'HTML', ext: 'text/html', extension: '.html' },
@@ -51,6 +51,46 @@ const availableFileTypes = [
     { name: 'PPTX', ext: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', extension: '.pptx' }
 ]
 
+export const buildFullFileUploadConfig = ({ fullFileUpload, allowedFileTypes, pdfUsage, pdfLegacyBuild }) => ({
+    status: fullFileUpload,
+    allowedUploadFileTypes: allowedFileTypes.join(','),
+    pdfFile: {
+        usage: pdfUsage,
+        legacyBuild: pdfLegacyBuild
+    }
+})
+
+export const getInitialFileUploadState = (dialogProps) => {
+    const initialState = {
+        fullFileUpload: false,
+        allowedFileTypes: availableFileTypes.map((fileType) => fileType.ext),
+        chatbotConfig: {},
+        pdfUsage: 'perPage',
+        pdfLegacyBuild: false
+    }
+
+    if (!dialogProps?.chatflow?.chatbotConfig) {
+        return initialState
+    }
+
+    try {
+        const chatbotConfig = JSON.parse(dialogProps.chatflow.chatbotConfig)
+        const fullFileUploadConfig = chatbotConfig?.fullFileUpload
+
+        return {
+            fullFileUpload: !!fullFileUploadConfig?.status,
+            allowedFileTypes: fullFileUploadConfig?.allowedUploadFileTypes
+                ? fullFileUploadConfig.allowedUploadFileTypes.split(',')
+                : initialState.allowedFileTypes,
+            chatbotConfig: chatbotConfig || {},
+            pdfUsage: fullFileUploadConfig?.pdfFile?.usage || initialState.pdfUsage,
+            pdfLegacyBuild: fullFileUploadConfig?.pdfFile?.legacyBuild ?? initialState.pdfLegacyBuild
+        }
+    } catch (e) {
+        return initialState
+    }
+}
+
 const FileUpload = ({ dialogProps }) => {
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
@@ -64,6 +104,7 @@ const FileUpload = ({ dialogProps }) => {
     const [allowedFileTypes, setAllowedFileTypes] = useState([])
     const [chatbotConfig, setChatbotConfig] = useState({})
     const [pdfUsage, setPdfUsage] = useState('perPage')
+    const [pdfLegacyBuild, setPdfLegacyBuild] = useState(false)
     const handleChange = (value) => {
         setFullFileUpload(value)
     }
@@ -81,15 +122,13 @@ const FileUpload = ({ dialogProps }) => {
         setPdfUsage(event.target.value)
     }
 
+    const handlePdfLegacyBuildChange = (value) => {
+        setPdfLegacyBuild(value)
+    }
+
     const onSave = async () => {
         try {
-            const value = {
-                status: fullFileUpload,
-                allowedUploadFileTypes: allowedFileTypes.join(','),
-                pdfFile: {
-                    usage: pdfUsage
-                }
-            }
+            const value = buildFullFileUploadConfig({ fullFileUpload, allowedFileTypes, pdfUsage, pdfLegacyBuild })
             chatbotConfig.fullFileUpload = value
 
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
@@ -130,29 +169,12 @@ const FileUpload = ({ dialogProps }) => {
     }
 
     useEffect(() => {
-        /* backward compatibility - by default, allow all */
-        const allowedFileTypes = availableFileTypes.map((fileType) => fileType.ext)
-        setAllowedFileTypes(allowedFileTypes)
-        if (dialogProps.chatflow) {
-            if (dialogProps.chatflow.chatbotConfig) {
-                try {
-                    let chatbotConfig = JSON.parse(dialogProps.chatflow.chatbotConfig)
-                    setChatbotConfig(chatbotConfig || {})
-                    if (chatbotConfig.fullFileUpload) {
-                        setFullFileUpload(chatbotConfig.fullFileUpload.status)
-                    }
-                    if (chatbotConfig.fullFileUpload?.allowedUploadFileTypes) {
-                        const allowedFileTypes = chatbotConfig.fullFileUpload.allowedUploadFileTypes.split(',')
-                        setAllowedFileTypes(allowedFileTypes)
-                    }
-                    if (chatbotConfig.fullFileUpload?.pdfFile?.usage) {
-                        setPdfUsage(chatbotConfig.fullFileUpload.pdfFile.usage)
-                    }
-                } catch (e) {
-                    setChatbotConfig({})
-                }
-            }
-        }
+        const initialState = getInitialFileUploadState(dialogProps)
+        setAllowedFileTypes(initialState.allowedFileTypes)
+        setChatbotConfig(initialState.chatbotConfig)
+        setFullFileUpload(initialState.fullFileUpload)
+        setPdfUsage(initialState.pdfUsage)
+        setPdfLegacyBuild(initialState.pdfLegacyBuild)
 
         return () => {}
     }, [dialogProps])
@@ -268,6 +290,14 @@ const FileUpload = ({ dialogProps }) => {
                                         />
                                     </RadioGroup>
                                 </FormControl>
+                                <Box sx={{ mt: 0.5 }}>
+                                    <SwitchInput
+                                        label='Use Legacy Build'
+                                        onChange={handlePdfLegacyBuildChange}
+                                        value={pdfLegacyBuild}
+                                        disabled={!fullFileUpload}
+                                    />
+                                </Box>
                             </Box>
                         )}
                     </AccordionDetails>
