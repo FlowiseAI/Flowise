@@ -54,6 +54,13 @@ export const utilGetChatMessage = async ({
 }: GetChatMessageParams): Promise<ChatMessage[]> => {
     if (!page) page = -1
     if (!pageSize) pageSize = -1
+    const pagination =
+        pageSize > 0
+            ? {
+                  skip: page > 1 ? pageSize * (page - 1) : undefined,
+                  take: pageSize
+              }
+            : {}
 
     const appServer = getRunningExpressApp()
 
@@ -115,7 +122,8 @@ export const utilGetChatMessage = async ({
         },
         order: {
             createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
-        }
+        },
+        ...pagination
     })
 
     return messages
