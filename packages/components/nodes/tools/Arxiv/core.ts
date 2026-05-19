@@ -2,6 +2,7 @@ import { z } from 'zod/v3'
 import fetch from 'node-fetch'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
+import { loadLegacyPdfJs } from '../../../src/utils'
 
 export const desc = `Use this tool to search for academic papers on Arxiv. You can search by keywords, topics, authors, or specific Arxiv IDs. The tool can return either paper summaries or download and extract full paper content.`
 
@@ -184,7 +185,7 @@ export class ArxivTool extends DynamicStructuredTool {
             splitPages: false,
             pdfjs: () =>
                 // @ts-ignore
-                this.legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                this.legacyBuild ? loadLegacyPdfJs() : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
         })
 
         const docs = await loader.load()
