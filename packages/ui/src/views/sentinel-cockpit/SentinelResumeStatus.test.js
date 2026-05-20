@@ -94,6 +94,19 @@ const safeRouteCard = (overrides = {}) => ({
     ...overrides
 })
 
+const safeIdePreview = (overrides = {}) => ({
+    status_label: 'Backend preview ready',
+    workflow_label: 'Safe planning workflow',
+    persona_label: 'Planning reviewer',
+    skill_label: 'Plain-English planning',
+    summary: 'Sentinel can preview the safe backend path before any work starts.',
+    what_can_happen_next: 'Sentinel can show labels before any backend work is approved.',
+    what_will_not_happen: 'No files change and no backend work starts.',
+    approval_copy: 'Backend work would require a separate reviewed approval step.',
+    expires_at_label: 'No preview timer',
+    ...overrides
+})
+
 let activeDom = null
 let activeRoot = null
 
@@ -441,6 +454,86 @@ describe('SentinelResumeStatus', () => {
         )
     })
 
+    it('renders a passive read-only preview only when the explicit snapshot gate is enabled', () => {
+        const html = renderToStaticMarkup(<ResumeSnapshot snapshot={safeSnapshot({ ide_preview: safeIdePreview() })} showIdePreview />)
+
+        expect(html).toContain('aria-label="Read-only work preview"')
+        expect(html).toContain('Read-only work preview')
+        expect(html).toContain('Read-only preview. No backend work has started from this page.')
+        expect(html).toContain('This card cannot approve, continue, launch, run, or change anything.')
+        expect(html).toContain('Preview status')
+        expect(html).toContain('Backend preview ready')
+        expect(html).toContain('Suggested workflow')
+        expect(html).toContain('Safe planning workflow')
+        expect(html).toContain('Summary')
+        expect(html).toContain('What can happen next')
+        expect(html).toContain('What will not happen')
+        expect(html).toContain('Approval note')
+        expect(html).not.toContain('Planning reviewer')
+        expect(html).not.toContain('Plain-English planning')
+        expect(html).not.toContain('No preview timer')
+        expect(html).not.toMatch(/Perspective|Skill area|Preview expiry|status_label|workflow_label|persona_label|skill_label|expires_at_label|ide_preview|schema_version|approval_required|allowed_user_actions|blocked_reason/)
+        expect(html.indexOf('Next safe action:')).toBeLessThan(html.indexOf('Read-only work preview'))
+        expect(html.indexOf('Read-only work preview')).toBeLessThan(html.indexOf('Current status'))
+        expect(html).toContain('Blocked actions')
+        expect(html).toContain('Evidence')
+        expect(html).toContain('Manual handoff preview')
+        expect(html).toContain('This view is for guidance only.')
+    })
+
+    it('keeps the read-only preview hidden without the explicit gate', () => {
+        const html = renderToStaticMarkup(<ResumeSnapshot snapshot={safeSnapshot({ ide_preview: safeIdePreview() })} />)
+
+        expect(html).not.toContain('Read-only work preview')
+        expect(html).not.toContain('Backend preview ready')
+        expect(html).toContain('Accepted work is ready for display.')
+    })
+
+    it('omits blank preview rows without rendering placeholders', () => {
+        const html = renderToStaticMarkup(
+            <ResumeSnapshot
+                snapshot={safeSnapshot({
+                    ide_preview: safeIdePreview({
+                        status_label: '   ',
+                        what_will_not_happen: ''
+                    })
+                })}
+                showIdePreview
+            />
+        )
+
+        expect(html).toContain('Read-only work preview')
+        expect(html).not.toContain('Preview status')
+        expect(html).not.toContain('What will not happen')
+        expect(html).not.toMatch(/N\/A|<dd><\/dd>|<div[^>]*><\/div>/)
+    })
+
+    it('renders preview values as escaped text without interactive controls', () => {
+        const html = renderToStaticMarkup(
+            <ResumeSnapshot
+                snapshot={safeSnapshot({
+                    ide_preview: safeIdePreview({
+                        summary: '<b>safe preview</b>',
+                        what_can_happen_next: 'No markdown **runs** here.'
+                    })
+                })}
+                showIdePreview
+            />
+        )
+        const dom = new JSDOM(html)
+        const card = dom.window.document.querySelector('section[aria-label="Read-only work preview"]')
+
+        expect(card).not.toBeNull()
+        expect(card.innerHTML).toContain('&lt;b&gt;safe preview&lt;/b&gt;')
+        expect(card.querySelector('b')).toBeNull()
+        expect(card.querySelectorAll('button,a,input,textarea,select,form,[role="button"],[role="link"],[aria-pressed]').length).toBe(0)
+        expect(card.outerHTML).not.toMatch(
+            /dangerouslySetInnerHTML|onClick|onMouseDown|onKeyDown|cursor:pointer|gateway|bearer|token|client_nonce|cockpit_ref|run_|sentinel_session|task_packet|result_packet|confidence|provider|model/
+        )
+        expect(card.outerHTML).toContain('cursor:default')
+        expect(card.outerHTML).not.toMatch(/#0ea5e9|#38bdf8|#67e8f9/i)
+    })
+
     it('renders policy/help guidance as display-only without plan controls', () => {
         const html = renderToStaticMarkup(
             <ResumeSnapshot
@@ -580,6 +673,128 @@ describe('SentinelResumeStatus', () => {
         expect(window.location.pathname).toBe('/sentinel-cockpit')
         expect(window.location.search).toBe('')
         expect(window.location.hash).toBe('')
+    })
+
+    it('renders the read-only preview only after a successful goal snapshot and clears it on non-goal flows', async () => {
+        requestGoalSnapshot.mockResolvedValueOnce(
+            safeSnapshot({
+                snapshot_ref: 'snapshot_goal_preview',
+                state: 'goal_intake',
+                plain_summary: 'Your goal was received by the local cockpit.',
+                next_safe_action: 'planning_deferred',
+                checkpoint_ref: null,
+                result_status: 'not_started',
+                accepted_state: 'not_accepted',
+                ide_preview: safeIdePreview()
+            })
+        )
+        requestResumeSnapshot.mockResolvedValue(safeSnapshot({ ide_preview: safeIdePreview() }))
+        const { container, setGoalInput, submitGoalForm, setInput, submitForm, clickButton, unmount } = renderInteractive()
+
+        setGoalInput('qvc-preview-goal')
+        submitGoalForm()
+        expect(container.textContent).not.toContain('Read-only work preview')
+
+        await waitForAssertion(() => expect(container.textContent).toContain('Read-only work preview'))
+        expect(container.textContent).toContain('Preview status')
+        expect(container.textContent).toContain('Backend preview ready')
+        expect(container.textContent).toContain('Read-only preview. No backend work has started from this page.')
+        expect(container.textContent).toContain('This card cannot approve, continue, launch, run, or change anything.')
+        expect(container.textContent).not.toContain('Planning reviewer')
+        expect(container.textContent).not.toContain('Plain-English planning')
+        expect(container.textContent).not.toContain('No preview timer')
+
+        clickButton('Clear')
+        expect(container.textContent).not.toContain('Read-only work preview')
+
+        setInput('checkpoint_with_preview')
+        submitForm()
+        await waitForAssertion(() => expect(container.textContent).toContain('Accepted work is ready for display.'))
+        expect(container.textContent).not.toContain('Read-only work preview')
+        expect(container.textContent).not.toContain('Backend preview ready')
+
+        unmount()
+        expect(document.body.textContent).not.toContain('Read-only work preview')
+        expect(window.localStorage.length).toBe(0)
+        expect(window.sessionStorage.length).toBe(0)
+        expect(document.cookie).toBe('')
+        expect(window.location.search).toBe('')
+        expect(window.location.hash).toBe('')
+    })
+
+    it('does not render the read-only preview for plan-session, plan-decision, manual-packet, result-review, or error flows', async () => {
+        requestGoalSnapshot.mockResolvedValueOnce(safePlanSession({ ide_preview: safeIdePreview() }))
+        requestPlanDecision.mockResolvedValue(
+            safePlanSession({
+                state: 'manual_packet_preparation_required',
+                plain_summary: 'Sentinel drafted the plan. You can now prepare a manual worker packet as a separate explicit step.',
+                next_safe_action: 'prepare_manual_worker_packet',
+                allowed_user_actions: ['prepare_manual_worker_packet'],
+                cockpit_ref: 'cockpit_packet_ref',
+                ide_preview: safeIdePreview()
+            })
+        )
+        requestManualWorkerPacket.mockResolvedValue(
+            safePlanSession({
+                state: 'result_review_required',
+                plain_summary: 'The manual worker packet is ready. Paste the manual worker result for Sentinel review.',
+                next_safe_action: 'submit_manual_worker_result',
+                allowed_user_actions: ['submit_result_review'],
+                cockpit_ref: 'cockpit_review_ref',
+                ide_preview: safeIdePreview()
+            })
+        )
+        requestResultReview.mockResolvedValue(
+            safePlanSession({
+                state: 'result_review_unavailable',
+                plain_summary: 'Sentinel review unavailable. Nothing was accepted here.',
+                next_safe_action: 'review_unavailable',
+                allowed_user_actions: ['none'],
+                cockpit_ref: null,
+                plan_card: {
+                    plain_title: 'Sentinel review unavailable',
+                    plain_summary: 'Nothing was accepted. Keep the result outside this page and use an approved retry or review path.',
+                    plain_steps: ['Use manual review outside this page.'],
+                    will_not_do: ['No automatic retry here']
+                },
+                ide_preview: safeIdePreview()
+            })
+        )
+        const {
+            container,
+            setGoalInput,
+            submitGoalForm,
+            clickButton,
+            setResultReviewInput,
+            setReviewOnlyConfirmed,
+            setInput,
+            submitForm
+        } = renderInteractive()
+
+        setGoalInput('qvc-plan-session-with-preview')
+        submitGoalForm()
+        await waitForAssertion(() => expect(container.textContent).toContain('Approve plan'))
+        expect(container.textContent).not.toContain('Read-only work preview')
+
+        clickButton('Approve plan')
+        await waitForAssertion(() => expect(container.textContent).toContain('Prepare manual worker packet'))
+        expect(container.textContent).not.toContain('Read-only work preview')
+
+        clickButton('Prepare manual worker packet')
+        await waitForAssertion(() => expect(container.textContent).toContain('Pasted manual worker result'))
+        expect(container.textContent).not.toContain('Read-only work preview')
+
+        setResultReviewInput('Manual worker completed a plain text review outside this page.')
+        setReviewOnlyConfirmed(true)
+        clickButton('Send for Sentinel review')
+        await waitForAssertion(() => expect(container.textContent).toContain('Sentinel review unavailable'))
+        expect(container.textContent).not.toContain('Read-only work preview')
+
+        requestResumeSnapshot.mockRejectedValueOnce({ code: 'sentinel_resume_binding_not_found', message: 'raw detail should not render' })
+        setInput('checkpoint_error')
+        submitForm()
+        await waitForAssertion(() => expect(container.textContent).toContain(NOT_FOUND_ERROR))
+        expect(container.textContent).not.toContain('Read-only work preview')
     })
 
     it('renders only fixed loading copy and Submit/Clear controls while a request is pending', async () => {

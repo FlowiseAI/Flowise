@@ -250,6 +250,48 @@ const pageStyles = {
         color: '#e5eefb',
         lineHeight: 1.45
     },
+    idePreview: {
+        margin: '0 0 14px',
+        border: '1px solid #334155',
+        borderRadius: '6px',
+        background: '#0b1220',
+        padding: '12px',
+        cursor: 'default'
+    },
+    idePreviewTitle: {
+        margin: '0 0 6px',
+        color: '#e5eefb',
+        fontSize: '0.96rem',
+        fontWeight: 700
+    },
+    idePreviewCopy: {
+        margin: '0 0 10px',
+        color: '#cbd5e1',
+        fontSize: '0.88rem',
+        lineHeight: 1.4
+    },
+    idePreviewGrid: {
+        display: 'grid',
+        gap: '8px',
+        margin: '0 0 10px'
+    },
+    idePreviewRow: {
+        display: 'grid',
+        gridTemplateColumns: '170px minmax(0, 1fr)',
+        gap: '12px'
+    },
+    idePreviewLabel: {
+        color: '#bfdbfe',
+        fontSize: '0.86rem',
+        fontWeight: 600
+    },
+    idePreviewValue: {
+        color: '#dbeafe',
+        fontSize: '0.88rem',
+        lineHeight: 1.4,
+        minWidth: 0,
+        overflowWrap: 'anywhere'
+    },
     planTitle: {
         margin: '0 0 8px',
         color: '#f8fafc',
@@ -291,6 +333,15 @@ const pageStyles = {
     }
 }
 
+const IDE_PREVIEW_ROWS = Object.freeze([
+    ['Preview status', 'status_label'],
+    ['Suggested workflow', 'workflow_label'],
+    ['Summary', 'summary'],
+    ['What can happen next', 'what_can_happen_next'],
+    ['What will not happen', 'what_will_not_happen'],
+    ['Approval note', 'approval_copy']
+])
+
 export default function SentinelResumeStatus() {
     const goalRef = useRef('')
     const checkpointRef = useRef('')
@@ -306,6 +357,7 @@ export default function SentinelResumeStatus() {
     const [snapshot, setSnapshot] = useState(null)
     const [error, setError] = useState('')
     const [loadingMode, setLoadingMode] = useState('')
+    const [showIdePreview, setShowIdePreview] = useState(false)
     const isLoading = loadingMode !== ''
 
     useEffect(() => {
@@ -354,6 +406,7 @@ export default function SentinelResumeStatus() {
     }
 
     const clearState = () => {
+        setShowIdePreview(false)
         goalRef.current = ''
         checkpointRef.current = ''
         clearPlanAuthority()
@@ -366,6 +419,7 @@ export default function SentinelResumeStatus() {
 
     const handleGoalSubmit = async (event) => {
         event.preventDefault()
+        setShowIdePreview(false)
         const submittedGoal = goalRef.current.trim()
         goalRef.current = ''
         setGoalInput('')
@@ -393,6 +447,7 @@ export default function SentinelResumeStatus() {
             const result = await loadGoalSnapshot(submittedGoal, requestGoalSnapshot, clientNonce)
             setError(result.error)
             setSnapshot(result.snapshot)
+            setShowIdePreview(result.error === '' && isDisplayOnlySnapshot(result.snapshot) && hasRenderableIdePreview(result.snapshot?.ide_preview))
             if (isPlanDecisionRequiredSession(result.snapshot, clientNonce)) {
                 cockpitRef.current = result.snapshot.cockpit_ref
             } else {
@@ -405,6 +460,7 @@ export default function SentinelResumeStatus() {
 
     const handleResumeSubmit = async (event) => {
         event.preventDefault()
+        setShowIdePreview(false)
         const submittedCheckpointRef = checkpointRef.current.trim()
         checkpointRef.current = ''
         setCheckpointInput('')
@@ -428,6 +484,7 @@ export default function SentinelResumeStatus() {
     }
 
     const handlePlanDecision = async (decision) => {
+        setShowIdePreview(false)
         if (!isPlanDecisionRequiredSession(snapshot, clientNonceRef.current) || cockpitRef.current !== snapshot.cockpit_ref) {
             clearPlanAuthority()
             setSnapshot(null)
@@ -467,6 +524,7 @@ export default function SentinelResumeStatus() {
     }
 
     const handleManualPacketPrepare = async () => {
+        setShowIdePreview(false)
         if (!isManualPacketRequiredSession(snapshot, clientNonceRef.current) || cockpitRef.current !== snapshot.cockpit_ref) {
             clearPlanAuthority()
             setSnapshot(null)
@@ -497,6 +555,7 @@ export default function SentinelResumeStatus() {
     }
 
     const handleResultReviewSubmit = async () => {
+        setShowIdePreview(false)
         if (!isResultReviewRequiredSession(snapshot, clientNonceRef.current) || cockpitRef.current !== snapshot.cockpit_ref) {
             clearPlanAuthority()
             setSnapshot(null)
@@ -635,19 +694,23 @@ export default function SentinelResumeStatus() {
                         onResultReviewSubmit={handleResultReviewSubmit}
                     />
                 ) : null}
-                {!error && snapshot && !isPlanSessionResponse(snapshot) ? <ResumeSnapshot snapshot={snapshot} /> : null}
+                {!error && snapshot && !isPlanSessionResponse(snapshot) ? (
+                    <ResumeSnapshot snapshot={snapshot} showIdePreview={showIdePreview && !isLoading} />
+                ) : null}
             </section>
         </main>
     )
 }
 
-export function ResumeSnapshot({ snapshot }) {
+export function ResumeSnapshot({ snapshot, showIdePreview = false }) {
     const routeCard = readSafeRouteCard(snapshot.route_card)
+    const idePreviewRows = showIdePreview ? readIdePreviewRows(snapshot.ide_preview) : []
 
     return (
         <section style={pageStyles.status} aria-label='Resume snapshot'>
             {routeCard ? <RouteGuidanceCard routeCard={routeCard} /> : null}
             <p style={pageStyles.recommendation}>Next safe action: {formatValue(snapshot.next_safe_action)}</p>
+            {idePreviewRows.length > 0 ? <ReadOnlyWorkPreview rows={idePreviewRows} /> : null}
             {displayRows.map(([label, key]) => (
                 <div key={key} style={pageStyles.row}>
                     <div style={pageStyles.rowLabel}>{label}</div>
@@ -672,6 +735,26 @@ export function ResumeSnapshot({ snapshot }) {
             </div>
             <p style={pageStyles.blockedNote}>
                 This view is for guidance only. It does not expose approval, execution, worker, or review controls.
+            </p>
+        </section>
+    )
+}
+
+function ReadOnlyWorkPreview({ rows }) {
+    return (
+        <section style={pageStyles.idePreview} aria-label='Read-only work preview'>
+            <h2 style={pageStyles.idePreviewTitle}>Read-only work preview</h2>
+            <p style={pageStyles.idePreviewCopy}>Read-only preview. No backend work has started from this page.</p>
+            <div style={pageStyles.idePreviewGrid}>
+                {rows.map(([label, value]) => (
+                    <div key={label} style={pageStyles.idePreviewRow}>
+                        <div style={pageStyles.idePreviewLabel}>{label}</div>
+                        <div style={pageStyles.idePreviewValue}>{value}</div>
+                    </div>
+                ))}
+            </div>
+            <p style={{ ...pageStyles.idePreviewCopy, marginBottom: 0 }}>
+                This card cannot approve, continue, launch, run, or change anything.
             </p>
         </section>
     )
@@ -1130,6 +1213,22 @@ function readSafeRouteCard(card) {
         blocked_reason: blockedReason
     }
     return ROUTE_CARD_FORBIDDEN_TEXT.test(JSON.stringify(routeCard)) ? null : routeCard
+}
+
+function hasRenderableIdePreview(preview) {
+    return readIdePreviewRows(preview).length > 0
+}
+
+function readIdePreviewRows(preview) {
+    if (!isPlainRecord(preview)) return []
+    return IDE_PREVIEW_ROWS.reduce((rows, [label, key]) => {
+        const value = preview[key]
+        if (typeof value !== 'string') return rows
+        const trimmed = value.trim()
+        if (!trimmed) return rows
+        rows.push([label, trimmed])
+        return rows
+    }, [])
 }
 
 function readRouteCardString(value, maxLength) {
