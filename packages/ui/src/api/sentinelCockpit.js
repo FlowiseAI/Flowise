@@ -67,6 +67,30 @@ const ROUTE_CARD_CATEGORIES = Object.freeze([
 ])
 const ROUTE_CARD_FORBIDDEN_TEXT =
     /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:/i
+const IDE_PREVIEW_KEYS = Object.freeze([
+    'status_label',
+    'workflow_label',
+    'persona_label',
+    'skill_label',
+    'summary',
+    'what_can_happen_next',
+    'what_will_not_happen',
+    'approval_copy',
+    'expires_at_label'
+])
+const IDE_PREVIEW_FIELD_LENGTHS = Object.freeze({
+    status_label: 80,
+    workflow_label: 80,
+    persona_label: 80,
+    skill_label: 80,
+    summary: 220,
+    what_can_happen_next: 260,
+    what_will_not_happen: 260,
+    approval_copy: 160,
+    expires_at_label: 80
+})
+const IDE_PREVIEW_FORBIDDEN_TEXT =
+    /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:|127\.0\.0\.1|localhost|:39173|provider|model|confidence|selected\s+worker|active\s+agent|agent\s+started|running\s+task|queued|launched|executing|tool\s+call|command\s*[:=]|action_inputs/i
 export const CLOSED_ERROR_CODES = Object.freeze([
     'sentinel_classify_unavailable',
     'sentinel_classify_malformed',
@@ -192,7 +216,7 @@ export async function requestResumeSnapshot(input = {}, options = {}) {
 
 export async function requestGoalSnapshot(input = {}, options = {}) {
     validateCallerInput(input, GOAL_CALLER_INPUT_KEYS)
-    return requestSnapshot(buildGoalBody(input), options)
+    return requestSnapshot(buildGoalBody(input), options, { allowIdePreview: true })
 }
 
 export async function requestPlanDecision(input = {}, options = {}) {
@@ -210,8 +234,8 @@ export async function requestResultReview(input = {}, options = {}) {
     return requestJson(buildResultReviewUrl(), buildResultReviewBody(input), options, readPlanSessionResponse)
 }
 
-async function requestSnapshot(body, options = {}) {
-    return requestJson(buildSnapshotUrl(), body, options, readSnapshotResponse)
+async function requestSnapshot(body, options = {}, responseOptions = {}) {
+    return requestJson(buildSnapshotUrl(), body, options, (response) => readSnapshotResponse(response, responseOptions))
 }
 
 async function requestPlanSession(body, options = {}) {
@@ -346,7 +370,7 @@ function readOptionalString(value) {
     return trimmed.length > 0 ? trimmed : undefined
 }
 
-async function readSnapshotResponse(response) {
+async function readSnapshotResponse(response, options = {}) {
     if (!response || typeof response.ok !== 'boolean') {
         throw new SentinelCockpitError('sentinel_resume_unavailable')
     }
@@ -365,7 +389,7 @@ async function readSnapshotResponse(response) {
     if (body?.schema_version === PLAN_SESSION_SCHEMA_VERSION) {
         return narrowPlanSession(body)
     }
-    return narrowSnapshot(body)
+    return narrowSnapshot(body, options)
 }
 
 async function readPlanSessionResponse(response) {
@@ -387,7 +411,7 @@ async function readPlanSessionResponse(response) {
     return narrowPlanSession(body)
 }
 
-function narrowSnapshot(body) {
+function narrowSnapshot(body, options = {}) {
     if (!isPlainRecord(body)) {
         throw new SentinelCockpitError('sentinel_resume_malformed')
     }
@@ -406,6 +430,10 @@ function narrowSnapshot(body) {
     const narrowed = Object.fromEntries(SNAPSHOT_KEYS.map((key) => [key, body[key]]))
     const routeCard = narrowRouteCard(body.route_card)
     if (routeCard) narrowed.route_card = routeCard
+    if (options.allowIdePreview === true) {
+        const idePreview = narrowIdePreview(body.ide_preview)
+        if (idePreview) narrowed.ide_preview = idePreview
+    }
     return narrowed
 }
 
@@ -473,6 +501,30 @@ function narrowRouteCard(value) {
         blocked_reason: blockedReason
     }
     return ROUTE_CARD_FORBIDDEN_TEXT.test(JSON.stringify(routeCard)) ? null : routeCard
+}
+
+function narrowIdePreview(value) {
+    if (!isPlainRecord(value)) return null
+
+    const keys = Object.keys(value)
+    if (keys.length !== IDE_PREVIEW_KEYS.length || keys.some((key) => !IDE_PREVIEW_KEYS.includes(key))) return null
+
+    const preview = {}
+    for (const key of IDE_PREVIEW_KEYS) {
+        if (!Object.prototype.hasOwnProperty.call(value, key)) return null
+        const text = readIdePreviewString(value[key], IDE_PREVIEW_FIELD_LENGTHS[key])
+        if (!text) return null
+        preview[key] = text
+    }
+
+    return IDE_PREVIEW_FORBIDDEN_TEXT.test(JSON.stringify(preview)) ? null : preview
+}
+
+function readIdePreviewString(value, maxLength) {
+    if (typeof value !== 'string') return null
+    const trimmed = value.trim().replace(/\s+/g, ' ')
+    if (!trimmed || trimmed.length > maxLength || /[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e]/.test(trimmed)) return null
+    return trimmed
 }
 
 function readRouteCardString(value, maxLength) {

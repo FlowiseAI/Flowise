@@ -82,6 +82,19 @@ const validRouteCard = (overrides = {}) => ({
     ...overrides
 })
 
+const validIdePreview = (overrides = {}) => ({
+    status_label: 'Backend preview ready',
+    workflow_label: 'Safe planning workflow',
+    persona_label: 'Planning reviewer',
+    skill_label: 'Plain-English planning',
+    summary: 'Sentinel can preview the safe backend path before any work starts.',
+    what_can_happen_next: 'Sentinel can show labels before any backend work is approved.',
+    what_will_not_happen: 'No files change and no backend work starts.',
+    approval_copy: 'Backend work would require a separate reviewed approval step.',
+    expires_at_label: 'No preview timer',
+    ...overrides
+})
+
 describe('sentinelCockpit API wrapper', () => {
     afterEach(() => {
         jest.useRealTimers()
@@ -519,6 +532,234 @@ describe('sentinelCockpit API wrapper', () => {
         expect(snapshot.route_card).toEqual(validRouteCard())
         expect(snapshot).not.toHaveProperty('raw_gateway_body')
         expect(JSON.stringify(snapshot)).not.toMatch(/gateway|token|run_hidden|approval_challenge|client_nonce/)
+    })
+
+    it('preserves only a narrowed IDE preview from goal snapshot responses', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(
+            fetchResponse(
+                validSnapshot({
+                    ide_preview: validIdePreview({
+                        status_label: '  Backend   preview ready  ',
+                        summary: ' Sentinel can preview the safe backend path before any work starts. '
+                    }),
+                    raw_ide_preview: {
+                        schema_version: 'sentinel.qvc.ide_preview.v1',
+                        status: 'ide_preview_ready'
+                    }
+                })
+            )
+        )
+
+        const snapshot = await requestGoalSnapshot({ plainGoal: 'Plan the next safe step' }, { fetchImpl })
+
+        expect(snapshot.ide_preview).toEqual(
+            validIdePreview({
+                status_label: 'Backend preview ready',
+                summary: 'Sentinel can preview the safe backend path before any work starts.'
+            })
+        )
+        expect(Object.keys(snapshot.ide_preview).sort()).toEqual(Object.keys(validIdePreview()).sort())
+        expect(snapshot).not.toHaveProperty('raw_ide_preview')
+        expect(JSON.stringify(snapshot.ide_preview)).not.toMatch(
+            /schema_version|ide_preview_ready|approval_required|allowed_user_actions|blocked_reason|gateway|token|client_nonce|cockpit_ref|sha256:/i
+        )
+    })
+
+    it('leaves goal snapshots unchanged when IDE preview is absent', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(fetchResponse(validSnapshot()))
+
+        const snapshot = await requestGoalSnapshot({ plainGoal: 'Plan the next safe step' }, { fetchImpl })
+
+        expect(snapshot).not.toHaveProperty('ide_preview')
+        expect(Object.keys(snapshot).sort()).toEqual([...SNAPSHOT_KEYS].sort())
+    })
+
+    it.each([
+        ['missing key', (() => {
+            const preview = validIdePreview()
+            delete preview.skill_label
+            return preview
+        })()],
+        ['extra key', validIdePreview({ schema_version: 'sentinel.qvc.ide_preview.v1' })],
+        ['non-string value', validIdePreview({ workflow_label: 123 })],
+        ['blank value', validIdePreview({ persona_label: '   ' })],
+        ['oversized value', validIdePreview({ expires_at_label: 'x'.repeat(81) })],
+        ['control character', validIdePreview({ summary: 'Preview\u0007blocked' })],
+        ['zero width character', validIdePreview({ summary: 'Preview\u200bblocked' })],
+        ['bidi character', validIdePreview({ summary: 'Preview\u202eblocked' })],
+        ['Gateway URL', validIdePreview({ summary: 'See http://127.0.0.1:39173 for details.' })],
+        ['token fragment', validIdePreview({ summary: 'Bearer token should not display.' })],
+        ['client nonce fragment', validIdePreview({ summary: 'client_nonce should not display.' })],
+        ['cockpit ref fragment', validIdePreview({ summary: 'cockpit_ref should not display.' })],
+        ['packet fragment', validIdePreview({ summary: 'task_packet should not display.' })],
+        ['provider metadata', validIdePreview({ summary: 'Provider model metadata should not display.' })],
+        ['confidence score', validIdePreview({ summary: 'Confidence 0.98 should not display.' })],
+        ['action implication', validIdePreview({ summary: 'A selected worker is queued for execution.' })]
+    ])('omits invalid IDE preview from goal snapshots: %s', async (_label, idePreview) => {
+        const fetchImpl = jest.fn().mockResolvedValue(fetchResponse(validSnapshot({ ide_preview: idePreview })))
+
+        const snapshot = await requestGoalSnapshot({ plainGoal: 'Plan the next safe step' }, { fetchImpl })
+
+        expect(snapshot).not.toHaveProperty('ide_preview')
+        expect(Object.keys(snapshot).sort()).toEqual([...SNAPSHOT_KEYS].sort())
+    })
+
+    it('drops valid IDE preview from resume snapshots', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(fetchResponse(validSnapshot({ ide_preview: validIdePreview() })))
+
+        const snapshot = await requestResumeSnapshot({ checkpointRef: 'checkpoint_safe' }, { fetchImpl })
+
+        expect(snapshot).not.toHaveProperty('ide_preview')
+        expect(Object.keys(snapshot).sort()).toEqual([...SNAPSHOT_KEYS].sort())
+    })
+
+    it('drops valid IDE preview from plan-session responses', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(fetchResponse(validPlanSession({ ide_preview: validIdePreview() })))
+
+        const session = await requestGoalSnapshot(
+            {
+                plainGoal: 'Plan the next safe step',
+                clientNonce: 'nonce_abcdefghijklmnop'
+            },
+            { fetchImpl }
+        )
+
+        expect(session).not.toHaveProperty('ide_preview')
+        expect(Object.keys(session).sort()).toEqual([...PLAN_SESSION_KEYS].sort())
+    })
+
+    it('drops IDE preview from plan-decision, manual-packet, and result-review responses', async () => {
+        const planDecisionFetch = jest.fn().mockResolvedValue(fetchResponse(validPlanSession({ ide_preview: validIdePreview() })))
+        const manualPacketFetch = jest.fn().mockResolvedValue(
+            fetchResponse(
+                validPlanSession({
+                    state: 'manual_packet_ready',
+                    next_safe_action: 'manual_handoff_ready',
+                    allowed_user_actions: ['none'],
+                    cockpit_ref: null,
+                    ide_preview: validIdePreview()
+                })
+            )
+        )
+        const resultReviewFetch = jest.fn().mockResolvedValue(
+            fetchResponse(
+                validPlanSession({
+                    state: 'result_review_needs_more_information',
+                    next_safe_action: 'review_needs_more_information',
+                    allowed_user_actions: ['none'],
+                    cockpit_ref: null,
+                    ide_preview: validIdePreview()
+                })
+            )
+        )
+
+        const planDecision = await requestPlanDecision(
+            { cockpitRef: 'cockpit_safe_ref', clientNonce: 'nonce_abcdefghijklmnop', decision: 'approve_plan' },
+            { fetchImpl: planDecisionFetch }
+        )
+        const manualPacket = await requestManualWorkerPacket(
+            { cockpitRef: 'cockpit_safe_ref', clientNonce: 'nonce_abcdefghijklmnop' },
+            { fetchImpl: manualPacketFetch }
+        )
+        const resultReview = await requestResultReview(
+            {
+                cockpitRef: 'cockpit_safe_ref',
+                clientNonce: 'nonce_abcdefghijklmnop',
+                resultText: 'Manual worker completed a plain text review outside this page.',
+                reviewOnlyConfirmation: true
+            },
+            { fetchImpl: resultReviewFetch }
+        )
+
+        expect(planDecision).not.toHaveProperty('ide_preview')
+        expect(manualPacket).not.toHaveProperty('ide_preview')
+        expect(resultReview).not.toHaveProperty('ide_preview')
+    })
+
+    it('does not preserve IDE preview from malformed or closed-error responses', async () => {
+        const malformedFetch = jest
+            .fn()
+            .mockResolvedValue(fetchResponse(validSnapshot({ schema_version: 'sentinel.gateway.v1', ide_preview: validIdePreview() })))
+        const closedErrorFetch = jest.fn().mockResolvedValue(
+            fetchResponse(
+                {
+                    error: {
+                        code: 'sentinel_classify_unavailable',
+                        ide_preview: validIdePreview()
+                    }
+                },
+                { ok: false, status: 503 }
+            )
+        )
+
+        await expect(requestGoalSnapshot({ plainGoal: 'Plan the next safe step' }, { fetchImpl: malformedFetch })).rejects.toMatchObject({
+            code: 'sentinel_resume_malformed'
+        })
+        await expect(requestGoalSnapshot({ plainGoal: 'Plan the next safe step' }, { fetchImpl: closedErrorFetch })).rejects.toMatchObject({
+            code: 'sentinel_classify_unavailable'
+        })
+    })
+
+    it('keeps IDE preview out of required keys, request bodies, and caller input', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(fetchResponse(validSnapshot({ ide_preview: validIdePreview() })))
+
+        await requestGoalSnapshot({ plainGoal: 'Plan the next safe step' }, { fetchImpl })
+
+        const [, options] = fetchImpl.mock.calls[0]
+        const body = JSON.parse(options.body)
+        expect(SNAPSHOT_KEYS).not.toContain('ide_preview')
+        expect(Object.keys(body).sort()).toEqual(['plain_goal', 'request_kind'])
+        const blockedGoalFetch = jest.fn()
+        const blockedResumeFetch = jest.fn()
+        await expect(
+            requestGoalSnapshot({ plainGoal: 'Plan safely', ide_preview: validIdePreview() }, { fetchImpl: blockedGoalFetch })
+        ).rejects.toMatchObject({ code: 'invalid_request' })
+        await expect(
+            requestResumeSnapshot({ checkpointRef: 'checkpoint_safe', ide_preview: validIdePreview() }, { fetchImpl: blockedResumeFetch })
+        ).rejects.toMatchObject({ code: 'invalid_request' })
+        expect(blockedGoalFetch).not.toHaveBeenCalled()
+        expect(blockedResumeFetch).not.toHaveBeenCalled()
+    })
+
+    it('does not use browser persistence while narrowing IDE previews', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(fetchResponse(validSnapshot({ ide_preview: validIdePreview() })))
+        const originalGlobals = {
+            localStorage: Object.getOwnPropertyDescriptor(globalThis, 'localStorage'),
+            sessionStorage: Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage'),
+            history: Object.getOwnPropertyDescriptor(globalThis, 'history'),
+            document: Object.getOwnPropertyDescriptor(globalThis, 'document')
+        }
+        const localStorage = { setItem: jest.fn(), getItem: jest.fn(), removeItem: jest.fn() }
+        const sessionStorage = { setItem: jest.fn(), getItem: jest.fn(), removeItem: jest.fn() }
+        const history = { pushState: jest.fn(), replaceState: jest.fn() }
+        const document = {}
+        Object.defineProperty(document, 'cookie', {
+            configurable: true,
+            get: jest.fn(() => ''),
+            set: jest.fn()
+        })
+        Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: localStorage })
+        Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, value: sessionStorage })
+        Object.defineProperty(globalThis, 'history', { configurable: true, value: history })
+        Object.defineProperty(globalThis, 'document', { configurable: true, value: document })
+
+        try {
+            await requestGoalSnapshot({ plainGoal: 'Plan the next safe step' }, { fetchImpl })
+
+            expect(localStorage.setItem).not.toHaveBeenCalled()
+            expect(sessionStorage.setItem).not.toHaveBeenCalled()
+            expect(history.pushState).not.toHaveBeenCalled()
+            expect(history.replaceState).not.toHaveBeenCalled()
+            expect(document.cookie).toBe('')
+        } finally {
+            for (const [name, descriptor] of Object.entries(originalGlobals)) {
+                if (descriptor) {
+                    Object.defineProperty(globalThis, name, descriptor)
+                } else {
+                    delete globalThis[name]
+                }
+            }
+        }
     })
 
     it('omits unsafe route cards from snapshot responses', async () => {
