@@ -1678,36 +1678,36 @@
                     "label": "command-a-03-2025",
                     "name": "command-a-03-2025",
                     "description": "Command A – most performant; tool use, RAG, multilingual",
-                    "input_cost": 0.0025,
-                    "output_cost": 0.01
+                    "input_cost": 0.0000025,
+                    "output_cost": 0.00001
                 },
                 {
                     "label": "command-r7b-12-2024",
                     "name": "command-r7b-12-2024",
                     "description": "Small, fast; RAG, tool use, agents",
-                    "input_cost": 0.000037,
-                    "output_cost": 0.00015
+                    "input_cost": 0.000000037,
+                    "output_cost": 0.00000015
                 },
                 {
                     "label": "command-a-reasoning-08-2025",
                     "name": "command-a-reasoning-08-2025",
                     "description": "Command A Reasoning – nuanced problem-solving, agents",
-                    "input_cost": 0.0025,
-                    "output_cost": 0.01
+                    "input_cost": 0.0000025,
+                    "output_cost": 0.00001
                 },
                 {
                     "label": "command-r-08-2024",
                     "name": "command-r-08-2024",
                     "description": "Command R – RAG, tool use, multilingual",
-                    "input_cost": 0.00015,
-                    "output_cost": 0.0006
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.0000006
                 },
                 {
                     "label": "command-r-plus-08-2024",
                     "name": "command-r-plus-08-2024",
                     "description": "Command R+ – complex RAG, multi-step tool use",
-                    "input_cost": 0.0025,
-                    "output_cost": 0.01
+                    "input_cost": 0.0000025,
+                    "output_cost": 0.00001
                 }
             ]
         },
@@ -2199,104 +2199,104 @@
                 {
                     "label": "open-mistral-nemo",
                     "name": "open-mistral-nemo",
-                    "input_cost": 0.00015,
-                    "output_cost": 0.00015
+                    "input_cost": 0.00000015,
+                    "output_cost": 0.00000015
                 },
                 {
                     "label": "open-mistral-7b",
                     "name": "open-mistral-7b",
-                    "input_cost": 0.00025,
-                    "output_cost": 0.00025
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.00000025
                 },
                 {
                     "label": "mistral-tiny-2312",
                     "name": "mistral-tiny-2312",
-                    "input_cost": 0.0007,
-                    "output_cost": 0.0007
+                    "input_cost": 0.0000007,
+                    "output_cost": 0.0000007
                 },
                 {
                     "label": "mistral-tiny",
                     "name": "mistral-tiny",
-                    "input_cost": 0.0007,
-                    "output_cost": 0.0007
+                    "input_cost": 0.0000007,
+                    "output_cost": 0.0000007
                 },
                 {
                     "label": "open-mixtral-8x7b",
                     "name": "open-mixtral-8x7b",
-                    "input_cost": 0.0007,
-                    "output_cost": 0.0007
+                    "input_cost": 0.0000007,
+                    "output_cost": 0.0000007
                 },
                 {
                     "label": "open-mixtral-8x22b",
                     "name": "open-mixtral-8x22b",
-                    "input_cost": 0.002,
-                    "output_cost": 0.006
+                    "input_cost": 0.000002,
+                    "output_cost": 0.000006
                 },
                 {
                     "label": "mistral-small-2312",
                     "name": "mistral-small-2312",
-                    "input_cost": 0.0001,
-                    "output_cost": 0.0003
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000003
                 },
                 {
                     "label": "mistral-small",
                     "name": "mistral-small",
-                    "input_cost": 0.0001,
-                    "output_cost": 0.0003
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000003
                 },
                 {
                     "label": "mistral-small-2402",
                     "name": "mistral-small-2402",
-                    "input_cost": 0.0001,
-                    "output_cost": 0.0003
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000003
                 },
                 {
                     "label": "mistral-small-latest",
                     "name": "mistral-small-latest",
-                    "input_cost": 0.0001,
-                    "output_cost": 0.0003
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000003
                 },
                 {
                     "label": "mistral-medium-latest",
                     "name": "mistral-medium-latest",
-                    "input_cost": 0.001,
-                    "output_cost": 0.003
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000003
                 },
                 {
                     "label": "mistral-medium-2312",
                     "name": "mistral-medium-2312",
-                    "input_cost": 0.001,
-                    "output_cost": 0.003
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000003
                 },
                 {
                     "label": "mistral-medium",
                     "name": "mistral-medium",
-                    "input_cost": 0.001,
-                    "output_cost": 0.003
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000003
                 },
                 {
                     "label": "mistral-large-latest",
                     "name": "mistral-large-latest",
-                    "input_cost": 0.002,
-                    "output_cost": 0.006
+                    "input_cost": 0.000002,
+                    "output_cost": 0.000006
                 },
                 {
                     "label": "mistral-large-2402",
                     "name": "mistral-large-2402",
-                    "input_cost": 0.002,
-                    "output_cost": 0.006
+                    "input_cost": 0.000002,
+                    "output_cost": 0.000006
                 },
                 {
                     "label": "codestral-latest",
                     "name": "codestral-latest",
-                    "input_cost": 0.0002,
-                    "output_cost": 0.0006
+                    "input_cost": 0.0000002,
+                    "output_cost": 0.0000006
                 },
                 {
                     "label": "devstral-small-2505",
                     "name": "devstral-small-2505",
-                    "input_cost": 0.0001,
-                    "output_cost": 0.0003
+                    "input_cost": 0.0000001,
+                    "output_cost": 0.0000003
                 }
             ]
         },
