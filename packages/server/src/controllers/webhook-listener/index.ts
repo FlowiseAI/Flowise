@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { getWebhookListenerRegistry } from '../../services/webhook-listener'
-import { IReactFlowObject } from '../../Interface'
+import { IReactFlowObject, StartInputType } from '../../Interface'
 import chatflowsService from '../../services/chatflows'
 import logger from '../../utils/logger'
 
@@ -16,7 +16,8 @@ const assertChatflowIsWebhookTriggered = async (chatflowid: string, workspaceId?
     }
     const parsedFlowData: IReactFlowObject = JSON.parse(chatflow.flowData)
     const startNode = parsedFlowData.nodes.find((node) => node.data.name === 'startAgentflow')
-    if (startNode?.data?.inputs?.startInputType !== 'webhookTrigger') {
+    const startInputType = startNode?.data?.inputs?.startInputType as StartInputType | undefined
+    if (startInputType !== 'webhookTrigger') {
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Chatflow ${chatflowid} is not configured as a webhook trigger`)
     }
 }
