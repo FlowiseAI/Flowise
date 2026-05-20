@@ -1076,7 +1076,11 @@ function projectIdePreview(body: GatewayClassifyBody, enabled: boolean): IdePrev
     return idePreviewHasForbiddenText(output) ? null : output
 }
 
-function projectIdeWork(body: GatewayClassifyBody | GatewayIdeWorkBody, enabled: boolean, actionsEnabled: boolean): IdeWorkProjection | null {
+function projectIdeWork(
+    body: GatewayClassifyBody | GatewayIdeWorkBody,
+    enabled: boolean,
+    actionsEnabled: boolean
+): IdeWorkProjection | null {
     if (!enabled) return null
     const ideWork = body[IDE_WORK_KEY]
     if (!ideWork || typeof ideWork !== 'object' || Array.isArray(ideWork)) {
@@ -1118,9 +1122,7 @@ function projectIdeWork(body: GatewayClassifyBody | GatewayIdeWorkBody, enabled:
     if (!allowedActions.length || allowedActions.some((action) => !IDE_WORK_ALLOWED_ACTIONS.includes(action))) {
         return null
     }
-    const blockedActions = Array.isArray(input.blocked_actions)
-        ? input.blocked_actions.map((action) => readIdeWorkString(action, 160))
-        : []
+    const blockedActions = Array.isArray(input.blocked_actions) ? input.blocked_actions.map((action) => readIdeWorkString(action, 160)) : []
     if (!blockedActions.length || blockedActions.some((action) => !action)) {
         return null
     }

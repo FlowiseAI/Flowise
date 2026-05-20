@@ -635,7 +635,11 @@ function validateIdeWorkSession(session: {
     safe_error: null
 }) {
     assertResponseKeys(session as unknown as Record<string, unknown>, IDE_WORK_RESPONSE_KEYS)
-    if (session.schema_version !== classifyBridge.IDE_WORK_BRIDGE_SCHEMA_VERSION || session.status !== 'ok' || session.safe_error !== null) {
+    if (
+        session.schema_version !== classifyBridge.IDE_WORK_BRIDGE_SCHEMA_VERSION ||
+        session.status !== 'ok' ||
+        session.safe_error !== null
+    ) {
         throw httpError(500, 'invalid_snapshot')
     }
     validateIdeWork(session.ide_work)

@@ -539,7 +539,9 @@ describe('sentinelCockpit API wrapper', () => {
         async (key) => {
             const fetchImpl = jest.fn()
 
-            await expect(requestIdeWorkAction({ action: 'approve_mock_backend_work', [key]: 'blocked' }, { fetchImpl })).rejects.toMatchObject({
+            await expect(
+                requestIdeWorkAction({ action: 'approve_mock_backend_work', [key]: 'blocked' }, { fetchImpl })
+            ).rejects.toMatchObject({
                 code: 'invalid_request'
             })
             expect(fetchImpl).not.toHaveBeenCalled()
