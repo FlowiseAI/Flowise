@@ -10,6 +10,8 @@ export const PLAN_DECISION_BRIDGE_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_PLAN_DECIS
 export const MANUAL_PACKET_BRIDGE_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_MANUAL_PACKET_BRIDGE'
 export const RESULT_REVIEW_BRIDGE_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_RESULT_REVIEW_BRIDGE'
 export const IDE_PREVIEW_PROJECTION_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_IDE_PREVIEW_PROJECTION'
+export const IDE_WORK_PROJECTION_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_IDE_WORK_PROJECTION'
+export const IDE_WORK_ACTIONS_FLAG_ENV = 'BEZZTY_FLOWISE_SENTINEL_IDE_WORK_ACTIONS'
 export const DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN = 'http://127.0.0.1:39173'
 export const CLASSIFY_BRIDGE_GATEWAY_ORIGIN =
     readGatewayOrigin(process.env[CLASSIFY_BRIDGE_GATEWAY_ORIGIN_ENV]) || DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN
@@ -17,6 +19,13 @@ export const PLAN_SESSION_SCHEMA_VERSION = 'sentinel.cockpit_bridge.plan_session
 export const GOAL_ROUTE_CARD_SCHEMA_VERSION = 'sentinel.qvc.route_card.v1'
 export const IDE_PREVIEW_SCHEMA_VERSION = 'sentinel.qvc.ide_preview.v1'
 export const IDE_PREVIEW_KEY = 'ide_preview'
+export const IDE_WORK_KEY = 'ide_work'
+export const IDE_WORK_BRIDGE_SCHEMA_VERSION = 'sentinel.cockpit_bridge.ide_work.v1'
+export const IDE_WORK_GATEWAY_SCHEMA_VERSIONS = Object.freeze([
+    'sentinel.qvc.ide_work_approval.v1',
+    'sentinel.qvc.ide_work_progress.v1',
+    'sentinel.qvc.ide_work_result_review_required.v1'
+])
 export const IDE_PREVIEW_REDUCED_KEYS = Object.freeze([
     'status_label',
     'workflow_label',
@@ -29,6 +38,10 @@ export const IDE_PREVIEW_REDUCED_KEYS = Object.freeze([
     'expires_at_label'
 ])
 export const IDE_PREVIEW_APPROVAL_COPY = 'Backend work would require a separate reviewed approval step.'
+export const IDE_WORK_ACTION_PATHS = Object.freeze({
+    action: '/v1/ide-work/action',
+    status: '/v1/ide-work/status'
+})
 const GOAL_ROUTE_CATEGORIES = Object.freeze([
     'planning',
     'review',
@@ -54,6 +67,41 @@ const IDE_PREVIEW_RAW_KEYS = Object.freeze([
     'blocked_reason',
     'expires_at_label'
 ])
+const IDE_WORK_RAW_KEYS = Object.freeze([
+    'schema_version',
+    'status',
+    'state',
+    'status_label',
+    'workflow_label',
+    'persona_label',
+    'skill_label',
+    'short_summary',
+    'current_safe_step',
+    'what_can_happen_next',
+    'what_will_not_happen',
+    'approval_available',
+    'cancel_available',
+    'review_required_note',
+    'terminal_note',
+    'allowed_user_actions',
+    'blocked_actions',
+    'safe_error'
+])
+const IDE_WORK_REDUCED_KEYS = IDE_WORK_RAW_KEYS
+const IDE_WORK_STATES = Object.freeze([
+    'disabled',
+    'approval_unavailable',
+    'approval_pending',
+    'starting',
+    'mock_in_progress',
+    'cancel_requested',
+    'cancelled',
+    'timed_out',
+    'failed_closed',
+    'review_required',
+    'expired'
+])
+const IDE_WORK_ALLOWED_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'none'])
 const IDE_PREVIEW_STATUS_LABELS = Object.freeze({
     ide_preview_disabled: 'Backend preview is off',
     ide_preview_unavailable: 'Backend preview unavailable',
@@ -143,6 +191,23 @@ const IDE_PREVIEW_FORBIDDEN_FRAGMENTS = Object.freeze([
     'c:\\',
     '/mnt/'
 ])
+const IDE_WORK_FORBIDDEN_FRAGMENTS = Object.freeze([
+    ...IDE_PREVIEW_FORBIDDEN_FRAGMENTS,
+    'adapter',
+    'argv',
+    'session',
+    'nonce',
+    'hash',
+    'path',
+    'raw',
+    'selected worker',
+    'active agent',
+    'launch worker',
+    'open ide',
+    'execute',
+    'write files',
+    'create pr'
+])
 
 export type GoalRouteCard = Readonly<{
     schema_version: typeof GOAL_ROUTE_CARD_SCHEMA_VERSION
@@ -177,6 +242,41 @@ export type IdePreviewProjection = Readonly<{
     expires_at_label: string
 }>
 
+export type IdeWorkProjection = Readonly<{
+    schema_version:
+        | 'sentinel.qvc.ide_work_approval.v1'
+        | 'sentinel.qvc.ide_work_progress.v1'
+        | 'sentinel.qvc.ide_work_result_review_required.v1'
+    status: 'ok'
+    state:
+        | 'disabled'
+        | 'approval_unavailable'
+        | 'approval_pending'
+        | 'starting'
+        | 'mock_in_progress'
+        | 'cancel_requested'
+        | 'cancelled'
+        | 'timed_out'
+        | 'failed_closed'
+        | 'review_required'
+        | 'expired'
+    status_label: string
+    workflow_label: string
+    persona_label: string
+    skill_label: string
+    short_summary: string
+    current_safe_step: string
+    what_can_happen_next: string
+    what_will_not_happen: string
+    approval_available: boolean
+    cancel_available: boolean
+    review_required_note: string | null
+    terminal_note: string | null
+    allowed_user_actions: string[]
+    blocked_actions: string[]
+    safe_error: string | null
+}>
+
 export type ClassifyBridgeErrorCode =
     | 'sentinel_classify_unavailable'
     | 'sentinel_classify_malformed'
@@ -209,6 +309,8 @@ export type ClassifyBridgeConfig = Readonly<{
     manualPacketBridge: boolean
     resultReviewBridge: boolean
     idePreviewProjection: boolean
+    ideWorkProjection: boolean
+    ideWorkActions: boolean
     gatewayOrigin: string
     token?: string
     errorCode?: ClassifyBridgeErrorCode
@@ -234,6 +336,15 @@ export type ResultReviewRequest = Readonly<{
     client_nonce: string
     result_text: string
     review_only_confirmation: true
+}>
+
+export type IdeWorkActionRequest = Readonly<{
+    request_kind: 'ide_work_action'
+    action: 'approve_mock_backend_work' | 'cancel_mock_backend_work'
+}>
+
+export type IdeWorkStatusRequest = Readonly<{
+    request_kind: 'ide_work_status'
 }>
 
 export type PlanSessionResponse = Readonly<{
@@ -278,6 +389,7 @@ export type PlanSessionResponse = Readonly<{
     }>
     route_card?: GoalRouteCard | null
     ide_preview?: IdePreviewProjection | null
+    ide_work?: IdeWorkProjection | null
     safe_error: null | Readonly<{
         code: ClassifyBridgeErrorCode
         message: string
@@ -311,6 +423,7 @@ type GatewayClassifyBody = Record<string, unknown>
 type GatewayDraftPlanBody = Record<string, unknown>
 type GatewayManualPacketBody = Record<string, unknown>
 type GatewayResultReviewBody = Record<string, unknown>
+type GatewayIdeWorkBody = Record<string, unknown>
 type PlanBindingState = 'pending' | 'in_flight' | 'consumed'
 type ManualPacketBindingState = 'pending' | 'in_flight' | 'consumed'
 type ResultReviewBindingState = 'pending' | 'in_flight' | 'consumed'
@@ -361,6 +474,12 @@ const RESULT_REVIEW_BINDING_MAX_TTL_MS = 15 * 60 * 1000
 const planBindings = new Map<string, PlanBinding>()
 const manualPacketBindings = new Map<string, ManualPacketBinding>()
 const resultReviewBindings = new Map<string, ResultReviewBinding>()
+let ideWorkBinding: null | {
+    runId: string
+    sentinelSessionId: string
+    createdAt: number
+    expiresAt: number
+} = null
 
 const defaultConfig = readClassifyBridgeConfig(process.env)
 
@@ -378,6 +497,8 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
     const manualPacketBridge = env[MANUAL_PACKET_BRIDGE_FLAG_ENV] === '1'
     const resultReviewBridge = env[RESULT_REVIEW_BRIDGE_FLAG_ENV] === '1'
     const idePreviewProjection = env[IDE_PREVIEW_PROJECTION_FLAG_ENV] === '1'
+    const ideWorkProjection = env[IDE_WORK_PROJECTION_FLAG_ENV] === '1'
+    const ideWorkActions = env[IDE_WORK_ACTIONS_FLAG_ENV] === '1'
     const configuredGatewayOrigin = env[CLASSIFY_BRIDGE_GATEWAY_ORIGIN_ENV]
     const gatewayOrigin = readGatewayOrigin(configuredGatewayOrigin)
     if (env[CLASSIFY_BRIDGE_FLAG_ENV] !== '1') {
@@ -388,6 +509,8 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
             manualPacketBridge,
             resultReviewBridge,
             idePreviewProjection,
+            ideWorkProjection,
+            ideWorkActions,
             gatewayOrigin: gatewayOrigin || DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN
         }
     }
@@ -399,6 +522,8 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
             manualPacketBridge,
             resultReviewBridge,
             idePreviewProjection,
+            ideWorkProjection,
+            ideWorkActions,
             gatewayOrigin: DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN,
             errorCode: 'sentinel_classify_unavailable'
         }
@@ -413,6 +538,8 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
             manualPacketBridge,
             resultReviewBridge,
             idePreviewProjection,
+            ideWorkProjection,
+            ideWorkActions,
             gatewayOrigin: gatewayOrigin || DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN,
             errorCode: 'sentinel_classify_unavailable'
         }
@@ -425,6 +552,8 @@ export function readClassifyBridgeConfig(env: NodeJS.ProcessEnv): ClassifyBridge
         manualPacketBridge,
         resultReviewBridge,
         idePreviewProjection,
+        ideWorkProjection,
+        ideWorkActions,
         gatewayOrigin: gatewayOrigin || DEFAULT_CLASSIFY_BRIDGE_GATEWAY_ORIGIN,
         token
     }
@@ -471,7 +600,8 @@ export async function createClassifySnapshot(
             const planSession = createPlanDecisionRequiredSession(
                 gatewayClassify,
                 request.client_nonce,
-                projectIdePreview(gatewayClassify, config.idePreviewProjection)
+                projectIdePreview(gatewayClassify, config.idePreviewProjection),
+                projectIdeWork(gatewayClassify, config.ideWorkProjection, config.ideWorkActions)
             )
             if (planSession) {
                 assertPlanSessionSafe(planSession, config.token, request.plain_goal, request.client_nonce)
@@ -608,6 +738,82 @@ export async function createResultReviewSession(
         const planSession = projectResultReviewUnavailableSession()
         assertPlanSessionSafe(planSession, config.token, request.result_text, request.client_nonce)
         return planSession
+    }
+}
+
+export async function createIdeWorkActionSession(
+    request: IdeWorkActionRequest,
+    options: ClassifyBridgeOptions = {}
+): Promise<{ schema_version: typeof IDE_WORK_BRIDGE_SCHEMA_VERSION; status: 'ok'; ide_work: IdeWorkProjection; safe_error: null }> {
+    const config = options.config || defaultConfig
+    if (!config.requested || !config.ideWorkProjection || !config.ideWorkActions) {
+        throw classifyBridgeError(403, 'feature_disabled')
+    }
+    if (config.errorCode || !config.token) {
+        throw classifyBridgeError(503, 'gateway_unavailable')
+    }
+    const binding = claimIdeWorkBinding()
+    const runtimeFetch = options.fetchImpl || (globalThis as unknown as { fetch?: FetchLike }).fetch
+    if (!runtimeFetch) {
+        throw classifyBridgeError(503, 'gateway_unavailable')
+    }
+    const gatewayBody = await fetchGatewayIdeWork(
+        IDE_WORK_ACTION_PATHS.action,
+        binding,
+        { request_kind: request.request_kind, action: request.action },
+        config.token,
+        config.gatewayOrigin,
+        runtimeFetch,
+        options.requestId
+    )
+    const ideWork = projectIdeWork(gatewayBody, true, config.ideWorkActions)
+    if (!ideWork) {
+        throw classifyBridgeError(502, 'gateway_rejected')
+    }
+    assertIdeWorkSafe(ideWork, config.token)
+    return {
+        schema_version: IDE_WORK_BRIDGE_SCHEMA_VERSION,
+        status: 'ok',
+        ide_work: ideWork,
+        safe_error: null
+    }
+}
+
+export async function createIdeWorkStatusSession(
+    request: IdeWorkStatusRequest,
+    options: ClassifyBridgeOptions = {}
+): Promise<{ schema_version: typeof IDE_WORK_BRIDGE_SCHEMA_VERSION; status: 'ok'; ide_work: IdeWorkProjection; safe_error: null }> {
+    const config = options.config || defaultConfig
+    if (!config.requested || !config.ideWorkProjection) {
+        throw classifyBridgeError(403, 'feature_disabled')
+    }
+    if (config.errorCode || !config.token) {
+        throw classifyBridgeError(503, 'gateway_unavailable')
+    }
+    const binding = claimIdeWorkBinding(false)
+    const runtimeFetch = options.fetchImpl || (globalThis as unknown as { fetch?: FetchLike }).fetch
+    if (!runtimeFetch) {
+        throw classifyBridgeError(503, 'gateway_unavailable')
+    }
+    const gatewayBody = await fetchGatewayIdeWork(
+        IDE_WORK_ACTION_PATHS.status,
+        binding,
+        { request_kind: request.request_kind },
+        config.token,
+        config.gatewayOrigin,
+        runtimeFetch,
+        options.requestId
+    )
+    const ideWork = projectIdeWork(gatewayBody, true, config.ideWorkActions)
+    if (!ideWork) {
+        throw classifyBridgeError(502, 'gateway_rejected')
+    }
+    assertIdeWorkSafe(ideWork, config.token)
+    return {
+        schema_version: IDE_WORK_BRIDGE_SCHEMA_VERSION,
+        status: 'ok',
+        ide_work: ideWork,
+        safe_error: null
     }
 }
 
@@ -870,6 +1076,101 @@ function projectIdePreview(body: GatewayClassifyBody, enabled: boolean): IdePrev
     return idePreviewHasForbiddenText(output) ? null : output
 }
 
+function projectIdeWork(body: GatewayClassifyBody | GatewayIdeWorkBody, enabled: boolean, actionsEnabled: boolean): IdeWorkProjection | null {
+    if (!enabled) return null
+    const ideWork = body[IDE_WORK_KEY]
+    if (!ideWork || typeof ideWork !== 'object' || Array.isArray(ideWork)) {
+        return null
+    }
+    const input = ideWork as Record<string, unknown>
+    if (!keysMatch(input, IDE_WORK_RAW_KEYS)) {
+        return null
+    }
+    if (!IDE_WORK_GATEWAY_SCHEMA_VERSIONS.includes(input.schema_version as string) || input.status !== 'ok') {
+        return null
+    }
+    if (typeof input.state !== 'string' || !IDE_WORK_STATES.includes(input.state)) {
+        return null
+    }
+    const statusLabel = readIdeWorkString(input.status_label, 80)
+    const workflowLabel = readIdeWorkString(input.workflow_label, 80)
+    const personaLabel = readIdeWorkString(input.persona_label, 80)
+    const skillLabel = readIdeWorkString(input.skill_label, 80)
+    const shortSummary = readIdeWorkString(input.short_summary, 220)
+    const currentSafeStep = readIdeWorkString(input.current_safe_step, 220)
+    const whatCanHappenNext = readIdeWorkString(input.what_can_happen_next, 260)
+    const whatWillNotHappen = readIdeWorkString(input.what_will_not_happen, 260)
+    if (
+        !statusLabel ||
+        !workflowLabel ||
+        !personaLabel ||
+        !skillLabel ||
+        !shortSummary ||
+        !currentSafeStep ||
+        !whatCanHappenNext ||
+        !whatWillNotHappen
+    ) {
+        return null
+    }
+    const allowedActions = Array.isArray(input.allowed_user_actions)
+        ? input.allowed_user_actions.filter((action): action is string => typeof action === 'string')
+        : []
+    if (!allowedActions.length || allowedActions.some((action) => !IDE_WORK_ALLOWED_ACTIONS.includes(action))) {
+        return null
+    }
+    const blockedActions = Array.isArray(input.blocked_actions)
+        ? input.blocked_actions.map((action) => readIdeWorkString(action, 160))
+        : []
+    if (!blockedActions.length || blockedActions.some((action) => !action)) {
+        return null
+    }
+    const output: IdeWorkProjection = {
+        schema_version: input.schema_version as IdeWorkProjection['schema_version'],
+        status: 'ok',
+        state: input.state as IdeWorkProjection['state'],
+        status_label: statusLabel,
+        workflow_label: workflowLabel,
+        persona_label: personaLabel,
+        skill_label: skillLabel,
+        short_summary: shortSummary,
+        current_safe_step: currentSafeStep,
+        what_can_happen_next: whatCanHappenNext,
+        what_will_not_happen: whatWillNotHappen,
+        approval_available: actionsEnabled && input.approval_available === true,
+        cancel_available: actionsEnabled && input.cancel_available === true,
+        review_required_note: input.review_required_note === null ? null : readIdeWorkString(input.review_required_note, 180),
+        terminal_note: input.terminal_note === null ? null : readIdeWorkString(input.terminal_note, 180),
+        allowed_user_actions: actionsEnabled ? allowedActions : ['none'],
+        blocked_actions: blockedActions as string[],
+        safe_error: input.safe_error === null ? null : readIdeWorkString(input.safe_error, 80)
+    }
+    if (output.review_required_note === undefined || output.terminal_note === undefined || output.safe_error === undefined) {
+        return null
+    }
+    return ideWorkHasForbiddenText(output) ? null : output
+}
+
+function readIdeWorkString(value: unknown, maxLength: number): string | null {
+    if (typeof value !== 'string') return null
+    const normalized = value.trim().replace(/\s+/g, ' ')
+    if (!normalized || normalized.length > maxLength) return null
+    if (/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e]/.test(normalized)) return null
+    if (/[^\x20-\x7e]/.test(normalized)) return null
+    return ideWorkTextHasForbiddenFragment(normalized) ? null : normalized
+}
+
+function ideWorkHasForbiddenText(projection: IdeWorkProjection): boolean {
+    return (
+        !keysMatch(projection as unknown as Record<string, unknown>, IDE_WORK_REDUCED_KEYS) ||
+        ideWorkTextHasForbiddenFragment(JSON.stringify(projection))
+    )
+}
+
+function ideWorkTextHasForbiddenFragment(value: string): boolean {
+    const lower = value.toLowerCase()
+    return IDE_WORK_FORBIDDEN_FRAGMENTS.some((fragment) => lower.includes(fragment))
+}
+
 function readIdePreviewString(value: unknown, maxLength: number): string | null {
     if (typeof value !== 'string') return null
     const normalized = value.trim().replace(/\s+/g, ' ')
@@ -900,7 +1201,8 @@ function keysMatch(body: Record<string, unknown>, expectedKeys: readonly string[
 function createPlanDecisionRequiredSession(
     body: GatewayClassifyBody,
     clientNonce: string,
-    idePreview: IdePreviewProjection | null = null
+    idePreview: IdePreviewProjection | null = null,
+    ideWork: IdeWorkProjection | null = null
 ): PlanSessionResponse | null {
     const runId = readGatewayString(body.run_id, 1, 128)
     const sentinelSessionId = readGatewayString(body.sentinel_session_id, 1, 128)
@@ -932,6 +1234,14 @@ function createPlanDecisionRequiredSession(
         expiresAt: now + ttlMs,
         state: 'pending'
     })
+    if (ideWork?.approval_available === true) {
+        ideWorkBinding = {
+            runId,
+            sentinelSessionId,
+            createdAt: now,
+            expiresAt: now + ttlMs
+        }
+    }
 
     return {
         schema_version: PLAN_SESSION_SCHEMA_VERSION,
@@ -945,6 +1255,7 @@ function createPlanDecisionRequiredSession(
         plan_card: null,
         route_card: projectGoalRouteCard(body),
         ...(idePreview ? { [IDE_PREVIEW_KEY]: idePreview } : {}),
+        ...(ideWork ? { [IDE_WORK_KEY]: ideWork } : {}),
         safe_error: null
     }
 }
@@ -967,6 +1278,21 @@ function claimPlanBinding(cockpitRef: string, clientNonce: string): PlanBinding 
         throw classifyBridgeError(403, 'plan_session_nonce_mismatch')
     }
     binding.state = 'in_flight'
+    return binding
+}
+
+function claimIdeWorkBinding(requireFresh = true): { runId: string; sentinelSessionId: string } {
+    const binding = ideWorkBinding
+    if (!binding) {
+        throw classifyBridgeError(404, 'plan_session_not_found')
+    }
+    if (binding.expiresAt <= Date.now()) {
+        ideWorkBinding = null
+        throw classifyBridgeError(410, 'plan_session_expired')
+    }
+    if (requireFresh === false) {
+        return binding
+    }
     return binding
 }
 
@@ -1031,6 +1357,72 @@ async function fetchGatewayDraftPlan(
         }
         assertGatewayDraftPlanDto(parsed as GatewayDraftPlanBody)
         return parsed as GatewayDraftPlanBody
+    } catch (error) {
+        if (isClassifyBridgeError(error)) {
+            throw error
+        }
+        throw classifyBridgeError(502, 'gateway_unavailable')
+    } finally {
+        clearTimeout(timeout)
+    }
+}
+
+async function fetchGatewayIdeWork(
+    path: string,
+    binding: { runId: string; sentinelSessionId: string },
+    body: Record<string, unknown>,
+    token: string,
+    gatewayOrigin: string,
+    fetchImpl: FetchLike,
+    requestId?: string
+): Promise<GatewayIdeWorkBody> {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+    try {
+        const response = await fetchImpl(`${gatewayOrigin}${path}`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                schema_version: GATEWAY_SCHEMA_VERSION,
+                request_id: requestId || `req_${randomUUID()}`,
+                run_id: binding.runId,
+                sentinel_session_id: binding.sentinelSessionId,
+                client: {
+                    client_type: 'flowise',
+                    client_instance_id: 'flowise_sentinel_cockpit'
+                },
+                operator: {
+                    operator_id: 'flowise_local_operator'
+                },
+                ...body
+            }),
+            redirect: 'manual',
+            signal: controller.signal
+        })
+        const bodyText = await response.text()
+        if (Buffer.byteLength(bodyText) > RESPONSE_LIMIT_BYTES) {
+            throw classifyBridgeError(502, 'gateway_rejected')
+        }
+        if (!response.headers.get('content-type')?.toLowerCase().startsWith('application/json')) {
+            throw classifyBridgeError(502, 'gateway_rejected')
+        }
+        if (response.status !== 200 && response.status !== 409) {
+            throw classifyBridgeError(502, 'gateway_rejected')
+        }
+        let parsed: unknown
+        try {
+            parsed = JSON.parse(bodyText)
+        } catch {
+            throw classifyBridgeError(502, 'gateway_rejected')
+        }
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+            throw classifyBridgeError(502, 'gateway_rejected')
+        }
+        return parsed as GatewayIdeWorkBody
     } catch (error) {
         if (isClassifyBridgeError(error)) {
             throw error
@@ -1596,6 +1988,38 @@ function assertPlanSessionSafe(response: PlanSessionResponse, token: string, raw
         'authorization'
     ]
     if (blockedFragments.some((fragment) => fragment && lower.includes(fragment))) {
+        throw classifyBridgeError(502, 'gateway_rejected')
+    }
+}
+
+function assertIdeWorkSafe(response: IdeWorkProjection, token: string) {
+    const serialized = JSON.stringify(response).toLowerCase()
+    const blockedFragments = [
+        token.toLowerCase(),
+        'run_',
+        'sess_',
+        'dec_',
+        'plan_',
+        'ap_',
+        'task_',
+        'result_',
+        'shield_',
+        'cockpit_',
+        'req_',
+        'gateway',
+        'bearer',
+        'authorization',
+        'token',
+        'client_nonce',
+        'task_packet',
+        'result_packet',
+        'copyable_worker_prompt',
+        'provider output',
+        'worker output',
+        'command line',
+        'source snippet'
+    ]
+    if (blockedFragments.some((fragment) => fragment && serialized.includes(fragment))) {
         throw classifyBridgeError(502, 'gateway_rejected')
     }
 }

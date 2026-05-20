@@ -2,6 +2,8 @@ import { Readable } from 'stream'
 import { Request, Response } from 'express'
 import sentinelCockpitController, {
     COCKPIT_ERROR_SCHEMA_VERSION,
+    COCKPIT_IDE_WORK_ACTION_PATH,
+    COCKPIT_IDE_WORK_STATUS_PATH,
     COCKPIT_ROUTE_PREFIX,
     COCKPIT_SNAPSHOT_PATH,
     DEFAULT_FLOWISE_LOCAL_HOST,
@@ -14,6 +16,8 @@ import sentinelCockpitController, {
     rawGuardedHeadersAreSafe,
     readFlowiseLocalConfig,
     validateCockpitRequest,
+    validateIdeWorkActionRequest,
+    validateIdeWorkStatusRequest,
     validateManualPacketRequest,
     validatePlanDecisionRequest,
     validateResultReviewRequest
@@ -108,6 +112,30 @@ function validServerIdePreview(overrides: Record<string, unknown> = {}) {
         what_will_not_happen: 'No files change and no backend work starts.',
         approval_copy: 'Backend work would require a separate reviewed approval step.',
         expires_at_label: 'No preview timer',
+        ...overrides
+    }
+}
+
+function validServerIdeWork(overrides: Record<string, unknown> = {}) {
+    return {
+        schema_version: 'sentinel.qvc.ide_work_approval.v1',
+        status: 'ok',
+        state: 'approval_pending',
+        status_label: 'Safe mock check available',
+        workflow_label: 'Safe planning workflow',
+        persona_label: 'Planning reviewer',
+        skill_label: 'Plain-English planning',
+        short_summary: 'Sentinel can rehearse backend-work approval without launching a worker.',
+        current_safe_step: 'Approve the mock check only if you want a safe rehearsal.',
+        what_can_happen_next: 'Sentinel can rehearse safe approval without launching a worker.',
+        what_will_not_happen: 'No files change, no commands run, and no worker is launched.',
+        approval_available: true,
+        cancel_available: false,
+        review_required_note: null,
+        terminal_note: null,
+        allowed_user_actions: ['approve_mock_backend_work'],
+        blocked_actions: ['No files are edited here.', 'No worker is launched here.', 'No system actions start here.'],
+        safe_error: null,
         ...overrides
     }
 }
@@ -478,6 +506,33 @@ describe('sentinel cockpit request validation', () => {
             })
         ).toThrow('result_review_invalid_input')
     })
+
+    it('validates IDE mock work requests with action-only local bodies', () => {
+        expect(validateIdeWorkActionRequest({ request_kind: 'ide_work_action', action: 'approve_mock_backend_work' })).toEqual({
+            request_kind: 'ide_work_action',
+            action: 'approve_mock_backend_work'
+        })
+        expect(validateIdeWorkActionRequest({ request_kind: 'ide_work_action', action: 'cancel_mock_backend_work' })).toEqual({
+            request_kind: 'ide_work_action',
+            action: 'cancel_mock_backend_work'
+        })
+        expect(validateIdeWorkStatusRequest({ request_kind: 'ide_work_status' })).toEqual({
+            request_kind: 'ide_work_status'
+        })
+        expect(() => validateIdeWorkActionRequest({ request_kind: 'ide_work_action', action: 'launch_worker' })).toThrow(
+            'ide_work_invalid_input'
+        )
+        expect(() =>
+            validateIdeWorkActionRequest({
+                request_kind: 'ide_work_action',
+                action: 'approve_mock_backend_work',
+                cockpit_ref: 'cockpit_hidden'
+            })
+        ).toThrow('ide_work_invalid_input')
+        expect(() => validateIdeWorkStatusRequest({ request_kind: 'ide_work_status', run_id: 'run_hidden' })).toThrow(
+            'ide_work_invalid_input'
+        )
+    })
 })
 
 describe('sentinel cockpit controller responses', () => {
@@ -841,6 +896,95 @@ describe('sentinel cockpit controller responses', () => {
         expect(res.bodyText).not.toContain('gateway')
     })
 
+    it('preserves sanitized IDE mock work on nonce-bound plan-session responses', async () => {
+        jest.spyOn(classifyBridge, 'classifyBridgeIsRequested').mockReturnValue(true)
+        jest.spyOn(classifyBridge, 'planDecisionBridgeIsRequested').mockReturnValue(true)
+        jest.spyOn(classifyBridge, 'createClassifySnapshot').mockResolvedValue({
+            schema_version: 'sentinel.cockpit_bridge.plan_session.v1',
+            status: 'ok',
+            state: 'plan_decision_required',
+            plain_summary: 'Sentinel can prepare a plan after an explicit decision.',
+            next_safe_action: 'choose_plan_decision',
+            allowed_user_actions: ['approve_plan', 'revise_plan', 'stop'],
+            blocked_actions: ['No files are edited here.'],
+            cockpit_ref: 'cockpit_a1b2c3d4e5f60718293a4b5c6d7e8f90',
+            plan_card: null,
+            safe_error: null,
+            route_card: validRouteCard(),
+            ide_work: validServerIdeWork()
+        } as any)
+        const body = JSON.stringify({
+            request_kind: 'goal',
+            plain_goal: 'plan this work',
+            client_nonce: 'a1b2c3d4e5f60718293a4b5c6d7e8f90'
+        })
+        const req = buildReq(body)
+        const res = buildRes()
+
+        await sentinelCockpitController.handleSnapshot(req, res)
+
+        const parsed = JSON.parse(res.bodyText)
+        expect(res.statusCode).toBe(200)
+        expect(parsed.ide_work).toEqual(validServerIdeWork())
+        expect(res.bodyText).not.toContain('client_nonce')
+        expect(res.bodyText).not.toContain('gateway')
+        expect(res.bodyText).not.toContain('task_packet')
+    })
+
+    it('routes IDE mock work action and status calls through the server bridge only', async () => {
+        const actionSpy = jest.spyOn(classifyBridge, 'createIdeWorkActionSession').mockResolvedValue({
+            schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+            status: 'ok',
+            ide_work: validServerIdeWork({
+                schema_version: 'sentinel.qvc.ide_work_progress.v1',
+                state: 'mock_in_progress',
+                status_label: 'Mock check in progress',
+                approval_available: false,
+                cancel_available: true,
+                allowed_user_actions: ['cancel_mock_backend_work']
+            }) as any,
+            safe_error: null
+        })
+        const statusSpy = jest.spyOn(classifyBridge, 'createIdeWorkStatusSession').mockResolvedValue({
+            schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+            status: 'ok',
+            ide_work: validServerIdeWork({
+                schema_version: 'sentinel.qvc.ide_work_result_review_required.v1',
+                state: 'review_required',
+                approval_available: false,
+                cancel_available: false,
+                review_required_note: 'Review is required before any work can be accepted.',
+                terminal_note: 'No files changed and no worker was launched.',
+                allowed_user_actions: ['none']
+            }) as any,
+            safe_error: null
+        })
+
+        const actionBody = JSON.stringify({ request_kind: 'ide_work_action', action: 'approve_mock_backend_work' })
+        const actionReq = buildReq(actionBody, {
+            path: COCKPIT_IDE_WORK_ACTION_PATH,
+            originalUrl: `${COCKPIT_ROUTE_PREFIX}${COCKPIT_IDE_WORK_ACTION_PATH}`
+        } as Partial<Request>)
+        const actionRes = buildRes()
+        await sentinelCockpitController.handleSnapshot(actionReq, actionRes)
+
+        expect(actionSpy).toHaveBeenCalledWith({ request_kind: 'ide_work_action', action: 'approve_mock_backend_work' })
+        expect(actionRes.statusCode).toBe(200)
+        expect(JSON.parse(actionRes.bodyText).ide_work.state).toBe('mock_in_progress')
+
+        const statusBody = JSON.stringify({ request_kind: 'ide_work_status' })
+        const statusReq = buildReq(statusBody, {
+            path: COCKPIT_IDE_WORK_STATUS_PATH,
+            originalUrl: `${COCKPIT_ROUTE_PREFIX}${COCKPIT_IDE_WORK_STATUS_PATH}`
+        } as Partial<Request>)
+        const statusRes = buildRes()
+        await sentinelCockpitController.handleSnapshot(statusReq, statusRes)
+
+        expect(statusSpy).toHaveBeenCalledWith({ request_kind: 'ide_work_status' })
+        expect(statusRes.statusCode).toBe(200)
+        expect(JSON.parse(statusRes.bodyText).ide_work.state).toBe('review_required')
+    })
+
     it('uses the server-side resume bridge only for resume requests when enabled', async () => {
         jest.spyOn(resumeBridge, 'resumeBridgeIsRequested').mockReturnValue(true)
         const createResumeSnapshot = jest.spyOn(resumeBridge, 'createResumeSnapshot').mockResolvedValue({
@@ -962,6 +1106,30 @@ describe('sentinel cockpit classify bridge', () => {
             allowed_user_actions: ['none'],
             blocked_reason: null,
             expires_at_label: 'No preview timer',
+            ...overrides
+        }
+    }
+
+    function validGatewayIdeWork(overrides: Record<string, unknown> = {}) {
+        return {
+            schema_version: 'sentinel.qvc.ide_work_approval.v1',
+            status: 'ok',
+            state: 'approval_pending',
+            status_label: 'Safe mock check available',
+            workflow_label: 'Safe planning workflow',
+            persona_label: 'Planning reviewer',
+            skill_label: 'Plain-English planning',
+            short_summary: 'Sentinel can rehearse backend-work approval without launching a worker.',
+            current_safe_step: 'Approve the mock check only if you want a safe rehearsal.',
+            what_can_happen_next: 'Sentinel can rehearse safe approval without launching a worker.',
+            what_will_not_happen: 'No files change, no commands run, and no worker is launched.',
+            approval_available: true,
+            cancel_available: false,
+            review_required_note: null,
+            terminal_note: null,
+            allowed_user_actions: ['approve_mock_backend_work'],
+            blocked_actions: ['No files are edited here.', 'No worker is launched here.', 'No system actions start here.'],
+            safe_error: null,
             ...overrides
         }
     }
@@ -1114,6 +1282,129 @@ describe('sentinel cockpit classify bridge', () => {
         expect(serializedPreview).not.toContain('allowed_user_actions')
         expect(serializedPreview).not.toContain('blocked_reason')
         expect(serialized).not.toContain(goalText)
+    })
+
+    it('projects IDE mock work only behind projection and action flags', async () => {
+        const validClassify = validGatewayClassify({ ide_work: validGatewayIdeWork() })
+        const flagOffFetch = jest.fn().mockResolvedValue(gatewayResponse(validClassify))
+        const flagOffSnapshot: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText },
+            {
+                config: buildClassifyConfig({
+                    BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1'
+                }),
+                fetchImpl: flagOffFetch as any
+            }
+        )
+        expect(flagOffSnapshot.ide_work).toBeUndefined()
+
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_PROJECTION: '1'
+        })
+        const fetchImpl = jest.fn().mockResolvedValue(gatewayResponse(validClassify))
+        const planSession: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
+            { config, fetchImpl: fetchImpl as any }
+        )
+        const serialized = JSON.stringify(planSession)
+
+        expect(planSession.ide_work).toEqual(
+            validServerIdeWork({
+                approval_available: false,
+                allowed_user_actions: ['none']
+            })
+        )
+        expect(serialized).not.toContain('run_hidden_123')
+        expect(serialized).not.toContain('session_hidden_123')
+        expect(serialized).not.toContain('decision_hidden_123')
+        expect(serialized).not.toContain('approval_challenge')
+        expect(serialized).not.toContain('task_packet')
+        expect(serialized).not.toContain(gatewayToken)
+    })
+
+    it('creates server-held IDE mock work action sessions without browser-supplied hidden values', async () => {
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_PROJECTION: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_ACTIONS: '1'
+        })
+        const fetchImpl = jest
+            .fn()
+            .mockResolvedValueOnce(gatewayResponse(validGatewayClassify({ ide_work: validGatewayIdeWork() })))
+            .mockResolvedValueOnce(
+                gatewayResponse({
+                    schema_version: 'sentinel.gateway.v1',
+                    status: 'ok',
+                    ide_work: validGatewayIdeWork({
+                        schema_version: 'sentinel.qvc.ide_work_progress.v1',
+                        state: 'mock_in_progress',
+                        status_label: 'Mock check in progress',
+                        current_safe_step: 'Wait for the mock check or cancel it.',
+                        approval_available: false,
+                        cancel_available: true,
+                        allowed_user_actions: ['cancel_mock_backend_work']
+                    })
+                })
+            )
+
+        const planSession: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
+            { config, fetchImpl: fetchImpl as any, requestId: 'req_classify_123' }
+        )
+        expect(planSession.ide_work.allowed_user_actions).toEqual(['approve_mock_backend_work'])
+
+        const actionSession = await classifyBridge.createIdeWorkActionSession(
+            { request_kind: 'ide_work_action', action: 'approve_mock_backend_work' },
+            { config, fetchImpl: fetchImpl as any, requestId: 'req_ide_work_123' }
+        )
+        const [url, init] = fetchImpl.mock.calls[1]
+        const body = JSON.parse(init.body)
+
+        expect(url).toBe('http://127.0.0.1:39173/v1/ide-work/action')
+        expect(body).toEqual({
+            schema_version: 'sentinel.gateway.v1',
+            request_id: 'req_ide_work_123',
+            client: {
+                client_type: 'flowise',
+                client_instance_id: 'flowise_sentinel_cockpit'
+            },
+            operator: {
+                operator_id: 'flowise_local_operator'
+            },
+            run_id: 'run_hidden_123',
+            sentinel_session_id: 'session_hidden_123',
+            request_kind: 'ide_work_action',
+            action: 'approve_mock_backend_work'
+        })
+        expect(actionSession.ide_work.state).toBe('mock_in_progress')
+        expect(actionSession.ide_work.allowed_user_actions).toEqual(['cancel_mock_backend_work'])
+        expect(JSON.stringify(actionSession)).not.toContain(gatewayToken)
+    })
+
+    it('omits unsafe IDE mock work projections while preserving the plan session', async () => {
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_PROJECTION: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_ACTIONS: '1'
+        })
+        const fetchImpl = jest.fn().mockResolvedValue(
+            gatewayResponse(
+                validGatewayClassify({
+                    ide_work: validGatewayIdeWork({
+                        short_summary: 'Provider model confidence should not display.'
+                    })
+                })
+            )
+        )
+
+        const planSession: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
+            { config, fetchImpl: fetchImpl as any }
+        )
+
+        expect(planSession.state).toBe('plan_decision_required')
+        expect(planSession.ide_work).toBeUndefined()
     })
 
     it.each([

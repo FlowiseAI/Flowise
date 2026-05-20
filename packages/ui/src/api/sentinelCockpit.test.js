@@ -4,7 +4,11 @@ jest.mock('@/store/constant', () => ({
 
 import {
     COCKPIT_SNAPSHOT_PATH,
+    COCKPIT_IDE_WORK_ACTION_PATH,
+    COCKPIT_IDE_WORK_STATUS_PATH,
     GOAL_REQUEST_BODY_KEYS,
+    IDE_WORK_ACTION_BODY_KEYS,
+    IDE_WORK_STATUS_BODY_KEYS,
     MANUAL_PACKET_BODY_KEYS,
     PLAN_DECISION_BODY_KEYS,
     PLAN_DECISION_REVISE_BODY_KEYS,
@@ -14,6 +18,10 @@ import {
     SNAPSHOT_KEYS,
     SentinelCockpitError,
     buildGoalBody,
+    buildIdeWorkActionBody,
+    buildIdeWorkActionUrl,
+    buildIdeWorkStatusBody,
+    buildIdeWorkStatusUrl,
     buildManualWorkerPacketBody,
     buildManualWorkerPacketUrl,
     buildPlanDecisionBody,
@@ -26,6 +34,8 @@ import {
     requestManualWorkerPacket,
     requestResultReview,
     requestGoalSnapshot,
+    requestIdeWorkAction,
+    requestIdeWorkStatus,
     requestResumeSnapshot
 } from './sentinelCockpit'
 
@@ -95,6 +105,28 @@ const validIdePreview = (overrides = {}) => ({
     ...overrides
 })
 
+const validIdeWork = (overrides = {}) => ({
+    schema_version: 'sentinel.qvc.ide_work_approval.v1',
+    status: 'ok',
+    state: 'approval_pending',
+    status_label: 'Safe mock check available',
+    workflow_label: 'Safe planning workflow',
+    persona_label: 'Planning reviewer',
+    skill_label: 'Plain-English planning',
+    short_summary: 'Sentinel can rehearse backend-work approval without launching a worker.',
+    current_safe_step: 'Approve the mock check only if you want a safe rehearsal.',
+    what_can_happen_next: 'Sentinel can rehearse safe approval without launching a worker.',
+    what_will_not_happen: 'No files change, no commands run, and no worker is launched.',
+    approval_available: true,
+    cancel_available: false,
+    review_required_note: null,
+    terminal_note: null,
+    allowed_user_actions: ['approve_mock_backend_work'],
+    blocked_actions: ['No files are edited here.', 'No worker is launched here.', 'No system actions start here.'],
+    safe_error: null,
+    ...overrides
+})
+
 describe('sentinelCockpit API wrapper', () => {
     afterEach(() => {
         jest.useRealTimers()
@@ -108,6 +140,8 @@ describe('sentinelCockpit API wrapper', () => {
         expect(buildPlanDecisionUrl()).toBe('http://127.0.0.1:3000/sentinel-cockpit/v1/plan-decision')
         expect(buildManualWorkerPacketUrl()).toBe('http://127.0.0.1:3000/sentinel-cockpit/v1/manual-worker-packet')
         expect(buildResultReviewUrl()).toBe('http://127.0.0.1:3000/sentinel-cockpit/v1/result-review')
+        expect(buildIdeWorkActionUrl()).toBe(`http://127.0.0.1:3000${COCKPIT_IDE_WORK_ACTION_PATH}`)
+        expect(buildIdeWorkStatusUrl()).toBe(`http://127.0.0.1:3000${COCKPIT_IDE_WORK_STATUS_PATH}`)
     })
 
     it('posts only the resume request body whitelist', async () => {
@@ -378,6 +412,78 @@ describe('sentinelCockpit API wrapper', () => {
         ).toThrow('invalid_request')
     })
 
+    it('posts only the IDE mock work action request body whitelist', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(
+            fetchResponse({
+                schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+                status: 'ok',
+                ide_work: validIdeWork({
+                    schema_version: 'sentinel.qvc.ide_work_progress.v1',
+                    state: 'mock_in_progress',
+                    status_label: 'Mock check in progress',
+                    approval_available: false,
+                    cancel_available: true,
+                    allowed_user_actions: ['cancel_mock_backend_work']
+                }),
+                safe_error: null
+            })
+        )
+
+        await requestIdeWorkAction({ action: ' approve_mock_backend_work ' }, { fetchImpl })
+
+        expect(fetchImpl).toHaveBeenCalledTimes(1)
+        const [url, options] = fetchImpl.mock.calls[0]
+        const body = JSON.parse(options.body)
+        expect(url).toBe('http://127.0.0.1:3000/sentinel-cockpit/v1/ide-work-action')
+        expect(options.method).toBe('POST')
+        expect(options.credentials).toBe('omit')
+        expect(options.referrerPolicy).toBe('no-referrer')
+        expect(options.cache).toBe('no-store')
+        expect(Object.keys(body).sort()).toEqual([...IDE_WORK_ACTION_BODY_KEYS].sort())
+        expect(body).toEqual({
+            request_kind: 'ide_work_action',
+            action: 'approve_mock_backend_work'
+        })
+        expect(JSON.stringify(fetchImpl.mock.calls)).not.toContain('127.0.0.1:39173')
+    })
+
+    it('posts only the IDE mock work status request body whitelist', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(
+            fetchResponse({
+                schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+                status: 'ok',
+                ide_work: validIdeWork({
+                    schema_version: 'sentinel.qvc.ide_work_result_review_required.v1',
+                    state: 'review_required',
+                    approval_available: false,
+                    cancel_available: false,
+                    review_required_note: 'Review is required before any work can be accepted.',
+                    terminal_note: 'No files changed and no worker was launched.',
+                    allowed_user_actions: ['none']
+                }),
+                safe_error: null
+            })
+        )
+
+        await requestIdeWorkStatus({}, { fetchImpl })
+
+        expect(fetchImpl).toHaveBeenCalledTimes(1)
+        const [url, options] = fetchImpl.mock.calls[0]
+        const body = JSON.parse(options.body)
+        expect(url).toBe('http://127.0.0.1:3000/sentinel-cockpit/v1/ide-work-status')
+        expect(Object.keys(body).sort()).toEqual([...IDE_WORK_STATUS_BODY_KEYS].sort())
+        expect(body).toEqual({ request_kind: 'ide_work_status' })
+    })
+
+    it('builds IDE mock work bodies without accepting hidden Gateway fields', () => {
+        expect(buildIdeWorkActionBody({ action: ' approve_mock_backend_work ' })).toEqual({
+            request_kind: 'ide_work_action',
+            action: 'approve_mock_backend_work'
+        })
+        expect(buildIdeWorkStatusBody()).toEqual({ request_kind: 'ide_work_status' })
+        expect(() => buildIdeWorkActionBody({ action: 'launch_worker' })).toThrow('invalid_request')
+    })
+
     it('uses isolated browser transport options without credentials or referrer', async () => {
         const fetchImpl = jest.fn().mockResolvedValue(fetchResponse(validSnapshot()))
 
@@ -422,6 +528,18 @@ describe('sentinelCockpit API wrapper', () => {
             await expect(
                 requestGoalSnapshot({ plainGoal: 'Plan the next safe step', [key]: 'blocked' }, { fetchImpl })
             ).rejects.toMatchObject({
+                code: 'invalid_request'
+            })
+            expect(fetchImpl).not.toHaveBeenCalled()
+        }
+    )
+
+    it.each(['run_id', 'token', 'authorization', 'clientNonce', 'cockpitRef', 'gatewayUrl', 'command', 'workerType'])(
+        'rejects forbidden IDE mock work caller key %s before any network call',
+        async (key) => {
+            const fetchImpl = jest.fn()
+
+            await expect(requestIdeWorkAction({ action: 'approve_mock_backend_work', [key]: 'blocked' }, { fetchImpl })).rejects.toMatchObject({
                 code: 'invalid_request'
             })
             expect(fetchImpl).not.toHaveBeenCalled()
@@ -635,6 +753,56 @@ describe('sentinelCockpit API wrapper', () => {
         expect(JSON.stringify(session.ide_preview)).not.toMatch(
             /schema_version|ide_preview_ready|approval_required|allowed_user_actions|blocked_reason|gateway|token|client_nonce|cockpit_ref|sha256:/i
         )
+    })
+
+    it('preserves valid IDE mock work from initial goal plan-session responses', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(
+            fetchResponse(
+                validPlanSession({
+                    route_card: validRouteCard(),
+                    ide_preview: validIdePreview(),
+                    ide_work: validIdeWork()
+                })
+            )
+        )
+
+        const session = await requestGoalSnapshot(
+            {
+                plainGoal: 'Plan the next safe step',
+                clientNonce: 'nonce_abcdefghijklmnop'
+            },
+            { fetchImpl }
+        )
+
+        expect(session.ide_work).toEqual(validIdeWork())
+        expect(Object.keys(session.ide_work).sort()).toEqual(Object.keys(validIdeWork()).sort())
+        expect(Object.keys(session).sort()).toEqual([...PLAN_SESSION_KEYS, 'ide_preview', 'ide_work', 'route_card'].sort())
+        expect(JSON.stringify(session.ide_work)).not.toMatch(
+            /run_|sentinel_session|session_id|client_nonce|cockpit_ref|gateway|token|authorization|task_packet|source snippet/i
+        )
+    })
+
+    it('omits unsafe IDE mock work from initial goal plan-session responses', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(
+            fetchResponse(
+                validPlanSession({
+                    route_card: validRouteCard(),
+                    ide_preview: validIdePreview(),
+                    ide_work: validIdeWork({ short_summary: 'Provider model confidence should not display.' })
+                })
+            )
+        )
+
+        const session = await requestGoalSnapshot(
+            {
+                plainGoal: 'Plan the next safe step',
+                clientNonce: 'nonce_abcdefghijklmnop'
+            },
+            { fetchImpl }
+        )
+
+        expect(session).not.toHaveProperty('ide_work')
+        expect(Object.keys(session).sort()).toEqual([...PLAN_SESSION_KEYS, 'ide_preview', 'route_card'].sort())
     })
 
     it('omits invalid IDE preview from initial goal plan-session responses', async () => {

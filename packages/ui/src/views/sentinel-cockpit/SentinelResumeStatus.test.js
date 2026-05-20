@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 
 import {
     requestGoalSnapshot,
+    requestIdeWorkAction,
     requestManualWorkerPacket,
     requestPlanDecision,
     requestResultReview,
@@ -24,6 +25,7 @@ import SentinelResumeStatus, {
     REVISION_UNSAFE_MESSAGE,
     ResumeSnapshot,
     generateClientNonce,
+    loadIdeWorkActionSession,
     isManualPacketRequiredSession,
     isPlanDecisionRequiredSession,
     isResultReviewRequiredSession,
@@ -36,6 +38,7 @@ import SentinelResumeStatus, {
 
 jest.mock('@/api/sentinelCockpit', () => ({
     requestGoalSnapshot: jest.fn(),
+    requestIdeWorkAction: jest.fn(),
     requestManualWorkerPacket: jest.fn(),
     requestPlanDecision: jest.fn(),
     requestResultReview: jest.fn(),
@@ -104,6 +107,28 @@ const safeIdePreview = (overrides = {}) => ({
     what_will_not_happen: 'No files change and no backend work starts.',
     approval_copy: 'Backend work would require a separate reviewed approval step.',
     expires_at_label: 'No preview timer',
+    ...overrides
+})
+
+const safeIdeWork = (overrides = {}) => ({
+    schema_version: 'sentinel.qvc.ide_work_approval.v1',
+    status: 'ok',
+    state: 'approval_pending',
+    status_label: 'Safe mock check available',
+    workflow_label: 'Safe planning workflow',
+    persona_label: 'Planning reviewer',
+    skill_label: 'Plain-English planning',
+    short_summary: 'Sentinel can rehearse backend-work approval without launching a worker.',
+    current_safe_step: 'Approve the mock check only if you want a safe rehearsal.',
+    what_can_happen_next: 'Sentinel can rehearse safe approval without launching a worker.',
+    what_will_not_happen: 'No files change, no commands run, and no worker is launched.',
+    approval_available: true,
+    cancel_available: false,
+    review_required_note: null,
+    terminal_note: null,
+    allowed_user_actions: ['approve_mock_backend_work'],
+    blocked_actions: ['No files are edited here.', 'No worker is launched here.', 'No system actions start here.'],
+    safe_error: null,
     ...overrides
 })
 
@@ -243,6 +268,7 @@ describe('SentinelResumeStatus', () => {
         }
         requestResumeSnapshot.mockReset()
         requestGoalSnapshot.mockReset()
+        requestIdeWorkAction.mockReset()
         requestManualWorkerPacket.mockReset()
         requestPlanDecision.mockReset()
         requestResultReview.mockReset()
@@ -814,6 +840,62 @@ describe('SentinelResumeStatus', () => {
         submitForm()
         await waitForAssertion(() => expect(container.textContent).toContain(NOT_FOUND_ERROR))
         expect(container.textContent).not.toContain('Read-only work preview')
+    })
+
+    it('renders a safe mock check card without exposing hidden action values', () => {
+        const html = renderToStaticMarkup(
+            <PlanSessionCard
+                snapshot={safePlanSession({
+                    ide_work: safeIdeWork()
+                })}
+                canApproveMockWork
+            />
+        )
+
+        expect(html).toContain('Safe mock check')
+        expect(html).toContain('Safe mock check available')
+        expect(html).toContain('Approve safe mock check')
+        expect(html).toContain('Display-only rehearsal. No real IDE, worker, or file change starts here.')
+        expect(html).not.toMatch(
+            /approve_mock_backend_work|cancel_mock_backend_work|run_|sentinel_session|session_id|client_nonce|cockpit_ref|gateway|token|authorization|task_packet|source snippet/i
+        )
+    })
+
+    it('posts only a safe mock-check action and displays the returned status', async () => {
+        requestGoalSnapshot.mockResolvedValueOnce(
+            safePlanSession({
+                ide_work: safeIdeWork()
+            })
+        )
+        requestIdeWorkAction.mockResolvedValueOnce({
+            schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+            status: 'ok',
+            ide_work: safeIdeWork({
+                schema_version: 'sentinel.qvc.ide_work_progress.v1',
+                state: 'mock_in_progress',
+                status_label: 'Mock check in progress',
+                short_summary: 'Sentinel is rehearsing backend-work approval without launching a worker.',
+                current_safe_step: 'Wait for the mock check or cancel it.',
+                approval_available: false,
+                cancel_available: true,
+                allowed_user_actions: ['cancel_mock_backend_work']
+            }),
+            safe_error: null
+        })
+        const { container, setGoalInput, submitGoalForm, clickButton } = renderInteractive()
+
+        setGoalInput('Please make a simple safe plan.')
+        submitGoalForm()
+
+        await waitForAssertion(() => expect(container.textContent).toContain('Approve safe mock check'))
+        clickButton('Approve safe mock check')
+
+        await waitForAssertion(() => expect(requestIdeWorkAction).toHaveBeenCalledWith({ action: 'approve_mock_backend_work' }))
+        expect(container.textContent).toContain('Mock check in progress')
+        expect(container.textContent).toContain('Cancel mock check')
+        expect(container.textContent).not.toMatch(
+            /run_|sentinel_session|session_id|client_nonce|cockpit_ref|gateway|token|authorization|task_packet|source snippet/i
+        )
     })
 
     it('renders only fixed loading copy and Submit/Clear controls while a request is pending', async () => {

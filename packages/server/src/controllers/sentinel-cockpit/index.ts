@@ -11,6 +11,8 @@ export const COCKPIT_SNAPSHOT_PATH = '/snapshot'
 export const COCKPIT_PLAN_DECISION_PATH = '/plan-decision'
 export const COCKPIT_MANUAL_WORKER_PACKET_PATH = '/manual-worker-packet'
 export const COCKPIT_RESULT_REVIEW_PATH = '/result-review'
+export const COCKPIT_IDE_WORK_ACTION_PATH = '/ide-work-action'
+export const COCKPIT_IDE_WORK_STATUS_PATH = '/ide-work-status'
 export const COCKPIT_BODY_LIMIT_BYTES = 16 * 1024
 export const COCKPIT_RESPONSE_LIMIT_BYTES = 64 * 1024
 export const FLOWISE_LOCAL_ORIGIN_ENV = 'FLOWISE_LOCAL_ORIGIN'
@@ -24,6 +26,8 @@ const REQUEST_KINDS = Object.freeze(['goal', 'choice', 'resume'])
 const PLAN_DECISION_REQUEST_KINDS = Object.freeze(['plan_decision'])
 const MANUAL_PACKET_REQUEST_KINDS = Object.freeze(['manual_worker_packet'])
 const RESULT_REVIEW_REQUEST_KINDS = Object.freeze(['result_review'])
+const IDE_WORK_ACTION_REQUEST_KINDS = Object.freeze(['ide_work_action'])
+const IDE_WORK_STATUS_REQUEST_KINDS = Object.freeze(['ide_work_status'])
 const CHOICES = Object.freeze(['revise', 'stop', 'cancel', 'continue', 'approve_manual_handoff', 'confirm_result_source_status_only'])
 const PLAN_DECISIONS = Object.freeze(['approve_plan', 'revise_plan', 'stop'])
 const SNAPSHOT_KEYS = Object.freeze([
@@ -58,6 +62,7 @@ const PLAN_SESSION_KEYS = Object.freeze([
 ])
 const ROUTE_CARD_KEY = 'route_card'
 const IDE_PREVIEW_KEY = 'ide_preview'
+const IDE_WORK_KEY = 'ide_work'
 const IDE_PREVIEW_KEYS = Object.freeze([
     'status_label',
     'workflow_label',
@@ -69,6 +74,46 @@ const IDE_PREVIEW_KEYS = Object.freeze([
     'approval_copy',
     'expires_at_label'
 ])
+const IDE_WORK_KEYS = Object.freeze([
+    'schema_version',
+    'status',
+    'state',
+    'status_label',
+    'workflow_label',
+    'persona_label',
+    'skill_label',
+    'short_summary',
+    'current_safe_step',
+    'what_can_happen_next',
+    'what_will_not_happen',
+    'approval_available',
+    'cancel_available',
+    'review_required_note',
+    'terminal_note',
+    'allowed_user_actions',
+    'blocked_actions',
+    'safe_error'
+])
+const IDE_WORK_RESPONSE_KEYS = Object.freeze(['schema_version', 'status', IDE_WORK_KEY, 'safe_error'])
+const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
+    'sentinel.qvc.ide_work_approval.v1',
+    'sentinel.qvc.ide_work_progress.v1',
+    'sentinel.qvc.ide_work_result_review_required.v1'
+])
+const IDE_WORK_STATES = Object.freeze([
+    'disabled',
+    'approval_unavailable',
+    'approval_pending',
+    'starting',
+    'mock_in_progress',
+    'cancel_requested',
+    'cancelled',
+    'timed_out',
+    'failed_closed',
+    'review_required',
+    'expired'
+])
+const IDE_WORK_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'none'])
 const ROUTE_CARD_KEYS = Object.freeze([
     'schema_version',
     'category',
@@ -145,6 +190,39 @@ const IDE_PREVIEW_FORBIDDEN_FRAGMENTS = Object.freeze([
     'subprocess',
     'shell',
     'command',
+    'provider',
+    'model',
+    'repo-write',
+    'commit',
+    'publish',
+    'deploy',
+    '127.0.0.1',
+    'localhost',
+    ':39173',
+    'c:\\',
+    '/mnt/'
+])
+const IDE_WORK_FORBIDDEN_FRAGMENTS = Object.freeze([
+    ...ROUTE_CARD_FORBIDDEN_FRAGMENTS,
+    'raw dto',
+    'json dto',
+    'provider output',
+    'worker output',
+    'tool trace',
+    'confidence',
+    'command line',
+    'environment variable',
+    'source snippet',
+    'codex',
+    'opencode',
+    'hermes',
+    'mcp',
+    'agentflow',
+    'hitl',
+    'worker_type',
+    'worker_launch',
+    'subprocess',
+    'shell',
     'provider',
     'model',
     'repo-write',
@@ -238,6 +316,8 @@ type ErrorCode =
     | 'result_review_nonce_mismatch'
     | 'result_review_state_mismatch'
     | 'plan_decision_invalid_input'
+    | 'ide_work_invalid_input'
+    | 'ide_work_unavailable'
     | 'gateway_unavailable'
     | 'gateway_rejected'
     | 'internal_error'
@@ -286,6 +366,18 @@ async function handleSnapshot(req: Request, res: Response): Promise<void> {
             sendJson(res, 200, validatedPlanSession)
             return
         }
+        if (req.path === COCKPIT_IDE_WORK_ACTION_PATH) {
+            const ideWorkRequest = validateIdeWorkActionRequest(body)
+            const ideWorkSession = await classifyBridge.createIdeWorkActionSession(ideWorkRequest)
+            sendJson(res, 200, validateIdeWorkSession(ideWorkSession))
+            return
+        }
+        if (req.path === COCKPIT_IDE_WORK_STATUS_PATH) {
+            const ideWorkRequest = validateIdeWorkStatusRequest(body)
+            const ideWorkSession = await classifyBridge.createIdeWorkStatusSession(ideWorkRequest)
+            sendJson(res, 200, validateIdeWorkSession(ideWorkSession))
+            return
+        }
 
         const cockpitRequest = validateCockpitRequest(body)
         const snapshot =
@@ -310,9 +402,14 @@ async function handleSnapshot(req: Request, res: Response): Promise<void> {
 
 export function admitRequest(req: Request): AdmissionResult {
     if (
-        ![COCKPIT_SNAPSHOT_PATH, COCKPIT_PLAN_DECISION_PATH, COCKPIT_MANUAL_WORKER_PACKET_PATH, COCKPIT_RESULT_REVIEW_PATH].includes(
-            req.path
-        ) ||
+        ![
+            COCKPIT_SNAPSHOT_PATH,
+            COCKPIT_PLAN_DECISION_PATH,
+            COCKPIT_MANUAL_WORKER_PACKET_PATH,
+            COCKPIT_RESULT_REVIEW_PATH,
+            COCKPIT_IDE_WORK_ACTION_PATH,
+            COCKPIT_IDE_WORK_STATUS_PATH
+        ].includes(req.path) ||
         hasQueryString(req)
     ) {
         return { ok: false, statusCode: 404, code: 'not_found' }
@@ -492,6 +589,57 @@ export function validateResultReviewRequest(body: unknown): classifyBridge.Resul
         result_text: validateResultText(requestBody.result_text),
         review_only_confirmation: true
     }
+}
+
+export function validateIdeWorkActionRequest(body: unknown): classifyBridge.IdeWorkActionRequest {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    const requestBody = body as Record<string, unknown>
+    const requestKind = requestBody.request_kind
+    if (typeof requestKind !== 'string' || !IDE_WORK_ACTION_REQUEST_KINDS.includes(requestKind)) {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    assertExactAllowedKeys(requestBody, Object.freeze(['request_kind', 'action']), 'ide_work_invalid_input')
+    rejectForbiddenFields(requestBody)
+    const action = requestBody.action
+    if (typeof action !== 'string' || !['approve_mock_backend_work', 'cancel_mock_backend_work'].includes(action)) {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    return {
+        request_kind: 'ide_work_action',
+        action
+    } as classifyBridge.IdeWorkActionRequest
+}
+
+export function validateIdeWorkStatusRequest(body: unknown): classifyBridge.IdeWorkStatusRequest {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    const requestBody = body as Record<string, unknown>
+    const requestKind = requestBody.request_kind
+    if (typeof requestKind !== 'string' || !IDE_WORK_STATUS_REQUEST_KINDS.includes(requestKind)) {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    assertExactAllowedKeys(requestBody, Object.freeze(['request_kind']), 'ide_work_invalid_input')
+    rejectForbiddenFields(requestBody)
+    return {
+        request_kind: 'ide_work_status'
+    }
+}
+
+function validateIdeWorkSession(session: {
+    schema_version: typeof classifyBridge.IDE_WORK_BRIDGE_SCHEMA_VERSION
+    status: 'ok'
+    ide_work: classifyBridge.IdeWorkProjection
+    safe_error: null
+}) {
+    assertResponseKeys(session as unknown as Record<string, unknown>, IDE_WORK_RESPONSE_KEYS)
+    if (session.schema_version !== classifyBridge.IDE_WORK_BRIDGE_SCHEMA_VERSION || session.status !== 'ok' || session.safe_error !== null) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    validateIdeWork(session.ide_work)
+    return session
 }
 
 function normalizedHeadersAreSafe(headers: Request['headers']): boolean {
@@ -748,10 +896,11 @@ function validatePlanSession(planSession: classifyBridge.PlanSessionResponse) {
     assertResponseKeys(
         planSession as unknown as Record<string, unknown>,
         PLAN_SESSION_KEYS,
-        Object.freeze([ROUTE_CARD_KEY, IDE_PREVIEW_KEY])
+        Object.freeze([ROUTE_CARD_KEY, IDE_PREVIEW_KEY, IDE_WORK_KEY])
     )
     validateRouteCard((planSession as classifyBridge.PlanSessionResponse & { route_card?: unknown }).route_card)
     validateIdePreview((planSession as classifyBridge.PlanSessionResponse & { ide_preview?: unknown }).ide_preview)
+    validateIdeWork((planSession as classifyBridge.PlanSessionResponse & { ide_work?: unknown }).ide_work)
     if (planSession.schema_version !== classifyBridge.PLAN_SESSION_SCHEMA_VERSION || !['ok', 'error'].includes(planSession.status)) {
         throw httpError(500, 'invalid_snapshot')
     }
@@ -880,6 +1029,70 @@ function validateIdePreview(idePreview: unknown) {
     if (IDE_PREVIEW_FORBIDDEN_FRAGMENTS.some((fragment) => lower.includes(fragment))) {
         throw httpError(500, 'invalid_snapshot')
     }
+}
+
+function validateIdeWork(ideWork: unknown) {
+    if (ideWork == null) {
+        return
+    }
+    if (!ideWork || typeof ideWork !== 'object' || Array.isArray(ideWork)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const work = ideWork as Record<string, unknown>
+    assertResponseKeys(work, IDE_WORK_KEYS)
+    if (typeof work.schema_version !== 'string' || !IDE_WORK_SCHEMA_VERSIONS.includes(work.schema_version)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (work.status !== 'ok' || typeof work.state !== 'string' || !IDE_WORK_STATES.includes(work.state)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    validateIdePreviewText(work.status_label, 80)
+    validateIdePreviewText(work.workflow_label, 80)
+    validateIdePreviewText(work.persona_label, 80)
+    validateIdePreviewText(work.skill_label, 80)
+    validateIdePreviewText(work.short_summary, 240)
+    validateIdePreviewText(work.current_safe_step, 240)
+    validateIdePreviewText(work.what_can_happen_next, 260)
+    validateIdePreviewText(work.what_will_not_happen, 260)
+    if (typeof work.approval_available !== 'boolean' || typeof work.cancel_available !== 'boolean') {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    validateOptionalIdeWorkText(work.review_required_note, 180)
+    validateOptionalIdeWorkText(work.terminal_note, 180)
+    validateOptionalIdeWorkText(work.safe_error, 80)
+    if (
+        !Array.isArray(work.allowed_user_actions) ||
+        !work.allowed_user_actions.length ||
+        work.allowed_user_actions.some((action) => typeof action !== 'string' || !IDE_WORK_ACTIONS.includes(action))
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (
+        !Array.isArray(work.blocked_actions) ||
+        !work.blocked_actions.length ||
+        work.blocked_actions.some((action) => {
+            try {
+                validateIdePreviewText(action, 180)
+                return false
+            } catch {
+                return true
+            }
+        })
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (Buffer.byteLength(JSON.stringify(work)) > 4096) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const lower = JSON.stringify(work).toLowerCase()
+    if (IDE_WORK_FORBIDDEN_FRAGMENTS.some((fragment) => lower.includes(fragment))) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validateOptionalIdeWorkText(value: unknown, maxLength: number) {
+    if (value === null) return
+    validateIdePreviewText(value, maxLength)
 }
 
 function validateIdePreviewText(value: unknown, maxLength: number) {

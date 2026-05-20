@@ -4,6 +4,8 @@ export const COCKPIT_SNAPSHOT_PATH = '/sentinel-cockpit/v1/snapshot'
 export const COCKPIT_PLAN_DECISION_PATH = '/sentinel-cockpit/v1/plan-decision'
 export const COCKPIT_MANUAL_WORKER_PACKET_PATH = '/sentinel-cockpit/v1/manual-worker-packet'
 export const COCKPIT_RESULT_REVIEW_PATH = '/sentinel-cockpit/v1/result-review'
+export const COCKPIT_IDE_WORK_ACTION_PATH = '/sentinel-cockpit/v1/ide-work-action'
+export const COCKPIT_IDE_WORK_STATUS_PATH = '/sentinel-cockpit/v1/ide-work-status'
 export const SNAPSHOT_SCHEMA_VERSION = 'sentinel.cockpit_bridge.snapshot.v1'
 export const PLAN_SESSION_SCHEMA_VERSION = 'sentinel.cockpit_bridge.plan_session.v1'
 export const RESUME_REQUEST_KIND = 'resume'
@@ -11,6 +13,8 @@ export const GOAL_REQUEST_KIND = 'goal'
 export const PLAN_DECISION_REQUEST_KIND = 'plan_decision'
 export const MANUAL_PACKET_REQUEST_KIND = 'manual_worker_packet'
 export const RESULT_REVIEW_REQUEST_KIND = 'result_review'
+export const IDE_WORK_ACTION_REQUEST_KIND = 'ide_work_action'
+export const IDE_WORK_STATUS_REQUEST_KIND = 'ide_work_status'
 export const REQUEST_BODY_KEYS = Object.freeze(['request_kind', 'checkpoint_ref', 'displayed_prompt_ref', 'client_nonce'])
 export const GOAL_REQUEST_BODY_KEYS = Object.freeze(['request_kind', 'plain_goal', 'client_nonce'])
 export const PLAN_DECISION_BODY_KEYS = Object.freeze(['request_kind', 'cockpit_ref', 'client_nonce', 'decision'])
@@ -23,6 +27,8 @@ export const RESULT_REVIEW_BODY_KEYS = Object.freeze([
     'result_text',
     'review_only_confirmation'
 ])
+export const IDE_WORK_ACTION_BODY_KEYS = Object.freeze(['request_kind', 'action'])
+export const IDE_WORK_STATUS_BODY_KEYS = Object.freeze(['request_kind'])
 export const SNAPSHOT_KEYS = Object.freeze([
     'schema_version',
     'status',
@@ -91,6 +97,47 @@ const IDE_PREVIEW_FIELD_LENGTHS = Object.freeze({
 })
 const IDE_PREVIEW_FORBIDDEN_TEXT =
     /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:|127\.0\.0\.1|localhost|:39173|provider|model|confidence|selected\s+worker|active\s+agent|agent\s+started|running\s+task|queued|launched|executing|tool\s+call|command\s*[:=]|action_inputs/i
+const IDE_WORK_KEYS = Object.freeze([
+    'schema_version',
+    'status',
+    'state',
+    'status_label',
+    'workflow_label',
+    'persona_label',
+    'skill_label',
+    'short_summary',
+    'current_safe_step',
+    'what_can_happen_next',
+    'what_will_not_happen',
+    'approval_available',
+    'cancel_available',
+    'review_required_note',
+    'terminal_note',
+    'allowed_user_actions',
+    'blocked_actions',
+    'safe_error'
+])
+const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
+    'sentinel.qvc.ide_work_approval.v1',
+    'sentinel.qvc.ide_work_progress.v1',
+    'sentinel.qvc.ide_work_result_review_required.v1'
+])
+const IDE_WORK_STATES = Object.freeze([
+    'disabled',
+    'approval_unavailable',
+    'approval_pending',
+    'starting',
+    'mock_in_progress',
+    'cancel_requested',
+    'cancelled',
+    'timed_out',
+    'failed_closed',
+    'review_required',
+    'expired'
+])
+const IDE_WORK_ALLOWED_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'none'])
+const IDE_WORK_FORBIDDEN_TEXT =
+    /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:|127\.0\.0\.1|localhost|:39173|provider|model|confidence|selected\s+worker|active\s+agent|agent\s+started|running\s+task|tool\s+call|command\s*[:=]|action_inputs|adapter|argv|nonce|hash|source\s+snippet/i
 export const CLOSED_ERROR_CODES = Object.freeze([
     'sentinel_classify_unavailable',
     'sentinel_classify_malformed',
@@ -128,6 +175,8 @@ export const CLOSED_ERROR_CODES = Object.freeze([
     'result_review_consumed',
     'result_review_nonce_mismatch',
     'result_review_state_mismatch',
+    'ide_work_invalid_input',
+    'ide_work_unavailable',
     'plan_decision_invalid_input',
     'gateway_unavailable',
     'gateway_rejected',
@@ -139,6 +188,7 @@ const GOAL_CALLER_INPUT_KEYS = Object.freeze(['plainGoal', 'clientNonce'])
 const PLAN_DECISION_CALLER_INPUT_KEYS = Object.freeze(['cockpitRef', 'clientNonce', 'decision', 'revisionText'])
 const MANUAL_PACKET_CALLER_INPUT_KEYS = Object.freeze(['cockpitRef', 'clientNonce'])
 const RESULT_REVIEW_CALLER_INPUT_KEYS = Object.freeze(['cockpitRef', 'clientNonce', 'resultText', 'reviewOnlyConfirmation'])
+const IDE_WORK_ACTION_CALLER_INPUT_KEYS = Object.freeze(['action'])
 const PLAN_DECISIONS = Object.freeze(['approve_plan', 'revise_plan', 'stop'])
 const FORBIDDEN_CALLER_KEYS = Object.freeze([
     'run_id',
@@ -234,6 +284,16 @@ export async function requestResultReview(input = {}, options = {}) {
     return requestJson(buildResultReviewUrl(), buildResultReviewBody(input), options, readPlanSessionResponse)
 }
 
+export async function requestIdeWorkAction(input = {}, options = {}) {
+    validateCallerInput(input, IDE_WORK_ACTION_CALLER_INPUT_KEYS)
+    return requestJson(buildIdeWorkActionUrl(), buildIdeWorkActionBody(input), options, readIdeWorkResponse)
+}
+
+export async function requestIdeWorkStatus(input = {}, options = {}) {
+    validateCallerInput(input, [])
+    return requestJson(buildIdeWorkStatusUrl(), buildIdeWorkStatusBody(input), options, readIdeWorkResponse)
+}
+
 async function requestSnapshot(body, options = {}, responseOptions = {}) {
     return requestJson(buildSnapshotUrl(), body, options, (response) => readSnapshotResponse(response, responseOptions))
 }
@@ -290,6 +350,14 @@ export function buildResultReviewUrl() {
     return `${String(baseURL).replace(/\/+$/, '')}${COCKPIT_RESULT_REVIEW_PATH}`
 }
 
+export function buildIdeWorkActionUrl() {
+    return `${String(baseURL).replace(/\/+$/, '')}${COCKPIT_IDE_WORK_ACTION_PATH}`
+}
+
+export function buildIdeWorkStatusUrl() {
+    return `${String(baseURL).replace(/\/+$/, '')}${COCKPIT_IDE_WORK_STATUS_PATH}`
+}
+
 export function buildResumeBody(input = {}) {
     const body = { request_kind: RESUME_REQUEST_KIND }
     const checkpointRef = readOptionalString(input.checkpointRef)
@@ -342,6 +410,23 @@ export function buildResultReviewBody(input = {}) {
         client_nonce: readRequiredString(input.clientNonce),
         result_text: readRequiredString(input.resultText),
         review_only_confirmation: true
+    }
+}
+
+export function buildIdeWorkActionBody(input = {}) {
+    const action = readRequiredString(input.action)
+    if (!['approve_mock_backend_work', 'cancel_mock_backend_work'].includes(action)) {
+        throw new SentinelCockpitError('invalid_request')
+    }
+    return {
+        request_kind: IDE_WORK_ACTION_REQUEST_KIND,
+        action
+    }
+}
+
+export function buildIdeWorkStatusBody() {
+    return {
+        request_kind: IDE_WORK_STATUS_REQUEST_KIND
     }
 }
 
@@ -411,6 +496,36 @@ async function readPlanSessionResponse(response) {
     return narrowPlanSession(body)
 }
 
+async function readIdeWorkResponse(response) {
+    if (!response || typeof response.ok !== 'boolean') {
+        throw new SentinelCockpitError('sentinel_resume_unavailable')
+    }
+
+    let body
+    try {
+        body = await response.json()
+    } catch (_error) {
+        throw new SentinelCockpitError('sentinel_resume_malformed', response.status)
+    }
+
+    if (!response.ok) {
+        throw new SentinelCockpitError(readClosedErrorCode(body), response.status)
+    }
+    if (!isPlainRecord(body) || body.schema_version !== 'sentinel.cockpit_bridge.ide_work.v1' || body.status !== 'ok') {
+        throw new SentinelCockpitError('sentinel_resume_malformed')
+    }
+    const ideWork = narrowIdeWork(body.ide_work)
+    if (!ideWork || body.safe_error !== null) {
+        throw new SentinelCockpitError('sentinel_resume_malformed')
+    }
+    return {
+        schema_version: body.schema_version,
+        status: 'ok',
+        ide_work: ideWork,
+        safe_error: null
+    }
+}
+
 function narrowSnapshot(body, options = {}) {
     if (!isPlainRecord(body)) {
         throw new SentinelCockpitError('sentinel_resume_malformed')
@@ -474,6 +589,8 @@ function narrowPlanSession(body, options = {}) {
     if (options.allowIdePreview === true && body.state === 'plan_decision_required') {
         const idePreview = narrowIdePreview(body.ide_preview)
         if (idePreview) narrowed.ide_preview = idePreview
+        const ideWork = narrowIdeWork(body.ide_work)
+        if (ideWork) narrowed.ide_work = ideWork
     }
     return narrowed
 }
@@ -522,6 +639,60 @@ function narrowIdePreview(value) {
     }
 
     return IDE_PREVIEW_FORBIDDEN_TEXT.test(JSON.stringify(preview)) ? null : preview
+}
+
+function narrowIdeWork(value) {
+    if (!isPlainRecord(value)) return null
+
+    const keys = Object.keys(value)
+    if (keys.length !== IDE_WORK_KEYS.length || keys.some((key) => !IDE_WORK_KEYS.includes(key))) return null
+    if (!IDE_WORK_SCHEMA_VERSIONS.includes(value.schema_version) || value.status !== 'ok' || !IDE_WORK_STATES.includes(value.state)) {
+        return null
+    }
+    if (typeof value.approval_available !== 'boolean' || typeof value.cancel_available !== 'boolean') return null
+    if (
+        !Array.isArray(value.allowed_user_actions) ||
+        !value.allowed_user_actions.length ||
+        value.allowed_user_actions.some((action) => typeof action !== 'string' || !IDE_WORK_ALLOWED_ACTIONS.includes(action))
+    ) {
+        return null
+    }
+    if (!Array.isArray(value.blocked_actions) || !value.blocked_actions.length) return null
+
+    const work = {
+        schema_version: value.schema_version,
+        status: 'ok',
+        state: value.state,
+        status_label: readIdePreviewString(value.status_label, 80),
+        workflow_label: readIdePreviewString(value.workflow_label, 80),
+        persona_label: readIdePreviewString(value.persona_label, 80),
+        skill_label: readIdePreviewString(value.skill_label, 80),
+        short_summary: readIdePreviewString(value.short_summary, 240),
+        current_safe_step: readIdePreviewString(value.current_safe_step, 240),
+        what_can_happen_next: readIdePreviewString(value.what_can_happen_next, 260),
+        what_will_not_happen: readIdePreviewString(value.what_will_not_happen, 260),
+        approval_available: value.approval_available,
+        cancel_available: value.cancel_available,
+        review_required_note: value.review_required_note === null ? null : readIdePreviewString(value.review_required_note, 180),
+        terminal_note: value.terminal_note === null ? null : readIdePreviewString(value.terminal_note, 180),
+        allowed_user_actions: [...value.allowed_user_actions],
+        blocked_actions: value.blocked_actions.map((action) => readIdePreviewString(action, 180)),
+        safe_error: value.safe_error === null ? null : readIdePreviewString(value.safe_error, 80)
+    }
+    if (
+        !work.status_label ||
+        !work.workflow_label ||
+        !work.persona_label ||
+        !work.skill_label ||
+        !work.short_summary ||
+        !work.current_safe_step ||
+        !work.what_can_happen_next ||
+        !work.what_will_not_happen ||
+        work.blocked_actions.some((action) => !action)
+    ) {
+        return null
+    }
+    return IDE_WORK_FORBIDDEN_TEXT.test(JSON.stringify(work)) ? null : work
 }
 
 function readIdePreviewString(value, maxLength) {

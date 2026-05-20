@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 
 import {
     requestGoalSnapshot,
+    requestIdeWorkAction,
     requestManualWorkerPacket,
     requestPlanDecision,
     requestResultReview,
@@ -26,6 +27,8 @@ export const RESULT_REVIEW_CONFIRMATION_MESSAGE = 'Confirm this is review-only b
 export const RESULT_REVIEW_UNSAFE_MESSAGE = 'Use plain text only. Do not paste protocol fields, tokens, IDs, or raw packets.'
 export const RESULT_REVIEW_TEXT_MAX_LENGTH = 12000
 export const RESULT_REVIEW_TEXT_MIN_LENGTH = 20
+export const IDE_WORK_ERROR = 'The safe mock check is not available in this view.'
+export const IDE_WORK_LOADING_MESSAGE = 'Checking the safe mock step.'
 export const REVISION_EMPTY_MESSAGE = 'Describe the plan revision in plain English.'
 export const REVISION_TOO_LONG_MESSAGE = 'Keep the revision note under 1000 characters.'
 export const REVISION_UNSAFE_MESSAGE = 'Use plain-English revision text only.'
@@ -36,6 +39,25 @@ const PLAN_SESSION_SCHEMA_VERSION = 'sentinel.cockpit_bridge.plan_session.v1'
 const PLAN_DECISION_ACTIONS = Object.freeze(['approve_plan', 'revise_plan', 'stop'])
 const MANUAL_PACKET_ACTIONS = Object.freeze(['prepare_manual_worker_packet'])
 const RESULT_REVIEW_ACTIONS = Object.freeze(['submit_result_review'])
+const IDE_WORK_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'none'])
+const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
+    'sentinel.qvc.ide_work_approval.v1',
+    'sentinel.qvc.ide_work_progress.v1',
+    'sentinel.qvc.ide_work_result_review_required.v1'
+])
+const IDE_WORK_STATES = Object.freeze([
+    'disabled',
+    'approval_unavailable',
+    'approval_pending',
+    'starting',
+    'mock_in_progress',
+    'cancel_requested',
+    'cancelled',
+    'timed_out',
+    'failed_closed',
+    'review_required',
+    'expired'
+])
 const PLAN_DECISION_FORBIDDEN_TEXT =
     /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_challenge|approval_challenge_hash|client_nonce|cockpit_ref|token|authorization|action_inputs|task_packet|result_packet|evidence_manifest|gateway|bearer/i
 const RESULT_REVIEW_FORBIDDEN_TEXT =
@@ -54,6 +76,8 @@ const ROUTE_CARD_CATEGORIES = Object.freeze([
 ])
 const ROUTE_CARD_FORBIDDEN_TEXT =
     /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:/i
+const IDE_WORK_FORBIDDEN_TEXT =
+    /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:|127\.0\.0\.1|localhost|:39173|provider|model|confidence|selected\s+worker|active\s+agent|agent\s+started|running\s+task|tool\s+call|command\s*[:=]|action_inputs|adapter|argv|nonce|hash|source\s+snippet/i
 
 const displayRows = [
     ['Current status', 'state'],
@@ -342,6 +366,15 @@ const IDE_PREVIEW_ROWS = Object.freeze([
     ['Approval note', 'approval_copy']
 ])
 
+const IDE_WORK_ROWS = Object.freeze([
+    ['Mock check status', 'status_label'],
+    ['Suggested workflow', 'workflow_label'],
+    ['Summary', 'short_summary'],
+    ['Current safe step', 'current_safe_step'],
+    ['What can happen next', 'what_can_happen_next'],
+    ['What will not happen', 'what_will_not_happen']
+])
+
 export default function SentinelResumeStatus() {
     const goalRef = useRef('')
     const checkpointRef = useRef('')
@@ -595,12 +628,36 @@ export default function SentinelResumeStatus() {
         }
     }
 
+    const handleIdeWorkAction = async (action) => {
+        if (!canUseIdeWorkAction(snapshot, action)) {
+            setError(IDE_WORK_ERROR)
+            return
+        }
+
+        setLoadingMode('ide-work')
+        setError('')
+        try {
+            const result = await loadIdeWorkActionSession({ action })
+            setError(result.error)
+            if (result.ideWork) {
+                setSnapshot((currentSnapshot) => {
+                    if (!isPlanSessionResponse(currentSnapshot)) return currentSnapshot
+                    return { ...currentSnapshot, ide_work: result.ideWork }
+                })
+            }
+        } finally {
+            setLoadingMode('')
+        }
+    }
+
     const planDecisionReady =
         isPlanDecisionRequiredSession(snapshot, clientNonceRef.current) && cockpitRef.current === snapshot?.cockpit_ref
     const manualPacketReady =
         isManualPacketRequiredSession(snapshot, clientNonceRef.current) && cockpitRef.current === snapshot?.cockpit_ref
     const resultReviewReady =
         isResultReviewRequiredSession(snapshot, clientNonceRef.current) && cockpitRef.current === snapshot?.cockpit_ref
+    const ideWorkApproveReady = canUseIdeWorkAction(snapshot, 'approve_mock_backend_work')
+    const ideWorkCancelReady = canUseIdeWorkAction(snapshot, 'cancel_mock_backend_work')
 
     return (
         <main style={pageStyles.root}>
@@ -692,7 +749,10 @@ export default function SentinelResumeStatus() {
                         onPlanDecision={handlePlanDecision}
                         onManualPacketPrepare={handleManualPacketPrepare}
                         onResultReviewSubmit={handleResultReviewSubmit}
+                        onIdeWorkAction={handleIdeWorkAction}
                         showIdePreview={showIdePreview && !isLoading}
+                        canApproveMockWork={ideWorkApproveReady}
+                        canCancelMockWork={ideWorkCancelReady}
                     />
                 ) : null}
                 {!error && snapshot && !isPlanSessionResponse(snapshot) ? (
@@ -761,11 +821,69 @@ function ReadOnlyWorkPreview({ rows }) {
     )
 }
 
+function MockBackendWorkCard({ ideWork, rows, canApprove, canCancel, isLoading, onIdeWorkAction }) {
+    return (
+        <section style={pageStyles.idePreview} aria-label='Safe mock check'>
+            <h2 style={pageStyles.idePreviewTitle}>Safe mock check</h2>
+            <p style={pageStyles.idePreviewCopy}>Display-only rehearsal. No real IDE, worker, or file change starts here.</p>
+            <div style={pageStyles.idePreviewGrid}>
+                {rows.map(([label, value]) => (
+                    <div key={label} style={pageStyles.idePreviewRow}>
+                        <div style={pageStyles.idePreviewLabel}>{label}</div>
+                        <div style={pageStyles.idePreviewValue}>{value}</div>
+                    </div>
+                ))}
+            </div>
+            {ideWork?.review_required_note ? (
+                <p style={pageStyles.idePreviewCopy}>Review note: {formatValue(ideWork.review_required_note)}</p>
+            ) : null}
+            {ideWork?.terminal_note ? <p style={pageStyles.idePreviewCopy}>Closeout: {formatValue(ideWork.terminal_note)}</p> : null}
+            {Array.isArray(ideWork?.blocked_actions) && ideWork.blocked_actions.length > 0 ? (
+                <div style={pageStyles.idePreviewGrid}>
+                    <div style={pageStyles.idePreviewRow}>
+                        <div style={pageStyles.idePreviewLabel}>Blocked actions</div>
+                        <div style={pageStyles.idePreviewValue}>{formatList(ideWork.blocked_actions)}</div>
+                    </div>
+                </div>
+            ) : null}
+            {canApprove || canCancel ? (
+                <div style={pageStyles.decisionControls} aria-label='Safe mock check controls'>
+                    {canApprove ? (
+                        <button
+                            type='button'
+                            style={pageStyles.button}
+                            disabled={isLoading}
+                            onClick={() => onIdeWorkAction('approve_mock_backend_work')}
+                        >
+                            {isLoading ? 'Checking' : 'Approve safe mock check'}
+                        </button>
+                    ) : null}
+                    {canCancel ? (
+                        <button
+                            type='button'
+                            style={pageStyles.secondaryButton}
+                            disabled={isLoading}
+                            onClick={() => onIdeWorkAction('cancel_mock_backend_work')}
+                        >
+                            Cancel mock check
+                        </button>
+                    ) : null}
+                </div>
+            ) : null}
+            <p style={{ ...pageStyles.idePreviewCopy, marginBottom: 0 }}>
+                This card only rehearses the approval path. It cannot accept work, publish, deploy, or continue by itself.
+            </p>
+        </section>
+    )
+}
+
 export function PlanSessionCard({
     snapshot,
     canDecide = false,
     canPrepareManualPacket = false,
     canSubmitResultReview = false,
+    canApproveMockWork = false,
+    canCancelMockWork = false,
     revisionInput = '',
     resultTextInput = '',
     reviewOnlyConfirmed = false,
@@ -776,17 +894,29 @@ export function PlanSessionCard({
     onPlanDecision = () => {},
     onManualPacketPrepare = () => {},
     onResultReviewSubmit = () => {},
+    onIdeWorkAction = () => {},
     showIdePreview = false
 }) {
     const planCard = isPlainRecord(snapshot.plan_card) ? snapshot.plan_card : null
     const routeCard = readSafeRouteCard(snapshot.route_card)
     const idePreviewRows = showIdePreview ? readIdePreviewRows(snapshot.ide_preview) : []
+    const ideWorkRows = readIdeWorkRows(snapshot.ide_work)
 
     return (
         <section style={pageStyles.planCard} aria-label='Plan session'>
             {routeCard ? <RouteGuidanceCard routeCard={routeCard} /> : null}
             <p style={pageStyles.recommendation}>Next safe action: {formatPlanAction(snapshot.next_safe_action)}</p>
             {idePreviewRows.length > 0 ? <ReadOnlyWorkPreview rows={idePreviewRows} /> : null}
+            {ideWorkRows.length > 0 ? (
+                <MockBackendWorkCard
+                    ideWork={snapshot.ide_work}
+                    rows={ideWorkRows}
+                    canApprove={canApproveMockWork}
+                    canCancel={canCancelMockWork}
+                    isLoading={isLoading}
+                    onIdeWorkAction={onIdeWorkAction}
+                />
+            ) : null}
             <h2 style={pageStyles.planTitle}>{formatValue(planCard?.plain_title || 'Plain-English plan status')}</h2>
             <p style={pageStyles.copy}>{formatValue(planCard?.plain_summary || snapshot.plain_summary)}</p>
             {Array.isArray(planCard?.plain_steps) && planCard.plain_steps.length > 0 ? (
@@ -1049,6 +1179,23 @@ export async function loadResultReviewSession(reviewInput, requestResultReviewIm
     }
 }
 
+export async function loadIdeWorkActionSession(actionInput, requestIdeWorkActionImpl = requestIdeWorkAction) {
+    const action = typeof actionInput?.action === 'string' ? actionInput.action.trim() : ''
+    if (action !== 'approve_mock_backend_work' && action !== 'cancel_mock_backend_work') {
+        return { ideWork: null, error: IDE_WORK_ERROR }
+    }
+
+    try {
+        const response = await requestIdeWorkActionImpl({ action })
+        if (!isSafeIdeWorkProjection(response?.ide_work)) {
+            return { ideWork: null, error: DISPLAY_BLOCKED_ERROR }
+        }
+        return { ideWork: response.ide_work, error: '' }
+    } catch (error) {
+        return { ideWork: null, error: readSafeErrorCopy(error) }
+    }
+}
+
 export function isDisplayOnlySnapshot(snapshot) {
     return (
         snapshot?.schema_version === SNAPSHOT_SCHEMA_VERSION &&
@@ -1064,6 +1211,18 @@ export function canShowIdePreview(snapshot, clientNonce = '') {
         hasRenderableIdePreview(snapshot?.ide_preview) &&
         (isDisplayOnlySnapshot(snapshot) || isPlanDecisionRequiredSession(snapshot, clientNonce))
     )
+}
+
+export function canUseIdeWorkAction(snapshot, action) {
+    const ideWork = snapshot?.ide_work
+    if (!isPlanSessionResponse(snapshot) || !isSafeIdeWorkProjection(ideWork)) return false
+    if (action === 'approve_mock_backend_work') {
+        return ideWork.approval_available === true && ideWork.allowed_user_actions.join(',') === 'approve_mock_backend_work'
+    }
+    if (action === 'cancel_mock_backend_work') {
+        return ideWork.cancel_available === true && ideWork.allowed_user_actions.join(',') === 'cancel_mock_backend_work'
+    }
+    return false
 }
 
 export function isPlanSessionResponse(snapshot) {
@@ -1184,9 +1343,12 @@ export function readSafeErrorCopy(error) {
             'result_review_expired',
             'result_review_consumed',
             'result_review_nonce_mismatch',
-            'result_review_state_mismatch'
+            'result_review_state_mismatch',
+            'ide_work_invalid_input',
+            'ide_work_unavailable'
         ].includes(error?.code)
     ) {
+        if (String(error?.code || '').startsWith('ide_work_')) return IDE_WORK_ERROR
         if (String(error?.code || '').startsWith('result_review_')) return RESULT_REVIEW_ERROR
         return String(error?.code || '').startsWith('manual_packet_') ? MANUAL_PACKET_ERROR : PLAN_DECISION_ERROR
     }
@@ -1240,6 +1402,52 @@ function readIdePreviewRows(preview) {
         rows.push([label, trimmed])
         return rows
     }, [])
+}
+
+function readIdeWorkRows(ideWork) {
+    if (!isSafeIdeWorkProjection(ideWork)) return []
+    return IDE_WORK_ROWS.reduce((rows, [label, key]) => {
+        const value = ideWork[key]
+        if (typeof value !== 'string') return rows
+        const trimmed = value.trim()
+        if (!trimmed) return rows
+        rows.push([label, trimmed])
+        return rows
+    }, [])
+}
+
+function isSafeIdeWorkProjection(ideWork) {
+    if (!isPlainRecord(ideWork)) return false
+    if (!IDE_WORK_SCHEMA_VERSIONS.includes(ideWork.schema_version)) return false
+    if (ideWork.status !== 'ok' || !IDE_WORK_STATES.includes(ideWork.state)) return false
+    if (typeof ideWork.approval_available !== 'boolean' || typeof ideWork.cancel_available !== 'boolean') return false
+    if (
+        !Array.isArray(ideWork.allowed_user_actions) ||
+        !ideWork.allowed_user_actions.length ||
+        ideWork.allowed_user_actions.some((action) => typeof action !== 'string' || !IDE_WORK_ACTIONS.includes(action))
+    ) {
+        return false
+    }
+    if (!Array.isArray(ideWork.blocked_actions) || !ideWork.blocked_actions.length) return false
+
+    const requiredTextKeys = [
+        'status_label',
+        'workflow_label',
+        'persona_label',
+        'skill_label',
+        'short_summary',
+        'current_safe_step',
+        'what_can_happen_next',
+        'what_will_not_happen'
+    ]
+    for (const key of requiredTextKeys) {
+        if (!readRouteCardString(ideWork[key], 260)) return false
+    }
+    for (const key of ['review_required_note', 'terminal_note', 'safe_error']) {
+        if (ideWork[key] !== null && !readRouteCardString(ideWork[key], 180)) return false
+    }
+    if (ideWork.blocked_actions.some((item) => !readRouteCardString(item, 180))) return false
+    return IDE_WORK_FORBIDDEN_TEXT.test(JSON.stringify(ideWork)) ? false : true
 }
 
 function readRouteCardString(value, maxLength) {
