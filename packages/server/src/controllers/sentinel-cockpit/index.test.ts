@@ -1247,7 +1247,7 @@ describe('sentinel cockpit classify bridge', () => {
         expect(serialized).not.toContain('gateway')
     })
 
-    it('creates a nonce-bound plan session only when the plan-decision bridge is enabled and nonce is present', async () => {
+    it('creates a nonce-bound plan session with reduced IDE preview only when the plan-decision bridge is enabled and nonce is present', async () => {
         const config = buildClassifyConfig({
             BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1',
             BEZZTY_FLOWISE_SENTINEL_IDE_PREVIEW_PROJECTION: '1'
@@ -1265,12 +1265,31 @@ describe('sentinel cockpit classify bridge', () => {
         expect(planSession.allowed_user_actions).toEqual(['approve_plan', 'revise_plan', 'stop'])
         expect(planSession.cockpit_ref).toMatch(/^cockpit_[A-Za-z0-9_-]+$/)
         expect(planSession.route_card).toEqual(validGatewayRouteCard())
-        expect(planSession.ide_preview).toBeUndefined()
+        expect(planSession.ide_preview).toEqual(validServerIdePreview())
+        expect(Object.keys(planSession.ide_preview)).toEqual(Object.keys(validServerIdePreview()))
+        expect(serialized).not.toContain('sentinel.qvc.ide_preview.v1')
+        expect(serialized).not.toContain('ide_preview_ready')
         expect(serialized).not.toContain(clientNonce)
         expect(serialized).not.toContain('run_hidden_123')
         expect(serialized).not.toContain('session_hidden_123')
         expect(serialized).not.toContain('decision_hidden_123')
         expect(serialized).not.toContain('challenge_hidden_123')
+    })
+
+    it('omits IDE preview from nonce-bound plan sessions when the projection flag is disabled', async () => {
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1'
+        })
+        const fetchImpl = jest.fn().mockResolvedValue(gatewayResponse(validGatewayClassify({ ide_preview: validGatewayIdePreview() })))
+
+        const planSession: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
+            { config, fetchImpl: fetchImpl as any, requestId: 'req_test_123' }
+        )
+
+        expect(planSession.schema_version).toBe('sentinel.cockpit_bridge.plan_session.v1')
+        expect(planSession.state).toBe('plan_decision_required')
+        expect(planSession.ide_preview).toBeUndefined()
     })
 
     it('keeps policy/help classify results display-only when the plan-decision bridge is enabled', async () => {

@@ -491,6 +491,31 @@ describe('SentinelResumeStatus', () => {
         expect(html).toContain('Accepted work is ready for display.')
     })
 
+    it('renders a passive read-only preview on the initial plan-decision screen when the explicit gate is enabled', () => {
+        const html = renderToStaticMarkup(
+            <PlanSessionCard
+                snapshot={safePlanSession({ route_card: safeRouteCard(), ide_preview: safeIdePreview() })}
+                canDecide
+                showIdePreview
+            />
+        )
+
+        expect(html).toContain('Sentinel route guidance')
+        expect(html).toContain('Read-only work preview')
+        expect(html).toContain('Read-only preview. No backend work has started from this page.')
+        expect(html).toContain('This card cannot approve, continue, launch, run, or change anything.')
+        expect(html).toContain('Preview status')
+        expect(html).toContain('Backend preview ready')
+        expect(html).toContain('Suggested workflow')
+        expect(html).toContain('Safe planning workflow')
+        expect(html.indexOf('Next safe action:')).toBeLessThan(html.indexOf('Read-only work preview'))
+        expect(html.indexOf('Read-only work preview')).toBeLessThan(html.indexOf('Plain-English plan draft'))
+        expect(html).toContain('Approve plan')
+        expect(html).not.toMatch(
+            /Perspective|Skill area|Preview expiry|status_label|workflow_label|persona_label|skill_label|expires_at_label|ide_preview|schema_version|approval_required|allowed_user_actions|blocked_reason|gateway|bearer|token|client_nonce|run_|sentinel_session|task_packet|result_packet|provider|model|confidence/
+        )
+    })
+
     it('omits blank preview rows without rendering placeholders', () => {
         const html = renderToStaticMarkup(
             <ResumeSnapshot
@@ -724,7 +749,7 @@ describe('SentinelResumeStatus', () => {
         expect(window.location.hash).toBe('')
     })
 
-    it('does not render the read-only preview for plan-session, plan-decision, manual-packet, result-review, or error flows', async () => {
+    it('renders the read-only preview only for the initial goal plan-session flow', async () => {
         requestGoalSnapshot.mockResolvedValueOnce(safePlanSession({ ide_preview: safeIdePreview() }))
         requestPlanDecision.mockResolvedValue(
             safePlanSession({
@@ -768,7 +793,7 @@ describe('SentinelResumeStatus', () => {
         setGoalInput('qvc-plan-session-with-preview')
         submitGoalForm()
         await waitForAssertion(() => expect(container.textContent).toContain('Approve plan'))
-        expect(container.textContent).not.toContain('Read-only work preview')
+        expect(container.textContent).toContain('Read-only work preview')
 
         clickButton('Approve plan')
         await waitForAssertion(() => expect(container.textContent).toContain('Prepare manual worker packet'))

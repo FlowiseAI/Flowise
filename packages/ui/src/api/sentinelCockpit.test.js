@@ -616,8 +616,38 @@ describe('sentinelCockpit API wrapper', () => {
         expect(Object.keys(snapshot).sort()).toEqual([...SNAPSHOT_KEYS].sort())
     })
 
-    it('drops valid IDE preview from plan-session responses', async () => {
-        const fetchImpl = jest.fn().mockResolvedValue(fetchResponse(validPlanSession({ ide_preview: validIdePreview() })))
+    it('preserves valid IDE preview from initial goal plan-session responses', async () => {
+        const fetchImpl = jest
+            .fn()
+            .mockResolvedValue(fetchResponse(validPlanSession({ route_card: validRouteCard(), ide_preview: validIdePreview() })))
+
+        const session = await requestGoalSnapshot(
+            {
+                plainGoal: 'Plan the next safe step',
+                clientNonce: 'nonce_abcdefghijklmnop'
+            },
+            { fetchImpl }
+        )
+
+        expect(session.ide_preview).toEqual(validIdePreview())
+        expect(Object.keys(session.ide_preview).sort()).toEqual(Object.keys(validIdePreview()).sort())
+        expect(Object.keys(session).sort()).toEqual([...PLAN_SESSION_KEYS, 'ide_preview', 'route_card'].sort())
+        expect(JSON.stringify(session.ide_preview)).not.toMatch(
+            /schema_version|ide_preview_ready|approval_required|allowed_user_actions|blocked_reason|gateway|token|client_nonce|cockpit_ref|sha256:/i
+        )
+    })
+
+    it('omits invalid IDE preview from initial goal plan-session responses', async () => {
+        const fetchImpl = jest
+            .fn()
+            .mockResolvedValue(
+                fetchResponse(
+                    validPlanSession({
+                        route_card: validRouteCard(),
+                        ide_preview: validIdePreview({ summary: 'Bearer token should not display.' })
+                    })
+                )
+            )
 
         const session = await requestGoalSnapshot(
             {
@@ -628,7 +658,7 @@ describe('sentinelCockpit API wrapper', () => {
         )
 
         expect(session).not.toHaveProperty('ide_preview')
-        expect(Object.keys(session).sort()).toEqual([...PLAN_SESSION_KEYS].sort())
+        expect(Object.keys(session).sort()).toEqual([...PLAN_SESSION_KEYS, 'route_card'].sort())
     })
 
     it('drops IDE preview from plan-decision, manual-packet, and result-review responses', async () => {

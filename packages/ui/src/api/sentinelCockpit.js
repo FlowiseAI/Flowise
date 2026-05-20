@@ -387,7 +387,7 @@ async function readSnapshotResponse(response, options = {}) {
     }
 
     if (body?.schema_version === PLAN_SESSION_SCHEMA_VERSION) {
-        return narrowPlanSession(body)
+        return narrowPlanSession(body, options)
     }
     return narrowSnapshot(body, options)
 }
@@ -437,7 +437,7 @@ function narrowSnapshot(body, options = {}) {
     return narrowed
 }
 
-function narrowPlanSession(body) {
+function narrowPlanSession(body, options = {}) {
     if (!isPlainRecord(body)) {
         throw new SentinelCockpitError('sentinel_resume_malformed')
     }
@@ -471,6 +471,10 @@ function narrowPlanSession(body) {
     const narrowed = Object.fromEntries(PLAN_SESSION_KEYS.map((key) => [key, body[key]]))
     const routeCard = narrowRouteCard(body.route_card)
     if (routeCard) narrowed.route_card = routeCard
+    if (options.allowIdePreview === true && body.state === 'plan_decision_required') {
+        const idePreview = narrowIdePreview(body.ide_preview)
+        if (idePreview) narrowed.ide_preview = idePreview
+    }
     return narrowed
 }
 

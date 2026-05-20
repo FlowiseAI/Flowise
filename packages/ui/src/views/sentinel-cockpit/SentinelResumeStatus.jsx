@@ -447,9 +447,7 @@ export default function SentinelResumeStatus() {
             const result = await loadGoalSnapshot(submittedGoal, requestGoalSnapshot, clientNonce)
             setError(result.error)
             setSnapshot(result.snapshot)
-            setShowIdePreview(
-                result.error === '' && isDisplayOnlySnapshot(result.snapshot) && hasRenderableIdePreview(result.snapshot?.ide_preview)
-            )
+            setShowIdePreview(result.error === '' && canShowIdePreview(result.snapshot, clientNonce))
             if (isPlanDecisionRequiredSession(result.snapshot, clientNonce)) {
                 cockpitRef.current = result.snapshot.cockpit_ref
             } else {
@@ -694,6 +692,7 @@ export default function SentinelResumeStatus() {
                         onPlanDecision={handlePlanDecision}
                         onManualPacketPrepare={handleManualPacketPrepare}
                         onResultReviewSubmit={handleResultReviewSubmit}
+                        showIdePreview={showIdePreview && !isLoading}
                     />
                 ) : null}
                 {!error && snapshot && !isPlanSessionResponse(snapshot) ? (
@@ -776,15 +775,18 @@ export function PlanSessionCard({
     onReviewOnlyConfirmedChange = () => {},
     onPlanDecision = () => {},
     onManualPacketPrepare = () => {},
-    onResultReviewSubmit = () => {}
+    onResultReviewSubmit = () => {},
+    showIdePreview = false
 }) {
     const planCard = isPlainRecord(snapshot.plan_card) ? snapshot.plan_card : null
     const routeCard = readSafeRouteCard(snapshot.route_card)
+    const idePreviewRows = showIdePreview ? readIdePreviewRows(snapshot.ide_preview) : []
 
     return (
         <section style={pageStyles.planCard} aria-label='Plan session'>
             {routeCard ? <RouteGuidanceCard routeCard={routeCard} /> : null}
             <p style={pageStyles.recommendation}>Next safe action: {formatPlanAction(snapshot.next_safe_action)}</p>
+            {idePreviewRows.length > 0 ? <ReadOnlyWorkPreview rows={idePreviewRows} /> : null}
             <h2 style={pageStyles.planTitle}>{formatValue(planCard?.plain_title || 'Plain-English plan status')}</h2>
             <p style={pageStyles.copy}>{formatValue(planCard?.plain_summary || snapshot.plain_summary)}</p>
             {Array.isArray(planCard?.plain_steps) && planCard.plain_steps.length > 0 ? (
@@ -1054,6 +1056,13 @@ export function isDisplayOnlySnapshot(snapshot) {
         Array.isArray(snapshot.allowed_user_actions) &&
         snapshot.allowed_user_actions.length === 1 &&
         snapshot.allowed_user_actions[0] === 'none'
+    )
+}
+
+export function canShowIdePreview(snapshot, clientNonce = '') {
+    return (
+        hasRenderableIdePreview(snapshot?.ide_preview) &&
+        (isDisplayOnlySnapshot(snapshot) || isPlanDecisionRequiredSession(snapshot, clientNonce))
     )
 }
 

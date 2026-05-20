@@ -277,6 +277,7 @@ export type PlanSessionResponse = Readonly<{
         will_not_do: string[]
     }>
     route_card?: GoalRouteCard | null
+    ide_preview?: IdePreviewProjection | null
     safe_error: null | Readonly<{
         code: ClassifyBridgeErrorCode
         message: string
@@ -467,7 +468,11 @@ export async function createClassifySnapshot(
             return guidanceSnapshot
         }
         if (request.client_nonce) {
-            const planSession = createPlanDecisionRequiredSession(gatewayClassify, request.client_nonce)
+            const planSession = createPlanDecisionRequiredSession(
+                gatewayClassify,
+                request.client_nonce,
+                projectIdePreview(gatewayClassify, config.idePreviewProjection)
+            )
             if (planSession) {
                 assertPlanSessionSafe(planSession, config.token, request.plain_goal, request.client_nonce)
                 return planSession
@@ -892,7 +897,11 @@ function keysMatch(body: Record<string, unknown>, expectedKeys: readonly string[
     return keys.length === expected.length && keys.every((key, index) => key === expected[index])
 }
 
-function createPlanDecisionRequiredSession(body: GatewayClassifyBody, clientNonce: string): PlanSessionResponse | null {
+function createPlanDecisionRequiredSession(
+    body: GatewayClassifyBody,
+    clientNonce: string,
+    idePreview: IdePreviewProjection | null = null
+): PlanSessionResponse | null {
     const runId = readGatewayString(body.run_id, 1, 128)
     const sentinelSessionId = readGatewayString(body.sentinel_session_id, 1, 128)
     const decisionId = readGatewayString(body.decision_id, 1, 128)
@@ -935,6 +944,7 @@ function createPlanDecisionRequiredSession(body: GatewayClassifyBody, clientNonc
         cockpit_ref: cockpitRef,
         plan_card: null,
         route_card: projectGoalRouteCard(body),
+        ...(idePreview ? { [IDE_PREVIEW_KEY]: idePreview } : {}),
         safe_error: null
     }
 }
