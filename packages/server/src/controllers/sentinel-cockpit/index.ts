@@ -723,7 +723,11 @@ function validateSnapshot(snapshot: ReturnType<typeof snapshotStatic.createStati
     if (Buffer.byteLength(serialized) > COCKPIT_RESPONSE_LIMIT_BYTES) {
         throw httpError(500, 'invalid_snapshot')
     }
-    const { route_card: _routeCard, ide_preview: _idePreview, ...snapshotWithoutRouteCard } = snapshot as typeof snapshot & {
+    const {
+        route_card: _routeCard,
+        ide_preview: _idePreview,
+        ...snapshotWithoutRouteCard
+    } = snapshot as typeof snapshot & {
         route_card?: unknown
         ide_preview?: unknown
     }

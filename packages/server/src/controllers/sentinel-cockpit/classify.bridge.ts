@@ -459,7 +459,10 @@ export async function createClassifySnapshot(
     if (config.planDecisionBridge && gatewayClassify.status !== 'blocked') {
         const routeCard = projectGoalRouteCard(gatewayClassify)
         if (routeCard?.category === 'policy_help') {
-            const guidanceSnapshot = projectPolicyHelpGuidanceSnapshot(routeCard, projectIdePreview(gatewayClassify, config.idePreviewProjection))
+            const guidanceSnapshot = projectPolicyHelpGuidanceSnapshot(
+                routeCard,
+                projectIdePreview(gatewayClassify, config.idePreviewProjection)
+            )
             assertClassifySnapshotSafe(guidanceSnapshot, config.token, request.plain_goal)
             return guidanceSnapshot
         }
@@ -829,15 +832,7 @@ function projectIdePreview(body: GatewayClassifyBody, enabled: boolean): IdePrev
     const whatCanHappenNext = readIdePreviewString(input.what_can_happen_next, 260)
     const whatWillNotHappen = readIdePreviewString(input.what_will_not_happen, 260)
     const expiresAtLabel = readIdePreviewString(input.expires_at_label, 80)
-    if (
-        !workflowLabel ||
-        !personaLabel ||
-        !skillLabel ||
-        !summary ||
-        !whatCanHappenNext ||
-        !whatWillNotHappen ||
-        !expiresAtLabel
-    ) {
+    if (!workflowLabel || !personaLabel || !skillLabel || !summary || !whatCanHappenNext || !whatWillNotHappen || !expiresAtLabel) {
         return null
     }
     if (
@@ -880,7 +875,10 @@ function readIdePreviewString(value: unknown, maxLength: number): string | null 
 }
 
 function idePreviewHasForbiddenText(preview: IdePreviewProjection): boolean {
-    return !keysMatch(preview as unknown as Record<string, unknown>, IDE_PREVIEW_REDUCED_KEYS) || idePreviewTextHasForbiddenFragment(JSON.stringify(preview))
+    return (
+        !keysMatch(preview as unknown as Record<string, unknown>, IDE_PREVIEW_REDUCED_KEYS) ||
+        idePreviewTextHasForbiddenFragment(JSON.stringify(preview))
+    )
 }
 
 function idePreviewTextHasForbiddenFragment(value: string): boolean {

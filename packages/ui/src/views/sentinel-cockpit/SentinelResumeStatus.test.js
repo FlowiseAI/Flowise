@@ -472,7 +472,9 @@ describe('SentinelResumeStatus', () => {
         expect(html).not.toContain('Planning reviewer')
         expect(html).not.toContain('Plain-English planning')
         expect(html).not.toContain('No preview timer')
-        expect(html).not.toMatch(/Perspective|Skill area|Preview expiry|status_label|workflow_label|persona_label|skill_label|expires_at_label|ide_preview|schema_version|approval_required|allowed_user_actions|blocked_reason/)
+        expect(html).not.toMatch(
+            /Perspective|Skill area|Preview expiry|status_label|workflow_label|persona_label|skill_label|expires_at_label|ide_preview|schema_version|approval_required|allowed_user_actions|blocked_reason/
+        )
         expect(html.indexOf('Next safe action:')).toBeLessThan(html.indexOf('Read-only work preview'))
         expect(html.indexOf('Read-only work preview')).toBeLessThan(html.indexOf('Current status'))
         expect(html).toContain('Blocked actions')
@@ -760,16 +762,8 @@ describe('SentinelResumeStatus', () => {
                 ide_preview: safeIdePreview()
             })
         )
-        const {
-            container,
-            setGoalInput,
-            submitGoalForm,
-            clickButton,
-            setResultReviewInput,
-            setReviewOnlyConfirmed,
-            setInput,
-            submitForm
-        } = renderInteractive()
+        const { container, setGoalInput, submitGoalForm, clickButton, setResultReviewInput, setReviewOnlyConfirmed, setInput, submitForm } =
+            renderInteractive()
 
         setGoalInput('qvc-plan-session-with-preview')
         submitGoalForm()

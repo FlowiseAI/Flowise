@@ -575,11 +575,14 @@ describe('sentinelCockpit API wrapper', () => {
     })
 
     it.each([
-        ['missing key', (() => {
-            const preview = validIdePreview()
-            delete preview.skill_label
-            return preview
-        })()],
+        [
+            'missing key',
+            (() => {
+                const preview = validIdePreview()
+                delete preview.skill_label
+                return preview
+            })()
+        ],
         ['extra key', validIdePreview({ schema_version: 'sentinel.qvc.ide_preview.v1' })],
         ['non-string value', validIdePreview({ workflow_label: 123 })],
         ['blank value', validIdePreview({ persona_label: '   ' })],

@@ -447,7 +447,9 @@ export default function SentinelResumeStatus() {
             const result = await loadGoalSnapshot(submittedGoal, requestGoalSnapshot, clientNonce)
             setError(result.error)
             setSnapshot(result.snapshot)
-            setShowIdePreview(result.error === '' && isDisplayOnlySnapshot(result.snapshot) && hasRenderableIdePreview(result.snapshot?.ide_preview))
+            setShowIdePreview(
+                result.error === '' && isDisplayOnlySnapshot(result.snapshot) && hasRenderableIdePreview(result.snapshot?.ide_preview)
+            )
             if (isPlanDecisionRequiredSession(result.snapshot, clientNonce)) {
                 cockpitRef.current = result.snapshot.cockpit_ref
             } else {
