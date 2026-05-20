@@ -19,14 +19,16 @@ const getChatProvider = (name: string): ProviderEntry => {
 }
 
 describe('models.json Azure ChatOpenAI registry', () => {
-    it('keeps newer GPT-5.x Azure ChatOpenAI options aligned with ChatOpenAI', () => {
+    const newerGpt5Models = ['gpt-5.5', 'gpt-5.5-pro', 'gpt-5.4', 'gpt-5.4-pro', 'gpt-5.4-mini', 'gpt-5.4-nano']
+
+    it.each(newerGpt5Models)('keeps %s Azure ChatOpenAI aligned with ChatOpenAI', (modelName) => {
         const chatOpenAI = getChatProvider('chatOpenAI')
         const azureChatOpenAI = getChatProvider('azureChatOpenAI')
+        const openAIModel = chatOpenAI.models.find((model) => model.name === modelName)
+        const azureModel = azureChatOpenAI.models.find((model) => model.name === modelName)
 
-        for (const modelName of ['gpt-5.5', 'gpt-5.5-pro', 'gpt-5.4', 'gpt-5.4-pro', 'gpt-5.4-mini', 'gpt-5.4-nano']) {
-            const openAIModel = chatOpenAI.models.find((model) => model.name === modelName)
-            expect(openAIModel).toBeDefined()
-            expect(azureChatOpenAI.models.find((model) => model.name === modelName)).toEqual(openAIModel)
-        }
+        expect(openAIModel).toBeDefined()
+        expect(azureModel).toBeDefined()
+        expect(azureModel).toEqual(openAIModel)
     })
 })
