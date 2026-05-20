@@ -803,6 +803,44 @@ describe('sentinel cockpit controller responses', () => {
         expect(res.bodyText).not.toContain('client_nonce')
     })
 
+    it('preserves reduced IDE preview on nonce-bound plan-session responses', async () => {
+        jest.spyOn(classifyBridge, 'classifyBridgeIsRequested').mockReturnValue(true)
+        jest.spyOn(classifyBridge, 'planDecisionBridgeIsRequested').mockReturnValue(true)
+        jest.spyOn(classifyBridge, 'createClassifySnapshot').mockResolvedValue({
+            schema_version: 'sentinel.cockpit_bridge.plan_session.v1',
+            status: 'ok',
+            state: 'plan_decision_required',
+            plain_summary: 'Sentinel can prepare a plan after an explicit decision.',
+            next_safe_action: 'choose_plan_decision',
+            allowed_user_actions: ['approve_plan', 'revise_plan', 'stop'],
+            blocked_actions: ['No files are edited here.'],
+            cockpit_ref: 'cockpit_a1b2c3d4e5f60718293a4b5c6d7e8f90',
+            plan_card: null,
+            safe_error: null,
+            route_card: validRouteCard(),
+            ide_preview: validServerIdePreview()
+        } as any)
+        const body = JSON.stringify({
+            request_kind: 'goal',
+            plain_goal: 'plan this work',
+            client_nonce: 'a1b2c3d4e5f60718293a4b5c6d7e8f90'
+        })
+        const req = buildReq(body)
+        const res = buildRes()
+
+        await sentinelCockpitController.handleSnapshot(req, res)
+
+        const parsed = JSON.parse(res.bodyText)
+        expect(res.statusCode).toBe(200)
+        expect(parsed.schema_version).toBe('sentinel.cockpit_bridge.plan_session.v1')
+        expect(parsed.ide_preview).toEqual(validServerIdePreview())
+        expect(Object.keys(parsed.ide_preview)).toEqual(Object.keys(validServerIdePreview()))
+        expect(res.bodyText).not.toContain('sentinel.qvc.ide_preview.v1')
+        expect(res.bodyText).not.toContain('ide_preview_ready')
+        expect(res.bodyText).not.toContain('client_nonce')
+        expect(res.bodyText).not.toContain('gateway')
+    })
+
     it('uses the server-side resume bridge only for resume requests when enabled', async () => {
         jest.spyOn(resumeBridge, 'resumeBridgeIsRequested').mockReturnValue(true)
         const createResumeSnapshot = jest.spyOn(resumeBridge, 'createResumeSnapshot').mockResolvedValue({
