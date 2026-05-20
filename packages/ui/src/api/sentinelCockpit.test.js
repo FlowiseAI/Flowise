@@ -638,16 +638,14 @@ describe('sentinelCockpit API wrapper', () => {
     })
 
     it('omits invalid IDE preview from initial goal plan-session responses', async () => {
-        const fetchImpl = jest
-            .fn()
-            .mockResolvedValue(
-                fetchResponse(
-                    validPlanSession({
-                        route_card: validRouteCard(),
-                        ide_preview: validIdePreview({ summary: 'Bearer token should not display.' })
-                    })
-                )
+        const fetchImpl = jest.fn().mockResolvedValue(
+            fetchResponse(
+                validPlanSession({
+                    route_card: validRouteCard(),
+                    ide_preview: validIdePreview({ summary: 'Bearer token should not display.' })
+                })
             )
+        )
 
         const session = await requestGoalSnapshot(
             {

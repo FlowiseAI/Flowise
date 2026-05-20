@@ -745,7 +745,11 @@ function isPlanSessionResponse(value: unknown): value is classifyBridge.PlanSess
 }
 
 function validatePlanSession(planSession: classifyBridge.PlanSessionResponse) {
-    assertResponseKeys(planSession as unknown as Record<string, unknown>, PLAN_SESSION_KEYS, Object.freeze([ROUTE_CARD_KEY, IDE_PREVIEW_KEY]))
+    assertResponseKeys(
+        planSession as unknown as Record<string, unknown>,
+        PLAN_SESSION_KEYS,
+        Object.freeze([ROUTE_CARD_KEY, IDE_PREVIEW_KEY])
+    )
     validateRouteCard((planSession as classifyBridge.PlanSessionResponse & { route_card?: unknown }).route_card)
     validateIdePreview((planSession as classifyBridge.PlanSessionResponse & { ide_preview?: unknown }).ide_preview)
     if (planSession.schema_version !== classifyBridge.PLAN_SESSION_SCHEMA_VERSION || !['ok', 'error'].includes(planSession.status)) {
