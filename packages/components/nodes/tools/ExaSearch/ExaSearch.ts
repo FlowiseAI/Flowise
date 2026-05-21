@@ -58,10 +58,6 @@ class ExaSearch_Tools implements INode {
                         name: 'fast'
                     },
                     {
-                        label: 'instant',
-                        name: 'instant'
-                    },
-                    {
                         label: 'deep',
                         name: 'deep'
                     }
@@ -183,7 +179,7 @@ class ExaSearch_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const description = nodeData.inputs?.description as string
         const numResults = nodeData.inputs?.numResults as string
-        const type = nodeData.inputs?.type as 'auto' | 'fast' | 'instant' | 'deep' | undefined
+        const type = nodeData.inputs?.type as 'auto' | 'fast' | 'deep' | undefined
         const category = nodeData.inputs?.category as string
         const maxAgeHours = nodeData.inputs?.maxAgeHours as string
         const includeDomains = nodeData.inputs?.includeDomains as string
