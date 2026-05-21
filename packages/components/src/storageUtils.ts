@@ -101,3 +101,37 @@ export const getStorageSize = async (orgId: string): Promise<number> => {
     const provider = StorageProviderFactory.getProvider()
     return provider.getStorageSize(orgId)
 }
+
+// -----------------------------------------------------------------------------
+// Raw blob helpers — thin pass-through to IStorageProvider's blob primitives.
+//
+// Use these from per-asset, fine-grained workloads (e.g. Skill storage) that
+// want a direct PUT/GET/DELETE without the chatflow-shaped accounting (org-wide
+// `getStorageSize` listings) and without the orgId-migration fallback inside
+// `getFileFromStorage`.
+// -----------------------------------------------------------------------------
+
+export const writeBlobToStorage = async (buffer: Buffer, mime: string, ...paths: string[]): Promise<void> => {
+    const provider = StorageProviderFactory.getProvider()
+    return provider.writeBlob(buffer, mime, ...paths)
+}
+
+export const readBlobFromStorage = async (...paths: string[]): Promise<Buffer | null> => {
+    const provider = StorageProviderFactory.getProvider()
+    return provider.readBlob(...paths)
+}
+
+export const deleteBlobFromStorage = async (...paths: string[]): Promise<void> => {
+    const provider = StorageProviderFactory.getProvider()
+    return provider.deleteBlob(...paths)
+}
+
+export const deleteBlobFolderFromStorage = async (...paths: string[]): Promise<void> => {
+    const provider = StorageProviderFactory.getProvider()
+    return provider.deleteBlobFolder(...paths)
+}
+
+export const blobExistsInStorage = async (...paths: string[]): Promise<boolean> => {
+    const provider = StorageProviderFactory.getProvider()
+    return provider.blobExists(...paths)
+}

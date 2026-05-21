@@ -387,4 +387,59 @@ export class LocalStorageProvider extends BaseStorageProvider {
         // For 'error' type, return empty array (handled by exceptionHandlers in logger.ts)
         return []
     }
+
+    // -------------------------------------------------------------------------
+    // Raw blob primitives. See IStorageProvider for semantics.
+    // -------------------------------------------------------------------------
+
+    async writeBlob(buffer: Buffer, _mime: string, ...paths: string[]): Promise<void> {
+        if (paths.length === 0) throw new Error('writeBlob requires at least one path component')
+        const fileName = paths[paths.length - 1]
+        const dirParts = paths.slice(0, -1)
+        const dir = this.buildPath(...dirParts)
+        if (!fs.existsSync(dir)) {
+            await fs.promises.mkdir(dir, { recursive: true })
+        }
+        const filePath = path.join(dir, this.sanitizeFilename(fileName))
+        await fs.promises.writeFile(filePath, buffer)
+    }
+
+    async readBlob(...paths: string[]): Promise<Buffer | null> {
+        if (paths.length === 0) throw new Error('readBlob requires at least one path component')
+        const filePath = this.buildPath(...paths)
+        try {
+            return await fs.promises.readFile(filePath)
+        } catch (err: any) {
+            if (err && (err.code === 'ENOENT' || err.code === 'ENOTDIR')) return null
+            throw err
+        }
+    }
+
+    async deleteBlob(...paths: string[]): Promise<void> {
+        if (paths.length === 0) return
+        const filePath = this.buildPath(...paths)
+        try {
+            await fs.promises.unlink(filePath)
+        } catch (err: any) {
+            if (!err || (err.code !== 'ENOENT' && err.code !== 'ENOTDIR')) throw err
+        }
+    }
+
+    async deleteBlobFolder(...paths: string[]): Promise<void> {
+        if (paths.length === 0) return
+        const dir = this.buildPath(...paths)
+        await fs.promises.rm(dir, { recursive: true, force: true })
+    }
+
+    async blobExists(...paths: string[]): Promise<boolean> {
+        if (paths.length === 0) return false
+        const filePath = this.buildPath(...paths)
+        try {
+            const stat = await fs.promises.stat(filePath)
+            return stat.isFile()
+        } catch (err: any) {
+            if (err && (err.code === 'ENOENT' || err.code === 'ENOTDIR')) return false
+            throw err
+        }
+    }
 }

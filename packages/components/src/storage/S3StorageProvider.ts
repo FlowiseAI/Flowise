@@ -1,6 +1,8 @@
 import {
+    DeleteObjectCommand,
     DeleteObjectsCommand,
     GetObjectCommand,
+    HeadObjectCommand,
     ListObjectsCommand,
     ListObjectsV2Command,
     PutObjectCommand,
@@ -544,5 +546,104 @@ export class S3StorageProvider extends BaseStorageProvider {
         }
 
         return []
+    }
+
+    // -------------------------------------------------------------------------
+    // Raw blob primitives. See IStorageProvider for semantics.
+    // -------------------------------------------------------------------------
+
+    private buildBlobKey(paths: string[]): string {
+        if (paths.length === 0) throw new Error('blob path is required')
+        // Sanitize the final path component (the filename) to match existing
+        // chatflow-shaped methods. Path prefixes are kept verbatim.
+        const last = this.sanitizeFilename(paths[paths.length - 1])
+        const prefix = paths.slice(0, -1)
+        let key = [...prefix, last].join('/')
+        if (key.startsWith('/')) key = key.substring(1)
+        return key
+    }
+
+    private isS3NotFoundError(err: any): boolean {
+        if (!err) return false
+        const status = err.$metadata?.httpStatusCode
+        return err.name === 'NoSuchKey' || err.name === 'NotFound' || err.Code === 'NoSuchKey' || status === 404
+    }
+
+    async writeBlob(buffer: Buffer, mime: string, ...paths: string[]): Promise<void> {
+        const Key = this.buildBlobKey(paths)
+        await this.s3Client.send(
+            new PutObjectCommand({
+                Bucket: this.bucket,
+                Key,
+                Body: buffer,
+                ContentType: mime || undefined
+            })
+        )
+    }
+
+    async readBlob(...paths: string[]): Promise<Buffer | null> {
+        const Key = this.buildBlobKey(paths)
+        try {
+            const response = await this.s3Client.send(new GetObjectCommand({ Bucket: this.bucket, Key }))
+            const byteArray = await response.Body!.transformToByteArray()
+            return Buffer.from(byteArray)
+        } catch (err: any) {
+            if (this.isS3NotFoundError(err)) return null
+            throw err
+        }
+    }
+
+    async deleteBlob(...paths: string[]): Promise<void> {
+        const Key = this.buildBlobKey(paths)
+        try {
+            await this.s3Client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key }))
+        } catch (err: any) {
+            if (this.isS3NotFoundError(err)) return
+            throw err
+        }
+    }
+
+    async deleteBlobFolder(...paths: string[]): Promise<void> {
+        if (paths.length === 0) return
+        // Path prefixes are kept verbatim — no sanitization (no filename here).
+        let prefix = paths.join('/')
+        if (prefix.startsWith('/')) prefix = prefix.substring(1)
+        if (!prefix) return
+
+        const recursiveDelete = async (token?: string): Promise<void> => {
+            const list = await this.s3Client.send(
+                new ListObjectsV2Command({
+                    Bucket: this.bucket,
+                    Prefix: prefix.endsWith('/') ? prefix : prefix + '/',
+                    ContinuationToken: token
+                })
+            )
+            if (list.KeyCount && list.Contents?.length) {
+                await this.s3Client.send(
+                    new DeleteObjectsCommand({
+                        Bucket: this.bucket,
+                        Delete: {
+                            Objects: list.Contents.map((item) => ({ Key: item.Key })),
+                            Quiet: true
+                        }
+                    })
+                )
+            }
+            if (list.IsTruncated && list.NextContinuationToken) {
+                await recursiveDelete(list.NextContinuationToken)
+            }
+        }
+        await recursiveDelete()
+    }
+
+    async blobExists(...paths: string[]): Promise<boolean> {
+        const Key = this.buildBlobKey(paths)
+        try {
+            await this.s3Client.send(new HeadObjectCommand({ Bucket: this.bucket, Key }))
+            return true
+        } catch (err: any) {
+            if (this.isS3NotFoundError(err)) return false
+            throw err
+        }
     }
 }

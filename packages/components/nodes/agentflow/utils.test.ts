@@ -1,7 +1,14 @@
-import { revertBase64ImagesToFileRefs, processMessagesWithImages, addImageArtifactsToMessages, getUniqueImageMessages } from './utils'
+import {
+    revertBase64ImagesToFileRefs,
+    processMessagesWithImages,
+    addImageArtifactsToMessages,
+    getUniqueImageMessages,
+    processSandboxLinks
+} from './utils'
 import { sanitizeFileName } from '../../src/validator'
 import { IChatMessage, IMultimodalContentItem } from './Interface.Agentflow'
 import { IFileUpload } from '../../src/Interface'
+import { SkillSandboxArtifact, SkillSandboxArtifactResolver } from '../../src/sandbox'
 
 // Mock storageUtils
 jest.mock('../../src/storageUtils', () => ({
@@ -655,5 +662,212 @@ describe('path traversal prevention in image processing', () => {
         const fileRef = (messages[1] as IChatMessage).additional_kwargs?._imageFileRefs?.[0]
         expect(fileRef?.fileName).toBe('passwd')
         expect(fileRef?.fileName).not.toContain('..')
+    })
+})
+
+// ---------------------------------------------------------------------------
+// processSandboxLinks — lazy upload + link rewrite contract.
+// ---------------------------------------------------------------------------
+
+describe('processSandboxLinks', () => {
+    // The shared `addSingleFileToStorage` mock at the top of this file
+    // returns the same `{ path: 'mock/path', totalSize: 100 }` regardless
+    // of input. We re-mock it per test when we need to inspect arguments
+    // or branch on filenames.
+    const { addSingleFileToStorage } = jest.requireMock('../../src/storageUtils')
+
+    const baseOpts = {
+        baseURL: 'https://flowise.test',
+        chatflowId: 'bb237c8f-9856-45c7-99de-11d45fe75d29',
+        chatId: 'chat-abc',
+        orgId: 'org-1'
+    }
+
+    /**
+     * Build a resolver that owns a fixed set of (sandboxUri → bytes)
+     * pairs. Any URI outside the map returns `null`, matching the
+     * production contract that resolvers never throw and never claim
+     * URIs outside their own outputDir.
+     */
+    const makeResolver = (
+        id: string,
+        owned: Record<string, { fileName: string; mime: string; bytes: Buffer }>
+    ): SkillSandboxArtifactResolver => ({
+        id,
+        async resolveArtifact(uri: string): Promise<SkillSandboxArtifact | null> {
+            const hit = owned[uri]
+            return hit ? { fileName: hit.fileName, mime: hit.mime, bytes: hit.bytes } : null
+        }
+    })
+
+    beforeEach(() => {
+        addSingleFileToStorage.mockReset()
+        addSingleFileToStorage.mockImplementation(async (_mime: string, _bf: Buffer, fileName: string) => ({
+            path: `FILE-STORAGE::${fileName}`,
+            totalSize: 1
+        }))
+    })
+
+    it('returns the input verbatim when there are no sandbox links', async () => {
+        const text = 'Hello, no sandbox link here.'
+        const result = await processSandboxLinks(text, baseOpts)
+        expect(result.text).toBe(text)
+        expect(result.fileAnnotations).toEqual([])
+        expect(addSingleFileToStorage).not.toHaveBeenCalled()
+    })
+
+    it('uploads bytes via the resolver and rewrites the link to a downloadable URL', async () => {
+        const resolver = makeResolver('hr', {
+            'sandbox:/home/user/output/performance_review_E1004.md': {
+                fileName: 'performance_review_E1004.md',
+                mime: 'text/markdown',
+                bytes: Buffer.from('# Review\n')
+            }
+        })
+        const text = '[Open the review](sandbox:/home/user/output/performance_review_E1004.md)'
+
+        const result = await processSandboxLinks(text, { ...baseOpts, resolvers: [resolver] })
+
+        expect(addSingleFileToStorage).toHaveBeenCalledTimes(1)
+        const [mime, buf, fileName, orgId, chatflowId, chatId] = addSingleFileToStorage.mock.calls[0]
+        expect(mime).toBe('text/markdown')
+        expect(buf).toBeInstanceOf(Buffer)
+        expect(fileName).toBe('performance_review_E1004.md')
+        expect(orgId).toBe('org-1')
+        expect(chatflowId).toBe(baseOpts.chatflowId)
+        expect(chatId).toBe('chat-abc')
+
+        expect(result.text).toContain(
+            `${baseOpts.baseURL}/api/v1/get-upload-file?chatflowId=${baseOpts.chatflowId}&chatId=chat-abc&fileName=performance_review_E1004.md&download=true`
+        )
+        expect(result.text).toContain('[Open the review](')
+        expect(result.fileAnnotations).toEqual([
+            { filePath: 'FILE-STORAGE::performance_review_E1004.md', fileName: 'performance_review_E1004.md' }
+        ])
+    })
+
+    it('dedupes duplicate sandbox URIs and uploads each artifact only once', async () => {
+        const resolver = makeResolver('hr', {
+            'sandbox:/home/user/output/comp.md': {
+                fileName: 'comp.md',
+                mime: 'text/markdown',
+                bytes: Buffer.from('comp')
+            }
+        })
+        const text = '[Comp 1](sandbox:/home/user/output/comp.md) and again [Comp 2](sandbox:/home/user/output/comp.md).'
+
+        const result = await processSandboxLinks(text, { ...baseOpts, resolvers: [resolver] })
+
+        // One upload despite two links.
+        expect(addSingleFileToStorage).toHaveBeenCalledTimes(1)
+        // Both links got rewritten.
+        const occurrences = (result.text.match(/get-upload-file\?/g) || []).length
+        expect(occurrences).toBe(2)
+        // Only one annotation surfaces to the UI.
+        expect(result.fileAnnotations).toHaveLength(1)
+    })
+
+    it('emits one annotation per distinct uploaded file when several artifacts are linked', async () => {
+        const resolver = makeResolver('hr', {
+            'sandbox:/home/user/output/perf.md': {
+                fileName: 'perf.md',
+                mime: 'text/markdown',
+                bytes: Buffer.from('perf')
+            },
+            'sandbox:/home/user/output/comp.md': {
+                fileName: 'comp.md',
+                mime: 'text/markdown',
+                bytes: Buffer.from('comp')
+            }
+        })
+        const text = '- [Perf](sandbox:/home/user/output/perf.md)\n- [Comp](sandbox:/home/user/output/comp.md)\n'
+
+        const result = await processSandboxLinks(text, { ...baseOpts, resolvers: [resolver] })
+
+        expect(addSingleFileToStorage).toHaveBeenCalledTimes(2)
+        expect(result.fileAnnotations.map((a) => a.fileName).sort()).toEqual(['comp.md', 'perf.md'])
+    })
+
+    it('walks resolvers in order until one claims the URI; unresolved links still get URL rewrite', async () => {
+        // First resolver owns nothing; second resolver owns the link.
+        const empty = makeResolver('empty', {})
+        const hr = makeResolver('hr', {
+            'sandbox:/home/user/output/perf.md': {
+                fileName: 'perf.md',
+                mime: 'text/markdown',
+                bytes: Buffer.from('hello')
+            }
+        })
+        const sales = makeResolver('sales', {}) // never reached after `hr` claims
+
+        const text = '[Perf](sandbox:/home/user/output/perf.md)'
+        const result = await processSandboxLinks(text, { ...baseOpts, resolvers: [empty, hr, sales] })
+
+        expect(addSingleFileToStorage).toHaveBeenCalledTimes(1)
+        expect(result.fileAnnotations).toHaveLength(1)
+        expect(result.text).toContain('fileName=perf.md')
+    })
+
+    it('falls back to the URL rewrite (no upload) when no resolver claims the URI', async () => {
+        // Mimics the legacy code path: OpenAI / Gemini built-in code
+        // interpreters emit sandbox:/mnt/data/... links that this
+        // module does not own. The link gets rewritten so existing
+        // upload flows continue to resolve; nothing new is uploaded.
+        const text = '[Script](sandbox:/mnt/data/script.py)'
+        const result = await processSandboxLinks(text, { ...baseOpts, resolvers: [] })
+
+        expect(addSingleFileToStorage).not.toHaveBeenCalled()
+        expect(result.fileAnnotations).toEqual([])
+        expect(result.text).toContain('fileName=script.py')
+        expect(result.text).toContain('get-upload-file?')
+    })
+
+    it('survives a resolver that throws — falls back to the visible link text, never breaks the response', async () => {
+        const broken: SkillSandboxArtifactResolver = {
+            id: 'broken',
+            async resolveArtifact() {
+                throw new Error('boom')
+            }
+        }
+        const text = 'Prefix [Boom](sandbox:/home/user/output/x.md) suffix.'
+
+        const result = await processSandboxLinks(text, { ...baseOpts, resolvers: [broken] })
+
+        // Link target dropped, visible text preserved, no upload, no annotation.
+        expect(result.text).toBe('Prefix Boom suffix.')
+        expect(result.fileAnnotations).toEqual([])
+        expect(addSingleFileToStorage).not.toHaveBeenCalled()
+    })
+
+    it('respects the per-response upload cap and leaves overflow links unsigned', async () => {
+        const owned: Record<string, { fileName: string; mime: string; bytes: Buffer }> = {}
+        const links: string[] = []
+        for (let i = 0; i < 5; i++) {
+            const uri = `sandbox:/home/user/output/file${i}.md`
+            owned[uri] = { fileName: `file${i}.md`, mime: 'text/markdown', bytes: Buffer.from(`${i}`) }
+            links.push(`[F${i}](${uri})`)
+        }
+        const resolver = makeResolver('hr', owned)
+        const text = links.join('\n')
+
+        const original = process.env.SKILL_MAX_SANDBOX_UPLOADS_PER_RESPONSE
+        process.env.SKILL_MAX_SANDBOX_UPLOADS_PER_RESPONSE = '2'
+        try {
+            const result = await processSandboxLinks(text, { ...baseOpts, resolvers: [resolver] })
+
+            expect(addSingleFileToStorage).toHaveBeenCalledTimes(2)
+            expect(result.fileAnnotations).toHaveLength(2)
+            // All five links still get rewritten to URLs (so the UI
+            // doesn't show broken Markdown), but the overflow ones
+            // resolve to URLs whose backing files were never uploaded.
+            const rewriteCount = (result.text.match(/get-upload-file\?/g) || []).length
+            expect(rewriteCount).toBe(5)
+        } finally {
+            if (original === undefined) {
+                delete process.env.SKILL_MAX_SANDBOX_UPLOADS_PER_RESPONSE
+            } else {
+                process.env.SKILL_MAX_SANDBOX_UPLOADS_PER_RESPONSE = original
+            }
+        }
     })
 })

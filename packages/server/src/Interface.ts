@@ -125,6 +125,19 @@ export interface ITool {
     workspaceId: string
 }
 
+export interface ISkill {
+    id: string
+    workspaceId: string
+    name: string
+    description?: string | null
+    iconSrc?: string | null
+    color?: string | null
+    fileTree: string
+    contentDigest: string
+    publishedBundleId?: string | null
+    createdDate: Date
+    updatedDate: Date
+}
 export interface IAssistant {
     id: string
     details: string

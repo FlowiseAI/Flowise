@@ -3,6 +3,7 @@ import type { ContentBlock } from 'langchain'
 import { getImageUploads } from '../../src/multiModalUtils'
 import { addSingleFileToStorage, getFileFromStorage } from '../../src/storageUtils'
 import { ICommonObject, IFileUpload, INodeData } from '../../src/Interface'
+import { SkillSandboxArtifactResolver } from '../../src/sandbox'
 import { BaseMessageLike } from '@langchain/core/messages'
 import {
     IFlowState,
@@ -830,4 +831,156 @@ const _addImagesToMessages = async (options: ICommonObject, allowImageUploads: b
     }
 
     return imageContent
+}
+
+// ─── Skill sandbox link rewrite + lazy upload ────────────────────────────────
+
+/**
+ * Result of processing `sandbox:/...` links in a final LLM response.
+ *
+ *   - `text` is the rewritten body: every recognised sandbox link is
+ *     replaced with a `/api/v1/get-upload-file?...&fileName=...` URL the
+ *     chat UI can resolve.
+ *   - `fileAnnotations` is the list of artifacts that were copied out of
+ *     the sandbox into chat-scoped storage during this pass. The caller
+ *     appends them to the message's `fileAnnotations` so the UI also
+ *     renders them as attachment chips, not just inline links.
+ */
+export interface IProcessedSandboxLinks {
+    text: string
+    fileAnnotations: IFileAnnotation[]
+}
+
+/** Per-response cap on artifact uploads. Prevents runaway responses from filling chat storage. */
+const DEFAULT_MAX_SANDBOX_UPLOADS_PER_RESPONSE = 20
+const HARD_MAX_SANDBOX_UPLOADS_PER_RESPONSE = 100
+
+const parseSandboxUploadCap = (raw: string | undefined): number => {
+    const parsed = Number(raw)
+    if (!Number.isFinite(parsed) || parsed <= 0) return DEFAULT_MAX_SANDBOX_UPLOADS_PER_RESPONSE
+    return Math.min(parsed, HARD_MAX_SANDBOX_UPLOADS_PER_RESPONSE)
+}
+
+const SANDBOX_LINK_REGEX = /\[([^\]]+)\]\(sandbox:\/([^)]+)\)/g
+
+interface IProcessSandboxLinksOptions {
+    /** Public base URL the chat UI uses to resolve `/api/v1/...` paths. */
+    baseURL: string
+    /** Chatflow id (URL-safe UUID). */
+    chatflowId: string
+    /** Chat session id, scopes the storage upload. */
+    chatId: string
+    /** Org id, scopes the storage upload. */
+    orgId: string
+    /**
+     * Registered skill artifact resolvers. The function walks them in
+     * order; the first one to claim a URI owns the upload. Missing /
+     * empty means "no resolver" — the link is rewritten without an
+     * upload, matching the previous behaviour (the chat UI will 404 if
+     * no other code path wrote the file, which is the same outcome as
+     * before this change).
+     */
+    resolvers?: SkillSandboxArtifactResolver[]
+}
+
+/**
+ * Rewrite `[text](sandbox:/...)` links in an LLM response so the chat UI
+ * can download the referenced files, lazily uploading the bytes from
+ * each owning skill's sandbox along the way.
+ *
+ * Security model:
+ *   - Each resolver enforces a hard "URI must live inside my outputDir"
+ *     check before downloading bytes; cross-skill / cross-workspace
+ *     reads are impossible.
+ *   - Filenames are basenamed and re-sanitised at the storage boundary
+ *     so an LLM-emitted path cannot escape `{orgId}/{chatflowId}/{chatId}/`.
+ *   - Per-response upload cap (`SKILL_MAX_SANDBOX_UPLOADS_PER_RESPONSE`)
+ *     prevents a runaway response from filling chat storage. Beyond the
+ *     cap, links that exceed the limit fall through to the URL-only
+ *     rewrite (which 404s harmlessly if the file was never uploaded).
+ *
+ * The function is intentionally tolerant: any failure (bad URI, resolver
+ * exception, storage failure) downgrades that single link to its plain
+ * text, never breaks the surrounding response.
+ */
+export const processSandboxLinks = async (text: string, opts: IProcessSandboxLinksOptions): Promise<IProcessedSandboxLinks> => {
+    const fileAnnotations: IFileAnnotation[] = []
+    if (typeof text !== 'string' || !text.includes('sandbox:/')) {
+        return { text: typeof text === 'string' ? text : '', fileAnnotations }
+    }
+
+    const matches = Array.from(text.matchAll(SANDBOX_LINK_REGEX))
+    if (!matches.length) return { text, fileAnnotations }
+
+    const resolvers = Array.isArray(opts.resolvers) ? opts.resolvers : []
+    const uploadCap = parseSandboxUploadCap(process.env.SKILL_MAX_SANDBOX_UPLOADS_PER_RESPONSE)
+
+    // Per-response caches:
+    //   - `uploadedByUri` lets multiple links to the same sandbox path share one upload.
+    //   - `annotatedFilenames` dedupes the fileAnnotations we surface back to the UI.
+    const uploadedByUri = new Map<string, string>()
+    const annotatedFilenames = new Set<string>()
+    let uploadCount = 0
+
+    let processed = text
+    for (const match of matches) {
+        const fullMatch = match[0]
+        const linkText = match[1]
+        const sandboxUri = `sandbox:/${match[2]}`
+
+        try {
+            // Replace every occurrence of this exact full-match string in
+            // one pass per match, so duplicate links share one
+            // rewrite.
+            let downloadFileName: string | null = uploadedByUri.get(sandboxUri) ?? null
+
+            if (!downloadFileName && uploadCount < uploadCap) {
+                for (const resolver of resolvers) {
+                    const artifact = await resolver.resolveArtifact(sandboxUri)
+                    if (!artifact) continue
+                    const safeName = sanitizeFileName(artifact.fileName)
+                    const bytesBuffer = Buffer.from(artifact.bytes)
+                    const { path: storedPath } = await addSingleFileToStorage(
+                        artifact.mime,
+                        bytesBuffer,
+                        safeName,
+                        opts.orgId,
+                        opts.chatflowId,
+                        opts.chatId
+                    )
+                    const finalFileName = storedPath.replace(/^FILE-STORAGE::/, '') || safeName
+                    downloadFileName = finalFileName
+                    uploadedByUri.set(sandboxUri, finalFileName)
+                    uploadCount++
+                    if (!annotatedFilenames.has(finalFileName)) {
+                        annotatedFilenames.add(finalFileName)
+                        fileAnnotations.push({ filePath: storedPath, fileName: finalFileName })
+                    }
+                    break
+                }
+            }
+
+            // Fall back to the LLM-supplied basename if no resolver
+            // claimed this URI. Preserves the legacy behaviour for
+            // sandbox links coming from non-Skill code paths (e.g.
+            // OpenAI / Gemini built-in interpreters that already
+            // upload their own files elsewhere).
+            if (!downloadFileName) {
+                downloadFileName = sanitizeFileName(match[2])
+            }
+
+            const downloadUrl = `${opts.baseURL}/api/v1/get-upload-file?chatflowId=${opts.chatflowId}&chatId=${
+                opts.chatId
+            }&fileName=${encodeURIComponent(downloadFileName)}&download=true`
+            const newLink = `[${linkText}](${downloadUrl})`
+            processed = processed.split(fullMatch).join(newLink)
+        } catch (error) {
+            console.error('Error processing sandbox link:', error)
+            // Last-resort fallback — drop the link target, keep the
+            // visible text. The surrounding response is never broken.
+            processed = processed.split(fullMatch).join(linkText)
+        }
+    }
+
+    return { text: processed, fileAnnotations }
 }

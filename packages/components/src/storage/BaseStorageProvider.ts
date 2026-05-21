@@ -40,6 +40,13 @@ export abstract class BaseStorageProvider implements IStorageProvider {
     abstract getMulterStorage(): any
     abstract getLoggerTransports(logType: 'server' | 'error' | 'requests' | 'audit', config?: any): any[]
 
+    // Raw blob primitives — see IStorageProvider for semantics.
+    abstract writeBlob(buffer: Buffer, mime: string, ...paths: string[]): Promise<void>
+    abstract readBlob(...paths: string[]): Promise<Buffer | null>
+    abstract deleteBlob(...paths: string[]): Promise<void>
+    abstract deleteBlobFolder(...paths: string[]): Promise<void>
+    abstract blobExists(...paths: string[]): Promise<boolean>
+
     /**
      * Shared utility for sanitizing filenames to prevent path traversal and other issues
      */

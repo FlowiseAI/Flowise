@@ -95,4 +95,44 @@ export interface IStorageProvider {
      * Get the Winston logger transports for this provider
      */
     getLoggerTransports(logType: 'server' | 'error' | 'requests' | 'audit', config?: any): any[]
+
+    // -------------------------------------------------------------------------
+    // Raw blob primitives.
+    //
+    // These bypass the chatflow-shaped accounting in the methods above (notably
+    // the org-wide `getStorageSize` enumeration that runs after every write or
+    // delete) and the orgId-migration fallback inside `getFileFromStorage`.
+    // They are the right surface for fine-grained, per-asset workloads such as
+    // the Skill storage layer.
+    // -------------------------------------------------------------------------
+
+    /**
+     * Write (or overwrite) a single blob at the given path. No size enumeration,
+     * no fileNames mutation, no pre-delete.
+     */
+    writeBlob(buffer: Buffer, mime: string, ...paths: string[]): Promise<void>
+
+    /**
+     * Read a blob from storage. Returns `null` on a real not-found
+     * (S3 NoSuchKey / 404, GCS 404, Azure BlobNotFound, ENOENT). Throws on
+     * every other error so callers can distinguish "missing" from "transient
+     * outage".
+     */
+    readBlob(...paths: string[]): Promise<Buffer | null>
+
+    /**
+     * Delete a single blob. Idempotent — no-op when the blob is missing.
+     */
+    deleteBlob(...paths: string[]): Promise<void>
+
+    /**
+     * Recursive prefix delete. Idempotent. No size enumeration.
+     */
+    deleteBlobFolder(...paths: string[]): Promise<void>
+
+    /**
+     * Cheap existence check using HEAD/exists primitives. Does not fetch the
+     * body.
+     */
+    blobExists(...paths: string[]): Promise<boolean>
 }
