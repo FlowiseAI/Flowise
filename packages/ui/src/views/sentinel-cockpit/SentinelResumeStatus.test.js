@@ -29,6 +29,7 @@ import SentinelResumeStatus, {
     isManualPacketRequiredSession,
     isPlanDecisionRequiredSession,
     isResultReviewRequiredSession,
+    canUseIdeWorkAction,
     loadGoalSnapshot,
     loadManualPacketSession,
     loadPlanDecisionSession,
@@ -861,6 +862,32 @@ describe('SentinelResumeStatus', () => {
         )
     })
 
+    it('renders a read-only review card only from the exact read-only action projection', () => {
+        const readOnlyIdeWork = safeIdeWork({
+            status_label: 'Read-only review available',
+            short_summary: 'Sentinel can request a read-only review before anything is accepted.',
+            current_safe_step: 'Ask for read-only review only if you want Sentinel to review.',
+            what_can_happen_next: 'Sentinel can request a read-only review without changing files.',
+            what_will_not_happen: 'No files change and no commands run from here.',
+            allowed_user_actions: ['request_read_only_review']
+        })
+        const snapshot = safePlanSession({ ide_work: readOnlyIdeWork })
+        const html = renderToStaticMarkup(
+            <PlanSessionCard snapshot={snapshot} canRequestReadOnlyReview />
+        )
+
+        expect(canUseIdeWorkAction(snapshot, 'request_read_only_review')).toBe(true)
+        expect(canUseIdeWorkAction(snapshot, 'approve_mock_backend_work')).toBe(false)
+        expect(html).toContain('Read-only review')
+        expect(html).toContain('Ask for read-only review')
+        expect(html).toContain('Sentinel stays in charge')
+        expect(html).toContain('No files change, no commands run from here, and nothing is published.')
+        expect(html).not.toContain('Safe mock check')
+        expect(html).not.toMatch(
+            /request_read_only_review|approve_mock_backend_work|cancel_mock_backend_work|run_|sentinel_session|session_id|client_nonce|cockpit_ref|gateway|token|authorization|task_packet|source snippet/i
+        )
+    })
+
     it('posts only a safe mock-check action and displays the returned status', async () => {
         requestGoalSnapshot.mockResolvedValueOnce(
             safePlanSession({
@@ -895,6 +922,55 @@ describe('SentinelResumeStatus', () => {
         expect(container.textContent).toContain('Cancel mock check')
         expect(container.textContent).not.toMatch(
             /run_|sentinel_session|session_id|client_nonce|cockpit_ref|gateway|token|authorization|task_packet|source snippet/i
+        )
+    })
+
+    it('posts only a read-only review action and displays the review-required result', async () => {
+        requestGoalSnapshot.mockResolvedValueOnce(
+            safePlanSession({
+                ide_work: safeIdeWork({
+                    status_label: 'Read-only review available',
+                    short_summary: 'Sentinel can request a read-only review before anything is accepted.',
+                    current_safe_step: 'Ask for read-only review only if you want Sentinel to review.',
+                    what_can_happen_next: 'Sentinel can request a read-only review without changing files.',
+                    what_will_not_happen: 'No files change and no commands run from here.',
+                    allowed_user_actions: ['request_read_only_review']
+                })
+            })
+        )
+        requestIdeWorkAction.mockResolvedValueOnce({
+            schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+            status: 'ok',
+            ide_work: safeIdeWork({
+                schema_version: 'sentinel.qvc.ide_work_result_review_required.v1',
+                state: 'review_required',
+                status_label: 'Review needed before anything is accepted',
+                short_summary: 'Sentinel received a read-only review result for review only.',
+                current_safe_step: 'Review the result before accepting anything outside this page.',
+                what_can_happen_next: 'Sentinel can show review-only status for the operator.',
+                what_will_not_happen: 'Nothing was accepted, changed, or continued from this page.',
+                approval_available: false,
+                cancel_available: false,
+                review_required_note: 'Review is required before anything can be accepted.',
+                terminal_note: 'Nothing was accepted or changed here.',
+                allowed_user_actions: ['none']
+            }),
+            safe_error: null
+        })
+        const { container, setGoalInput, submitGoalForm, clickButton } = renderInteractive()
+
+        setGoalInput('Please make a simple safe plan.')
+        submitGoalForm()
+
+        await waitForAssertion(() => expect(container.textContent).toContain('Ask for read-only review'))
+        clickButton('Ask for read-only review')
+
+        await waitForAssertion(() => expect(requestIdeWorkAction).toHaveBeenCalledWith({ action: 'request_read_only_review' }))
+        expect(container.textContent).toContain('Review needed before anything is accepted')
+        expect(container.textContent).toContain('Sentinel stays in charge of routing, safety, review, and acceptance.')
+        expect(container.textContent).not.toContain('Approve safe mock check')
+        expect(container.textContent).not.toMatch(
+            /request_read_only_review|approve_mock_backend_work|cancel_mock_backend_work|run_|sentinel_session|session_id|client_nonce|cockpit_ref|gateway|token|authorization|task_packet|source snippet/i
         )
     })
 

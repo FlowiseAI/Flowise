@@ -412,7 +412,7 @@ describe('sentinelCockpit API wrapper', () => {
         ).toThrow('invalid_request')
     })
 
-    it('posts only the IDE mock work action request body whitelist', async () => {
+    it('posts only the IDE work action request body whitelist', async () => {
         const fetchImpl = jest.fn().mockResolvedValue(
             fetchResponse({
                 schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
@@ -445,6 +445,14 @@ describe('sentinelCockpit API wrapper', () => {
             action: 'approve_mock_backend_work'
         })
         expect(JSON.stringify(fetchImpl.mock.calls)).not.toContain('127.0.0.1:39173')
+
+        fetchImpl.mockClear()
+        await requestIdeWorkAction({ action: ' request_read_only_review ' }, { fetchImpl })
+        const readOnlyBody = JSON.parse(fetchImpl.mock.calls[0][1].body)
+        expect(readOnlyBody).toEqual({
+            request_kind: 'ide_work_action',
+            action: 'request_read_only_review'
+        })
     })
 
     it('posts only the IDE mock work status request body whitelist', async () => {
@@ -479,6 +487,10 @@ describe('sentinelCockpit API wrapper', () => {
         expect(buildIdeWorkActionBody({ action: ' approve_mock_backend_work ' })).toEqual({
             request_kind: 'ide_work_action',
             action: 'approve_mock_backend_work'
+        })
+        expect(buildIdeWorkActionBody({ action: ' request_read_only_review ' })).toEqual({
+            request_kind: 'ide_work_action',
+            action: 'request_read_only_review'
         })
         expect(buildIdeWorkStatusBody()).toEqual({ request_kind: 'ide_work_status' })
         expect(() => buildIdeWorkActionBody({ action: 'launch_worker' })).toThrow('invalid_request')

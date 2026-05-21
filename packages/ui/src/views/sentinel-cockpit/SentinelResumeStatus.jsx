@@ -39,7 +39,7 @@ const PLAN_SESSION_SCHEMA_VERSION = 'sentinel.cockpit_bridge.plan_session.v1'
 const PLAN_DECISION_ACTIONS = Object.freeze(['approve_plan', 'revise_plan', 'stop'])
 const MANUAL_PACKET_ACTIONS = Object.freeze(['prepare_manual_worker_packet'])
 const RESULT_REVIEW_ACTIONS = Object.freeze(['submit_result_review'])
-const IDE_WORK_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'none'])
+const IDE_WORK_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'none'])
 const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
@@ -375,6 +375,15 @@ const IDE_WORK_ROWS = Object.freeze([
     ['What will not happen', 'what_will_not_happen']
 ])
 
+const READ_ONLY_REVIEW_ROWS = Object.freeze([
+    ['Review status', 'status_label'],
+    ['Suggested workflow', 'workflow_label'],
+    ['Summary', 'short_summary'],
+    ['Current safe step', 'current_safe_step'],
+    ['What can happen next', 'what_can_happen_next'],
+    ['What will not happen', 'what_will_not_happen']
+])
+
 export default function SentinelResumeStatus() {
     const goalRef = useRef('')
     const checkpointRef = useRef('')
@@ -658,6 +667,7 @@ export default function SentinelResumeStatus() {
         isResultReviewRequiredSession(snapshot, clientNonceRef.current) && cockpitRef.current === snapshot?.cockpit_ref
     const ideWorkApproveReady = canUseIdeWorkAction(snapshot, 'approve_mock_backend_work')
     const ideWorkCancelReady = canUseIdeWorkAction(snapshot, 'cancel_mock_backend_work')
+    const ideWorkReadOnlyReviewReady = canUseIdeWorkAction(snapshot, 'request_read_only_review')
 
     return (
         <main style={pageStyles.root}>
@@ -753,6 +763,7 @@ export default function SentinelResumeStatus() {
                         showIdePreview={showIdePreview && !isLoading}
                         canApproveMockWork={ideWorkApproveReady}
                         canCancelMockWork={ideWorkCancelReady}
+                        canRequestReadOnlyReview={ideWorkReadOnlyReviewReady}
                     />
                 ) : null}
                 {!error && snapshot && !isPlanSessionResponse(snapshot) ? (
@@ -877,6 +888,53 @@ function MockBackendWorkCard({ ideWork, rows, canApprove, canCancel, isLoading, 
     )
 }
 
+function ReadOnlyReviewCard({ ideWork, rows, canRequest, isLoading, onIdeWorkAction }) {
+    return (
+        <section style={pageStyles.idePreview} aria-label='Read-only review'>
+            <h2 style={pageStyles.idePreviewTitle}>Read-only review</h2>
+            <p style={pageStyles.idePreviewCopy}>
+                Ask Sentinel for a read-only review. Sentinel stays in charge. No files change, no commands run from here, and nothing is
+                published.
+            </p>
+            <div style={pageStyles.idePreviewGrid}>
+                {rows.map(([label, value]) => (
+                    <div key={label} style={pageStyles.idePreviewRow}>
+                        <div style={pageStyles.idePreviewLabel}>{label}</div>
+                        <div style={pageStyles.idePreviewValue}>{value}</div>
+                    </div>
+                ))}
+            </div>
+            {ideWork?.review_required_note ? (
+                <p style={pageStyles.idePreviewCopy}>Review note: {formatValue(ideWork.review_required_note)}</p>
+            ) : null}
+            {ideWork?.terminal_note ? <p style={pageStyles.idePreviewCopy}>Closeout: {formatValue(ideWork.terminal_note)}</p> : null}
+            {Array.isArray(ideWork?.blocked_actions) && ideWork.blocked_actions.length > 0 ? (
+                <div style={pageStyles.idePreviewGrid}>
+                    <div style={pageStyles.idePreviewRow}>
+                        <div style={pageStyles.idePreviewLabel}>Blocked actions</div>
+                        <div style={pageStyles.idePreviewValue}>{formatList(ideWork.blocked_actions)}</div>
+                    </div>
+                </div>
+            ) : null}
+            {canRequest ? (
+                <div style={pageStyles.decisionControls} aria-label='Read-only review controls'>
+                    <button
+                        type='button'
+                        style={pageStyles.button}
+                        disabled={isLoading}
+                        onClick={() => onIdeWorkAction('request_read_only_review')}
+                    >
+                        {isLoading ? 'Asking' : 'Ask for read-only review'}
+                    </button>
+                </div>
+            ) : null}
+            <p style={{ ...pageStyles.idePreviewCopy, marginBottom: 0 }}>
+                Sentinel stays in charge of routing, safety, review, and acceptance.
+            </p>
+        </section>
+    )
+}
+
 export function PlanSessionCard({
     snapshot,
     canDecide = false,
@@ -895,19 +953,29 @@ export function PlanSessionCard({
     onManualPacketPrepare = () => {},
     onResultReviewSubmit = () => {},
     onIdeWorkAction = () => {},
-    showIdePreview = false
+    showIdePreview = false,
+    canRequestReadOnlyReview = false
 }) {
     const planCard = isPlainRecord(snapshot.plan_card) ? snapshot.plan_card : null
     const routeCard = readSafeRouteCard(snapshot.route_card)
     const idePreviewRows = showIdePreview ? readIdePreviewRows(snapshot.ide_preview) : []
-    const ideWorkRows = readIdeWorkRows(snapshot.ide_work)
+    const showReadOnlyReview = canRequestReadOnlyReview || isReadOnlyReviewIdeWork(snapshot.ide_work)
+    const ideWorkRows = readIdeWorkRows(snapshot.ide_work, showReadOnlyReview ? READ_ONLY_REVIEW_ROWS : IDE_WORK_ROWS)
 
     return (
         <section style={pageStyles.planCard} aria-label='Plan session'>
             {routeCard ? <RouteGuidanceCard routeCard={routeCard} /> : null}
             <p style={pageStyles.recommendation}>Next safe action: {formatPlanAction(snapshot.next_safe_action)}</p>
             {idePreviewRows.length > 0 ? <ReadOnlyWorkPreview rows={idePreviewRows} /> : null}
-            {ideWorkRows.length > 0 ? (
+            {ideWorkRows.length > 0 && showReadOnlyReview ? (
+                <ReadOnlyReviewCard
+                    ideWork={snapshot.ide_work}
+                    rows={ideWorkRows}
+                    canRequest={canRequestReadOnlyReview}
+                    isLoading={isLoading}
+                    onIdeWorkAction={onIdeWorkAction}
+                />
+            ) : ideWorkRows.length > 0 ? (
                 <MockBackendWorkCard
                     ideWork={snapshot.ide_work}
                     rows={ideWorkRows}
@@ -1181,7 +1249,7 @@ export async function loadResultReviewSession(reviewInput, requestResultReviewIm
 
 export async function loadIdeWorkActionSession(actionInput, requestIdeWorkActionImpl = requestIdeWorkAction) {
     const action = typeof actionInput?.action === 'string' ? actionInput.action.trim() : ''
-    if (action !== 'approve_mock_backend_work' && action !== 'cancel_mock_backend_work') {
+    if (!['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review'].includes(action)) {
         return { ideWork: null, error: IDE_WORK_ERROR }
     }
 
@@ -1221,6 +1289,9 @@ export function canUseIdeWorkAction(snapshot, action) {
     }
     if (action === 'cancel_mock_backend_work') {
         return ideWork.cancel_available === true && ideWork.allowed_user_actions.join(',') === 'cancel_mock_backend_work'
+    }
+    if (action === 'request_read_only_review') {
+        return ideWork.approval_available === true && ideWork.allowed_user_actions.join(',') === 'request_read_only_review'
     }
     return false
 }
@@ -1404,9 +1475,9 @@ function readIdePreviewRows(preview) {
     }, [])
 }
 
-function readIdeWorkRows(ideWork) {
+function readIdeWorkRows(ideWork, rowSpec = IDE_WORK_ROWS) {
     if (!isSafeIdeWorkProjection(ideWork)) return []
-    return IDE_WORK_ROWS.reduce((rows, [label, key]) => {
+    return rowSpec.reduce((rows, [label, key]) => {
         const value = ideWork[key]
         if (typeof value !== 'string') return rows
         const trimmed = value.trim()
@@ -1414,6 +1485,14 @@ function readIdeWorkRows(ideWork) {
         rows.push([label, trimmed])
         return rows
     }, [])
+}
+
+function isReadOnlyReviewIdeWork(ideWork) {
+    if (!isSafeIdeWorkProjection(ideWork)) return false
+    if (ideWork.allowed_user_actions.length === 1 && ideWork.allowed_user_actions[0] === 'request_read_only_review') {
+        return true
+    }
+    return ['Read-only review in progress', 'Review needed before anything is accepted'].includes(ideWork.status_label)
 }
 
 function isSafeIdeWorkProjection(ideWork) {

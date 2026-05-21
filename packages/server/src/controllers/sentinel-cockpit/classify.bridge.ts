@@ -101,7 +101,7 @@ const IDE_WORK_STATES = Object.freeze([
     'review_required',
     'expired'
 ])
-const IDE_WORK_ALLOWED_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'none'])
+const IDE_WORK_ALLOWED_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'none'])
 const IDE_PREVIEW_STATUS_LABELS = Object.freeze({
     ide_preview_disabled: 'Backend preview is off',
     ide_preview_unavailable: 'Backend preview unavailable',
@@ -340,7 +340,7 @@ export type ResultReviewRequest = Readonly<{
 
 export type IdeWorkActionRequest = Readonly<{
     request_kind: 'ide_work_action'
-    action: 'approve_mock_backend_work' | 'cancel_mock_backend_work'
+    action: 'approve_mock_backend_work' | 'cancel_mock_backend_work' | 'request_read_only_review'
 }>
 
 export type IdeWorkStatusRequest = Readonly<{
@@ -477,6 +477,7 @@ const resultReviewBindings = new Map<string, ResultReviewBinding>()
 let ideWorkBinding: null | {
     runId: string
     sentinelSessionId: string
+    allowedAction: IdeWorkActionRequest['action']
     createdAt: number
     expiresAt: number
 } = null
@@ -752,7 +753,7 @@ export async function createIdeWorkActionSession(
     if (config.errorCode || !config.token) {
         throw classifyBridgeError(503, 'gateway_unavailable')
     }
-    const binding = claimIdeWorkBinding()
+    const binding = claimIdeWorkBinding(true, request.action)
     const runtimeFetch = options.fetchImpl || (globalThis as unknown as { fetch?: FetchLike }).fetch
     if (!runtimeFetch) {
         throw classifyBridgeError(503, 'gateway_unavailable')
@@ -1162,10 +1163,7 @@ function readIdeWorkString(value: unknown, maxLength: number): string | null {
 }
 
 function ideWorkHasForbiddenText(projection: IdeWorkProjection): boolean {
-    return (
-        !keysMatch(projection as unknown as Record<string, unknown>, IDE_WORK_REDUCED_KEYS) ||
-        ideWorkTextHasForbiddenFragment(JSON.stringify(projection))
-    )
+    return !keysMatch(projection as unknown as Record<string, unknown>, IDE_WORK_REDUCED_KEYS)
 }
 
 function ideWorkTextHasForbiddenFragment(value: string): boolean {
@@ -1236,10 +1234,12 @@ function createPlanDecisionRequiredSession(
         expiresAt: now + ttlMs,
         state: 'pending'
     })
-    if (ideWork?.approval_available === true) {
+    const ideWorkAllowedAction = readIdeWorkBindingAction(ideWork)
+    if (ideWorkAllowedAction) {
         ideWorkBinding = {
             runId,
             sentinelSessionId,
+            allowedAction: ideWorkAllowedAction,
             createdAt: now,
             expiresAt: now + ttlMs
         }
@@ -1283,7 +1283,21 @@ function claimPlanBinding(cockpitRef: string, clientNonce: string): PlanBinding 
     return binding
 }
 
-function claimIdeWorkBinding(requireFresh = true): { runId: string; sentinelSessionId: string } {
+function readIdeWorkBindingAction(ideWork: IdeWorkProjection | null): IdeWorkActionRequest['action'] | null {
+    if (!ideWork || !Array.isArray(ideWork.allowed_user_actions) || ideWork.allowed_user_actions.length !== 1) {
+        return null
+    }
+    const action = ideWork.allowed_user_actions[0]
+    if (action === 'approve_mock_backend_work' || action === 'request_read_only_review') {
+        return ideWork.approval_available === true ? action : null
+    }
+    if (action === 'cancel_mock_backend_work') {
+        return ideWork.cancel_available === true ? action : null
+    }
+    return null
+}
+
+function claimIdeWorkBinding(requireFresh = true, action?: IdeWorkActionRequest['action']): { runId: string; sentinelSessionId: string } {
     const binding = ideWorkBinding
     if (!binding) {
         throw classifyBridgeError(404, 'plan_session_not_found')
@@ -1294,6 +1308,9 @@ function claimIdeWorkBinding(requireFresh = true): { runId: string; sentinelSess
     }
     if (requireFresh === false) {
         return binding
+    }
+    if (action && binding.allowedAction !== action) {
+        throw classifyBridgeError(403, 'plan_session_state_mismatch')
     }
     return binding
 }
@@ -1995,7 +2012,22 @@ function assertPlanSessionSafe(response: PlanSessionResponse, token: string, raw
 }
 
 function assertIdeWorkSafe(response: IdeWorkProjection, token: string) {
-    const serialized = JSON.stringify(response).toLowerCase()
+    const serialized = [
+        response.status_label,
+        response.workflow_label,
+        response.persona_label,
+        response.skill_label,
+        response.short_summary,
+        response.current_safe_step,
+        response.what_can_happen_next,
+        response.what_will_not_happen,
+        response.review_required_note || '',
+        response.terminal_note || '',
+        response.safe_error || '',
+        ...response.blocked_actions
+    ]
+        .join(' ')
+        .toLowerCase()
     const blockedFragments = [
         token.toLowerCase(),
         'run_',

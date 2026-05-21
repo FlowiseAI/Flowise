@@ -113,7 +113,7 @@ const IDE_WORK_STATES = Object.freeze([
     'review_required',
     'expired'
 ])
-const IDE_WORK_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'none'])
+const IDE_WORK_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'none'])
 const ROUTE_CARD_KEYS = Object.freeze([
     'schema_version',
     'category',
@@ -603,7 +603,7 @@ export function validateIdeWorkActionRequest(body: unknown): classifyBridge.IdeW
     assertExactAllowedKeys(requestBody, Object.freeze(['request_kind', 'action']), 'ide_work_invalid_input')
     rejectForbiddenFields(requestBody)
     const action = requestBody.action
-    if (typeof action !== 'string' || !['approve_mock_backend_work', 'cancel_mock_backend_work'].includes(action)) {
+    if (typeof action !== 'string' || !['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review'].includes(action)) {
         throw httpError(400, 'ide_work_invalid_input')
     }
     return {

@@ -516,6 +516,10 @@ describe('sentinel cockpit request validation', () => {
             request_kind: 'ide_work_action',
             action: 'cancel_mock_backend_work'
         })
+        expect(validateIdeWorkActionRequest({ request_kind: 'ide_work_action', action: 'request_read_only_review' })).toEqual({
+            request_kind: 'ide_work_action',
+            action: 'request_read_only_review'
+        })
         expect(validateIdeWorkStatusRequest({ request_kind: 'ide_work_status' })).toEqual({
             request_kind: 'ide_work_status'
         })
@@ -972,6 +976,18 @@ describe('sentinel cockpit controller responses', () => {
         expect(actionRes.statusCode).toBe(200)
         expect(JSON.parse(actionRes.bodyText).ide_work.state).toBe('mock_in_progress')
 
+        const readOnlyBody = JSON.stringify({ request_kind: 'ide_work_action', action: 'request_read_only_review' })
+        const readOnlyReq = buildReq(readOnlyBody, {
+            path: COCKPIT_IDE_WORK_ACTION_PATH,
+            originalUrl: `${COCKPIT_ROUTE_PREFIX}${COCKPIT_IDE_WORK_ACTION_PATH}`
+        } as Partial<Request>)
+        const readOnlyRes = buildRes()
+        await sentinelCockpitController.handleSnapshot(readOnlyReq, readOnlyRes)
+
+        expect(actionSpy).toHaveBeenCalledWith({ request_kind: 'ide_work_action', action: 'request_read_only_review' })
+        expect(readOnlyRes.statusCode).toBe(200)
+        expect(JSON.parse(readOnlyRes.bodyText).ide_work.state).toBe('mock_in_progress')
+
         const statusBody = JSON.stringify({ request_kind: 'ide_work_status' })
         const statusReq = buildReq(statusBody, {
             path: COCKPIT_IDE_WORK_STATUS_PATH,
@@ -1380,6 +1396,99 @@ describe('sentinel cockpit classify bridge', () => {
         expect(actionSession.ide_work.state).toBe('mock_in_progress')
         expect(actionSession.ide_work.allowed_user_actions).toEqual(['cancel_mock_backend_work'])
         expect(JSON.stringify(actionSession)).not.toContain(gatewayToken)
+    })
+
+    it('scopes IDE work action bindings to the exact projected action', async () => {
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_PROJECTION: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_ACTIONS: '1'
+        })
+        const mockFetch = jest.fn().mockResolvedValueOnce(gatewayResponse(validGatewayClassify({ ide_work: validGatewayIdeWork() })))
+
+        await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
+            { config, fetchImpl: mockFetch as any }
+        )
+
+        await expect(
+            classifyBridge.createIdeWorkActionSession(
+                { request_kind: 'ide_work_action', action: 'request_read_only_review' },
+                { config, fetchImpl: mockFetch as any }
+            )
+        ).rejects.toMatchObject({ code: 'plan_session_state_mismatch' })
+        expect(mockFetch).toHaveBeenCalledTimes(1)
+
+        const readOnlyFetch = jest
+            .fn()
+            .mockResolvedValueOnce(
+                gatewayResponse(
+                    validGatewayClassify({
+                        ide_work: validGatewayIdeWork({
+                            status_label: 'Read-only review available',
+                            short_summary: 'Sentinel can request a read-only review before anything is accepted.',
+                            current_safe_step: 'Ask for read-only review only if you want Sentinel to review.',
+                            what_can_happen_next: 'Sentinel can request a read-only review without changing files.',
+                            what_will_not_happen: 'No files change and no commands run from here.',
+                            allowed_user_actions: ['request_read_only_review']
+                        })
+                    })
+                )
+            )
+            .mockResolvedValueOnce(
+                gatewayResponse({
+                    schema_version: 'sentinel.gateway.v1',
+                    status: 'ok',
+                    ide_work: validGatewayIdeWork({
+                        schema_version: 'sentinel.qvc.ide_work_result_review_required.v1',
+                        state: 'review_required',
+                        status_label: 'Review needed before anything is accepted',
+                        short_summary: 'Sentinel received a read-only review result for review only.',
+                        current_safe_step: 'Review the result before accepting anything outside this page.',
+                        what_can_happen_next: 'Sentinel can show review-only status for the operator.',
+                        what_will_not_happen: 'Nothing was accepted, changed, or continued from this page.',
+                        approval_available: false,
+                        cancel_available: false,
+                        review_required_note: 'Review is required before anything can be accepted.',
+                        terminal_note: 'Nothing was accepted or changed here.',
+                        allowed_user_actions: ['none']
+                    })
+                })
+            )
+
+        await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
+            { config, fetchImpl: readOnlyFetch as any }
+        )
+        const actionSession = await classifyBridge.createIdeWorkActionSession(
+            { request_kind: 'ide_work_action', action: 'request_read_only_review' },
+            { config, fetchImpl: readOnlyFetch as any, requestId: 'req_ide_review_123' }
+        )
+        const body = JSON.parse(readOnlyFetch.mock.calls[1][1].body)
+
+        expect(body).toEqual({
+            schema_version: 'sentinel.gateway.v1',
+            request_id: 'req_ide_review_123',
+            client: {
+                client_type: 'flowise',
+                client_instance_id: 'flowise_sentinel_cockpit'
+            },
+            operator: {
+                operator_id: 'flowise_local_operator'
+            },
+            run_id: 'run_hidden_123',
+            sentinel_session_id: 'session_hidden_123',
+            request_kind: 'ide_work_action',
+            action: 'request_read_only_review'
+        })
+        expect(actionSession.ide_work.state).toBe('review_required')
+        expect(actionSession.ide_work.allowed_user_actions).toEqual(['none'])
+        await expect(
+            classifyBridge.createIdeWorkActionSession(
+                { request_kind: 'ide_work_action', action: 'approve_mock_backend_work' },
+                { config, fetchImpl: readOnlyFetch as any }
+            )
+        ).rejects.toMatchObject({ code: 'plan_session_state_mismatch' })
     })
 
     it('omits unsafe IDE mock work projections while preserving the plan session', async () => {
