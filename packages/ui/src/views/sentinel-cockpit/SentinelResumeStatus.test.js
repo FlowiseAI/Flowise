@@ -872,9 +872,7 @@ describe('SentinelResumeStatus', () => {
             allowed_user_actions: ['request_read_only_review']
         })
         const snapshot = safePlanSession({ ide_work: readOnlyIdeWork })
-        const html = renderToStaticMarkup(
-            <PlanSessionCard snapshot={snapshot} canRequestReadOnlyReview />
-        )
+        const html = renderToStaticMarkup(<PlanSessionCard snapshot={snapshot} canRequestReadOnlyReview />)
 
         expect(canUseIdeWorkAction(snapshot, 'request_read_only_review')).toBe(true)
         expect(canUseIdeWorkAction(snapshot, 'approve_mock_backend_work')).toBe(false)

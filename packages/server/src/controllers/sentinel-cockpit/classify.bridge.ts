@@ -101,7 +101,12 @@ const IDE_WORK_STATES = Object.freeze([
     'review_required',
     'expired'
 ])
-const IDE_WORK_ALLOWED_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'none'])
+const IDE_WORK_ALLOWED_ACTIONS = Object.freeze([
+    'approve_mock_backend_work',
+    'cancel_mock_backend_work',
+    'request_read_only_review',
+    'none'
+])
 const IDE_PREVIEW_STATUS_LABELS = Object.freeze({
     ide_preview_disabled: 'Backend preview is off',
     ide_preview_unavailable: 'Backend preview unavailable',

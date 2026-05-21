@@ -135,7 +135,12 @@ const IDE_WORK_STATES = Object.freeze([
     'review_required',
     'expired'
 ])
-const IDE_WORK_ALLOWED_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'none'])
+const IDE_WORK_ALLOWED_ACTIONS = Object.freeze([
+    'approve_mock_backend_work',
+    'cancel_mock_backend_work',
+    'request_read_only_review',
+    'none'
+])
 const IDE_WORK_FORBIDDEN_TEXT =
     /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:|127\.0\.0\.1|localhost|:39173|provider|model|confidence|selected\s+worker|active\s+agent|agent\s+started|running\s+task|tool\s+call|command\s*[:=]|action_inputs|adapter|argv|nonce|hash|source\s+snippet/i
 export const CLOSED_ERROR_CODES = Object.freeze([

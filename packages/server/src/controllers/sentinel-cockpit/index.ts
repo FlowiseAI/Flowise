@@ -603,7 +603,10 @@ export function validateIdeWorkActionRequest(body: unknown): classifyBridge.IdeW
     assertExactAllowedKeys(requestBody, Object.freeze(['request_kind', 'action']), 'ide_work_invalid_input')
     rejectForbiddenFields(requestBody)
     const action = requestBody.action
-    if (typeof action !== 'string' || !['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review'].includes(action)) {
+    if (
+        typeof action !== 'string' ||
+        !['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review'].includes(action)
+    ) {
         throw httpError(400, 'ide_work_invalid_input')
     }
     return {
