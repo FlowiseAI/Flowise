@@ -107,7 +107,7 @@ jest.mock('../../schedule/ScheduleBeat', () => ({
 jest.mock('flowise-components', () => ({ removeFolderFromStorage: jest.fn().mockResolvedValue({ totalSize: 0 }) }), { virtual: true })
 jest.mock('uuid', () => ({ validate: jest.fn().mockReturnValue(true) }))
 jest.mock('http-status-codes', () => ({
-    StatusCodes: { OK: 200, BAD_REQUEST: 400, NOT_FOUND: 404, INTERNAL_SERVER_ERROR: 500 }
+    StatusCodes: { OK: 200, BAD_REQUEST: 400, CONFLICT: 409, NOT_FOUND: 404, INTERNAL_SERVER_ERROR: 500 }
 }))
 
 // ─── Imports (after mocks) ────────────────────────────────────────────────────
@@ -118,12 +118,14 @@ import { ScheduleBeat } from '../../schedule/ScheduleBeat'
 import { containsBase64File } from '../../utils/fileRepository'
 import { EnumChatflowType } from '../../database/entities/ChatFlow'
 import { ScheduleTriggerType } from '../../database/entities/ScheduleRecord'
+import { validate as isValidUUID } from 'uuid'
 
 const mockContainsBase64File = containsBase64File as jest.Mock
 const mockCreateOrUpdateSchedule = scheduleService.createOrUpdateSchedule as jest.Mock
 const mockDeleteScheduleForTarget = scheduleService.deleteScheduleForTarget as jest.Mock
 const mockResolveScheduleCron = scheduleService.resolveScheduleCron as jest.Mock
 const mockCanScheduleEnable = scheduleService.canScheduleEnable as jest.Mock
+const mockIsValidUUID = isValidUUID as jest.Mock
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -159,8 +161,10 @@ const makeChatInputFlowData = () =>
 /** Build a plain (non-agentflow) flowData JSON */
 const makePlainFlowData = () => JSON.stringify({ nodes: [], edges: [] })
 
+const FLOW_ID = '11111111-1111-4111-8111-111111111111'
+
 const makeChatflow = (overrides: Record<string, unknown> = {}) => ({
-    id: 'flow-1',
+    id: FLOW_ID,
     type: EnumChatflowType.AGENTFLOW,
     flowData: makeScheduleFlowData(),
     workspaceId: 'ws-1',
@@ -178,10 +182,12 @@ const SAVE_ARGS = {
 beforeEach(() => {
     jest.clearAllMocks()
     mockAppServer.AppDataSource.getRepository.mockReturnValue(mockRepo)
+    mockRepo.findOne.mockResolvedValue(undefined)
     mockRepo.create.mockImplementation((x: unknown) => x)
     mockRepo.save.mockResolvedValue(makeChatflow())
     mockRepo.merge.mockImplementation((_existing: any, updates: any) => ({ ...makeChatflow(), ...updates }))
     mockContainsBase64File.mockReturnValue(false)
+    mockIsValidUUID.mockReturnValue(true)
     mockCreateOrUpdateSchedule.mockResolvedValue({ id: 'sched-1', enabled: true })
     mockDeleteScheduleForTarget.mockResolvedValue(undefined)
     mockResolveScheduleCron.mockReturnValue({ valid: true, cronExpression: '* * * * *' })
@@ -225,6 +231,38 @@ describe('saveChatflow', () => {
         ).rejects.toMatchObject({ statusCode: 400 })
     })
 
+    it('throws BAD_REQUEST for an invalid caller-provided chatflow id', async () => {
+        mockIsValidUUID.mockReturnValue(false)
+        const badFlow = makeChatflow({ id: 'not-a-uuid', type: EnumChatflowType.CHATFLOW, flowData: makePlainFlowData() })
+
+        await expect(
+            chatflowsService.saveChatflow(
+                badFlow as any,
+                SAVE_ARGS.orgId,
+                SAVE_ARGS.workspaceId,
+                SAVE_ARGS.subscriptionId,
+                SAVE_ARGS.usageCacheManager
+            )
+        ).rejects.toMatchObject({ statusCode: 400 })
+        expect(mockRepo.save).not.toHaveBeenCalled()
+    })
+
+    it('throws CONFLICT when the caller-provided chatflow id already exists', async () => {
+        const newFlow = makeChatflow({ type: EnumChatflowType.CHATFLOW, flowData: makePlainFlowData() })
+        mockRepo.findOne.mockResolvedValueOnce({ id: FLOW_ID })
+
+        await expect(
+            chatflowsService.saveChatflow(
+                newFlow as any,
+                SAVE_ARGS.orgId,
+                SAVE_ARGS.workspaceId,
+                SAVE_ARGS.subscriptionId,
+                SAVE_ARGS.usageCacheManager
+            )
+        ).rejects.toMatchObject({ statusCode: 409 })
+        expect(mockRepo.save).not.toHaveBeenCalled()
+    })
+
     // ── schedule sync (AGENTFLOW + scheduleInput) ────────────────────────────
 
     it('creates or updates the schedule when the start node is scheduleInput', async () => {
@@ -242,7 +280,7 @@ describe('saveChatflow', () => {
         expect(mockCreateOrUpdateSchedule).toHaveBeenCalledWith(
             expect.objectContaining({
                 triggerType: ScheduleTriggerType.AGENTFLOW,
-                targetId: 'flow-1',
+                targetId: FLOW_ID,
                 workspaceId: 'ws-1'
             })
         )
@@ -475,7 +513,7 @@ describe('updateChatflow', () => {
         await chatflowsService.updateChatflow(existingFlow as any, updates as any, 'org-1', 'ws-1', 'sub-1')
 
         expect(mockCreateOrUpdateSchedule).toHaveBeenCalledWith(
-            expect.objectContaining({ triggerType: ScheduleTriggerType.AGENTFLOW, targetId: 'flow-1', workspaceId: 'ws-1' })
+            expect.objectContaining({ triggerType: ScheduleTriggerType.AGENTFLOW, targetId: FLOW_ID, workspaceId: 'ws-1' })
         )
     })
 
@@ -543,7 +581,7 @@ describe('updateChatflow', () => {
             'sub-1'
         )
 
-        expect(mockDeleteScheduleForTarget).toHaveBeenCalledWith('flow-1', ScheduleTriggerType.AGENTFLOW, 'ws-1')
+        expect(mockDeleteScheduleForTarget).toHaveBeenCalledWith(FLOW_ID, ScheduleTriggerType.AGENTFLOW, 'ws-1')
     })
 
     it('calls onScheduleChanged delete after deleting the existing schedule record', async () => {

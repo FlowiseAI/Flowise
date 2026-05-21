@@ -38,6 +38,7 @@ import { ScheduleBeat } from '../../schedule/ScheduleBeat'
 export const enum ChatflowErrorMessage {
     INVALID_CHATFLOW_TYPE = 'Invalid Chatflow Type',
     INVALID_CHATFLOW_ID = 'Invalid Chatflow ID',
+    CHATFLOW_ID_ALREADY_EXISTS = 'Chatflow ID already exists',
     WORKSPACE_ID_REQUIRED = 'Workspace ID is required'
 }
 
@@ -346,6 +347,18 @@ const saveChatflow = async (
 ): Promise<any> => {
     validateChatflowType(newChatFlow.type)
     const appServer = getRunningExpressApp()
+    const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
+
+    if (Object.prototype.hasOwnProperty.call(newChatFlow, 'id')) {
+        const chatflowId = newChatFlow.id
+        if (typeof chatflowId !== 'string' || !isValidUUID(chatflowId)) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, ChatflowErrorMessage.INVALID_CHATFLOW_ID)
+        }
+        const existingChatflow = await chatFlowRepository.findOne({ where: { id: chatflowId }, select: ['id'] })
+        if (existingChatflow) {
+            throw new InternalFlowiseError(StatusCodes.CONFLICT, ChatflowErrorMessage.CHATFLOW_ID_ALREADY_EXISTS)
+        }
+    }
 
     let dbResponse: ChatFlow
     if (containsBase64File(newChatFlow)) {
@@ -355,8 +368,8 @@ const saveChatflow = async (
         // step 1 - save with empty flowData
         const incomingFlowData = newChatFlow.flowData
         newChatFlow.flowData = JSON.stringify({})
-        const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
-        const step1Results = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
+        const chatflow = chatFlowRepository.create(newChatFlow)
+        const step1Results = await chatFlowRepository.save(chatflow)
 
         // step 2 - convert base64 to file paths and update the chatflow
         step1Results.flowData = await updateFlowDataWithFilePaths(
@@ -368,10 +381,10 @@ const saveChatflow = async (
             usageCacheManager
         )
         await _checkAndUpdateDocumentStoreUsage(step1Results, newChatFlow.workspaceId)
-        dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(step1Results)
+        dbResponse = await chatFlowRepository.save(step1Results)
     } else {
-        const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
-        dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
+        const chatflow = chatFlowRepository.create(newChatFlow)
+        dbResponse = await chatFlowRepository.save(chatflow)
     }
 
     // Check if the flow is agentflow and if it has a schedule node, if yes then notify the beat to sync the schedule
