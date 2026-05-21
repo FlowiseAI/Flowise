@@ -1771,6 +1771,7 @@ export const executeJavaScriptCode = async (
             },
             eval: false,
             wasm: false,
+            fixAsync: true,
             timeout: timeoutMs
         }
 
@@ -1780,7 +1781,8 @@ export const executeJavaScriptCode = async (
             ...nodeVMOptions,
             require: defaultNodeVMOptions.require,
             eval: false,
-            wasm: false
+            wasm: false,
+            fixAsync: true
         }
 
         const vm = new NodeVM(finalNodeVMOptions)
