@@ -36,6 +36,13 @@ export interface GovernanceConfig {
     context?: GovernanceContext
 }
 
+/** Session/node identifiers threaded through audit and gate calls. */
+export interface GovernanceMeta {
+    sessionId?: string
+    chatId?: string
+    nodeId?: string
+}
+
 export interface PolicyDecision {
     effect: PolicyEffect
     ruleId: string

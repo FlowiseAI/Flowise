@@ -1,5 +1,6 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import {
+    IAgentToolCallResult,
     ICommonObject,
     IDatabaseEntity,
     IHumanInput,
@@ -44,6 +45,7 @@ import { sanitizeFileName } from '../../../src/validator'
 import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
 import {
     GovernanceConfig,
+    GovernanceMeta,
     POLICY_DENY_PREFIX,
     auditExecute,
     auditHitl,
@@ -760,7 +762,7 @@ class Agent_Agentflow implements INode {
             const tools = nodeData.inputs?.agentTools as ITool[]
 
             const governanceConfig = this.parseGovernanceConfig(nodeData)
-            const governanceMeta = {
+            const governanceMeta: GovernanceMeta = {
                 sessionId: options.sessionId as string | undefined,
                 chatId: options.chatId as string | undefined,
                 nodeId: nodeData.id
@@ -2241,22 +2243,12 @@ class Agent_Agentflow implements INode {
         accumulatedReasonContent?: string
         accumulatedReasoningDuration?: number
         governanceConfig?: GovernanceConfig
-    }): Promise<{
-        response: AIMessageChunk
-        usedTools: IUsedTool[]
-        sourceDocuments: Array<any>
-        artifacts: any[]
-        totalTokens: number
-        isWaitingForHumanInput?: boolean
-        pendingToolCalls?: Array<{ name: string; args: Record<string, unknown> }>
-        accumulatedReasonContent?: string
-        accumulatedReasoningDuration?: number
-    }> {
+    }): Promise<IAgentToolCallResult> {
         // Track total tokens used throughout this process
         let totalTokens = response.usage_metadata?.total_tokens || 0
         const usedTools: IUsedTool[] = []
-        let sourceDocuments: Array<any> = []
-        let artifacts: any[] = []
+        let sourceDocuments: ICommonObject[] = []
+        let artifacts: ICommonObject[] = []
         let isWaitingForHumanInput: boolean | undefined
         // Use reasoning from caller (first turn); subsequent turns are added when we get newResponse
         let accumulatedReasonContent = initialAccumulatedReasonContent ?? ''
@@ -2679,20 +2671,11 @@ class Agent_Agentflow implements INode {
         iterationContext: ICommonObject
         isStructuredOutput?: boolean
         governanceConfig?: GovernanceConfig
-    }): Promise<{
-        response: AIMessageChunk
-        usedTools: IUsedTool[]
-        sourceDocuments: Array<any>
-        artifacts: any[]
-        totalTokens: number
-        isWaitingForHumanInput?: boolean
-        accumulatedReasonContent?: string
-        accumulatedReasoningDuration?: number
-    }> {
+    }): Promise<IAgentToolCallResult> {
         let llmNodeInstance = llmWithoutToolsBind
         const usedTools: IUsedTool[] = []
-        let sourceDocuments: Array<any> = []
-        let artifacts: any[] = []
+        let sourceDocuments: ICommonObject[] = []
+        let artifacts: ICommonObject[] = []
         let isWaitingForHumanInput: boolean | undefined
 
         const lastCheckpointMessages = humanInputAction?.data?.input?.messages ?? []
@@ -3128,8 +3111,8 @@ class Agent_Agentflow implements INode {
             return undefined
         }
 
-        const policyPath = (nodeData.inputs?.agentPolicyFilePath as string) || './hackathon/agent-policies.json'
-        const auditPath = (nodeData.inputs?.agentAuditLogPath as string) || './audit.jsonl'
+        const policyPath = nodeData.inputs?.agentPolicyFilePath as string
+        const auditPath = nodeData.inputs?.agentAuditLogPath as string
 
         let context: Record<string, unknown> = { nodeId: nodeData.id }
         const ctxRaw = nodeData.inputs?.agentGovernanceContext

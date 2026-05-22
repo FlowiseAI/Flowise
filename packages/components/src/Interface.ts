@@ -1,4 +1,4 @@
-import { BaseMessage } from '@langchain/core/messages'
+import { BaseMessage, AIMessageChunk } from '@langchain/core/messages'
 import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from '@langchain/classic/memory'
 import { Moderation } from '../nodes/moderation/Moderation'
 
@@ -500,4 +500,17 @@ export interface IHumanInput {
      * Example: { "recipient": "safe@aivar.tech", "message": "Approved summary only." }
      */
     modifiedArgs?: Record<string, unknown>
+}
+
+/** Shared return shape for handleToolCalls and handleResumedToolCalls in the Agent node. */
+export interface IAgentToolCallResult {
+    response: AIMessageChunk
+    usedTools: IUsedTool[]
+    sourceDocuments: ICommonObject[]
+    artifacts: ICommonObject[]
+    totalTokens: number
+    isWaitingForHumanInput?: boolean
+    pendingToolCalls?: Array<{ name: string; args: Record<string, unknown> }>
+    accumulatedReasonContent?: string
+    accumulatedReasoningDuration?: number
 }
