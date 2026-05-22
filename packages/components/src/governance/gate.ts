@@ -1,6 +1,6 @@
 import { appendAuditLog, truncateObservation } from './auditLogger'
 import { loadPolicyFile } from './policyLoader'
-import { evaluatePolicy } from './policyEngine'
+import { evaluatePolicy } from './policyEvaluator'
 import { GovernanceConfig, PolicyDecision } from './types'
 
 export interface GateToolCallInput {

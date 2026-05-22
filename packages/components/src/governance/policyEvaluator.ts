@@ -1,4 +1,4 @@
-import { GovernanceContext, PolicyDecision, PolicyEffect, PolicyFile, PolicyRule, PolicyWhenCondition } from './types'
+import { GovernanceContext, PolicyDecision, PolicyFile, PolicyRule, PolicyWhenCondition } from './types'
 
 const DEFAULT_ALLOW: PolicyDecision = {
     effect: 'allow',
