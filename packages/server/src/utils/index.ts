@@ -213,7 +213,7 @@ export const isNodeDisabled = (node?: IReactFlowNode): boolean => {
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-const getDisabledNodeReferencePattern = (nodeId: string) => new RegExp(`{{${escapeRegExp(nodeId)}\\.data\\.instance[^}]*}}`, 'g')
+const getDisabledNodeReferencePattern = (nodeId: string) => new RegExp('{{' + escapeRegExp(nodeId) + '\\.[^}]*}}', 'g')
 
 const removeDisabledNodeReferences = (value: unknown, disabledNodeIds: Set<string>): unknown => {
     if (Array.isArray(value)) {
@@ -236,7 +236,7 @@ const removeDisabledNodeReferences = (value: unknown, disabledNodeIds: Set<strin
     for (const disabledNodeId of disabledNodeIds) {
         nextValue = nextValue.replace(getDisabledNodeReferencePattern(disabledNodeId), '')
     }
-    return nextValue.trim()
+    return nextValue
 }
 
 const getTransitiveDisabledNodeIds = (reactFlowNodes: IReactFlowNode[], reactFlowEdges: IReactFlowEdge[]): Set<string> => {
@@ -246,6 +246,20 @@ const getTransitiveDisabledNodeIds = (reactFlowNodes: IReactFlowNode[], reactFlo
 
     const outgoingEdgesBySource = new Map<string, string[]>()
     for (const edge of reactFlowEdges) {
+        const isToolEdge =
+            edge.targetHandle &&
+            (edge.targetHandle.includes('-input-tools-') ||
+                edge.targetHandle.split('-input-')[1]?.startsWith('tools-') ||
+                edge.targetHandle === 'tools' ||
+                edge.targetHandle.startsWith('tools-'))
+        const isModelEdge =
+            edge.targetHandle &&
+            (edge.targetHandle.includes('-input-model-') ||
+                edge.targetHandle.split('-input-')[1]?.startsWith('model-') ||
+                edge.targetHandle === 'model' ||
+                edge.targetHandle.startsWith('model-'))
+        if (isToolEdge || isModelEdge) continue
+
         const targets = outgoingEdgesBySource.get(edge.source) ?? []
         targets.push(edge.target)
         outgoingEdgesBySource.set(edge.source, targets)

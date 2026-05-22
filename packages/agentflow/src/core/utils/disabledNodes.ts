@@ -18,6 +18,20 @@ export const recalculateDisabledNodes = (nodes: FlowNode[], edges: FlowEdge[]): 
 
     const outgoingEdges = new Map<string, string[]>()
     for (const edge of edges) {
+        const isToolEdge =
+            edge.targetHandle &&
+            (edge.targetHandle.includes('-input-tools-') ||
+                edge.targetHandle.split('-input-')[1]?.startsWith('tools-') ||
+                edge.targetHandle === 'tools' ||
+                edge.targetHandle.startsWith('tools-'))
+        const isModelEdge =
+            edge.targetHandle &&
+            (edge.targetHandle.includes('-input-model-') ||
+                edge.targetHandle.split('-input-')[1]?.startsWith('model-') ||
+                edge.targetHandle === 'model' ||
+                edge.targetHandle.startsWith('model-'))
+        if (isToolEdge || isModelEdge) continue
+
         const targets = outgoingEdges.get(edge.source) || []
         targets.push(edge.target)
         outgoingEdges.set(edge.source, targets)
