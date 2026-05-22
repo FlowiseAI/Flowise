@@ -1491,6 +1491,81 @@ describe('sentinel cockpit classify bridge', () => {
         ).rejects.toMatchObject({ code: 'plan_session_state_mismatch' })
     })
 
+    it('keeps IDE work action gateway fetch open long enough for live read-only review', async () => {
+        jest.useFakeTimers()
+        try {
+            const config = buildClassifyConfig({
+                BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1',
+                BEZZTY_FLOWISE_SENTINEL_IDE_WORK_PROJECTION: '1',
+                BEZZTY_FLOWISE_SENTINEL_IDE_WORK_ACTIONS: '1'
+            })
+            const readOnlyClassify = jest.fn().mockResolvedValueOnce(
+                gatewayResponse(
+                    validGatewayClassify({
+                        ide_work: validGatewayIdeWork({
+                            status_label: 'Read-only review available',
+                            short_summary: 'Sentinel can request a read-only review before anything is accepted.',
+                            current_safe_step: 'Ask for read-only review only if you want Sentinel to review.',
+                            what_can_happen_next: 'Sentinel can request a read-only review without changing files.',
+                            what_will_not_happen: 'No files change and no commands run from here.',
+                            allowed_user_actions: ['request_read_only_review']
+                        })
+                    })
+                )
+            )
+            await classifyBridge.createClassifySnapshot(
+                { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
+                { config, fetchImpl: readOnlyClassify as any }
+            )
+
+            let resolveGateway: (value: unknown) => void = () => {}
+            const delayedActionFetch = jest.fn().mockImplementation(
+                () =>
+                    new Promise((resolve) => {
+                        resolveGateway = resolve
+                    })
+            )
+            const actionSessionPromise = classifyBridge.createIdeWorkActionSession(
+                { request_kind: 'ide_work_action', action: 'request_read_only_review' },
+                { config, fetchImpl: delayedActionFetch as any, requestId: 'req_ide_review_slow' }
+            )
+
+            await Promise.resolve()
+            jest.advanceTimersByTime(5001)
+            await Promise.resolve()
+            expect((delayedActionFetch.mock.calls[0][1].signal as AbortSignal).aborted).toBe(false)
+
+            resolveGateway(
+                gatewayResponse({
+                    schema_version: 'sentinel.gateway.v1',
+                    status: 'ok',
+                    ide_work: validGatewayIdeWork({
+                        schema_version: 'sentinel.qvc.ide_work_result_review_required.v1',
+                        state: 'review_required',
+                        status_label: 'Review needed before anything is accepted',
+                        short_summary: 'Sentinel received a read-only review result for review only.',
+                        current_safe_step: 'Review the result before accepting anything outside this page.',
+                        what_can_happen_next: 'Sentinel can show review-only status for the operator.',
+                        what_will_not_happen: 'Nothing was accepted, changed, or continued from this page.',
+                        approval_available: false,
+                        cancel_available: false,
+                        review_required_note: 'Review is required before anything can be accepted.',
+                        terminal_note: 'Nothing was accepted or changed here.',
+                        allowed_user_actions: ['none']
+                    })
+                })
+            )
+            await expect(actionSessionPromise).resolves.toMatchObject({
+                ide_work: {
+                    state: 'review_required',
+                    allowed_user_actions: ['none']
+                }
+            })
+        } finally {
+            jest.useRealTimers()
+        }
+    })
+
     it('omits unsafe IDE mock work projections while preserving the plan session', async () => {
         const config = buildClassifyConfig({
             BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1',

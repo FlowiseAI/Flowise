@@ -455,6 +455,29 @@ describe('sentinelCockpit API wrapper', () => {
         })
     })
 
+    it('keeps IDE work action requests open long enough for live read-only review', async () => {
+        jest.useFakeTimers()
+        const fetchImpl = jest.fn(
+            (_url, options) =>
+                new Promise((_resolve, reject) => {
+                    options.signal.addEventListener('abort', () => {
+                        const error = new Error('raw abort detail')
+                        error.name = 'AbortError'
+                        reject(error)
+                    })
+                })
+        )
+
+        const pending = requestIdeWorkAction({ action: 'request_read_only_review' }, { fetchImpl })
+        await Promise.resolve()
+        jest.advanceTimersByTime(5001)
+        await Promise.resolve()
+        expect(fetchImpl.mock.calls[0][1].signal.aborted).toBe(false)
+
+        jest.advanceTimersByTime(65000)
+
+        await expect(pending).rejects.toMatchObject({ code: 'sentinel_resume_unavailable' })
+    })
     it('posts only the IDE mock work status request body whitelist', async () => {
         const fetchImpl = jest.fn().mockResolvedValue(
             fetchResponse({

@@ -254,6 +254,8 @@ const FORBIDDEN_CALLER_KEYS = Object.freeze([
     'url'
 ])
 const CLOSED_ERROR_CODE_SET = new Set(CLOSED_ERROR_CODES)
+const DEFAULT_REQUEST_TIMEOUT_MS = 5000
+const IDE_WORK_ACTION_TIMEOUT_MS = 70000
 
 export class SentinelCockpitError extends Error {
     constructor(code, status) {
@@ -291,7 +293,12 @@ export async function requestResultReview(input = {}, options = {}) {
 
 export async function requestIdeWorkAction(input = {}, options = {}) {
     validateCallerInput(input, IDE_WORK_ACTION_CALLER_INPUT_KEYS)
-    return requestJson(buildIdeWorkActionUrl(), buildIdeWorkActionBody(input), options, readIdeWorkResponse)
+    return requestJson(
+        buildIdeWorkActionUrl(),
+        buildIdeWorkActionBody(input),
+        { timeoutMs: IDE_WORK_ACTION_TIMEOUT_MS, ...options },
+        readIdeWorkResponse
+    )
 }
 
 export async function requestIdeWorkStatus(input = {}, options = {}) {
@@ -314,7 +321,7 @@ async function requestJson(url, body, options = {}, responseReader) {
     }
 
     const controller = new AbortController()
-    const timeoutMs = typeof options.timeoutMs === 'number' ? options.timeoutMs : 5000
+    const timeoutMs = typeof options.timeoutMs === 'number' ? options.timeoutMs : DEFAULT_REQUEST_TIMEOUT_MS
     const timeout = setTimeout(() => controller.abort(), timeoutMs)
 
     try {

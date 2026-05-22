@@ -473,6 +473,7 @@ type ResultReviewBinding = {
 const GATEWAY_SCHEMA_VERSION = 'sentinel.gateway.v1'
 const RESPONSE_LIMIT_BYTES = 64 * 1024
 const FETCH_TIMEOUT_MS = 5000
+const IDE_WORK_FETCH_TIMEOUT_MS = 70000
 const PLAN_BINDING_MAX_TTL_MS = 10 * 60 * 1000
 const MANUAL_PACKET_BINDING_MAX_TTL_MS = 10 * 60 * 1000
 const RESULT_REVIEW_BINDING_MAX_TTL_MS = 15 * 60 * 1000
@@ -1401,7 +1402,7 @@ async function fetchGatewayIdeWork(
     requestId?: string
 ): Promise<GatewayIdeWorkBody> {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+    const timeout = setTimeout(() => controller.abort(), IDE_WORK_FETCH_TIMEOUT_MS)
     try {
         const response = await fetchImpl(`${gatewayOrigin}${path}`, {
             method: 'POST',
