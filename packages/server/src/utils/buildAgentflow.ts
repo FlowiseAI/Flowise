@@ -1454,6 +1454,10 @@ const executeNode = async ({
 
         // Stop going through the current route if the node is a agent node waiting for human input before using the tool
         if (reactFlowNode.data.name === 'agentAgentflow' && results?.output?.isWaitingForHumanInput) {
+            // Extract the pending tool call args so the reviewer can inspect and optionally edit them
+            const pendingToolCalls = results?.output?.pendingToolCalls as Array<{ name: string; args: Record<string, unknown> }> | undefined
+            const pendingArgsJson = pendingToolCalls?.length ? JSON.stringify(pendingToolCalls[0].args, null, 2) : ''
+
             const humanInputAction = {
                 id: uuidv4(),
                 mapping: {
@@ -1461,6 +1465,20 @@ const executeNode = async ({
                     reject: 'Reject'
                 },
                 elements: [
+                    /**
+                     * Governance bonus: argument modification.
+                     * The reviewer sees the pending tool args pre-filled in a JSON textarea.
+                     * Whatever they submit here is sent back as humanInput.modifiedArgs and
+                     * replaces toolCall.args before the tool executes in handleResumedToolCalls.
+                     */
+                    {
+                        type: 'agentflowv2-text-input',
+                        label: 'Modify tool arguments (JSON) — leave unchanged to approve as-is',
+                        name: 'modifiedArgs',
+                        placeholder: pendingArgsJson,
+                        default: pendingArgsJson,
+                        optional: true
+                    },
                     { type: 'agentflowv2-approve-button', label: 'Proceed' },
                     { type: 'agentflowv2-reject-button', label: 'Reject' }
                 ],

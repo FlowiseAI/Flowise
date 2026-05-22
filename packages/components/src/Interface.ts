@@ -493,4 +493,11 @@ export interface IHumanInput {
     type: 'proceed' | 'reject'
     startNodeId: string
     feedback?: string
+    /**
+     * Governance bonus: human-supplied argument overrides for the escalated tool call.
+     * When present on a 'proceed' decision, these values replace the original tool args
+     * before execution. Allows the reviewer to correct or constrain what the agent does.
+     * Example: { "recipient": "safe@aivar.tech", "message": "Approved summary only." }
+     */
+    modifiedArgs?: Record<string, unknown>
 }

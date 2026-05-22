@@ -2,10 +2,17 @@
     "version": "1",
     "rules": [
         {
+            "id": "allow-safe-read",
+            "effect": "allow",
+            "match": { "tool": "get_weather" },
+            "message": "Read-only weather lookup is always permitted."
+        },
+        {
             "id": "allow-internal-email",
             "effect": "allow",
             "match": { "tool": "send_email" },
-            "when": [
+            "anyOf": [
+                { "path": "args.recipient", "op": "contains", "value": "@aivar.tech" },
                 { "path": "args.input", "op": "contains", "value": "@aivar.tech" }
             ]
         },
@@ -19,7 +26,21 @@
             "id": "escalate-external-email",
             "effect": "escalate",
             "match": { "tool": "send_email" },
-            "message": "Sending email outside @aivar.tech requires human approval."
+            "message": "Sending email to an external address requires human approval."
+        },
+        {
+            "id": "deny-post-to-public",
+            "effect": "deny",
+            "match": { "tool": "post_message" },
+            "when": [{ "path": "args.input", "op": "contains", "value": "#public" }],
+            "message": "Posting directly to #public is forbidden. Use #internal or request a human to review."
+        },
+        {
+            "id": "escalate-post-to-external",
+            "effect": "escalate",
+            "match": { "tool": "post_message" },
+            "when": [{ "path": "args.input", "op": "contains", "value": "#external" }],
+            "message": "Posting to #external requires human review. You may edit the message or channel before approving."
         }
     ]
 }

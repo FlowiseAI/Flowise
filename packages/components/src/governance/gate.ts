@@ -84,3 +84,23 @@ export function auditExecute(
         nodeId: meta?.nodeId
     })
 }
+
+/**
+ * Write an 'observe' entry after the LLM has processed the tool result.
+ * This closes the loop: propose → policy_decision → [hitl] → execute → observe.
+ */
+export function auditObserve(
+    governance: GovernanceConfig,
+    tool: string,
+    observation: unknown,
+    meta?: { sessionId?: string; chatId?: string; nodeId?: string }
+): void {
+    appendAuditLog(governance.auditPath, {
+        step: 'observe',
+        tool,
+        observation: truncateObservation(observation),
+        sessionId: meta?.sessionId,
+        chatId: meta?.chatId,
+        nodeId: meta?.nodeId
+    })
+}

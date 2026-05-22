@@ -47,6 +47,7 @@ import {
     POLICY_DENY_PREFIX,
     auditExecute,
     auditHitl,
+    auditObserve,
     auditPropose,
     gateToolCall,
     wrapToolWithGovernance
@@ -2247,6 +2248,7 @@ class Agent_Agentflow implements INode {
         artifacts: any[]
         totalTokens: number
         isWaitingForHumanInput?: boolean
+        pendingToolCalls?: Array<{ name: string; args: Record<string, unknown> }>
         accumulatedReasonContent?: string
         accumulatedReasoningDuration?: number
     }> {
@@ -2361,8 +2363,7 @@ class Agent_Agentflow implements INode {
 
                     if (decision.effect === 'escalate') {
                         const toolCallDetails = '```json\n' + JSON.stringify(toolCall, null, 2) + '\n```'
-                        const escalationBlock =
-                            `\n\n**Policy escalation** (rule: \`${decision.ruleId}\`): ${decision.message}\n\nAttempting to use tool:\n${toolCallDetails}`
+                        const escalationBlock = `\n\n**Policy escalation** (rule: \`${decision.ruleId}\`): ${decision.message}\n\nAttempting to use tool:\n${toolCallDetails}`
                         const responseContent = (response.content || '') + escalationBlock
                         response.content = responseContent
                         if (!isStructuredOutput) {
@@ -2375,6 +2376,8 @@ class Agent_Agentflow implements INode {
                             artifacts,
                             totalTokens,
                             isWaitingForHumanInput: true,
+                            // Expose pending tool call so buildAgentflow.ts can pre-fill the arg editor
+                            pendingToolCalls: [{ name: toolCall.name, args: toolArgs }],
                             accumulatedReasonContent: accumulatedReasonContent || undefined,
                             accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
                         }
@@ -2467,6 +2470,15 @@ class Agent_Agentflow implements INode {
                             sourceDocuments: parsedDocs
                         }
                     })
+
+                    // Audit the observation (what the agent will see as the tool result)
+                    if (governanceConfig) {
+                        auditObserve(governanceConfig, toolCall.name, toolOutput, {
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined
+                        })
+                    }
 
                     // Track used tools
                     usedTools.push({
@@ -2773,39 +2785,72 @@ class Agent_Agentflow implements INode {
 
                 if (humanInput.type === 'reject') {
                     if (governanceConfig) {
+                        // Re-evaluate to recover the ruleId that originally triggered escalation
+                        const rejectDecision = gateToolCall({
+                            tool: toolCall.name,
+                            args: (toolCall.args || {}) as Record<string, unknown>,
+                            governance: governanceConfig,
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined,
+                            skipAudit: true
+                        })
                         auditHitl(governanceConfig, toolCall.name, (toolCall.args || {}) as Record<string, unknown>, 'reject', {
                             sessionId: options.sessionId,
                             chatId: options.chatId,
-                            nodeId: governanceConfig.context?.nodeId as string | undefined
+                            nodeId: governanceConfig.context?.nodeId as string | undefined,
+                            ruleId: rejectDecision.ruleId
                         })
                     }
-                    messages.pop()
-                    const toBeRemovedTool = toolsInstance.find((tool) => tool.name === toolCall.name)
-                    if (toBeRemovedTool) {
-                        toolsInstance = toolsInstance.filter((tool) => tool.name !== toolCall.name)
-                        // Remove other tools with the same agentSelectedTool such as MCP tools
-                        toolsInstance = toolsInstance.filter(
-                            (tool) => (tool as any).agentSelectedTool !== (toBeRemovedTool as any).agentSelectedTool
-                        )
-                    }
+                    // Keep the assistant message with the tool call in the conversation so the
+                    // message history stays valid (assistant tool_call must be followed by a tool result).
+                    // Push a synthetic tool result explaining the rejection so the LLM can re-reason
+                    // without retrying the same tool call.
+                    messages.push({
+                        role: 'tool',
+                        content: `[REJECTED BY HUMAN] The action "${toolCall.name}" was rejected by the reviewer. Do not attempt this action again in this conversation. Explain to the user that the action was not approved and suggest alternatives if appropriate.`,
+                        tool_call_id: toolCall.id,
+                        name: toolCall.name
+                    })
+                    usedTools.push({
+                        tool: toolCall.name,
+                        toolInput: toolCall.args,
+                        toolOutput: '[REJECTED BY HUMAN]'
+                    })
                 }
                 if (humanInput.type === 'proceed') {
-                    const toolArgs = (toolCall.args || {}) as Record<string, unknown>
+                    // Use human-supplied arg overrides if provided (bonus: argument modification).
+                    // modifiedArgs arrives as a parsed object or as a JSON string from the text input widget.
+                    let resolvedModifiedArgs: Record<string, unknown> | undefined
+                    if (humanInput.modifiedArgs) {
+                        if (typeof humanInput.modifiedArgs === 'string') {
+                            try {
+                                resolvedModifiedArgs = JSON.parse(humanInput.modifiedArgs as string)
+                            } catch {
+                                // malformed JSON from the reviewer — fall back to original args
+                                console.warn('[Governance] modifiedArgs is not valid JSON; using original tool args.')
+                            }
+                        } else {
+                            resolvedModifiedArgs = humanInput.modifiedArgs
+                        }
+                    }
+                    const toolArgs = (resolvedModifiedArgs ?? toolCall.args ?? {}) as Record<string, unknown>
 
                     if (governanceConfig) {
-                        auditHitl(governanceConfig, toolCall.name, toolArgs, 'proceed', {
-                            sessionId: options.sessionId,
-                            chatId: options.chatId,
-                            nodeId: governanceConfig.context?.nodeId as string | undefined
-                        })
-
                         const decision = gateToolCall({
                             tool: toolCall.name,
                             args: toolArgs,
                             governance: governanceConfig,
                             sessionId: options.sessionId,
                             chatId: options.chatId,
-                            nodeId: governanceConfig.context?.nodeId as string | undefined
+                            nodeId: governanceConfig.context?.nodeId as string | undefined,
+                            skipAudit: true
+                        })
+                        auditHitl(governanceConfig, toolCall.name, toolArgs, 'proceed', {
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined,
+                            ruleId: decision.ruleId
                         })
 
                         if (decision.effect === 'deny') {
@@ -2831,12 +2876,12 @@ class Agent_Agentflow implements INode {
 
                     let toolIds: ICommonObject | undefined
                     if (options.analyticHandlers) {
-                        toolIds = await options.analyticHandlers.onToolStart(toolCall.name, toolCall.args, options.parentTraceIds)
+                        toolIds = await options.analyticHandlers.onToolStart(toolCall.name, toolArgs, options.parentTraceIds)
                     }
 
                     try {
                         //@ts-ignore
-                        let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
+                        let toolOutput = await selectedTool.call(toolArgs, { signal: abortController?.signal }, undefined, flowConfig)
 
                         if (governanceConfig) {
                             auditExecute(governanceConfig, toolCall.name, toolArgs, toolOutput, {
@@ -2896,6 +2941,15 @@ class Agent_Agentflow implements INode {
                                 sourceDocuments: parsedDocs
                             }
                         })
+
+                        // Audit the observation (what the agent will see as the tool result)
+                        if (governanceConfig) {
+                            auditObserve(governanceConfig, toolCall.name, toolOutput, {
+                                sessionId: options.sessionId,
+                                chatId: options.chatId,
+                                nodeId: governanceConfig.context?.nodeId as string | undefined
+                            })
+                        }
 
                         // Track used tools
                         usedTools.push({
