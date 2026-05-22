@@ -70,6 +70,7 @@ export interface AgentflowContextValue {
     // Node operations
     deleteNode: (nodeId: string) => void
     duplicateNode: (nodeId: string, distance?: number) => void
+    toggleNodeDisabled: (nodeId: string) => void
     updateNodeData: (nodeId: string, data: Partial<FlowNode['data']>, edges?: FlowEdge[]) => void
 
     // Edge operations
@@ -294,6 +295,63 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
     )
 
+    const toggleNodeDisabled = useCallback(
+        (nodeId: string) => {
+            const targetNode = state.nodes.find((node) => node.id === nodeId)
+            const shouldDisable = !(targetNode?.data?.disabled === true || String(targetNode?.data?.disabled) === 'true')
+            const downstreamNodeIds = new Set<string>()
+
+            if (shouldDisable) {
+                const queue = [nodeId]
+                for (let index = 0; index < queue.length; index += 1) {
+                    const sourceNodeId = queue[index]
+                    const outgoingEdges = state.edges.filter((edge) => edge.source === sourceNodeId)
+
+                    for (const edge of outgoingEdges) {
+                        if (downstreamNodeIds.has(edge.target)) continue
+                        downstreamNodeIds.add(edge.target)
+                        queue.push(edge.target)
+                    }
+                }
+                downstreamNodeIds.delete(nodeId)
+            }
+
+            const newNodes = state.nodes.map((node) => {
+                if (node.id === nodeId) {
+                    const { disabledBy, ...nextData } = node.data
+                    return {
+                        ...node,
+                        data: {
+                            ...nextData,
+                            disabled: shouldDisable
+                        }
+                    }
+                }
+
+                if (shouldDisable && downstreamNodeIds.has(node.id)) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            disabled: true,
+                            disabledBy: node.data.disabledBy || nodeId
+                        }
+                    }
+                }
+
+                return node
+            })
+
+            syncStateUpdate({ nodes: newNodes })
+
+            if (onFlowChangeRef.current) {
+                const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
+                onFlowChangeRef.current({ nodes: newNodes, edges: state.edges, viewport })
+            }
+        },
+        [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
+    )
+
     // Edge operations
     const deleteEdge = useCallback(
         (edgeId: string) => {
@@ -415,6 +473,7 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         setReactFlowInstance,
         deleteNode,
         duplicateNode,
+        toggleNodeDisabled,
         updateNodeData,
         deleteEdge,
         openEditDialog,

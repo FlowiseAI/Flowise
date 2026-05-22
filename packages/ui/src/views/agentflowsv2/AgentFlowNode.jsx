@@ -11,6 +11,7 @@ import { ButtonGroup, Avatar, Box, Typography, IconButton, Tooltip } from '@mui/
 import MainCard from '@/ui-component/cards/MainCard'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import NodeInfoDialog from '@/ui-component/dialog/NodeInfoDialog'
+import { isNodeExplicitlyDisabled } from '@/utils/disabledNodes'
 
 // icons
 import {
@@ -30,7 +31,9 @@ import {
     IconMessageCircle,
     IconClockHour4,
     IconListDetails,
-    IconWebhook
+    IconWebhook,
+    IconPlayerPause,
+    IconPlayerPlay
 } from '@tabler/icons-react'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
@@ -68,9 +71,10 @@ const AgentFlowNode = ({ data }) => {
     const [position, setPosition] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
     const [warningMessage, setWarningMessage] = useState('')
-    const { deleteNode, duplicateNode } = useContext(flowContext)
+    const { deleteNode, duplicateNode, toggleNodeDisabled } = useContext(flowContext)
     const [showInfoDialog, setShowInfoDialog] = useState(false)
     const [infoDialogProps, setInfoDialogProps] = useState({})
+    const isExplicitlyDisabled = isNodeExplicitlyDisabled({ data })
 
     const defaultColor = '#666666' // fallback color if data.color is not present
     const nodeColor = data.color || defaultColor
@@ -228,6 +232,21 @@ const AgentFlowNode = ({ data }) => {
                     )}
                     <IconButton
                         size={'small'}
+                        title={isExplicitlyDisabled ? 'Enable' : 'Disable'}
+                        onClick={() => {
+                            toggleNodeDisabled(data.id)
+                        }}
+                        sx={{
+                            color: customization.isDarkMode ? 'white' : 'inherit',
+                            '&:hover': {
+                                color: theme.palette.warning.main
+                            }
+                        }}
+                    >
+                        {isExplicitlyDisabled ? <IconPlayerPlay size={20} /> : <IconPlayerPause size={20} />}
+                    </IconButton>
+                    <IconButton
+                        size={'small'}
                         title='Delete'
                         onClick={() => {
                             deleteNode(data.id)
@@ -263,7 +282,9 @@ const AgentFlowNode = ({ data }) => {
                 content={false}
                 sx={{
                     borderColor: getStateColor(),
-                    borderWidth: '1px',
+                    borderWidth: isExplicitlyDisabled ? '2px' : '1px',
+                    borderStyle: isExplicitlyDisabled ? 'dashed' : 'solid',
+                    opacity: isExplicitlyDisabled ? 0.48 : 1,
                     boxShadow: data.selected ? `0 0 0 1px ${getStateColor()} !important` : 'none',
                     minHeight: getMinimumHeight(),
                     height: 'auto',

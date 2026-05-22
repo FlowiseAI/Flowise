@@ -80,14 +80,21 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                 nodeId={data.id}
                 nodeName={data.name}
                 isVisible={data.selected || isHovered}
+                disabled={data.disabled}
                 onInfoClick={() => setShowInfoDialog(true)}
             />
 
             <CardWrapper
                 content={false}
                 sx={{
-                    borderColor: hasValidationErrors ? tokens.colors.border.validation : stateColor,
-                    borderWidth: hasValidationErrors ? '2px' : '1px',
+                    borderColor: data.disabled
+                        ? tokens.colors.semantic.warning
+                        : hasValidationErrors
+                        ? tokens.colors.border.validation
+                        : stateColor,
+                    borderWidth: data.disabled || hasValidationErrors ? '2px' : '1px',
+                    borderStyle: data.disabled ? 'dashed' : 'solid',
+                    opacity: data.disabled ? 0.48 : 1,
                     boxShadow: data.selected ? `0 0 0 1px ${stateColor} !important` : 'none',
                     minHeight,
                     height: 'auto',

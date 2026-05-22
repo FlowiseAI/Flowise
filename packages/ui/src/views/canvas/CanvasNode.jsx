@@ -17,16 +17,18 @@ import NodeInfoDialog from '@/ui-component/dialog/NodeInfoDialog'
 
 // const
 import { baseURL } from '@/store/constant'
-import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle } from '@tabler/icons-react'
+import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle, IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
+import { isNodeExplicitlyDisabled } from '@/utils/disabledNodes'
 
 // ===========================|| CANVAS NODE ||=========================== //
 
 const CanvasNode = ({ data }) => {
     const theme = useTheme()
     const canvas = useSelector((state) => state.canvas)
-    const { deleteNode, duplicateNode } = useContext(flowContext)
+    const { deleteNode, duplicateNode, toggleNodeDisabled } = useContext(flowContext)
+    const isExplicitlyDisabled = isNodeExplicitlyDisabled({ data })
 
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
@@ -96,9 +98,11 @@ const CanvasNode = ({ data }) => {
                 content={false}
                 sx={{
                     padding: 0,
-                    borderColor: getBorderColor()
+                    borderColor: isExplicitlyDisabled ? theme.palette.warning.main : getBorderColor(),
+                    opacity: isExplicitlyDisabled ? 0.48 : 1,
+                    borderStyle: isExplicitlyDisabled ? 'dashed' : 'solid'
                 }}
-                border={false}
+                border={isExplicitlyDisabled}
             >
                 <NodeTooltip
                     open={getNodeInfoOpenStatus()}
@@ -113,6 +117,16 @@ const CanvasNode = ({ data }) => {
                                 flexDirection: 'column'
                             }}
                         >
+                            <IconButton
+                                title={isExplicitlyDisabled ? 'Enable' : 'Disable'}
+                                onClick={() => {
+                                    toggleNodeDisabled(data.id)
+                                }}
+                                sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.warning.main } }}
+                                color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
+                            >
+                                {isExplicitlyDisabled ? <IconPlayerPlay /> : <IconPlayerPause />}
+                            </IconButton>
                             <IconButton
                                 title='Duplicate'
                                 onClick={() => {
@@ -205,6 +219,13 @@ const CanvasNode = ({ data }) => {
                                         </IconButton>
                                     </Tooltip>
                                 </>
+                            )}
+                            {isExplicitlyDisabled && (
+                                <Tooltip title='Disabled'>
+                                    <IconButton sx={{ height: 35, width: 35 }}>
+                                        <IconPlayerPause size={32} color={theme.palette.warning.main} />
+                                    </IconButton>
+                                </Tooltip>
                             )}
                         </div>
                         {(data.inputAnchors.length > 0 || data.inputParams.length > 0) && (

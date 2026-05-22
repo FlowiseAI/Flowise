@@ -57,7 +57,8 @@ import {
     getMemorySessionId,
     getEndingNodes,
     constructGraphs,
-    getAPIOverrideConfig
+    getAPIOverrideConfig,
+    getExecutableFlowData
 } from '../utils'
 import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
 import { validateFlowAPIKey } from './validateKey'
@@ -508,8 +509,12 @@ export const executeFlow = async ({
     /*** Get chatflows and prepare data  ***/
     const flowData = chatflow.flowData
     const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
-    const nodes = parsedFlowData.nodes
-    const edges = parsedFlowData.edges
+    const executableFlowData = getExecutableFlowData(parsedFlowData.nodes, parsedFlowData.edges)
+    const nodes = executableFlowData.nodes
+    const edges = executableFlowData.edges
+    if (executableFlowData.disabledNodeIds.size) {
+        logger.debug(`[server]: [${orgId}]: Disabled nodes skipped: ${Array.from(executableFlowData.disabledNodeIds).join(', ')}`)
+    }
 
     const apiMessageId = uuidv4()
 

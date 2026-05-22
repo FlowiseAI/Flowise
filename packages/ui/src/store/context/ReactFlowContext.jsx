@@ -11,6 +11,7 @@ const initialValue = {
     duplicateNode: () => {},
     deleteNode: () => {},
     deleteEdge: () => {},
+    toggleNodeDisabled: () => {},
     onNodeDataChange: () => {}
 }
 
@@ -135,6 +136,61 @@ export const ReactFlowContext = ({ children }) => {
         dispatch({ type: SET_DIRTY })
     }
 
+    const getDownstreamNodeIds = (nodeid) => {
+        const edges = reactFlowInstance.getEdges()
+        const downstreamNodeIds = new Set()
+        const queue = [nodeid]
+
+        for (let index = 0; index < queue.length; index += 1) {
+            const sourceNodeId = queue[index]
+            const outgoingEdges = edges.filter((edge) => edge.source === sourceNodeId)
+
+            for (const edge of outgoingEdges) {
+                if (downstreamNodeIds.has(edge.target)) continue
+                downstreamNodeIds.add(edge.target)
+                queue.push(edge.target)
+            }
+        }
+
+        downstreamNodeIds.delete(nodeid)
+        return downstreamNodeIds
+    }
+
+    const toggleNodeDisabled = (nodeid) => {
+        const targetNode = reactFlowInstance.getNodes().find((node) => node.id === nodeid)
+        const shouldDisable = !(targetNode?.data?.disabled === true || targetNode?.data?.disabled === 'true')
+        const downstreamNodeIds = shouldDisable ? getDownstreamNodeIds(nodeid) : new Set()
+
+        reactFlowInstance.setNodes((nodes) =>
+            nodes.map((node) => {
+                if (node.id === nodeid) {
+                    const { disabledBy, ...nextData } = node.data
+                    return {
+                        ...node,
+                        data: {
+                            ...nextData,
+                            disabled: shouldDisable
+                        }
+                    }
+                }
+
+                if (shouldDisable && downstreamNodeIds.has(node.id)) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            disabled: true,
+                            disabledBy: node.data.disabledBy || nodeid
+                        }
+                    }
+                }
+
+                return node
+            })
+        )
+        dispatch({ type: SET_DIRTY })
+    }
+
     const deleteConnectedInput = (id, type) => {
         const connectedEdges =
             type === 'node'
@@ -252,6 +308,7 @@ export const ReactFlowContext = ({ children }) => {
                 deleteNode,
                 deleteEdge,
                 duplicateNode,
+                toggleNodeDisabled,
                 onAgentflowNodeStatusUpdate,
                 clearAgentflowNodeStatus,
                 onNodeDataChange

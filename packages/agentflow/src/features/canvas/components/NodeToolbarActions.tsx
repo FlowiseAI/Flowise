@@ -3,7 +3,7 @@ import { Position } from 'reactflow'
 
 import { ButtonGroup, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconCopy, IconEdit, IconInfoCircle, IconTrash } from '@tabler/icons-react'
+import { IconCopy, IconEdit, IconInfoCircle, IconPlayerPause, IconPlayerPlay, IconTrash } from '@tabler/icons-react'
 
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 
@@ -14,16 +14,17 @@ export interface NodeToolbarActionsProps {
     nodeId: string
     nodeName: string
     isVisible: boolean
+    disabled?: boolean
     onInfoClick?: () => void
 }
 
 /**
  * Toolbar with action buttons for a node (duplicate, delete, info)
  */
-function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick }: NodeToolbarActionsProps) {
+function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, disabled, onInfoClick }: NodeToolbarActionsProps) {
     const theme = useTheme()
     const { isDarkMode } = useConfigContext()
-    const { deleteNode, duplicateNode } = useAgentflowContext()
+    const { deleteNode, duplicateNode, toggleNodeDisabled } = useAgentflowContext()
     const { openNodeEditor } = useOpenNodeEditor()
 
     const handleEditClick = () => {
@@ -60,6 +61,19 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick 
                         }}
                     >
                         <IconEdit size={20} />
+                    </IconButton>
+                )}
+                {nodeName !== 'stickyNoteAgentflow' && (
+                    <IconButton
+                        size='small'
+                        title={disabled ? 'Enable' : 'Disable'}
+                        onClick={() => toggleNodeDisabled(nodeId)}
+                        sx={{
+                            color: isDarkMode ? 'white' : 'inherit',
+                            '&:hover': { color: theme.palette.warning.main }
+                        }}
+                    >
+                        {disabled ? <IconPlayerPlay size={20} /> : <IconPlayerPause size={20} />}
                     </IconButton>
                 )}
                 <IconButton

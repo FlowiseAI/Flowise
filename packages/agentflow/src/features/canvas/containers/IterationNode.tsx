@@ -111,14 +111,17 @@ function IterationNodeComponent({ data }: IterationNodeProps) {
                 nodeId={data.id}
                 nodeName={data.name}
                 isVisible={data.selected || isHovered}
+                disabled={data.disabled}
                 onInfoClick={() => setShowInfoDialog(true)}
             />
             <NodeResizer minWidth={300} minHeight={minHeight} onResizeEnd={onResizeEnd} />
             <CardWrapper
                 content={false}
                 sx={{
-                    borderColor: stateColor,
-                    borderWidth: '1px',
+                    borderColor: data.disabled ? theme.palette.warning.main : stateColor,
+                    borderWidth: data.disabled ? '2px' : '1px',
+                    borderStyle: data.disabled ? 'dashed' : 'solid',
+                    opacity: data.disabled ? 0.48 : 1,
                     boxShadow: data.selected ? `0 0 0 1px ${stateColor} !important` : 'none',
                     minHeight,
                     minWidth: 300,
