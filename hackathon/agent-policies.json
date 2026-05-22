@@ -1,0 +1,25 @@
+{
+    "version": "1",
+    "rules": [
+        {
+            "id": "allow-internal-email",
+            "effect": "allow",
+            "match": { "tool": "send_email" },
+            "when": [
+                { "path": "args.input", "op": "contains", "value": "@aivar.tech" }
+            ]
+        },
+        {
+            "id": "deny-destructive",
+            "effect": "deny",
+            "match": { "tool": "delete_database" },
+            "message": "Destructive DB mutations are forbidden by policy."
+        },
+        {
+            "id": "escalate-external-email",
+            "effect": "escalate",
+            "match": { "tool": "send_email" },
+            "message": "Sending email outside @aivar.tech requires human approval."
+        }
+    ]
+}

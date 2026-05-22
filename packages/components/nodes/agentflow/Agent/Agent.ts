@@ -42,6 +42,15 @@ import {
 } from '../../../src/utils'
 import { sanitizeFileName } from '../../../src/validator'
 import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
+import {
+    GovernanceConfig,
+    POLICY_DENY_PREFIX,
+    auditExecute,
+    auditHitl,
+    auditPropose,
+    gateToolCall,
+    wrapToolWithGovernance
+} from '../../../src/governance'
 
 interface ITool {
     agentSelectedTool: string
@@ -268,6 +277,53 @@ class Agent_Agentflow implements INode {
                         optional: true
                     }
                 ]
+            },
+            {
+                label: 'Enable Governance',
+                name: 'agentEnableGovernance',
+                type: 'boolean',
+                description:
+                    'Enforce policy checks inside the agent loop before each tool runs. Policies are loaded from a JSON file; escalations pause for human approval in chat.',
+                default: false,
+                optional: true,
+                client: ['agentflowv2']
+            },
+            {
+                label: 'Policy File Path',
+                name: 'agentPolicyFilePath',
+                type: 'string',
+                description: 'Path to JSON policy file (allow / deny / escalate rules)',
+                default: './hackathon/agent-policies.json',
+                optional: true,
+                client: ['agentflowv2'],
+                show: {
+                    agentEnableGovernance: true
+                }
+            },
+            {
+                label: 'Audit Log Path',
+                name: 'agentAuditLogPath',
+                type: 'string',
+                description: 'Append-only JSONL audit log path',
+                default: './audit.jsonl',
+                optional: true,
+                client: ['agentflowv2'],
+                show: {
+                    agentEnableGovernance: true
+                }
+            },
+            {
+                label: 'Governance Context (JSON)',
+                name: 'agentGovernanceContext',
+                type: 'string',
+                description: 'Runtime context for policy rules, e.g. {"user":"demo","environment":"dev"}',
+                rows: 3,
+                optional: true,
+                acceptVariable: true,
+                client: ['agentflowv2'],
+                show: {
+                    agentEnableGovernance: true
+                }
             },
             {
                 label: 'Knowledge (Document Stores)',
@@ -702,6 +758,13 @@ class Agent_Agentflow implements INode {
             // Extract tools
             const tools = nodeData.inputs?.agentTools as ITool[]
 
+            const governanceConfig = this.parseGovernanceConfig(nodeData)
+            const governanceMeta = {
+                sessionId: options.sessionId as string | undefined,
+                chatId: options.chatId as string | undefined,
+                nodeId: nodeData.id
+            }
+
             const toolsInstance: Tool[] = []
             for (const tool of tools) {
                 const toolConfig = tool.agentSelectedToolConfig
@@ -726,13 +789,19 @@ class Agent_Agentflow implements INode {
                         if (tool.agentSelectedToolRequiresHumanInput) {
                             ;(subToolInstance as any).requiresHumanInput = true
                         }
-                        toolsInstance.push(subToolInstance)
+                        const pushedTool = governanceConfig
+                            ? (wrapToolWithGovernance(subToolInstance, governanceConfig, governanceMeta) as Tool)
+                            : subToolInstance
+                        toolsInstance.push(pushedTool)
                     }
                 } else {
                     if (tool.agentSelectedToolRequiresHumanInput) {
                         toolInstance.requiresHumanInput = true
                     }
-                    toolsInstance.push(toolInstance as Tool)
+                    const pushedTool = governanceConfig
+                        ? (wrapToolWithGovernance(toolInstance as Tool, governanceConfig, governanceMeta) as Tool)
+                        : (toolInstance as Tool)
+                    toolsInstance.push(pushedTool)
                 }
             }
 
@@ -1131,7 +1200,8 @@ class Agent_Agentflow implements INode {
                     isStreamable,
                     isLastNode,
                     iterationContext,
-                    isStructuredOutput
+                    isStructuredOutput,
+                    governanceConfig
                 })
 
                 response = result.response
@@ -1207,7 +1277,8 @@ class Agent_Agentflow implements INode {
                     iterationContext,
                     isStructuredOutput,
                     accumulatedReasonContent: reasonContent,
-                    accumulatedReasoningDuration: thinkingDuration
+                    accumulatedReasoningDuration: thinkingDuration,
+                    governanceConfig
                 })
 
                 response = result.response
@@ -2150,7 +2221,8 @@ class Agent_Agentflow implements INode {
         iterationContext,
         isStructuredOutput = false,
         accumulatedReasonContent: initialAccumulatedReasonContent,
-        accumulatedReasoningDuration: initialAccumulatedReasoningDuration
+        accumulatedReasoningDuration: initialAccumulatedReasoningDuration,
+        governanceConfig
     }: {
         response: AIMessageChunk
         messages: BaseMessageLike[]
@@ -2167,6 +2239,7 @@ class Agent_Agentflow implements INode {
         isStructuredOutput?: boolean
         accumulatedReasonContent?: string
         accumulatedReasoningDuration?: number
+        governanceConfig?: GovernanceConfig
     }): Promise<{
         response: AIMessageChunk
         usedTools: IUsedTool[]
@@ -2249,6 +2322,65 @@ class Agent_Agentflow implements INode {
                     state: options.agentflowRuntime?.state
                 }
 
+                const toolArgs = (toolCall.args || {}) as Record<string, unknown>
+
+                if (governanceConfig) {
+                    auditPropose({
+                        tool: toolCall.name,
+                        args: toolArgs,
+                        governance: governanceConfig,
+                        sessionId: options.sessionId,
+                        chatId: options.chatId,
+                        nodeId: governanceConfig.context?.nodeId as string | undefined
+                    })
+
+                    const decision = gateToolCall({
+                        tool: toolCall.name,
+                        args: toolArgs,
+                        governance: governanceConfig,
+                        sessionId: options.sessionId,
+                        chatId: options.chatId,
+                        nodeId: governanceConfig.context?.nodeId as string | undefined
+                    })
+
+                    if (decision.effect === 'deny') {
+                        const denyObservation = POLICY_DENY_PREFIX + decision.message
+                        messages.push({
+                            role: 'tool',
+                            content: denyObservation,
+                            tool_call_id: toolCall.id,
+                            name: toolCall.name
+                        })
+                        usedTools.push({
+                            tool: toolCall.name,
+                            toolInput: toolArgs,
+                            toolOutput: denyObservation
+                        })
+                        continue
+                    }
+
+                    if (decision.effect === 'escalate') {
+                        const toolCallDetails = '```json\n' + JSON.stringify(toolCall, null, 2) + '\n```'
+                        const escalationBlock =
+                            `\n\n**Policy escalation** (rule: \`${decision.ruleId}\`): ${decision.message}\n\nAttempting to use tool:\n${toolCallDetails}`
+                        const responseContent = (response.content || '') + escalationBlock
+                        response.content = responseContent
+                        if (!isStructuredOutput) {
+                            sseStreamer?.streamTokenEvent(chatId, responseContent)
+                        }
+                        return {
+                            response,
+                            usedTools,
+                            sourceDocuments,
+                            artifacts,
+                            totalTokens,
+                            isWaitingForHumanInput: true,
+                            accumulatedReasonContent: accumulatedReasonContent || undefined,
+                            accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
+                        }
+                    }
+                }
+
                 if (isToolRequireHumanInput) {
                     const toolCallDetails = '```json\n' + JSON.stringify(toolCall, null, 2) + '\n```'
                     const responseContent = response.content + `\nAttempting to use tool:\n${toolCallDetails}`
@@ -2276,6 +2408,14 @@ class Agent_Agentflow implements INode {
                 try {
                     //@ts-ignore
                     let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
+
+                    if (governanceConfig) {
+                        auditExecute(governanceConfig, toolCall.name, toolArgs, toolOutput, {
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined
+                        })
+                    }
 
                     if (options.analyticHandlers && toolIds) {
                         await options.analyticHandlers.onToolEnd(toolIds, toolOutput)
@@ -2461,7 +2601,8 @@ class Agent_Agentflow implements INode {
                 iterationContext,
                 isStructuredOutput,
                 accumulatedReasonContent,
-                accumulatedReasoningDuration
+                accumulatedReasoningDuration,
+                governanceConfig
             })
 
             // Merge results from recursive tool calls
@@ -2508,7 +2649,8 @@ class Agent_Agentflow implements INode {
         isStreamable,
         isLastNode,
         iterationContext,
-        isStructuredOutput = false
+        isStructuredOutput = false,
+        governanceConfig
     }: {
         humanInput: IHumanInput
         humanInputAction: Record<string, any> | undefined
@@ -2524,6 +2666,7 @@ class Agent_Agentflow implements INode {
         isLastNode: boolean
         iterationContext: ICommonObject
         isStructuredOutput?: boolean
+        governanceConfig?: GovernanceConfig
     }): Promise<{
         response: AIMessageChunk
         usedTools: IUsedTool[]
@@ -2629,6 +2772,13 @@ class Agent_Agentflow implements INode {
                 }
 
                 if (humanInput.type === 'reject') {
+                    if (governanceConfig) {
+                        auditHitl(governanceConfig, toolCall.name, (toolCall.args || {}) as Record<string, unknown>, 'reject', {
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined
+                        })
+                    }
                     messages.pop()
                     const toBeRemovedTool = toolsInstance.find((tool) => tool.name === toolCall.name)
                     if (toBeRemovedTool) {
@@ -2640,6 +2790,45 @@ class Agent_Agentflow implements INode {
                     }
                 }
                 if (humanInput.type === 'proceed') {
+                    const toolArgs = (toolCall.args || {}) as Record<string, unknown>
+
+                    if (governanceConfig) {
+                        auditHitl(governanceConfig, toolCall.name, toolArgs, 'proceed', {
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined
+                        })
+
+                        const decision = gateToolCall({
+                            tool: toolCall.name,
+                            args: toolArgs,
+                            governance: governanceConfig,
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined
+                        })
+
+                        if (decision.effect === 'deny') {
+                            const denyObservation = POLICY_DENY_PREFIX + decision.message
+                            messages.push({
+                                role: 'tool',
+                                content: denyObservation,
+                                tool_call_id: toolCall.id,
+                                name: toolCall.name
+                            })
+                            usedTools.push({
+                                tool: toolCall.name,
+                                toolInput: toolArgs,
+                                toolOutput: denyObservation
+                            })
+                            continue
+                        }
+
+                        // 'escalate' with humanInput.type === 'proceed' means the human has already
+                        // reviewed and approved this tool call. Do NOT re-escalate — fall through to
+                        // execute the tool. Only a hard 'deny' should block execution at this point.
+                    }
+
                     let toolIds: ICommonObject | undefined
                     if (options.analyticHandlers) {
                         toolIds = await options.analyticHandlers.onToolStart(toolCall.name, toolCall.args, options.parentTraceIds)
@@ -2648,6 +2837,14 @@ class Agent_Agentflow implements INode {
                     try {
                         //@ts-ignore
                         let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
+
+                        if (governanceConfig) {
+                            auditExecute(governanceConfig, toolCall.name, toolArgs, toolOutput, {
+                                sessionId: options.sessionId,
+                                chatId: options.chatId,
+                                nodeId: governanceConfig.context?.nodeId as string | undefined
+                            })
+                        }
 
                         if (options.analyticHandlers && toolIds) {
                             await options.analyticHandlers.onToolEnd(toolIds, toolOutput)
@@ -2840,7 +3037,8 @@ class Agent_Agentflow implements INode {
                 iterationContext,
                 isStructuredOutput,
                 accumulatedReasonContent,
-                accumulatedReasoningDuration
+                accumulatedReasoningDuration,
+                governanceConfig
             })
 
             // Merge results from recursive tool calls
@@ -2867,6 +3065,35 @@ class Agent_Agentflow implements INode {
             isWaitingForHumanInput,
             accumulatedReasonContent: accumulatedReasonContent || undefined,
             accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
+        }
+    }
+
+    private parseGovernanceConfig(nodeData: INodeData): GovernanceConfig | undefined {
+        const enabled = nodeData.inputs?.agentEnableGovernance === true || nodeData.inputs?.agentEnableGovernance === 'true'
+        if (!enabled) {
+            return undefined
+        }
+
+        const policyPath = (nodeData.inputs?.agentPolicyFilePath as string) || './hackathon/agent-policies.json'
+        const auditPath = (nodeData.inputs?.agentAuditLogPath as string) || './audit.jsonl'
+
+        let context: Record<string, unknown> = { nodeId: nodeData.id }
+        const ctxRaw = nodeData.inputs?.agentGovernanceContext
+        if (ctxRaw) {
+            try {
+                const parsed = typeof ctxRaw === 'string' ? JSON.parse(ctxRaw) : ctxRaw
+                if (parsed && typeof parsed === 'object') {
+                    context = { ...parsed, nodeId: nodeData.id }
+                }
+            } catch {
+                console.warn('[Governance] Invalid agentGovernanceContext JSON; using nodeId only.')
+            }
+        }
+
+        return {
+            policyPath,
+            auditPath,
+            context
         }
     }
 
