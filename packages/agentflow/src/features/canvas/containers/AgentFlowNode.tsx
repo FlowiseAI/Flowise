@@ -81,6 +81,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                 nodeName={data.name}
                 isVisible={data.selected || isHovered}
                 disabled={data.disabled}
+                disabledBy={data.disabledBy}
                 onInfoClick={() => setShowInfoDialog(true)}
             />
 

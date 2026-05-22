@@ -112,6 +112,7 @@ function IterationNodeComponent({ data }: IterationNodeProps) {
                 nodeName={data.name}
                 isVisible={data.selected || isHovered}
                 disabled={data.disabled}
+                disabledBy={data.disabledBy}
                 onInfoClick={() => setShowInfoDialog(true)}
             />
             <NodeResizer minWidth={300} minHeight={minHeight} onResizeEnd={onResizeEnd} />

@@ -15,16 +15,20 @@ export interface NodeToolbarActionsProps {
     nodeName: string
     isVisible: boolean
     disabled?: boolean
+    disabledBy?: string
     onInfoClick?: () => void
 }
 
 /**
  * Toolbar with action buttons for a node (duplicate, delete, info)
  */
-function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, disabled, onInfoClick }: NodeToolbarActionsProps) {
+function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, disabled, disabledBy, onInfoClick }: NodeToolbarActionsProps) {
     const theme = useTheme()
     const { isDarkMode } = useConfigContext()
-    const { deleteNode, duplicateNode, toggleNodeDisabled } = useAgentflowContext()
+    const { deleteNode, duplicateNode, toggleNodeDisabled, state } = useAgentflowContext()
+    const nodes = state?.nodes || []
+    const disabledByNode = disabledBy ? nodes.find((n) => n.id === disabledBy) : null
+    const disabledByName = disabledByNode ? disabledByNode.data?.label || disabledByNode.data?.name : disabledBy
     const { openNodeEditor } = useOpenNodeEditor()
 
     const handleEditClick = () => {
@@ -66,8 +70,13 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, disabled, on
                 {nodeName !== 'stickyNoteAgentflow' && (
                     <IconButton
                         size='small'
-                        title={disabled ? 'Enable' : 'Disable'}
-                        onClick={() => toggleNodeDisabled(nodeId)}
+                        title={disabledBy ? `Disabled by upstream node: ${disabledByName}` : disabled ? 'Enable' : 'Disable'}
+                        onClick={() => {
+                            if (!disabledBy) {
+                                toggleNodeDisabled(nodeId)
+                            }
+                        }}
+                        disabled={!!disabledBy}
                         sx={{
                             color: isDarkMode ? 'white' : 'inherit',
                             '&:hover': { color: theme.palette.warning.main }

@@ -27,7 +27,11 @@ import { isNodeExplicitlyDisabled } from '@/utils/disabledNodes'
 const CanvasNode = ({ data }) => {
     const theme = useTheme()
     const canvas = useSelector((state) => state.canvas)
-    const { deleteNode, duplicateNode, toggleNodeDisabled } = useContext(flowContext)
+    const { deleteNode, duplicateNode, toggleNodeDisabled, reactFlowInstance } = useContext(flowContext)
+    const nodes = reactFlowInstance?.getNodes() || []
+    const disabledBy = data.disabledBy
+    const disabledByNode = disabledBy ? nodes.find((n) => n.id === disabledBy) : null
+    const disabledByName = disabledByNode ? disabledByNode.data?.label || disabledByNode.data?.name : disabledBy
     const isExplicitlyDisabled = isNodeExplicitlyDisabled({ data })
 
     const [showDialog, setShowDialog] = useState(false)
@@ -118,10 +122,19 @@ const CanvasNode = ({ data }) => {
                             }}
                         >
                             <IconButton
-                                title={isExplicitlyDisabled ? 'Enable' : 'Disable'}
+                                title={
+                                    disabledBy
+                                        ? `Disabled by upstream node: ${disabledByName}`
+                                        : isExplicitlyDisabled
+                                        ? 'Enable'
+                                        : 'Disable'
+                                }
                                 onClick={() => {
-                                    toggleNodeDisabled(data.id)
+                                    if (!disabledBy) {
+                                        toggleNodeDisabled(data.id)
+                                    }
                                 }}
+                                disabled={!!disabledBy}
                                 sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.warning.main } }}
                                 color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
                             >
@@ -221,7 +234,7 @@ const CanvasNode = ({ data }) => {
                                 </>
                             )}
                             {isExplicitlyDisabled && (
-                                <Tooltip title='Disabled'>
+                                <Tooltip title={disabledBy ? `Disabled by upstream node: ${disabledByName}` : 'Disabled'}>
                                     <IconButton sx={{ height: 35, width: 35 }}>
                                         <IconPlayerPause size={32} color={theme.palette.warning.main} />
                                     </IconButton>

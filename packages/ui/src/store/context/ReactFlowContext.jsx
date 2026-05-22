@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import { getUniqueNodeId, showHideInputParams } from '@/utils/genericHelper'
 import { cloneDeep, isEqual } from 'lodash'
 import { SET_DIRTY } from '@/store/actions'
+import { recalculateDisabledNodes } from '@/utils/disabledNodes'
 
 const initialValue = {
     reactFlowInstance: null,
@@ -121,73 +122,49 @@ export const ReactFlowContext = ({ children }) => {
             }
         })
 
-        // Filter out all nodes and edges in a single operation
-        reactFlowInstance.setNodes((nodes) => nodes.filter((node) => !nodesToDelete.has(node.id)))
+        const remainingNodes = reactFlowInstance.getNodes().filter((node) => !nodesToDelete.has(node.id))
+        const remainingEdges = reactFlowInstance
+            .getEdges()
+            .filter((edge) => !nodesToDelete.has(edge.source) && !nodesToDelete.has(edge.target))
+        const recalculatedNodes = recalculateDisabledNodes(remainingNodes, remainingEdges)
 
-        // Remove all edges connected to any of the deleted nodes
-        reactFlowInstance.setEdges((edges) => edges.filter((edge) => !nodesToDelete.has(edge.source) && !nodesToDelete.has(edge.target)))
+        reactFlowInstance.setNodes(recalculatedNodes)
+        reactFlowInstance.setEdges(remainingEdges)
 
         dispatch({ type: SET_DIRTY })
     }
 
     const deleteEdge = (edgeid) => {
         deleteConnectedInput(edgeid, 'edge')
-        reactFlowInstance.setEdges(reactFlowInstance.getEdges().filter((edge) => edge.id !== edgeid))
+        const remainingEdges = reactFlowInstance.getEdges().filter((edge) => edge.id !== edgeid)
+        const recalculatedNodes = recalculateDisabledNodes(reactFlowInstance.getNodes(), remainingEdges)
+        reactFlowInstance.setNodes(recalculatedNodes)
+        reactFlowInstance.setEdges(remainingEdges)
         dispatch({ type: SET_DIRTY })
     }
 
-    const getDownstreamNodeIds = (nodeid) => {
-        const edges = reactFlowInstance.getEdges()
-        const downstreamNodeIds = new Set()
-        const queue = [nodeid]
-
-        for (let index = 0; index < queue.length; index += 1) {
-            const sourceNodeId = queue[index]
-            const outgoingEdges = edges.filter((edge) => edge.source === sourceNodeId)
-
-            for (const edge of outgoingEdges) {
-                if (downstreamNodeIds.has(edge.target)) continue
-                downstreamNodeIds.add(edge.target)
-                queue.push(edge.target)
-            }
-        }
-
-        downstreamNodeIds.delete(nodeid)
-        return downstreamNodeIds
-    }
-
     const toggleNodeDisabled = (nodeid) => {
-        const targetNode = reactFlowInstance.getNodes().find((node) => node.id === nodeid)
+        const nodes = reactFlowInstance.getNodes()
+        const edges = reactFlowInstance.getEdges()
+        const targetNode = nodes.find((node) => node.id === nodeid)
         const shouldDisable = !(targetNode?.data?.disabled === true || targetNode?.data?.disabled === 'true')
-        const downstreamNodeIds = shouldDisable ? getDownstreamNodeIds(nodeid) : new Set()
 
-        reactFlowInstance.setNodes((nodes) =>
-            nodes.map((node) => {
-                if (node.id === nodeid) {
-                    const { disabledBy, ...nextData } = node.data
-                    return {
-                        ...node,
-                        data: {
-                            ...nextData,
-                            disabled: shouldDisable
-                        }
+        const nextNodes = nodes.map((node) => {
+            if (node.id === nodeid) {
+                const { disabledBy, ...nextData } = node.data
+                return {
+                    ...node,
+                    data: {
+                        ...nextData,
+                        disabled: shouldDisable
                     }
                 }
+            }
+            return node
+        })
 
-                if (shouldDisable && downstreamNodeIds.has(node.id)) {
-                    return {
-                        ...node,
-                        data: {
-                            ...node.data,
-                            disabled: true,
-                            disabledBy: node.data.disabledBy || nodeid
-                        }
-                    }
-                }
-
-                return node
-            })
-        )
+        const recalculatedNodes = recalculateDisabledNodes(nextNodes, edges)
+        reactFlowInstance.setNodes(recalculatedNodes)
         dispatch({ type: SET_DIRTY })
     }
 

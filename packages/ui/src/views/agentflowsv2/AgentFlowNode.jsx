@@ -71,10 +71,14 @@ const AgentFlowNode = ({ data }) => {
     const [position, setPosition] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
     const [warningMessage, setWarningMessage] = useState('')
-    const { deleteNode, duplicateNode, toggleNodeDisabled } = useContext(flowContext)
+    const { deleteNode, duplicateNode, toggleNodeDisabled, reactFlowInstance } = useContext(flowContext)
     const [showInfoDialog, setShowInfoDialog] = useState(false)
     const [infoDialogProps, setInfoDialogProps] = useState({})
     const isExplicitlyDisabled = isNodeExplicitlyDisabled({ data })
+    const nodes = reactFlowInstance?.getNodes() || []
+    const disabledBy = data.disabledBy
+    const disabledByNode = disabledBy ? nodes.find((n) => n.id === disabledBy) : null
+    const disabledByName = disabledByNode ? disabledByNode.data?.label || disabledByNode.data?.name : disabledBy
 
     const defaultColor = '#666666' // fallback color if data.color is not present
     const nodeColor = data.color || defaultColor
@@ -232,10 +236,13 @@ const AgentFlowNode = ({ data }) => {
                     )}
                     <IconButton
                         size={'small'}
-                        title={isExplicitlyDisabled ? 'Enable' : 'Disable'}
+                        title={disabledBy ? `Disabled by upstream node: ${disabledByName}` : isExplicitlyDisabled ? 'Enable' : 'Disable'}
                         onClick={() => {
-                            toggleNodeDisabled(data.id)
+                            if (!disabledBy) {
+                                toggleNodeDisabled(data.id)
+                            }
                         }}
+                        disabled={!!disabledBy}
                         sx={{
                             color: customization.isDarkMode ? 'white' : 'inherit',
                             '&:hover': {

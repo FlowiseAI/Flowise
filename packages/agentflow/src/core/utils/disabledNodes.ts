@@ -1,34 +1,36 @@
-export const isNodeExplicitlyDisabled = (node) => {
+import type { FlowEdge, FlowNode } from '@/core/types'
+
+export const isNodeExplicitlyDisabled = (node: FlowNode): boolean => {
     const disabled = node?.data?.disabled
-    return disabled === true || disabled === 'true'
+    return disabled === true || String(disabled) === 'true'
 }
 
-export const recalculateDisabledNodes = (nodes, edges) => {
-    const explicitlyDisabledNodeIds = new Set(
+export const recalculateDisabledNodes = (nodes: FlowNode[], edges: FlowEdge[]): FlowNode[] => {
+    const explicitlyDisabledNodeIds = new Set<string>(
         nodes
             .filter((node) => {
-                const disabled = node.data?.disabled === true || node.data?.disabled === 'true'
+                const disabled = node.data?.disabled === true || String(node.data?.disabled) === 'true'
                 const disabledBy = node.data?.disabledBy
                 return disabled && !disabledBy
             })
             .map((node) => node.id)
     )
 
-    const outgoingEdges = new Map()
+    const outgoingEdges = new Map<string, string[]>()
     for (const edge of edges) {
         const targets = outgoingEdges.get(edge.source) || []
         targets.push(edge.target)
         outgoingEdges.set(edge.source, targets)
     }
 
-    const disabledByMap = new Map()
+    const disabledByMap = new Map<string, string>()
 
     for (const rootId of explicitlyDisabledNodeIds) {
         const queue = [rootId]
-        const visited = new Set([rootId])
+        const visited = new Set<string>([rootId])
 
         while (queue.length > 0) {
-            const currentId = queue.shift()
+            const currentId = queue.shift()!
             const targets = outgoingEdges.get(currentId) || []
             for (const targetId of targets) {
                 if (visited.has(targetId)) continue
