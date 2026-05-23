@@ -454,6 +454,13 @@ export interface IServerSideEventStreamer {
     streamTTSStartEvent(chatId: string, chatMessageId: string, format: string): void
     streamTTSDataEvent(chatId: string, chatMessageId: string, audioChunk: string): void
     streamTTSEndEvent(chatId: string, chatMessageId: string): void
+    /**
+     * Stream a governance event to the UI so policy decisions are surfaced as
+     * first-class artifacts in the chat interface, not just backend log lines.
+     * Implementations that do not yet support this method may leave it undefined;
+     * callers must guard with an existence check before invoking.
+     */
+    streamGovernanceEvent?(chatId: string, data: import('./governance/types').GovernanceEvent): void
 }
 
 export enum FollowUpPromptProvider {

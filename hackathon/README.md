@@ -2,7 +2,17 @@
 
 Hackathon prototype: policy checks **inside** the Agent node ReAct loop (`agentAgentflow`), before any tool executes.
 
-## Prerequisites
+## Quick demo (no UI needed)
+
+```bash
+# from repo root — requires pnpm build to have been run
+node hackathon/demo.mjs
+```
+
+Runs 5 scenarios end-to-end and prints a formatted audit log summary to stdout.
+Writes entries to `./audit-demo.jsonl`.
+
+## Prerequisites (full UI demo)
 
 -   Flowise running from repo root (`pnpm install`, `pnpm build`, `pnpm dev`)
 -   Use **Agent Flow v2** canvas only (`/v2/agentcanvas`) — v1 is deprecated
@@ -10,18 +20,23 @@ Hackathon prototype: policy checks **inside** the Agent node ReAct loop (`agentA
 
 ## Policy file
 
-[`agent-policies.json`](./agent-policies.json) — loaded at runtime (not hardcoded in agent logic).
+[`agent-policies.json`](./agent-policies.json) — loaded at runtime, hot-reloaded on file change (no restart needed).
 
-| Rule                    | Tool                                            | Effect                                       |
-| ----------------------- | ----------------------------------------------- | -------------------------------------------- |
-| allow-safe-read         | `get_weather`                                   | allow — runs immediately, no pause           |
-| allow-internal-email    | `send_email` (recipient contains `@aivar.tech`) | allow — internal addresses bypass escalation |
-| deny-destructive        | `delete_database`                               | deny — blocked outright, agent re-reasons    |
-| escalate-external-email | `send_email` (any other address)                | escalate → UI Proceed/Reject                 |
+Rules are evaluated **first-match-wins**. More specific rules must appear before broader ones.
 
-Rules are evaluated first-match-wins. More specific rules (allow for internal email) must appear before broader rules (escalate catch-all).
+| Rule                        | Tool                                             | Effect                                                  |
+| --------------------------- | ------------------------------------------------ | ------------------------------------------------------- |
+| `allow-safe-read`           | `get_weather`                                    | allow — runs immediately, no pause                      |
+| `deny-destructive`          | `delete_database`                                | deny — blocked outright, agent re-reasons               |
+| `allow-internal-email`      | `send_email` (recipient ends with `@aivar.tech`) | allow — internal addresses bypass escalation            |
+| `escalate-external-email`   | `send_email` (any other address)                 | escalate → UI Proceed / Reject                          |
+| `escalate-transfer-review`  | `transfer_funds`                                 | escalate → UI Proceed / Reject (reviewer can edit args) |
+| `escalate-post-to-external` | `post_message` (channel contains `#external`)    | escalate → UI Proceed / Reject                          |
+| `deny-post-to-public`       | `post_message` (channel contains `#public`)      | deny — blocked outright                                 |
+| `escalate-all-writes`       | `write_*` (prefix wildcard)                      | escalate — all write-class tools require review         |
+| `prod-escalate-all`         | `*` when `context.environment == "production"`   | escalate — every tool requires approval in prod         |
 
-## Setup demo flow
+## Setup demo flow (UI)
 
 1. Create Agent Flow v2: **Add New** (ensure V2 toggle) → opens `/v2/agentcanvas`.
 2. Canvas: **Start** → **Agent** (optionally connect to End).
@@ -31,7 +46,7 @@ Rules are evaluated first-match-wins. More specific rules (allow for internal em
     - **Audit Log Path**: `./audit.jsonl`
     - **Governance Context** (optional): `{"user":"demo","environment":"dev"}`
     - Add model + system message instructing tool use.
-4. Add three **Custom Function** tools under Agent → **Tools** (names must match policy):
+4. Add **Custom Function** tools under Agent → **Tools** (names must match policy):
 
 ### `get_weather`
 
@@ -42,8 +57,6 @@ const location = $input || 'NYC'
 return `Weather in ${location}: sunny, 72°F`
 ```
 
-Function name: `get_weather`.
-
 ### `delete_database`
 
 No inputs required.
@@ -52,21 +65,25 @@ No inputs required.
 return 'All customer records deleted (simulated).'
 ```
 
-Function name: `delete_database`.
-
 ### `send_email`
 
-Schema: two string inputs — `recipient` (email address) and `message` (email body).
-
-> **Important:** name the schema fields exactly `recipient` and `message` in the Custom Function node's input schema. The tool code uses `$recipient` and `$message`.
+Schema: string inputs `to` (email address) and `body` (email body).
 
 ```javascript
-const to = typeof $recipient !== 'undefined' ? $recipient : 'unknown'
-const body = typeof $message !== 'undefined' ? $message : ''
-return `Email sent to ${to}: "${body}" (simulated).`
+const recipient = typeof $to !== 'undefined' ? $to : 'unknown'
+const message = typeof $body !== 'undefined' ? $body : ''
+return `Email sent to ${recipient}: "${message}" (simulated).`
 ```
 
-Function name: `send_email`.
+### `transfer_funds`
+
+Schema: number `amount`, string `account`.
+
+```javascript
+const amt = typeof $amount !== 'undefined' ? $amount : 0
+const acc = typeof $account !== 'undefined' ? $account : 'unknown'
+return `Transferred $${amt} to account ${acc} (simulated).`
+```
 
 ## Demo scenarios
 
@@ -75,6 +92,8 @@ Function name: `send_email`.
 | 1   | What's the weather in Tokyo?                                  | **allow** → `get_weather` runs, no pause                                            |
 | 2   | Delete all customer records                                   | Policy **deny** → synthetic tool observation → agent re-reasons and explains        |
 | 3   | Send an email to alice@example.com saying the report is ready | Policy **escalate** → chat shows **Proceed** / **Reject** → on Proceed, email sends |
+| 4   | Transfer $50,000 to account 9988776655                        | Policy **escalate** → reviewer can lower amount before approving                    |
+| 5   | Send an email to team@aivar.tech with the status update       | **allow** (internal address) → runs immediately                                     |
 
 After each run, inspect `./audit.jsonl` at repo root (or path configured on the node).
 
@@ -94,7 +113,13 @@ propose → policy_decision → [hitl] → execute → observe
 | `execute`         | Tool actually runs — includes tool output                   |
 | `observe`         | Tool result fed back into the agent loop                    |
 
-A judge can open `audit.jsonl` and reconstruct the full decision history for every run.
+A `traceId` field correlates all steps for a single tool invocation across the log.
+
+The `hitl` entry captures:
+
+-   `humanDecision`: `"proceed"` or `"reject"`
+-   `feedback`: optional reviewer note
+-   `originalArgs` / `modifiedArgs`: present when the reviewer edited the tool arguments before approving
 
 ## Code hook (for judges)
 
@@ -103,13 +128,13 @@ A judge can open `audit.jsonl` and reconstruct the full decision history for eve
 1. `auditPropose()` — logs the agent's intent (tool name + args)
 2. `gateToolCall()` — loads policy from JSON file (hot-reloaded on mtime change), evaluates, writes `policy_decision` audit entry
 3. **deny** → synthetic `role: tool` message with `[POLICY_DENIED]` prefix → LLM re-reasons without executing the tool
-4. **escalate** → `isWaitingForHumanInput: true` → [`buildAgentflow.ts`](../packages/server/src/utils/buildAgentflow.ts) stops flow, UI shows Proceed/Reject buttons
+4. **escalate** → `isWaitingForHumanInput: true` → UI shows Proceed/Reject buttons
 5. **allow** → `selectedTool.call()` → `auditExecute()` → `auditObserve()` — only execution path
 
 On resume (`handleResumedToolCalls`):
 
--   **reject** → `auditHitl(..., 'reject', { ruleId })` → tool removed, agent re-reasons
--   **proceed** → `auditHitl(..., 'proceed', { ruleId })` → re-checks for hard deny → executes → `auditExecute()` → `auditObserve()`
+-   **reject** → `auditHitl(..., 'reject', { ruleId, feedback })` → tool removed, agent re-reasons
+-   **proceed** → `auditHitl(..., 'proceed', { ruleId, originalArgs?, modifiedArgs?, feedback })` → re-checks for hard deny → executes → `auditExecute()` → `auditObserve()`
 
 Shared module: [`packages/components/src/governance/`](../packages/components/src/governance/).
 
@@ -123,5 +148,6 @@ The governance gate sits between `response.tool_calls` (the LLM's decision) and 
 2. Open `Agent.ts` at governance gate (~line 2327).
 3. Run **allow** (weather) — show it runs instantly, audit: `propose` → `policy_decision(allow)` → `execute` → `observe`.
 4. Run **deny** (delete database) — show agent recovery message, audit: `propose` → `policy_decision(deny)`.
-5. Run **escalate** (send email) — click **Proceed** in chat, show completion, audit: `propose` → `policy_decision(escalate)` → `hitl(proceed)` → `execute` → `observe`.
-6. Explain unbypassable: `GovernedTool` wrapper + executor gate — `tool.call()` hits the gate regardless of caller.
+5. Run **escalate** (send email to external) — click **Proceed** in chat, show completion, audit: `propose` → `policy_decision(escalate)` → `hitl(proceed)` → `execute` → `observe`.
+6. Run **escalate with arg edit** (transfer funds) — lower the amount in the Proceed dialog, show modified args in audit.
+7. Explain unbypassable: `GovernedTool` wrapper + executor gate — `tool.call()` hits the gate regardless of caller.
