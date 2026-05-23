@@ -9,7 +9,7 @@ class LMStudioApi implements INodeCredential {
     constructor() {
         this.label = 'LM Studio API'
         this.name = 'lmstudioApi'
-        this.version = 1.0
+        this.version = 1
         this.inputs = [
             {
                 label: 'LM Studio Api Key',

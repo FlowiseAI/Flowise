@@ -17,7 +17,7 @@ class LMStudioEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'LM Studio Embedding'
         this.name = 'lmStudioEmbeddings'
-        this.version = 1.0
+        this.version = 1
         this.type = 'LM Studio Embeddings'
         this.icon = 'lmstudio.png'
         this.category = 'Embeddings'
@@ -57,12 +57,9 @@ class LMStudioEmbedding_Embeddings implements INode {
 
         const obj: OpenAIEmbeddingsParams = {
             modelName,
-            openAIApiKey: 'not-needed' // LM Studio typically doesn't require an API key
+            apiKey: lmstudioApiKey,
+            configuration: { baseURL: basePath }
         }
-
-        if (lmstudioApiKey) obj.openAIApiKey = lmstudioApiKey
-
-        if (basePath) obj.configuration = { baseURL: basePath }
 
         const model = new OpenAIEmbeddings(obj)
 
