@@ -11,6 +11,8 @@ const snapshotPath = `${mount}/snapshot`
 const planDecisionPath = `${mount}/plan-decision`
 const manualPacketPath = `${mount}/manual-worker-packet`
 const resultReviewPath = `${mount}/result-review`
+const ideWorkActionPath = `${mount}/ide-work-action`
+const ideWorkStatusPath = `${mount}/ide-work-status`
 const host = '127.0.0.1:3000'
 const origin = 'http://127.0.0.1:3000'
 
@@ -40,6 +42,29 @@ function validServerIdePreview() {
         what_will_not_happen: 'No files change and no backend work starts.',
         approval_copy: 'Backend work would require a separate reviewed approval step.',
         expires_at_label: 'No preview timer'
+    }
+}
+
+function validPatchServerIdeWork() {
+    return {
+        schema_version: 'sentinel.qvc.ide_work_result_patch_review_required.v1',
+        status: 'ok',
+        state: 'patch_review_required',
+        status_label: 'Patch proposal needs review',
+        workflow_label: 'Safe review workflow',
+        persona_label: 'Review helper',
+        skill_label: 'Safe review',
+        short_summary: 'Sentinel prepared a proposal for review only.',
+        current_safe_step: 'Review the proposal outside this page before doing anything else.',
+        what_can_happen_next: 'Sentinel can show review-only status for the operator.',
+        what_will_not_happen: 'Nothing was accepted, applied, changed, or continued from this page.',
+        approval_available: false,
+        cancel_available: false,
+        review_required_note: 'Review is required before anything can be accepted.',
+        terminal_note: 'Nothing was accepted or applied here.',
+        allowed_user_actions: ['none'],
+        blocked_actions: ['No controls are available here.', 'No changes start from this page.'],
+        safe_error: null
     }
 }
 
@@ -244,6 +269,40 @@ describe('sentinel cockpit router', () => {
         expect(res.text).not.toContain('nonce_abcdefghijklmnop')
         expect(res.text).not.toContain('Manual worker result text')
         expect(res.text).not.toContain('<html>')
+    })
+
+    it('serves display-only patch review status without accepting a patch action route request', async () => {
+        const statusSpy = jest.spyOn(classifyBridge, 'createIdeWorkStatusSession').mockResolvedValue({
+            schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+            status: 'ok',
+            ide_work: validPatchServerIdeWork() as any,
+            safe_error: null
+        })
+        const actionSpy = jest.spyOn(classifyBridge, 'createIdeWorkActionSession')
+
+        const statusRes = await request(app)
+            .post(ideWorkStatusPath)
+            .set('Host', host)
+            .set('Origin', origin)
+            .set('Content-Type', 'application/json')
+            .send({ request_kind: 'ide_work_status' })
+
+        expect(statusSpy).toHaveBeenCalledWith({ request_kind: 'ide_work_status' })
+        expect(statusRes.status).toBe(200)
+        expect(statusRes.body.ide_work).toEqual(validPatchServerIdeWork())
+        expect(statusRes.text).not.toContain('request_patch_proposal')
+        expect(statusRes.text).not.toMatch(/diff|source code|file path|raw output|stdout|stderr/i)
+
+        const actionRes = await request(app)
+            .post(ideWorkActionPath)
+            .set('Host', host)
+            .set('Origin', origin)
+            .set('Content-Type', 'application/json')
+            .send({ request_kind: 'ide_work_action', action: 'request_patch_proposal' })
+
+        expect(actionRes.status).toBe(400)
+        expect(actionRes.body.error.code).toBe('ide_work_invalid_input')
+        expect(actionSpy).not.toHaveBeenCalled()
     })
 
     it.each([

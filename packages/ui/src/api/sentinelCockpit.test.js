@@ -127,6 +127,28 @@ const validIdeWork = (overrides = {}) => ({
     ...overrides
 })
 
+const validPatchIdeWork = (overrides = {}) =>
+    validIdeWork({
+        schema_version: 'sentinel.qvc.ide_work_result_patch_review_required.v1',
+        state: 'patch_review_required',
+        status_label: 'Patch proposal needs review',
+        workflow_label: 'Safe review workflow',
+        persona_label: 'Review helper',
+        skill_label: 'Safe review',
+        short_summary: 'Sentinel prepared a proposal for review only.',
+        current_safe_step: 'Review the proposal outside this page before doing anything else.',
+        what_can_happen_next: 'Sentinel can show review-only status for the operator.',
+        what_will_not_happen: 'Nothing was accepted, applied, changed, or continued from this page.',
+        approval_available: false,
+        cancel_available: false,
+        review_required_note: 'Review is required before anything can be accepted.',
+        terminal_note: 'Nothing was accepted or applied here.',
+        allowed_user_actions: ['none'],
+        blocked_actions: ['No controls are available here.', 'No changes start from this page.'],
+        safe_error: null,
+        ...overrides
+    })
+
 describe('sentinelCockpit API wrapper', () => {
     afterEach(() => {
         jest.useRealTimers()
@@ -483,20 +505,12 @@ describe('sentinelCockpit API wrapper', () => {
             fetchResponse({
                 schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
                 status: 'ok',
-                ide_work: validIdeWork({
-                    schema_version: 'sentinel.qvc.ide_work_result_review_required.v1',
-                    state: 'review_required',
-                    approval_available: false,
-                    cancel_available: false,
-                    review_required_note: 'Review is required before any work can be accepted.',
-                    terminal_note: 'No files changed and no worker was launched.',
-                    allowed_user_actions: ['none']
-                }),
+                ide_work: validPatchIdeWork(),
                 safe_error: null
             })
         )
 
-        await requestIdeWorkStatus({}, { fetchImpl })
+        const response = await requestIdeWorkStatus({}, { fetchImpl })
 
         expect(fetchImpl).toHaveBeenCalledTimes(1)
         const [url, options] = fetchImpl.mock.calls[0]
@@ -504,6 +518,8 @@ describe('sentinelCockpit API wrapper', () => {
         expect(url).toBe('http://127.0.0.1:3000/sentinel-cockpit/v1/ide-work-status')
         expect(Object.keys(body).sort()).toEqual([...IDE_WORK_STATUS_BODY_KEYS].sort())
         expect(body).toEqual({ request_kind: 'ide_work_status' })
+        expect(response.ide_work).toEqual(validPatchIdeWork())
+        expect(JSON.stringify(response)).not.toMatch(/request_patch_proposal|diff|source code|file path|raw output|stdout|stderr/i)
     })
 
     it('builds IDE mock work bodies without accepting hidden Gateway fields', () => {
@@ -517,6 +533,9 @@ describe('sentinelCockpit API wrapper', () => {
         })
         expect(buildIdeWorkStatusBody()).toEqual({ request_kind: 'ide_work_status' })
         expect(() => buildIdeWorkActionBody({ action: 'launch_worker' })).toThrow('invalid_request')
+        expect(() => buildIdeWorkActionBody({ action: 'request_patch_proposal' })).toThrow('invalid_request')
+        expect(() => buildIdeWorkActionBody({ action: 'approve_mock_backend_work', workspace: 'hidden' })).toThrow('invalid_request')
+        expect(() => buildIdeWorkStatusBody({ workspace: 'hidden' })).toThrow('invalid_request')
     })
 
     it('uses isolated browser transport options without credentials or referrer', async () => {
@@ -577,6 +596,27 @@ describe('sentinelCockpit API wrapper', () => {
             await expect(
                 requestIdeWorkAction({ action: 'approve_mock_backend_work', [key]: 'blocked' }, { fetchImpl })
             ).rejects.toMatchObject({
+                code: 'invalid_request'
+            })
+            expect(fetchImpl).not.toHaveBeenCalled()
+        }
+    )
+
+    it('rejects patch proposal action requests before any network call', async () => {
+        const fetchImpl = jest.fn()
+
+        await expect(requestIdeWorkAction({ action: 'request_patch_proposal' }, { fetchImpl })).rejects.toMatchObject({
+            code: 'invalid_request'
+        })
+        expect(fetchImpl).not.toHaveBeenCalled()
+    })
+
+    it.each(['workspace', 'path', 'source', 'diff', 'patch', 'model', 'provider', 'command', 'argv', 'token', 'gatewayUrl'])(
+        'rejects forbidden IDE work status caller key %s before any network call',
+        async (key) => {
+            const fetchImpl = jest.fn()
+
+            await expect(requestIdeWorkStatus({ [key]: 'blocked' }, { fetchImpl })).rejects.toMatchObject({
                 code: 'invalid_request'
             })
             expect(fetchImpl).not.toHaveBeenCalled()
@@ -819,6 +859,32 @@ describe('sentinelCockpit API wrapper', () => {
         )
     })
 
+    it('preserves valid patch review required work as a display-only terminal projection', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(
+            fetchResponse(
+                validPlanSession({
+                    route_card: validRouteCard(),
+                    ide_preview: validIdePreview(),
+                    ide_work: validPatchIdeWork()
+                })
+            )
+        )
+
+        const session = await requestGoalSnapshot(
+            {
+                plainGoal: 'Plan the next safe step',
+                clientNonce: 'nonce_abcdefghijklmnop'
+            },
+            { fetchImpl }
+        )
+
+        expect(session.ide_work).toEqual(validPatchIdeWork())
+        expect(session.ide_work.allowed_user_actions).toEqual(['none'])
+        expect(session.ide_work.approval_available).toBe(false)
+        expect(session.ide_work.cancel_available).toBe(false)
+        expect(JSON.stringify(session.ide_work)).not.toMatch(/request_patch_proposal|diff|source code|file path|raw output|stdout|stderr/i)
+    })
+
     it('omits unsafe IDE mock work from initial goal plan-session responses', async () => {
         const fetchImpl = jest.fn().mockResolvedValue(
             fetchResponse(
@@ -826,6 +892,36 @@ describe('sentinelCockpit API wrapper', () => {
                     route_card: validRouteCard(),
                     ide_preview: validIdePreview(),
                     ide_work: validIdeWork({ short_summary: 'Provider model confidence should not display.' })
+                })
+            )
+        )
+
+        const session = await requestGoalSnapshot(
+            {
+                plainGoal: 'Plan the next safe step',
+                clientNonce: 'nonce_abcdefghijklmnop'
+            },
+            { fetchImpl }
+        )
+
+        expect(session).not.toHaveProperty('ide_work')
+        expect(Object.keys(session).sort()).toEqual([...PLAN_SESSION_KEYS, 'ide_preview', 'route_card'].sort())
+    })
+
+    it.each([
+        ['actionful patch terminal', validPatchIdeWork({ approval_available: true, allowed_user_actions: ['approve_mock_backend_work'] })],
+        ['cancellable patch terminal', validPatchIdeWork({ cancel_available: true, allowed_user_actions: ['cancel_mock_backend_work'] })],
+        ['safe error patch terminal', validPatchIdeWork({ safe_error: 'Patch proposal failed closed.' })],
+        ['leaky patch terminal', validPatchIdeWork({ short_summary: 'The unified diff should not display.' })],
+        ['source code patch terminal', validPatchIdeWork({ short_summary: 'The source code should not display.' })],
+        ['schema-state mismatch', validPatchIdeWork({ state: 'review_required' })]
+    ])('omits unsafe patch review required IDE work from plan-session responses: %s', async (_label, ideWork) => {
+        const fetchImpl = jest.fn().mockResolvedValue(
+            fetchResponse(
+                validPlanSession({
+                    route_card: validRouteCard(),
+                    ide_preview: validIdePreview(),
+                    ide_work: ideWork
                 })
             )
         )

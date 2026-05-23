@@ -1,5 +1,7 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useRef, useState } from 'react'
+import React from 'react'
+
+const { useEffect, useRef, useState } = React
 
 import {
     requestGoalSnapshot,
@@ -43,7 +45,8 @@ const IDE_WORK_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_moc
 const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
-    'sentinel.qvc.ide_work_result_review_required.v1'
+    'sentinel.qvc.ide_work_result_review_required.v1',
+    'sentinel.qvc.ide_work_result_patch_review_required.v1'
 ])
 const IDE_WORK_STATES = Object.freeze([
     'disabled',
@@ -56,6 +59,7 @@ const IDE_WORK_STATES = Object.freeze([
     'timed_out',
     'failed_closed',
     'review_required',
+    'patch_review_required',
     'expired'
 ])
 const PLAN_DECISION_FORBIDDEN_TEXT =
@@ -77,7 +81,7 @@ const ROUTE_CARD_CATEGORIES = Object.freeze([
 const ROUTE_CARD_FORBIDDEN_TEXT =
     /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:/i
 const IDE_WORK_FORBIDDEN_TEXT =
-    /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:|127\.0\.0\.1|localhost|:39173|provider|model|confidence|selected\s+worker|active\s+agent|agent\s+started|running\s+task|tool\s+call|command\s*[:=]|action_inputs|adapter|argv|nonce|hash|source\s+snippet/i
+    /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:|127\.0\.0\.1|localhost|:39173|provider|model|confidence|selected\s+worker|active\s+agent|agent\s+started|running\s+task|tool\s+call|command\s*[:=]|action_inputs|adapter|argv|nonce|hash|path|diff|raw\s+output|stdout|stderr|source\s+code|source\s+snippet/i
 
 const displayRows = [
     ['Current status', 'state'],
@@ -377,6 +381,15 @@ const IDE_WORK_ROWS = Object.freeze([
 
 const READ_ONLY_REVIEW_ROWS = Object.freeze([
     ['Review status', 'status_label'],
+    ['Suggested workflow', 'workflow_label'],
+    ['Summary', 'short_summary'],
+    ['Current safe step', 'current_safe_step'],
+    ['What can happen next', 'what_can_happen_next'],
+    ['What will not happen', 'what_will_not_happen']
+])
+
+const PATCH_REVIEW_ROWS = Object.freeze([
+    ['Patch review status', 'status_label'],
     ['Suggested workflow', 'workflow_label'],
     ['Summary', 'short_summary'],
     ['Current safe step', 'current_safe_step'],
@@ -935,6 +948,36 @@ function ReadOnlyReviewCard({ ideWork, rows, canRequest, isLoading, onIdeWorkAct
     )
 }
 
+function PatchReviewRequiredCard({ ideWork, rows }) {
+    return (
+        <section style={pageStyles.idePreview} aria-label='Patch proposal review required'>
+            <h2 style={pageStyles.idePreviewTitle}>Patch proposal review required</h2>
+            <p style={pageStyles.idePreviewCopy}>Patch proposal needs review. Nothing was accepted or applied here.</p>
+            <div style={pageStyles.idePreviewGrid}>
+                {rows.map(([label, value]) => (
+                    <div key={label} style={pageStyles.idePreviewRow}>
+                        <div style={pageStyles.idePreviewLabel}>{label}</div>
+                        <div style={pageStyles.idePreviewValue}>{value}</div>
+                    </div>
+                ))}
+            </div>
+            {ideWork?.review_required_note ? (
+                <p style={pageStyles.idePreviewCopy}>Review note: {formatValue(ideWork.review_required_note)}</p>
+            ) : null}
+            {ideWork?.terminal_note ? <p style={pageStyles.idePreviewCopy}>Closeout: {formatValue(ideWork.terminal_note)}</p> : null}
+            {Array.isArray(ideWork?.blocked_actions) && ideWork.blocked_actions.length > 0 ? (
+                <div style={pageStyles.idePreviewGrid}>
+                    <div style={pageStyles.idePreviewRow}>
+                        <div style={pageStyles.idePreviewLabel}>Blocked actions</div>
+                        <div style={pageStyles.idePreviewValue}>{formatList(ideWork.blocked_actions)}</div>
+                    </div>
+                </div>
+            ) : null}
+            <p style={{ ...pageStyles.idePreviewCopy, marginBottom: 0 }}>This card is passive and has no action controls.</p>
+        </section>
+    )
+}
+
 export function PlanSessionCard({
     snapshot,
     canDecide = false,
@@ -959,15 +1002,21 @@ export function PlanSessionCard({
     const planCard = isPlainRecord(snapshot.plan_card) ? snapshot.plan_card : null
     const routeCard = readSafeRouteCard(snapshot.route_card)
     const idePreviewRows = showIdePreview ? readIdePreviewRows(snapshot.ide_preview) : []
-    const showReadOnlyReview = canRequestReadOnlyReview || isReadOnlyReviewIdeWork(snapshot.ide_work)
-    const ideWorkRows = readIdeWorkRows(snapshot.ide_work, showReadOnlyReview ? READ_ONLY_REVIEW_ROWS : IDE_WORK_ROWS)
+    const showPatchReviewRequired = isPatchReviewRequiredIdeWork(snapshot.ide_work)
+    const showReadOnlyReview = !showPatchReviewRequired && (canRequestReadOnlyReview || isReadOnlyReviewIdeWork(snapshot.ide_work))
+    const ideWorkRows = readIdeWorkRows(
+        snapshot.ide_work,
+        showPatchReviewRequired ? PATCH_REVIEW_ROWS : showReadOnlyReview ? READ_ONLY_REVIEW_ROWS : IDE_WORK_ROWS
+    )
 
     return (
         <section style={pageStyles.planCard} aria-label='Plan session'>
             {routeCard ? <RouteGuidanceCard routeCard={routeCard} /> : null}
             <p style={pageStyles.recommendation}>Next safe action: {formatPlanAction(snapshot.next_safe_action)}</p>
             {idePreviewRows.length > 0 ? <ReadOnlyWorkPreview rows={idePreviewRows} /> : null}
-            {ideWorkRows.length > 0 && showReadOnlyReview ? (
+            {ideWorkRows.length > 0 && showPatchReviewRequired ? (
+                <PatchReviewRequiredCard ideWork={snapshot.ide_work} rows={ideWorkRows} />
+            ) : ideWorkRows.length > 0 && showReadOnlyReview ? (
                 <ReadOnlyReviewCard
                     ideWork={snapshot.ide_work}
                     rows={ideWorkRows}
@@ -1495,6 +1544,19 @@ function isReadOnlyReviewIdeWork(ideWork) {
     return ['Read-only review in progress', 'Review needed before anything is accepted'].includes(ideWork.status_label)
 }
 
+function isPatchReviewRequiredIdeWork(ideWork) {
+    if (!isSafeIdeWorkProjection(ideWork)) return false
+    return (
+        ideWork.schema_version === 'sentinel.qvc.ide_work_result_patch_review_required.v1' &&
+        ideWork.state === 'patch_review_required' &&
+        ideWork.approval_available === false &&
+        ideWork.cancel_available === false &&
+        ideWork.safe_error === null &&
+        ideWork.allowed_user_actions.length === 1 &&
+        ideWork.allowed_user_actions[0] === 'none'
+    )
+}
+
 function isSafeIdeWorkProjection(ideWork) {
     if (!isPlainRecord(ideWork)) return false
     if (!IDE_WORK_SCHEMA_VERSIONS.includes(ideWork.schema_version)) return false
@@ -1504,6 +1566,19 @@ function isSafeIdeWorkProjection(ideWork) {
         !Array.isArray(ideWork.allowed_user_actions) ||
         !ideWork.allowed_user_actions.length ||
         ideWork.allowed_user_actions.some((action) => typeof action !== 'string' || !IDE_WORK_ACTIONS.includes(action))
+    ) {
+        return false
+    }
+    const isPatchReviewRequiredSchema = ideWork.schema_version === 'sentinel.qvc.ide_work_result_patch_review_required.v1'
+    const isPatchReviewRequiredState = ideWork.state === 'patch_review_required'
+    if (isPatchReviewRequiredSchema !== isPatchReviewRequiredState) return false
+    if (
+        isPatchReviewRequiredSchema &&
+        (ideWork.approval_available !== false ||
+            ideWork.cancel_available !== false ||
+            ideWork.safe_error !== null ||
+            ideWork.allowed_user_actions.length !== 1 ||
+            ideWork.allowed_user_actions[0] !== 'none')
     ) {
         return false
     }

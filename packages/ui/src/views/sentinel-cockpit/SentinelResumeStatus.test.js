@@ -16,6 +16,7 @@ import SentinelResumeStatus, {
     EMPTY_MESSAGE,
     GOAL_EMPTY_MESSAGE,
     GOAL_LOADING_MESSAGE,
+    IDE_WORK_ERROR,
     LOADING_MESSAGE,
     NOT_FOUND_ERROR,
     PLAN_DECISION_ERROR,
@@ -132,6 +133,28 @@ const safeIdeWork = (overrides = {}) => ({
     safe_error: null,
     ...overrides
 })
+
+const safePatchIdeWork = (overrides = {}) =>
+    safeIdeWork({
+        schema_version: 'sentinel.qvc.ide_work_result_patch_review_required.v1',
+        state: 'patch_review_required',
+        status_label: 'Patch proposal needs review',
+        workflow_label: 'Safe review workflow',
+        persona_label: 'Review helper',
+        skill_label: 'Safe review',
+        short_summary: 'Sentinel prepared a proposal for review only.',
+        current_safe_step: 'Review the proposal outside this page before doing anything else.',
+        what_can_happen_next: 'Sentinel can show review-only status for the operator.',
+        what_will_not_happen: 'Nothing was accepted, applied, changed, or continued from this page.',
+        approval_available: false,
+        cancel_available: false,
+        review_required_note: 'Review is required before anything can be accepted.',
+        terminal_note: 'Nothing was accepted or applied here.',
+        allowed_user_actions: ['none'],
+        blocked_actions: ['No controls are available here.', 'No changes start from this page.'],
+        safe_error: null,
+        ...overrides
+    })
 
 let activeDom = null
 let activeRoot = null
@@ -294,7 +317,7 @@ describe('SentinelResumeStatus', () => {
     })
 
     it('renders the standalone page without checkpoint/run/session values in route text', () => {
-        const html = renderToStaticMarkup(<SentinelResumeStatus />)
+        const html = renderToStaticMarkup(React.createElement(SentinelResumeStatus))
 
         expect(html).toContain('Quality Vibe Coding Cockpit')
         expect(html).toContain('What do you want to do?')
@@ -884,6 +907,46 @@ describe('SentinelResumeStatus', () => {
         expect(html).not.toMatch(
             /request_read_only_review|approve_mock_backend_work|cancel_mock_backend_work|run_|sentinel_session|session_id|client_nonce|cockpit_ref|gateway|token|authorization|task_packet|source snippet/i
         )
+    })
+
+    it('renders patch review required as a passive display-only card', async () => {
+        const patchIdeWork = safePatchIdeWork()
+        const snapshot = safePlanSession({ ide_work: patchIdeWork })
+        const html = renderToStaticMarkup(
+            <PlanSessionCard snapshot={snapshot} canApproveMockWork canCancelMockWork canRequestReadOnlyReview isLoading={false} />
+        )
+
+        expect(html).toContain('Patch proposal review required')
+        expect(html).toContain('Patch proposal needs review. Nothing was accepted or applied here.')
+        expect(html).toContain('Patch review status')
+        expect(html).toContain('This card is passive and has no action controls.')
+        expect(html).not.toContain('Safe mock check')
+        expect(html).not.toContain('Read-only review')
+        expect(html).not.toContain('<button')
+        expect(html).not.toContain('<a ')
+        expect(html).not.toContain('<form')
+        expect(html).not.toContain('<input')
+        expect(html).not.toMatch(
+            /request_patch_proposal|request_read_only_review|approve_mock_backend_work|cancel_mock_backend_work|run_|sentinel_session|session_id|client_nonce|cockpit_ref|gateway|token|authorization|task_packet|diff|source code|file path|raw output|stdout|stderr/i
+        )
+        expect(canUseIdeWorkAction(snapshot, 'request_patch_proposal')).toBe(false)
+        expect(canUseIdeWorkAction(snapshot, 'request_read_only_review')).toBe(false)
+        expect(canUseIdeWorkAction(snapshot, 'approve_mock_backend_work')).toBe(false)
+
+        const requestIdeWorkActionImpl = jest.fn()
+        await expect(loadIdeWorkActionSession({ action: 'request_patch_proposal' }, requestIdeWorkActionImpl)).resolves.toEqual({
+            ideWork: null,
+            error: IDE_WORK_ERROR
+        })
+        expect(requestIdeWorkActionImpl).not.toHaveBeenCalled()
+
+        const blockedHtml = renderToStaticMarkup(
+            <PlanSessionCard
+                snapshot={safePlanSession({ ide_work: safePatchIdeWork({ short_summary: 'The source code should not display.' }) })}
+            />
+        )
+        expect(blockedHtml).not.toContain('Patch proposal review required')
+        expect(blockedHtml).not.toContain('source code')
     })
 
     it('posts only a safe mock-check action and displays the returned status', async () => {

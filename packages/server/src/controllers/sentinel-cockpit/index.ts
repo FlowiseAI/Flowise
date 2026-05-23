@@ -95,10 +95,13 @@ const IDE_WORK_KEYS = Object.freeze([
     'safe_error'
 ])
 const IDE_WORK_RESPONSE_KEYS = Object.freeze(['schema_version', 'status', IDE_WORK_KEY, 'safe_error'])
+const IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION = 'sentinel.qvc.ide_work_result_patch_review_required.v1'
+const IDE_WORK_PATCH_REVIEW_REQUIRED_STATE = 'patch_review_required'
 const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
-    'sentinel.qvc.ide_work_result_review_required.v1'
+    'sentinel.qvc.ide_work_result_review_required.v1',
+    IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION
 ])
 const IDE_WORK_STATES = Object.freeze([
     'disabled',
@@ -111,6 +114,7 @@ const IDE_WORK_STATES = Object.freeze([
     'timed_out',
     'failed_closed',
     'review_required',
+    IDE_WORK_PATCH_REVIEW_REQUIRED_STATE,
     'expired'
 ])
 const IDE_WORK_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'none'])
@@ -212,7 +216,16 @@ const IDE_WORK_FORBIDDEN_FRAGMENTS = Object.freeze([
     'confidence',
     'command line',
     'environment variable',
+    'path',
+    'diff',
+    'raw',
+    'raw output',
+    'stdout',
+    'stderr',
+    'source code',
     'source snippet',
+    'adapter',
+    'argv',
     'codex',
     'opencode',
     'hermes',
@@ -1074,6 +1087,21 @@ function validateIdeWork(ideWork: unknown) {
     ) {
         throw httpError(500, 'invalid_snapshot')
     }
+    const isPatchReviewRequiredSchema = work.schema_version === IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION
+    const isPatchReviewRequiredState = work.state === IDE_WORK_PATCH_REVIEW_REQUIRED_STATE
+    if (isPatchReviewRequiredSchema !== isPatchReviewRequiredState) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (
+        isPatchReviewRequiredSchema &&
+        (work.approval_available !== false ||
+            work.cancel_available !== false ||
+            work.safe_error !== null ||
+            work.allowed_user_actions.length !== 1 ||
+            work.allowed_user_actions[0] !== 'none')
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
     if (
         !Array.isArray(work.blocked_actions) ||
         !work.blocked_actions.length ||
@@ -1264,6 +1292,8 @@ function getErrorCode(error: unknown): ErrorCode {
             'result_review_nonce_mismatch',
             'result_review_state_mismatch',
             'plan_decision_invalid_input',
+            'ide_work_invalid_input',
+            'ide_work_unavailable',
             'gateway_unavailable',
             'gateway_rejected',
             'internal_error'

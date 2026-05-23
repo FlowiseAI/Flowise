@@ -21,10 +21,13 @@ export const IDE_PREVIEW_SCHEMA_VERSION = 'sentinel.qvc.ide_preview.v1'
 export const IDE_PREVIEW_KEY = 'ide_preview'
 export const IDE_WORK_KEY = 'ide_work'
 export const IDE_WORK_BRIDGE_SCHEMA_VERSION = 'sentinel.cockpit_bridge.ide_work.v1'
+const IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION = 'sentinel.qvc.ide_work_result_patch_review_required.v1'
+const IDE_WORK_PATCH_REVIEW_REQUIRED_STATE = 'patch_review_required'
 export const IDE_WORK_GATEWAY_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
-    'sentinel.qvc.ide_work_result_review_required.v1'
+    'sentinel.qvc.ide_work_result_review_required.v1',
+    IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION
 ])
 export const IDE_PREVIEW_REDUCED_KEYS = Object.freeze([
     'status_label',
@@ -99,6 +102,7 @@ const IDE_WORK_STATES = Object.freeze([
     'timed_out',
     'failed_closed',
     'review_required',
+    IDE_WORK_PATCH_REVIEW_REQUIRED_STATE,
     'expired'
 ])
 const IDE_WORK_ALLOWED_ACTIONS = Object.freeze([
@@ -204,7 +208,12 @@ const IDE_WORK_FORBIDDEN_FRAGMENTS = Object.freeze([
     'nonce',
     'hash',
     'path',
+    'diff',
     'raw',
+    'raw output',
+    'stdout',
+    'stderr',
+    'source code',
     'selected worker',
     'active agent',
     'launch worker',
@@ -252,6 +261,7 @@ export type IdeWorkProjection = Readonly<{
         | 'sentinel.qvc.ide_work_approval.v1'
         | 'sentinel.qvc.ide_work_progress.v1'
         | 'sentinel.qvc.ide_work_result_review_required.v1'
+        | typeof IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION
     status: 'ok'
     state:
         | 'disabled'
@@ -264,6 +274,7 @@ export type IdeWorkProjection = Readonly<{
         | 'timed_out'
         | 'failed_closed'
         | 'review_required'
+        | typeof IDE_WORK_PATCH_REVIEW_REQUIRED_STATE
         | 'expired'
     status_label: string
     workflow_label: string
@@ -1123,10 +1134,27 @@ function projectIdeWork(
     ) {
         return null
     }
-    const allowedActions = Array.isArray(input.allowed_user_actions)
-        ? input.allowed_user_actions.filter((action): action is string => typeof action === 'string')
-        : []
-    if (!allowedActions.length || allowedActions.some((action) => !IDE_WORK_ALLOWED_ACTIONS.includes(action))) {
+    if (
+        !Array.isArray(input.allowed_user_actions) ||
+        !input.allowed_user_actions.length ||
+        input.allowed_user_actions.some((action) => typeof action !== 'string' || !IDE_WORK_ALLOWED_ACTIONS.includes(action))
+    ) {
+        return null
+    }
+    const allowedActions = input.allowed_user_actions as string[]
+    const isPatchReviewRequiredSchema = input.schema_version === IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION
+    const isPatchReviewRequiredState = input.state === IDE_WORK_PATCH_REVIEW_REQUIRED_STATE
+    if (isPatchReviewRequiredSchema !== isPatchReviewRequiredState) {
+        return null
+    }
+    if (
+        isPatchReviewRequiredSchema &&
+        (input.approval_available !== false ||
+            input.cancel_available !== false ||
+            input.safe_error !== null ||
+            allowedActions.length !== 1 ||
+            allowedActions[0] !== 'none')
+    ) {
         return null
     }
     const blockedActions = Array.isArray(input.blocked_actions) ? input.blocked_actions.map((action) => readIdeWorkString(action, 160)) : []

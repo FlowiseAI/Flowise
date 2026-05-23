@@ -120,7 +120,8 @@ const IDE_WORK_KEYS = Object.freeze([
 const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
-    'sentinel.qvc.ide_work_result_review_required.v1'
+    'sentinel.qvc.ide_work_result_review_required.v1',
+    'sentinel.qvc.ide_work_result_patch_review_required.v1'
 ])
 const IDE_WORK_STATES = Object.freeze([
     'disabled',
@@ -133,6 +134,7 @@ const IDE_WORK_STATES = Object.freeze([
     'timed_out',
     'failed_closed',
     'review_required',
+    'patch_review_required',
     'expired'
 ])
 const IDE_WORK_ALLOWED_ACTIONS = Object.freeze([
@@ -142,7 +144,7 @@ const IDE_WORK_ALLOWED_ACTIONS = Object.freeze([
     'none'
 ])
 const IDE_WORK_FORBIDDEN_TEXT =
-    /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:|127\.0\.0\.1|localhost|:39173|provider|model|confidence|selected\s+worker|active\s+agent|agent\s+started|running\s+task|tool\s+call|command\s*[:=]|action_inputs|adapter|argv|nonce|hash|source\s+snippet/i
+    /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:|127\.0\.0\.1|localhost|:39173|provider|model|confidence|selected\s+worker|active\s+agent|agent\s+started|running\s+task|tool\s+call|command\s*[:=]|action_inputs|adapter|argv|nonce|hash|path|diff|raw\s+output|stdout|stderr|source\s+code|source\s+snippet/i
 export const CLOSED_ERROR_CODES = Object.freeze([
     'sentinel_classify_unavailable',
     'sentinel_classify_malformed',
@@ -194,6 +196,7 @@ const PLAN_DECISION_CALLER_INPUT_KEYS = Object.freeze(['cockpitRef', 'clientNonc
 const MANUAL_PACKET_CALLER_INPUT_KEYS = Object.freeze(['cockpitRef', 'clientNonce'])
 const RESULT_REVIEW_CALLER_INPUT_KEYS = Object.freeze(['cockpitRef', 'clientNonce', 'resultText', 'reviewOnlyConfirmation'])
 const IDE_WORK_ACTION_CALLER_INPUT_KEYS = Object.freeze(['action'])
+const IDE_WORK_STATUS_CALLER_INPUT_KEYS = Object.freeze([])
 const PLAN_DECISIONS = Object.freeze(['approve_plan', 'revise_plan', 'stop'])
 const FORBIDDEN_CALLER_KEYS = Object.freeze([
     'run_id',
@@ -302,7 +305,7 @@ export async function requestIdeWorkAction(input = {}, options = {}) {
 }
 
 export async function requestIdeWorkStatus(input = {}, options = {}) {
-    validateCallerInput(input, [])
+    validateCallerInput(input, IDE_WORK_STATUS_CALLER_INPUT_KEYS)
     return requestJson(buildIdeWorkStatusUrl(), buildIdeWorkStatusBody(input), options, readIdeWorkResponse)
 }
 
@@ -426,6 +429,7 @@ export function buildResultReviewBody(input = {}) {
 }
 
 export function buildIdeWorkActionBody(input = {}) {
+    validateCallerInput(input, IDE_WORK_ACTION_CALLER_INPUT_KEYS)
     const action = readRequiredString(input.action)
     if (!['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review'].includes(action)) {
         throw new SentinelCockpitError('invalid_request')
@@ -436,7 +440,8 @@ export function buildIdeWorkActionBody(input = {}) {
     }
 }
 
-export function buildIdeWorkStatusBody() {
+export function buildIdeWorkStatusBody(input = {}) {
+    validateCallerInput(input, IDE_WORK_STATUS_CALLER_INPUT_KEYS)
     return {
         request_kind: IDE_WORK_STATUS_REQUEST_KIND
     }
@@ -666,6 +671,19 @@ function narrowIdeWork(value) {
         !Array.isArray(value.allowed_user_actions) ||
         !value.allowed_user_actions.length ||
         value.allowed_user_actions.some((action) => typeof action !== 'string' || !IDE_WORK_ALLOWED_ACTIONS.includes(action))
+    ) {
+        return null
+    }
+    const isPatchReviewRequiredSchema = value.schema_version === 'sentinel.qvc.ide_work_result_patch_review_required.v1'
+    const isPatchReviewRequiredState = value.state === 'patch_review_required'
+    if (isPatchReviewRequiredSchema !== isPatchReviewRequiredState) return null
+    if (
+        isPatchReviewRequiredSchema &&
+        (value.approval_available !== false ||
+            value.cancel_available !== false ||
+            value.safe_error !== null ||
+            value.allowed_user_actions.length !== 1 ||
+            value.allowed_user_actions[0] !== 'none')
     ) {
         return null
     }
