@@ -29,7 +29,9 @@ export const RESULT_REVIEW_CONFIRMATION_MESSAGE = 'Confirm this is review-only b
 export const RESULT_REVIEW_UNSAFE_MESSAGE = 'Use plain text only. Do not paste protocol fields, tokens, IDs, or raw packets.'
 export const RESULT_REVIEW_TEXT_MAX_LENGTH = 12000
 export const RESULT_REVIEW_TEXT_MIN_LENGTH = 20
-export const IDE_WORK_ERROR = 'The safe mock check is not available in this view.'
+export const IDE_WORK_ERROR = 'The safe IDE work action is not available in this view.'
+export const PATCH_PROPOSAL_ERROR = 'Sentinel patch proposal is not available in this view.'
+export const PATCH_PROPOSAL_LOADING_MESSAGE = 'Asking Sentinel for the patch proposal.'
 export const IDE_WORK_LOADING_MESSAGE = 'Checking the safe mock step.'
 export const REVISION_EMPTY_MESSAGE = 'Describe the plan revision in plain English.'
 export const REVISION_TOO_LONG_MESSAGE = 'Keep the revision note under 1000 characters.'
@@ -41,7 +43,13 @@ const PLAN_SESSION_SCHEMA_VERSION = 'sentinel.cockpit_bridge.plan_session.v1'
 const PLAN_DECISION_ACTIONS = Object.freeze(['approve_plan', 'revise_plan', 'stop'])
 const MANUAL_PACKET_ACTIONS = Object.freeze(['prepare_manual_worker_packet'])
 const RESULT_REVIEW_ACTIONS = Object.freeze(['submit_result_review'])
-const IDE_WORK_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'none'])
+const IDE_WORK_ACTIONS = Object.freeze([
+    'approve_mock_backend_work',
+    'cancel_mock_backend_work',
+    'request_read_only_review',
+    'request_patch_proposal',
+    'none'
+])
 const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
@@ -652,7 +660,7 @@ export default function SentinelResumeStatus() {
 
     const handleIdeWorkAction = async (action) => {
         if (!canUseIdeWorkAction(snapshot, action)) {
-            setError(IDE_WORK_ERROR)
+            setError(action === 'request_patch_proposal' ? PATCH_PROPOSAL_ERROR : IDE_WORK_ERROR)
             return
         }
 
@@ -681,6 +689,7 @@ export default function SentinelResumeStatus() {
     const ideWorkApproveReady = canUseIdeWorkAction(snapshot, 'approve_mock_backend_work')
     const ideWorkCancelReady = canUseIdeWorkAction(snapshot, 'cancel_mock_backend_work')
     const ideWorkReadOnlyReviewReady = canUseIdeWorkAction(snapshot, 'request_read_only_review')
+    const ideWorkPatchProposalReady = canUseIdeWorkAction(snapshot, 'request_patch_proposal')
 
     return (
         <main style={pageStyles.root}>
@@ -777,6 +786,7 @@ export default function SentinelResumeStatus() {
                         canApproveMockWork={ideWorkApproveReady}
                         canCancelMockWork={ideWorkCancelReady}
                         canRequestReadOnlyReview={ideWorkReadOnlyReviewReady}
+                        canRequestPatchProposal={ideWorkPatchProposalReady}
                     />
                 ) : null}
                 {!error && snapshot && !isPlanSessionResponse(snapshot) ? (
@@ -948,6 +958,52 @@ function ReadOnlyReviewCard({ ideWork, rows, canRequest, isLoading, onIdeWorkAct
     )
 }
 
+function PatchProposalRequestCard({ ideWork, rows, canRequest, isLoading, onIdeWorkAction }) {
+    return (
+        <section style={pageStyles.idePreview} aria-label='Patch proposal request'>
+            <h2 style={pageStyles.idePreviewTitle}>Patch proposal request</h2>
+            <p style={pageStyles.idePreviewCopy}>
+                Ask Sentinel for a review-only patch proposal. Nothing is accepted, applied, continued, or changed from this page.
+            </p>
+            <div style={pageStyles.idePreviewGrid}>
+                {rows.map(([label, value]) => (
+                    <div key={label} style={pageStyles.idePreviewRow}>
+                        <div style={pageStyles.idePreviewLabel}>{label}</div>
+                        <div style={pageStyles.idePreviewValue}>{value}</div>
+                    </div>
+                ))}
+            </div>
+            {ideWork?.review_required_note ? (
+                <p style={pageStyles.idePreviewCopy}>Review note: {formatValue(ideWork.review_required_note)}</p>
+            ) : null}
+            {ideWork?.terminal_note ? <p style={pageStyles.idePreviewCopy}>Closeout: {formatValue(ideWork.terminal_note)}</p> : null}
+            {Array.isArray(ideWork?.blocked_actions) && ideWork.blocked_actions.length > 0 ? (
+                <div style={pageStyles.idePreviewGrid}>
+                    <div style={pageStyles.idePreviewRow}>
+                        <div style={pageStyles.idePreviewLabel}>Blocked actions</div>
+                        <div style={pageStyles.idePreviewValue}>{formatList(ideWork.blocked_actions)}</div>
+                    </div>
+                </div>
+            ) : null}
+            {canRequest ? (
+                <div style={pageStyles.decisionControls} aria-label='Patch proposal request controls'>
+                    <button
+                        type='button'
+                        style={pageStyles.button}
+                        disabled={isLoading}
+                        onClick={() => onIdeWorkAction('request_patch_proposal')}
+                    >
+                        {isLoading ? PATCH_PROPOSAL_LOADING_MESSAGE : 'Ask Sentinel for patch proposal'}
+                    </button>
+                </div>
+            ) : null}
+            <p style={{ ...pageStyles.idePreviewCopy, marginBottom: 0 }}>
+                This card asks for review status only. It has no action controls.
+            </p>
+        </section>
+    )
+}
+
 function PatchReviewRequiredCard({ ideWork, rows }) {
     return (
         <section style={pageStyles.idePreview} aria-label='Patch proposal review required'>
@@ -997,12 +1053,14 @@ export function PlanSessionCard({
     onResultReviewSubmit = () => {},
     onIdeWorkAction = () => {},
     showIdePreview = false,
-    canRequestReadOnlyReview = false
+    canRequestReadOnlyReview = false,
+    canRequestPatchProposal = false
 }) {
     const planCard = isPlainRecord(snapshot.plan_card) ? snapshot.plan_card : null
     const routeCard = readSafeRouteCard(snapshot.route_card)
     const idePreviewRows = showIdePreview ? readIdePreviewRows(snapshot.ide_preview) : []
     const showPatchReviewRequired = isPatchReviewRequiredIdeWork(snapshot.ide_work)
+    const showPatchProposalRequest = !showPatchReviewRequired && canRequestPatchProposal && isPatchProposalIdeWork(snapshot.ide_work)
     const showReadOnlyReview = !showPatchReviewRequired && (canRequestReadOnlyReview || isReadOnlyReviewIdeWork(snapshot.ide_work))
     const ideWorkRows = readIdeWorkRows(
         snapshot.ide_work,
@@ -1016,6 +1074,14 @@ export function PlanSessionCard({
             {idePreviewRows.length > 0 ? <ReadOnlyWorkPreview rows={idePreviewRows} /> : null}
             {ideWorkRows.length > 0 && showPatchReviewRequired ? (
                 <PatchReviewRequiredCard ideWork={snapshot.ide_work} rows={ideWorkRows} />
+            ) : ideWorkRows.length > 0 && showPatchProposalRequest ? (
+                <PatchProposalRequestCard
+                    ideWork={snapshot.ide_work}
+                    rows={ideWorkRows}
+                    canRequest={canRequestPatchProposal}
+                    isLoading={isLoading}
+                    onIdeWorkAction={onIdeWorkAction}
+                />
             ) : ideWorkRows.length > 0 && showReadOnlyReview ? (
                 <ReadOnlyReviewCard
                     ideWork={snapshot.ide_work}
@@ -1298,18 +1364,18 @@ export async function loadResultReviewSession(reviewInput, requestResultReviewIm
 
 export async function loadIdeWorkActionSession(actionInput, requestIdeWorkActionImpl = requestIdeWorkAction) {
     const action = typeof actionInput?.action === 'string' ? actionInput.action.trim() : ''
-    if (!['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review'].includes(action)) {
-        return { ideWork: null, error: IDE_WORK_ERROR }
+    if (!['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'request_patch_proposal'].includes(action)) {
+        return { ideWork: null, error: action === 'request_patch_proposal' ? PATCH_PROPOSAL_ERROR : IDE_WORK_ERROR }
     }
 
     try {
         const response = await requestIdeWorkActionImpl({ action })
         if (!isSafeIdeWorkProjection(response?.ide_work)) {
-            return { ideWork: null, error: DISPLAY_BLOCKED_ERROR }
+            return { ideWork: null, error: action === 'request_patch_proposal' ? PATCH_PROPOSAL_ERROR : DISPLAY_BLOCKED_ERROR }
         }
         return { ideWork: response.ide_work, error: '' }
     } catch (error) {
-        return { ideWork: null, error: readSafeErrorCopy(error) }
+        return { ideWork: null, error: action === 'request_patch_proposal' ? PATCH_PROPOSAL_ERROR : readSafeErrorCopy(error) }
     }
 }
 
@@ -1341,6 +1407,16 @@ export function canUseIdeWorkAction(snapshot, action) {
     }
     if (action === 'request_read_only_review') {
         return ideWork.approval_available === true && ideWork.allowed_user_actions.join(',') === 'request_read_only_review'
+    }
+    if (action === 'request_patch_proposal') {
+        return (
+            ideWork.schema_version === 'sentinel.qvc.ide_work_approval.v1' &&
+            ideWork.state === 'approval_pending' &&
+            ideWork.approval_available === true &&
+            ideWork.cancel_available === false &&
+            ideWork.safe_error === null &&
+            ideWork.allowed_user_actions.join(',') === 'request_patch_proposal'
+        )
     }
     return false
 }
@@ -1544,6 +1620,20 @@ function isReadOnlyReviewIdeWork(ideWork) {
     return ['Read-only review in progress', 'Review needed before anything is accepted'].includes(ideWork.status_label)
 }
 
+function isPatchProposalIdeWork(ideWork) {
+    if (!isSafeIdeWorkProjection(ideWork)) return false
+    return (
+        ideWork.schema_version === 'sentinel.qvc.ide_work_approval.v1' &&
+        ideWork.status === 'ok' &&
+        ideWork.state === 'approval_pending' &&
+        ideWork.approval_available === true &&
+        ideWork.cancel_available === false &&
+        ideWork.safe_error === null &&
+        ideWork.allowed_user_actions.length === 1 &&
+        ideWork.allowed_user_actions[0] === 'request_patch_proposal'
+    )
+}
+
 function isPatchReviewRequiredIdeWork(ideWork) {
     if (!isSafeIdeWorkProjection(ideWork)) return false
     return (
@@ -1579,6 +1669,20 @@ function isSafeIdeWorkProjection(ideWork) {
             ideWork.safe_error !== null ||
             ideWork.allowed_user_actions.length !== 1 ||
             ideWork.allowed_user_actions[0] !== 'none')
+    ) {
+        return false
+    }
+    const includesPatchProposalAction = ideWork.allowed_user_actions.includes('request_patch_proposal')
+    const isExactPatchProposalAction =
+        ideWork.allowed_user_actions.length === 1 && ideWork.allowed_user_actions[0] === 'request_patch_proposal'
+    if (
+        includesPatchProposalAction &&
+        (!isExactPatchProposalAction ||
+            ideWork.schema_version !== 'sentinel.qvc.ide_work_approval.v1' ||
+            ideWork.state !== 'approval_pending' ||
+            ideWork.approval_available !== true ||
+            ideWork.cancel_available !== false ||
+            ideWork.safe_error !== null)
     ) {
         return false
     }

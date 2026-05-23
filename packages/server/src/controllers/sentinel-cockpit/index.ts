@@ -117,7 +117,13 @@ const IDE_WORK_STATES = Object.freeze([
     IDE_WORK_PATCH_REVIEW_REQUIRED_STATE,
     'expired'
 ])
-const IDE_WORK_ACTIONS = Object.freeze(['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'none'])
+const IDE_WORK_ACTIONS = Object.freeze([
+    'approve_mock_backend_work',
+    'cancel_mock_backend_work',
+    'request_read_only_review',
+    'request_patch_proposal',
+    'none'
+])
 const ROUTE_CARD_KEYS = Object.freeze([
     'schema_version',
     'category',
@@ -618,7 +624,7 @@ export function validateIdeWorkActionRequest(body: unknown): classifyBridge.IdeW
     const action = requestBody.action
     if (
         typeof action !== 'string' ||
-        !['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review'].includes(action)
+        !['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'request_patch_proposal'].includes(action)
     ) {
         throw httpError(400, 'ide_work_invalid_input')
     }
@@ -1099,6 +1105,19 @@ function validateIdeWork(ideWork: unknown) {
             work.safe_error !== null ||
             work.allowed_user_actions.length !== 1 ||
             work.allowed_user_actions[0] !== 'none')
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const includesPatchProposalAction = work.allowed_user_actions.includes('request_patch_proposal')
+    const isExactPatchProposalAction = work.allowed_user_actions.length === 1 && work.allowed_user_actions[0] === 'request_patch_proposal'
+    if (
+        includesPatchProposalAction &&
+        (!isExactPatchProposalAction ||
+            work.schema_version !== 'sentinel.qvc.ide_work_approval.v1' ||
+            work.state !== 'approval_pending' ||
+            work.approval_available !== true ||
+            work.cancel_available !== false ||
+            work.safe_error !== null)
     ) {
         throw httpError(500, 'invalid_snapshot')
     }

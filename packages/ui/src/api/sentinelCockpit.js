@@ -141,6 +141,7 @@ const IDE_WORK_ALLOWED_ACTIONS = Object.freeze([
     'approve_mock_backend_work',
     'cancel_mock_backend_work',
     'request_read_only_review',
+    'request_patch_proposal',
     'none'
 ])
 const IDE_WORK_FORBIDDEN_TEXT =
@@ -431,7 +432,7 @@ export function buildResultReviewBody(input = {}) {
 export function buildIdeWorkActionBody(input = {}) {
     validateCallerInput(input, IDE_WORK_ACTION_CALLER_INPUT_KEYS)
     const action = readRequiredString(input.action)
-    if (!['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review'].includes(action)) {
+    if (!['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'request_patch_proposal'].includes(action)) {
         throw new SentinelCockpitError('invalid_request')
     }
     return {
@@ -684,6 +685,19 @@ function narrowIdeWork(value) {
             value.safe_error !== null ||
             value.allowed_user_actions.length !== 1 ||
             value.allowed_user_actions[0] !== 'none')
+    ) {
+        return null
+    }
+    const includesPatchProposalAction = value.allowed_user_actions.includes('request_patch_proposal')
+    const isExactPatchProposalAction = value.allowed_user_actions.length === 1 && value.allowed_user_actions[0] === 'request_patch_proposal'
+    if (
+        includesPatchProposalAction &&
+        (!isExactPatchProposalAction ||
+            value.schema_version !== 'sentinel.qvc.ide_work_approval.v1' ||
+            value.state !== 'approval_pending' ||
+            value.approval_available !== true ||
+            value.cancel_available !== false ||
+            value.safe_error !== null)
     ) {
         return null
     }

@@ -16,10 +16,10 @@ import SentinelResumeStatus, {
     EMPTY_MESSAGE,
     GOAL_EMPTY_MESSAGE,
     GOAL_LOADING_MESSAGE,
-    IDE_WORK_ERROR,
     LOADING_MESSAGE,
     NOT_FOUND_ERROR,
     PLAN_DECISION_ERROR,
+    PATCH_PROPOSAL_ERROR,
     PlanSessionCard,
     REVISION_EMPTY_MESSAGE,
     REVISION_TOO_LONG_MESSAGE,
@@ -152,6 +152,19 @@ const safePatchIdeWork = (overrides = {}) =>
         terminal_note: 'Nothing was accepted or applied here.',
         allowed_user_actions: ['none'],
         blocked_actions: ['No controls are available here.', 'No changes start from this page.'],
+        safe_error: null,
+        ...overrides
+    })
+
+const safePatchApprovalIdeWork = (overrides = {}) =>
+    safeIdeWork({
+        status_label: 'Patch proposal available',
+        short_summary: 'Sentinel can prepare a bounded patch proposal for review only.',
+        current_safe_step: 'Ask only if you want a review-only proposal.',
+        what_can_happen_next: 'Sentinel can return a review-required patch proposal status.',
+        what_will_not_happen: 'Nothing is accepted, applied, changed, or continued from this page.',
+        allowed_user_actions: ['request_patch_proposal'],
+        blocked_actions: ['No proposal is applied here.', 'No accepted work starts here.', 'No continuation starts here.'],
         safe_error: null,
         ...overrides
     })
@@ -936,9 +949,43 @@ describe('SentinelResumeStatus', () => {
         const requestIdeWorkActionImpl = jest.fn()
         await expect(loadIdeWorkActionSession({ action: 'request_patch_proposal' }, requestIdeWorkActionImpl)).resolves.toEqual({
             ideWork: null,
-            error: IDE_WORK_ERROR
+            error: PATCH_PROPOSAL_ERROR
         })
-        expect(requestIdeWorkActionImpl).not.toHaveBeenCalled()
+        expect(requestIdeWorkActionImpl).toHaveBeenCalledWith({ action: 'request_patch_proposal' })
+
+        const patchApproval = safePatchApprovalIdeWork()
+        const approvalSnapshot = safePlanSession({ ide_work: patchApproval })
+        const approvalHtml = renderToStaticMarkup(<PlanSessionCard snapshot={approvalSnapshot} canRequestPatchProposal isLoading={false} />)
+        expect(canUseIdeWorkAction(approvalSnapshot, 'request_patch_proposal')).toBe(true)
+        expect(canUseIdeWorkAction(approvalSnapshot, 'request_read_only_review')).toBe(false)
+        expect(approvalHtml).toContain('Patch proposal request')
+        expect(approvalHtml).toContain('Ask Sentinel for patch proposal')
+        expect(approvalHtml).toContain('Nothing is accepted, applied, continued, or changed from this page.')
+        expect(approvalHtml).not.toContain('Read-only review')
+        expect(approvalHtml).not.toContain('Safe mock check')
+        expect(approvalHtml).not.toMatch(/diff|source code|file path|raw output|stdout|stderr|commit|push|Create PR/i)
+        ;[
+            safePatchApprovalIdeWork({ approval_available: false }),
+            safePatchApprovalIdeWork({ cancel_available: true }),
+            safePatchApprovalIdeWork({ safe_error: 'patch_action_not_offered' }),
+            safePatchApprovalIdeWork({ allowed_user_actions: ['request_patch_proposal', 'approve_mock_backend_work'] }),
+            safePatchApprovalIdeWork({ state: 'failed_closed' })
+        ].forEach((ideWork) => {
+            expect(canUseIdeWorkAction(safePlanSession({ ide_work: ideWork }), 'request_patch_proposal')).toBe(false)
+        })
+
+        const patchResponse = safePatchIdeWork()
+        const requestPatchActionImpl = jest.fn().mockResolvedValue({
+            schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+            status: 'ok',
+            ide_work: patchResponse,
+            safe_error: null
+        })
+        await expect(loadIdeWorkActionSession({ action: 'request_patch_proposal' }, requestPatchActionImpl)).resolves.toEqual({
+            ideWork: patchResponse,
+            error: ''
+        })
+        expect(requestPatchActionImpl).toHaveBeenCalledWith({ action: 'request_patch_proposal' })
 
         const blockedHtml = renderToStaticMarkup(
             <PlanSessionCard
@@ -1033,6 +1080,39 @@ describe('SentinelResumeStatus', () => {
         expect(container.textContent).not.toMatch(
             /request_read_only_review|approve_mock_backend_work|cancel_mock_backend_work|run_|sentinel_session|session_id|client_nonce|cockpit_ref|gateway|token|authorization|task_packet|source snippet/i
         )
+    })
+
+    it('posts only a patch proposal action and displays the terminal review card', async () => {
+        requestGoalSnapshot.mockResolvedValueOnce(safePlanSession({ ide_work: safePatchApprovalIdeWork() }))
+        requestIdeWorkAction.mockResolvedValueOnce({
+            schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+            status: 'ok',
+            ide_work: safePatchIdeWork(),
+            safe_error: null
+        })
+        const { container, setGoalInput, submitGoalForm, clickButton } = renderInteractive()
+
+        setGoalInput('Please make a simple safe plan.')
+        submitGoalForm()
+
+        await waitForAssertion(() => expect(container.textContent).toContain('Ask Sentinel for patch proposal'))
+        clickButton('Ask Sentinel for patch proposal')
+
+        await waitForAssertion(() => expect(requestIdeWorkAction).toHaveBeenCalledWith({ action: 'request_patch_proposal' }))
+        expect(container.textContent).toContain('Patch proposal review required')
+        expect(container.textContent).toContain('Patch proposal needs review. Nothing was accepted or applied here.')
+        expect(container.textContent).not.toContain('Ask Sentinel for patch proposal')
+        expect(container.textContent).not.toMatch(/source code|file path|raw output|stdout|stderr|Create PR/i)
+    })
+
+    it('uses patch proposal-specific error copy', async () => {
+        const requestPatchActionImpl = jest.fn().mockRejectedValue(new Error('raw failure'))
+
+        await expect(loadIdeWorkActionSession({ action: 'request_patch_proposal' }, requestPatchActionImpl)).resolves.toEqual({
+            ideWork: null,
+            error: PATCH_PROPOSAL_ERROR
+        })
+        expect(requestPatchActionImpl).toHaveBeenCalledWith({ action: 'request_patch_proposal' })
     })
 
     it('renders only fixed loading copy and Submit/Clear controls while a request is pending', async () => {

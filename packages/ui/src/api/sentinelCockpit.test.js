@@ -149,6 +149,19 @@ const validPatchIdeWork = (overrides = {}) =>
         ...overrides
     })
 
+const validPatchApprovalIdeWork = (overrides = {}) =>
+    validIdeWork({
+        status_label: 'Patch proposal available',
+        short_summary: 'Sentinel can prepare a bounded patch proposal for review only.',
+        current_safe_step: 'Ask only if you want a review-only proposal.',
+        what_can_happen_next: 'Sentinel can return a review-required patch proposal status.',
+        what_will_not_happen: 'Nothing is accepted, applied, changed, or continued from this page.',
+        allowed_user_actions: ['request_patch_proposal'],
+        blocked_actions: ['No proposal is applied here.', 'No accepted work starts here.', 'No continuation starts here.'],
+        safe_error: null,
+        ...overrides
+    })
+
 describe('sentinelCockpit API wrapper', () => {
     afterEach(() => {
         jest.useRealTimers()
@@ -475,6 +488,18 @@ describe('sentinelCockpit API wrapper', () => {
             request_kind: 'ide_work_action',
             action: 'request_read_only_review'
         })
+        fetchImpl.mockClear()
+        fetchImpl.mockResolvedValueOnce(
+            fetchResponse({
+                schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+                status: 'ok',
+                ide_work: validPatchIdeWork(),
+                safe_error: null
+            })
+        )
+        await requestIdeWorkAction({ action: ' request_patch_proposal ' }, { fetchImpl })
+        const patchBody = JSON.parse(fetchImpl.mock.calls[0][1].body)
+        expect(patchBody).toEqual({ request_kind: 'ide_work_action', action: 'request_patch_proposal' })
     })
 
     it('keeps IDE work action requests open long enough for live read-only review', async () => {
@@ -531,9 +556,12 @@ describe('sentinelCockpit API wrapper', () => {
             request_kind: 'ide_work_action',
             action: 'request_read_only_review'
         })
+        expect(buildIdeWorkActionBody({ action: ' request_patch_proposal ' })).toEqual({
+            request_kind: 'ide_work_action',
+            action: 'request_patch_proposal'
+        })
         expect(buildIdeWorkStatusBody()).toEqual({ request_kind: 'ide_work_status' })
         expect(() => buildIdeWorkActionBody({ action: 'launch_worker' })).toThrow('invalid_request')
-        expect(() => buildIdeWorkActionBody({ action: 'request_patch_proposal' })).toThrow('invalid_request')
         expect(() => buildIdeWorkActionBody({ action: 'approve_mock_backend_work', workspace: 'hidden' })).toThrow('invalid_request')
         expect(() => buildIdeWorkStatusBody({ workspace: 'hidden' })).toThrow('invalid_request')
     })
@@ -601,15 +629,6 @@ describe('sentinelCockpit API wrapper', () => {
             expect(fetchImpl).not.toHaveBeenCalled()
         }
     )
-
-    it('rejects patch proposal action requests before any network call', async () => {
-        const fetchImpl = jest.fn()
-
-        await expect(requestIdeWorkAction({ action: 'request_patch_proposal' }, { fetchImpl })).rejects.toMatchObject({
-            code: 'invalid_request'
-        })
-        expect(fetchImpl).not.toHaveBeenCalled()
-    })
 
     it.each(['workspace', 'path', 'source', 'diff', 'patch', 'model', 'provider', 'command', 'argv', 'token', 'gatewayUrl'])(
         'rejects forbidden IDE work status caller key %s before any network call',
@@ -885,6 +904,30 @@ describe('sentinelCockpit API wrapper', () => {
         expect(JSON.stringify(session.ide_work)).not.toMatch(/request_patch_proposal|diff|source code|file path|raw output|stdout|stderr/i)
     })
 
+    it('preserves exact patch proposal approval work without leaking source or raw output', async () => {
+        const fetchImpl = jest.fn().mockResolvedValue(
+            fetchResponse(
+                validPlanSession({
+                    route_card: validRouteCard(),
+                    ide_preview: validIdePreview(),
+                    ide_work: validPatchApprovalIdeWork()
+                })
+            )
+        )
+
+        const session = await requestGoalSnapshot(
+            {
+                plainGoal: 'Plan the next safe step',
+                clientNonce: 'nonce_abcdefghijklmnop'
+            },
+            { fetchImpl }
+        )
+
+        expect(session.ide_work.allowed_user_actions).toEqual(['request_patch_proposal'])
+        expect(session.ide_work.approval_available).toBe(true)
+        expect(JSON.stringify(session.ide_work)).not.toMatch(/diff|source code|file path|raw output|stdout|stderr/i)
+    })
+
     it('omits unsafe IDE mock work from initial goal plan-session responses', async () => {
         const fetchImpl = jest.fn().mockResolvedValue(
             fetchResponse(
@@ -916,6 +959,38 @@ describe('sentinelCockpit API wrapper', () => {
         ['source code patch terminal', validPatchIdeWork({ short_summary: 'The source code should not display.' })],
         ['schema-state mismatch', validPatchIdeWork({ state: 'review_required' })]
     ])('omits unsafe patch review required IDE work from plan-session responses: %s', async (_label, ideWork) => {
+        const fetchImpl = jest.fn().mockResolvedValue(
+            fetchResponse(
+                validPlanSession({
+                    route_card: validRouteCard(),
+                    ide_preview: validIdePreview(),
+                    ide_work: ideWork
+                })
+            )
+        )
+
+        const session = await requestGoalSnapshot(
+            {
+                plainGoal: 'Plan the next safe step',
+                clientNonce: 'nonce_abcdefghijklmnop'
+            },
+            { fetchImpl }
+        )
+
+        expect(session).not.toHaveProperty('ide_work')
+        expect(Object.keys(session).sort()).toEqual([...PLAN_SESSION_KEYS, 'ide_preview', 'route_card'].sort())
+    })
+
+    it.each([
+        ['patch proposal approval unavailable', validPatchApprovalIdeWork({ approval_available: false })],
+        ['patch proposal cancellable', validPatchApprovalIdeWork({ cancel_available: true })],
+        ['patch proposal safe error', validPatchApprovalIdeWork({ safe_error: 'patch_action_not_offered' })],
+        [
+            'patch proposal mixed action',
+            validPatchApprovalIdeWork({ allowed_user_actions: ['request_patch_proposal', 'approve_mock_backend_work'] })
+        ],
+        ['patch proposal wrong state', validPatchApprovalIdeWork({ state: 'failed_closed' })]
+    ])('omits unsafe patch proposal IDE work from plan-session responses: %s', async (_label, ideWork) => {
         const fetchImpl = jest.fn().mockResolvedValue(
             fetchResponse(
                 validPlanSession({

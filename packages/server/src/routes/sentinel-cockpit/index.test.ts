@@ -271,14 +271,19 @@ describe('sentinel cockpit router', () => {
         expect(res.text).not.toContain('<html>')
     })
 
-    it('serves display-only patch review status without accepting a patch action route request', async () => {
+    it('serves display-only patch review status and accepts only exact patch action route request', async () => {
         const statusSpy = jest.spyOn(classifyBridge, 'createIdeWorkStatusSession').mockResolvedValue({
             schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
             status: 'ok',
             ide_work: validPatchServerIdeWork() as any,
             safe_error: null
         })
-        const actionSpy = jest.spyOn(classifyBridge, 'createIdeWorkActionSession')
+        const actionSpy = jest.spyOn(classifyBridge, 'createIdeWorkActionSession').mockResolvedValue({
+            schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+            status: 'ok',
+            ide_work: validPatchServerIdeWork() as any,
+            safe_error: null
+        })
 
         const statusRes = await request(app)
             .post(ideWorkStatusPath)
@@ -300,8 +305,21 @@ describe('sentinel cockpit router', () => {
             .set('Content-Type', 'application/json')
             .send({ request_kind: 'ide_work_action', action: 'request_patch_proposal' })
 
-        expect(actionRes.status).toBe(400)
-        expect(actionRes.body.error.code).toBe('ide_work_invalid_input')
+        expect(actionRes.status).toBe(200)
+        expect(actionSpy).toHaveBeenCalledWith({ request_kind: 'ide_work_action', action: 'request_patch_proposal' })
+        expect(actionRes.body.ide_work).toEqual(validPatchServerIdeWork())
+        expect(actionRes.text).not.toMatch(/diff|source code|file path|raw output|stdout|stderr/i)
+
+        actionSpy.mockClear()
+        const extraKeyRes = await request(app)
+            .post(ideWorkActionPath)
+            .set('Host', host)
+            .set('Origin', origin)
+            .set('Content-Type', 'application/json')
+            .send({ request_kind: 'ide_work_action', action: 'request_patch_proposal', workspace: 'hidden' })
+
+        expect(extraKeyRes.status).toBe(400)
+        expect(extraKeyRes.body.error.code).toBe('ide_work_invalid_input')
         expect(actionSpy).not.toHaveBeenCalled()
     })
 

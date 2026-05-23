@@ -109,6 +109,7 @@ const IDE_WORK_ALLOWED_ACTIONS = Object.freeze([
     'approve_mock_backend_work',
     'cancel_mock_backend_work',
     'request_read_only_review',
+    'request_patch_proposal',
     'none'
 ])
 const IDE_PREVIEW_STATUS_LABELS = Object.freeze({
@@ -356,7 +357,7 @@ export type ResultReviewRequest = Readonly<{
 
 export type IdeWorkActionRequest = Readonly<{
     request_kind: 'ide_work_action'
-    action: 'approve_mock_backend_work' | 'cancel_mock_backend_work' | 'request_read_only_review'
+    action: 'approve_mock_backend_work' | 'cancel_mock_backend_work' | 'request_read_only_review' | 'request_patch_proposal'
 }>
 
 export type IdeWorkStatusRequest = Readonly<{
@@ -1157,6 +1158,19 @@ function projectIdeWork(
     ) {
         return null
     }
+    const includesPatchProposalAction = allowedActions.includes('request_patch_proposal')
+    const isExactPatchProposalAction = allowedActions.length === 1 && allowedActions[0] === 'request_patch_proposal'
+    if (
+        includesPatchProposalAction &&
+        (!isExactPatchProposalAction ||
+            input.schema_version !== 'sentinel.qvc.ide_work_approval.v1' ||
+            input.state !== 'approval_pending' ||
+            input.approval_available !== true ||
+            input.cancel_available !== false ||
+            input.safe_error !== null)
+    ) {
+        return null
+    }
     const blockedActions = Array.isArray(input.blocked_actions) ? input.blocked_actions.map((action) => readIdeWorkString(action, 160)) : []
     if (!blockedActions.length || blockedActions.some((action) => !action)) {
         return null
@@ -1328,7 +1342,23 @@ function readIdeWorkBindingAction(ideWork: IdeWorkProjection | null): IdeWorkAct
     if (action === 'cancel_mock_backend_work') {
         return ideWork.cancel_available === true ? action : null
     }
+    if (action === 'request_patch_proposal') {
+        return isPatchProposalIdeWorkApproval(ideWork) ? action : null
+    }
     return null
+}
+
+function isPatchProposalIdeWorkApproval(ideWork: IdeWorkProjection): boolean {
+    return (
+        ideWork.schema_version === 'sentinel.qvc.ide_work_approval.v1' &&
+        ideWork.status === 'ok' &&
+        ideWork.state === 'approval_pending' &&
+        ideWork.approval_available === true &&
+        ideWork.cancel_available === false &&
+        ideWork.safe_error === null &&
+        ideWork.allowed_user_actions.length === 1 &&
+        ideWork.allowed_user_actions[0] === 'request_patch_proposal'
+    )
 }
 
 function claimIdeWorkBinding(requireFresh = true, action?: IdeWorkActionRequest['action']): { runId: string; sentinelSessionId: string } {
@@ -1345,6 +1375,9 @@ function claimIdeWorkBinding(requireFresh = true, action?: IdeWorkActionRequest[
     }
     if (action && binding.allowedAction !== action) {
         throw classifyBridgeError(403, 'plan_session_state_mismatch')
+    }
+    if (action === 'request_patch_proposal') {
+        ideWorkBinding = null
     }
     return binding
 }

@@ -543,13 +543,14 @@ describe('sentinel cockpit request validation', () => {
             request_kind: 'ide_work_action',
             action: 'request_read_only_review'
         })
+        expect(validateIdeWorkActionRequest({ request_kind: 'ide_work_action', action: 'request_patch_proposal' })).toEqual({
+            request_kind: 'ide_work_action',
+            action: 'request_patch_proposal'
+        })
         expect(validateIdeWorkStatusRequest({ request_kind: 'ide_work_status' })).toEqual({
             request_kind: 'ide_work_status'
         })
         expect(() => validateIdeWorkActionRequest({ request_kind: 'ide_work_action', action: 'launch_worker' })).toThrow(
-            'ide_work_invalid_input'
-        )
-        expect(() => validateIdeWorkActionRequest({ request_kind: 'ide_work_action', action: 'request_patch_proposal' })).toThrow(
             'ide_work_invalid_input'
         )
         expect(() =>
@@ -562,6 +563,11 @@ describe('sentinel cockpit request validation', () => {
         expect(() => validateIdeWorkStatusRequest({ request_kind: 'ide_work_status', run_id: 'run_hidden' })).toThrow(
             'ide_work_invalid_input'
         )
+        ;['workspace', 'path', 'source', 'diff', 'patch', 'model', 'provider', 'command', 'argv', 'token', 'gateway'].forEach((key) => {
+            expect(() =>
+                validateIdeWorkActionRequest({ request_kind: 'ide_work_action', action: 'request_patch_proposal', [key]: 'hidden' })
+            ).toThrow('ide_work_invalid_input')
+        })
     })
 })
 
@@ -1582,6 +1588,94 @@ describe('sentinel cockpit classify bridge', () => {
                 { config, fetchImpl: readOnlyFetch as any }
             )
         ).rejects.toMatchObject({ code: 'plan_session_state_mismatch' })
+    })
+
+    it('binds patch proposal only from exact projection and consumes it before replay', async () => {
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_PROJECTION: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_ACTIONS: '1'
+        })
+        const patchApproval = validGatewayIdeWork({
+            status_label: 'Patch proposal available',
+            short_summary: 'Sentinel can prepare a bounded patch proposal for review only.',
+            current_safe_step: 'Ask only if you want a review-only proposal.',
+            what_can_happen_next: 'Sentinel can return a review-required patch proposal status.',
+            what_will_not_happen: 'Nothing is accepted, applied, changed, or continued from this page.',
+            allowed_user_actions: ['request_patch_proposal'],
+            blocked_actions: ['No proposal is applied here.', 'No accepted work starts here.', 'No continuation starts here.']
+        })
+        const fetchImpl = jest
+            .fn()
+            .mockResolvedValueOnce(gatewayResponse(validGatewayClassify({ ide_work: patchApproval })))
+            .mockResolvedValueOnce(
+                gatewayResponse({
+                    schema_version: 'sentinel.gateway.v1',
+                    status: 'ok',
+                    ide_work: validGatewayPatchIdeWork()
+                })
+            )
+
+        const planSession: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
+            { config, fetchImpl: fetchImpl as any, requestId: 'req_classify_patch' }
+        )
+        expect(planSession.ide_work.allowed_user_actions).toEqual(['request_patch_proposal'])
+        expect(planSession.ide_work.approval_available).toBe(true)
+
+        const actionSession = await classifyBridge.createIdeWorkActionSession(
+            { request_kind: 'ide_work_action', action: 'request_patch_proposal' },
+            { config, fetchImpl: fetchImpl as any, requestId: 'req_patch_action' }
+        )
+        const body = JSON.parse(fetchImpl.mock.calls[1][1].body)
+        expect(body).toEqual({
+            schema_version: 'sentinel.gateway.v1',
+            request_id: 'req_patch_action',
+            client: {
+                client_type: 'flowise',
+                client_instance_id: 'flowise_sentinel_cockpit'
+            },
+            operator: {
+                operator_id: 'flowise_local_operator'
+            },
+            run_id: 'run_hidden_123',
+            sentinel_session_id: 'session_hidden_123',
+            request_kind: 'ide_work_action',
+            action: 'request_patch_proposal'
+        })
+        expect(actionSession.ide_work.state).toBe('patch_review_required')
+        expect(actionSession.ide_work.allowed_user_actions).toEqual(['none'])
+        expect(actionSession.ide_work.approval_available).toBe(false)
+        expect(actionSession.ide_work.cancel_available).toBe(false)
+        expect(actionSession.ide_work.safe_error).toBeNull()
+
+        await expect(
+            classifyBridge.createIdeWorkActionSession(
+                { request_kind: 'ide_work_action', action: 'request_patch_proposal' },
+                { config, fetchImpl: fetchImpl as any }
+            )
+        ).rejects.toMatchObject({ code: 'plan_session_not_found' })
+        expect(fetchImpl).toHaveBeenCalledTimes(2)
+    })
+
+    it('refuses near-miss patch proposal projections before binding', async () => {
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_PROJECTION: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_ACTIONS: '1'
+        })
+        const fetchImpl = jest.fn().mockResolvedValue(
+            gatewayResponse(
+                validGatewayClassify({
+                    ide_work: validGatewayIdeWork({ allowed_user_actions: ['request_patch_proposal'], approval_available: false })
+                })
+            )
+        )
+        const planSession: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
+            { config, fetchImpl: fetchImpl as any }
+        )
+        expect(planSession.ide_work).toBeUndefined()
     })
 
     it('keeps IDE work action gateway fetch open long enough for live read-only review', async () => {
