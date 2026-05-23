@@ -48,12 +48,14 @@ class LMStudioEmbedding_Embeddings implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const modelName = nodeData.inputs?.modelName as string
+        if (!modelName) throw new Error('Model Name is required for LM Studio Embeddings')
         const basePath = nodeData.inputs?.basePath as string
+        if (!basePath) throw new Error('Base Path is required for LM Studio Embeddings')
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const lmstudioApiKey = getCredentialParam('lmstudioApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIEmbeddingsParams> & { openAIApiKey?: string; configuration?: ClientOptions } = {
+        const obj: OpenAIEmbeddingsParams = {
             modelName,
             openAIApiKey: 'not-needed' // LM Studio typically doesn't require an API key
         }
