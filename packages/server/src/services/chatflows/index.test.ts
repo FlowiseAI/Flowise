@@ -247,6 +247,23 @@ describe('saveChatflow', () => {
         expect(mockRepo.save).not.toHaveBeenCalled()
     })
 
+    it('allows chatflow creation when id is undefined', async () => {
+        mockIsValidUUID.mockReturnValue(false)
+        const newFlow = makeChatflow({ id: undefined, type: EnumChatflowType.CHATFLOW, flowData: makePlainFlowData() })
+
+        await chatflowsService.saveChatflow(
+            newFlow as any,
+            SAVE_ARGS.orgId,
+            SAVE_ARGS.workspaceId,
+            SAVE_ARGS.subscriptionId,
+            SAVE_ARGS.usageCacheManager
+        )
+
+        expect(mockIsValidUUID).not.toHaveBeenCalled()
+        expect(mockRepo.findOne).not.toHaveBeenCalled()
+        expect(mockRepo.save).toHaveBeenCalled()
+    })
+
     it('throws CONFLICT when the caller-provided chatflow id already exists', async () => {
         const newFlow = makeChatflow({ type: EnumChatflowType.CHATFLOW, flowData: makePlainFlowData() })
         mockRepo.findOne.mockResolvedValueOnce({ id: FLOW_ID })

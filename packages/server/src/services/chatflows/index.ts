@@ -349,7 +349,7 @@ const saveChatflow = async (
     const appServer = getRunningExpressApp()
     const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
 
-    if (Object.prototype.hasOwnProperty.call(newChatFlow, 'id')) {
+    if (newChatFlow.id != null) {
         const chatflowId = newChatFlow.id
         if (typeof chatflowId !== 'string' || !isValidUUID(chatflowId)) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, ChatflowErrorMessage.INVALID_CHATFLOW_ID)
