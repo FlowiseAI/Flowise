@@ -1,4 +1,4 @@
-import { GovernanceContext, PolicyDecision, PolicyFile, PolicyRule, PolicyWhenCondition } from './types'
+import { GovernanceContext, PolicyDecision, PolicyFile, PolicyRule, PolicyCondition } from './types'
 
 const DEFAULT_ALLOW: PolicyDecision = {
     effect: 'allow',
@@ -148,7 +148,7 @@ function toolNameMatches(pattern: string, toolName: string): boolean {
     return pattern === toolName
 }
 
-function evaluateCondition(condition: PolicyWhenCondition, args: Record<string, unknown>, context: GovernanceContext): boolean {
+function evaluateCondition(condition: PolicyCondition, args: Record<string, unknown>, context: GovernanceContext): boolean {
     const flatArgs = flattenJsonInput(args)
     let value: unknown
     if (condition.path.startsWith('args.')) {

@@ -1,10 +1,10 @@
 export type PolicyEffect = 'allow' | 'deny' | 'escalate'
 
-export type PolicyWhenOp = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'contains' | 'not-contains' | 'starts-with' | 'regex'
+export type PolicyOp = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'contains' | 'not-contains' | 'starts-with' | 'regex'
 
-export interface PolicyWhenCondition {
+export interface PolicyCondition {
     path: string
-    op: PolicyWhenOp
+    op: PolicyOp
     value: unknown
 }
 
@@ -15,8 +15,8 @@ export interface PolicyRule {
         tool: string
     }
     message?: string
-    when?: PolicyWhenCondition[] // all conditions must match (AND)
-    anyOf?: PolicyWhenCondition[] // at least one condition must match (OR)
+    when?: PolicyCondition[] // all conditions must match (AND)
+    anyOf?: PolicyCondition[] // at least one condition must match (OR)
 }
 
 export interface PolicyFile {

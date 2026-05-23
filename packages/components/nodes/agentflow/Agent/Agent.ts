@@ -46,7 +46,6 @@ import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
 import {
     GovernanceConfig,
     GovernanceMeta,
-    GovernanceEvent,
     POLICY_DENY_PREFIX,
     auditExecute,
     auditHitl,
@@ -302,7 +301,7 @@ class Agent_Agentflow implements INode {
                 name: 'agentPolicyFilePath',
                 type: 'string',
                 description: 'Path to JSON policy file (allow / deny / escalate rules)',
-                default: './hackathon/agent-policies.json',
+                default: '/Users/riteshdubey/Developer/Github/Projects/Flowise/hackathon/agent-policies.json',
                 optional: true,
                 client: ['agentflowv2'],
                 show: {
@@ -314,7 +313,7 @@ class Agent_Agentflow implements INode {
                 name: 'agentAuditLogPath',
                 type: 'string',
                 description: 'Append-only JSONL audit log path',
-                default: './audit.jsonl',
+                default: '/Users/riteshdubey/Developer/Github/Projects/Flowise/audit.jsonl',
                 optional: true,
                 client: ['agentflowv2'],
                 show: {

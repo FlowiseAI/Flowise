@@ -4,10 +4,6 @@ import { loadPolicyFile } from './policyLoader'
 import { evaluatePolicy } from './policyEvaluator'
 import { GovernanceConfig, GovernanceEvent, PolicyDecision } from './types'
 
-// ---------------------------------------------------------------------------
-// Trace ID helpers
-// ---------------------------------------------------------------------------
-
 /**
  * Generate a short random trace ID to correlate all audit steps for a single
  * tool invocation: propose → policy_decision → [hitl] → execute → observe.
@@ -15,10 +11,6 @@ import { GovernanceConfig, GovernanceEvent, PolicyDecision } from './types'
 export function generateTraceId(): string {
     return randomBytes(8).toString('hex')
 }
-
-// ---------------------------------------------------------------------------
-// Gate input types
-// ---------------------------------------------------------------------------
 
 export interface GateToolCallInput {
     tool: string
@@ -32,10 +24,6 @@ export interface GateToolCallInput {
     /** Trace ID to correlate this gate call with its surrounding propose/execute/observe entries. */
     traceId?: string
 }
-
-// ---------------------------------------------------------------------------
-// Core gate function
-// ---------------------------------------------------------------------------
 
 export function gateToolCall(input: GateToolCallInput): PolicyDecision {
     const { tool, args, governance, sessionId, chatId, nodeId, skipAudit, traceId } = input
@@ -202,10 +190,6 @@ export function auditSessionEnd(
         nodeId: meta?.nodeId
     })
 }
-
-// ---------------------------------------------------------------------------
-// Governance event builder (for SSE streaming to the UI)
-// ---------------------------------------------------------------------------
 
 /**
  * Build a GovernanceEvent suitable for streaming to the chat UI via SSE.
