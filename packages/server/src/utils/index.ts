@@ -1585,6 +1585,16 @@ export const getEncryptionKey = async (): Promise<string> => {
             ? path.join(process.env.SECRETKEY_PATH, 'encryption.key')
             : path.join(getUserHome(), '.flowise', 'encryption.key')
         await fs.promises.writeFile(defaultLocation, encryptKey, { mode: 0o600 })
+        // writeFile's `mode` only applies when the file is newly created; if a previous run left
+        // a file at the same path with a permissive mode, the mode is NOT downgraded. Explicit
+        // chmod after the write ensures 0o600 regardless of pre-existing state. Best-effort: a
+        // chmod failure on non-POSIX filesystems shouldn't block key generation.
+        try {
+            await fs.promises.chmod(defaultLocation, 0o600)
+        } catch (chmodError) {
+            // Non-fatal: log but don't fail. Pre-existing files on POSIX systems will already be
+            // chmodded; non-POSIX (Windows) filesystems silently ignore POSIX modes anyway.
+        }
         return encryptKey
     }
 }
