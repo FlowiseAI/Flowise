@@ -45,7 +45,22 @@ function validServerIdePreview() {
     }
 }
 
-function validPatchServerIdeWork() {
+function validPatchReviewPacket(overrides: Record<string, unknown> = {}) {
+    return {
+        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v1',
+        review_mode: 'metadata_only',
+        packet_retained: true,
+        review_packet_status: 'metadata_only',
+        changed_file_count: 2,
+        added_line_count: 8,
+        deleted_line_count: 3,
+        diff_bytes: 512,
+        retention_label: 'Retained briefly for review only.',
+        ...overrides
+    }
+}
+
+function validPatchServerIdeWork(overrides: Record<string, unknown> = {}) {
     return {
         schema_version: 'sentinel.qvc.ide_work_result_patch_review_required.v1',
         status: 'ok',
@@ -64,7 +79,9 @@ function validPatchServerIdeWork() {
         terminal_note: 'Nothing was accepted or applied here.',
         allowed_user_actions: ['none'],
         blocked_actions: ['No controls are available here.', 'No changes start from this page.'],
-        safe_error: null
+        safe_error: null,
+        patch_review_packet: null,
+        ...overrides
     }
 }
 
@@ -272,16 +289,17 @@ describe('sentinel cockpit router', () => {
     })
 
     it('serves display-only patch review status and accepts only exact patch action route request', async () => {
+        const patchIdeWork = validPatchServerIdeWork({ patch_review_packet: validPatchReviewPacket() })
         const statusSpy = jest.spyOn(classifyBridge, 'createIdeWorkStatusSession').mockResolvedValue({
             schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
             status: 'ok',
-            ide_work: validPatchServerIdeWork() as any,
+            ide_work: patchIdeWork as any,
             safe_error: null
         })
         const actionSpy = jest.spyOn(classifyBridge, 'createIdeWorkActionSession').mockResolvedValue({
             schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
             status: 'ok',
-            ide_work: validPatchServerIdeWork() as any,
+            ide_work: patchIdeWork as any,
             safe_error: null
         })
 
@@ -294,9 +312,9 @@ describe('sentinel cockpit router', () => {
 
         expect(statusSpy).toHaveBeenCalledWith({ request_kind: 'ide_work_status' })
         expect(statusRes.status).toBe(200)
-        expect(statusRes.body.ide_work).toEqual(validPatchServerIdeWork())
+        expect(statusRes.body.ide_work).toEqual(patchIdeWork)
         expect(statusRes.text).not.toContain('request_patch_proposal')
-        expect(statusRes.text).not.toMatch(/diff|source code|file path|raw output|stdout|stderr/i)
+        expect(statusRes.text).not.toMatch(/diff_text|source code|file path|raw output|stdout|stderr/i)
 
         const actionRes = await request(app)
             .post(ideWorkActionPath)
@@ -307,8 +325,8 @@ describe('sentinel cockpit router', () => {
 
         expect(actionRes.status).toBe(200)
         expect(actionSpy).toHaveBeenCalledWith({ request_kind: 'ide_work_action', action: 'request_patch_proposal' })
-        expect(actionRes.body.ide_work).toEqual(validPatchServerIdeWork())
-        expect(actionRes.text).not.toMatch(/diff|source code|file path|raw output|stdout|stderr/i)
+        expect(actionRes.body.ide_work).toEqual(patchIdeWork)
+        expect(actionRes.text).not.toMatch(/diff_text|source code|file path|raw output|stdout|stderr/i)
 
         actionSpy.mockClear()
         const extraKeyRes = await request(app)

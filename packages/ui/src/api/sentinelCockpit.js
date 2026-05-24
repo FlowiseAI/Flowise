@@ -115,8 +115,24 @@ const IDE_WORK_KEYS = Object.freeze([
     'terminal_note',
     'allowed_user_actions',
     'blocked_actions',
+    'patch_review_packet',
     'safe_error'
 ])
+const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
+    'schema_version',
+    'review_mode',
+    'packet_retained',
+    'review_packet_status',
+    'changed_file_count',
+    'added_line_count',
+    'deleted_line_count',
+    'diff_bytes',
+    'retention_label'
+])
+const IDE_WORK_PATCH_MAX_CHANGED_FILES = 3
+const IDE_WORK_PATCH_MAX_CHANGED_LINES = 50
+const IDE_WORK_PATCH_MAX_DIFF_BYTES = 10 * 1024
+const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for review only.'
 const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
@@ -688,6 +704,8 @@ function narrowIdeWork(value) {
     ) {
         return null
     }
+    const patchReviewPacket = narrowPatchReviewPacket(value.patch_review_packet, isPatchReviewRequiredSchema)
+    if (patchReviewPacket === undefined) return null
     const includesPatchProposalAction = value.allowed_user_actions.includes('request_patch_proposal')
     const isExactPatchProposalAction = value.allowed_user_actions.length === 1 && value.allowed_user_actions[0] === 'request_patch_proposal'
     if (
@@ -721,6 +739,7 @@ function narrowIdeWork(value) {
         terminal_note: value.terminal_note === null ? null : readIdePreviewString(value.terminal_note, 180),
         allowed_user_actions: [...value.allowed_user_actions],
         blocked_actions: value.blocked_actions.map((action) => readIdePreviewString(action, 180)),
+        patch_review_packet: patchReviewPacket,
         safe_error: value.safe_error === null ? null : readIdePreviewString(value.safe_error, 80)
     }
     if (
@@ -736,7 +755,52 @@ function narrowIdeWork(value) {
     ) {
         return null
     }
-    return IDE_WORK_FORBIDDEN_TEXT.test(JSON.stringify(work)) ? null : work
+    return IDE_WORK_FORBIDDEN_TEXT.test(JSON.stringify({ ...work, patch_review_packet: null })) ? null : work
+}
+
+function narrowPatchReviewPacket(value, isPatchReviewRequired) {
+    if (value === null) return null
+    if (!isPatchReviewRequired || !isPlainRecord(value)) return undefined
+    const keys = Object.keys(value)
+    if (keys.length !== IDE_WORK_PATCH_REVIEW_PACKET_KEYS.length || keys.some((key) => !IDE_WORK_PATCH_REVIEW_PACKET_KEYS.includes(key))) {
+        return undefined
+    }
+    if (
+        value.schema_version !== 'sentinel.qvc.ide_work_patch_review_packet.v1' ||
+        value.review_mode !== 'metadata_only' ||
+        value.packet_retained !== true ||
+        value.review_packet_status !== 'metadata_only'
+    ) {
+        return undefined
+    }
+    const changedFileCount = readBoundedIdeWorkInteger(value.changed_file_count, 1, IDE_WORK_PATCH_MAX_CHANGED_FILES)
+    const addedLineCount = readBoundedIdeWorkInteger(value.added_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
+    const deletedLineCount = readBoundedIdeWorkInteger(value.deleted_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
+    const diffBytes = readBoundedIdeWorkInteger(value.diff_bytes, 1, IDE_WORK_PATCH_MAX_DIFF_BYTES)
+    if (
+        changedFileCount === null ||
+        addedLineCount === null ||
+        deletedLineCount === null ||
+        diffBytes === null ||
+        value.retention_label !== IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL
+    ) {
+        return undefined
+    }
+    return {
+        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v1',
+        review_mode: 'metadata_only',
+        packet_retained: true,
+        review_packet_status: 'metadata_only',
+        changed_file_count: changedFileCount,
+        added_line_count: addedLineCount,
+        deleted_line_count: deletedLineCount,
+        diff_bytes: diffBytes,
+        retention_label: IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL
+    }
+}
+
+function readBoundedIdeWorkInteger(value, min, max) {
+    return Number.isSafeInteger(value) && value >= min && value <= max ? value : null
 }
 
 function readIdePreviewString(value, maxLength) {

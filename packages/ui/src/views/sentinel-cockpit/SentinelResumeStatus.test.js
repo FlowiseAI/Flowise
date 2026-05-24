@@ -130,7 +130,21 @@ const safeIdeWork = (overrides = {}) => ({
     terminal_note: null,
     allowed_user_actions: ['approve_mock_backend_work'],
     blocked_actions: ['No files are edited here.', 'No worker is launched here.', 'No system actions start here.'],
+    patch_review_packet: null,
     safe_error: null,
+    ...overrides
+})
+
+const safePatchReviewPacket = (overrides = {}) => ({
+    schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v1',
+    review_mode: 'metadata_only',
+    packet_retained: true,
+    review_packet_status: 'metadata_only',
+    changed_file_count: 1,
+    added_line_count: 1,
+    deleted_line_count: 1,
+    diff_bytes: 128,
+    retention_label: 'Retained briefly for review only.',
     ...overrides
 })
 
@@ -923,7 +937,7 @@ describe('SentinelResumeStatus', () => {
     })
 
     it('renders patch review required as a passive display-only card', async () => {
-        const patchIdeWork = safePatchIdeWork()
+        const patchIdeWork = safePatchIdeWork({ patch_review_packet: safePatchReviewPacket() })
         const snapshot = safePlanSession({ ide_work: patchIdeWork })
         const html = renderToStaticMarkup(
             <PlanSessionCard snapshot={snapshot} canApproveMockWork canCancelMockWork canRequestReadOnlyReview isLoading={false} />
@@ -932,6 +946,11 @@ describe('SentinelResumeStatus', () => {
         expect(html).toContain('Patch proposal review required')
         expect(html).toContain('Patch proposal needs review. Nothing was accepted or applied here.')
         expect(html).toContain('Patch review status')
+        expect(html).toContain('Patch review packet metadata')
+        expect(html).toContain('Metadata retained')
+        expect(html).toContain('Changed files')
+        expect(html).toContain('Packet bytes')
+        expect(html).toContain('Retained briefly for review only.')
         expect(html).toContain('This card is passive and has no action controls.')
         expect(html).not.toContain('Safe mock check')
         expect(html).not.toContain('Read-only review')
@@ -994,6 +1013,22 @@ describe('SentinelResumeStatus', () => {
         )
         expect(blockedHtml).not.toContain('Patch proposal review required')
         expect(blockedHtml).not.toContain('source code')
+
+        ;['src/one.mjs', 'diff --git a/src/one.mjs', 'patch_id: packet_hidden', 'provider model metadata', 'command: git diff'].forEach(
+            (retentionLabel) => {
+                const unsafePacketHtml = renderToStaticMarkup(
+                    <PlanSessionCard
+                        snapshot={safePlanSession({
+                            ide_work: safePatchIdeWork({
+                                patch_review_packet: safePatchReviewPacket({ retention_label: retentionLabel })
+                            })
+                        })}
+                    />
+                )
+                expect(unsafePacketHtml).not.toContain('Patch proposal review required')
+                expect(unsafePacketHtml).not.toContain(retentionLabel)
+            }
+        )
     })
 
     it('posts only a safe mock-check action and displays the returned status', async () => {

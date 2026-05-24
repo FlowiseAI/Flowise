@@ -90,6 +90,21 @@ const ROUTE_CARD_FORBIDDEN_TEXT =
     /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:/i
 const IDE_WORK_FORBIDDEN_TEXT =
     /run_[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_id|approval_challenge|approval_challenge_hash|plan_id|task_id|task_packet|result_packet|evidence_manifest|copyable_worker_prompt|gateway|bearer|authorization|token|client_nonce|cockpit_ref|sha256:|127\.0\.0\.1|localhost|:39173|provider|model|confidence|selected\s+worker|active\s+agent|agent\s+started|running\s+task|tool\s+call|command\s*[:=]|action_inputs|adapter|argv|nonce|hash|path|diff|raw\s+output|stdout|stderr|source\s+code|source\s+snippet/i
+const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
+    'schema_version',
+    'review_mode',
+    'packet_retained',
+    'review_packet_status',
+    'changed_file_count',
+    'added_line_count',
+    'deleted_line_count',
+    'diff_bytes',
+    'retention_label'
+])
+const IDE_WORK_PATCH_MAX_CHANGED_FILES = 3
+const IDE_WORK_PATCH_MAX_CHANGED_LINES = 50
+const IDE_WORK_PATCH_MAX_DIFF_BYTES = 10 * 1024
+const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for review only.'
 
 const displayRows = [
     ['Current status', 'state'],
@@ -1029,8 +1044,24 @@ function PatchReviewRequiredCard({ ideWork, rows }) {
                     </div>
                 </div>
             ) : null}
+            {ideWork?.patch_review_packet ? <PatchReviewPacketMetadata packet={ideWork.patch_review_packet} /> : null}
             <p style={{ ...pageStyles.idePreviewCopy, marginBottom: 0 }}>This card is passive and has no action controls.</p>
         </section>
+    )
+}
+
+function PatchReviewPacketMetadata({ packet }) {
+    const rows = readPatchReviewPacketRows(packet)
+    if (!rows.length) return null
+    return (
+        <div style={pageStyles.idePreviewGrid} aria-label='Patch review packet metadata'>
+            {rows.map(([label, value]) => (
+                <div key={label} style={pageStyles.idePreviewRow}>
+                    <div style={pageStyles.idePreviewLabel}>{label}</div>
+                    <div style={pageStyles.idePreviewValue}>{value}</div>
+                </div>
+            ))}
+        </div>
     )
 }
 
@@ -1672,6 +1703,8 @@ function isSafeIdeWorkProjection(ideWork) {
     ) {
         return false
     }
+    const patchReviewPacket = readPatchReviewPacket(ideWork.patch_review_packet, isPatchReviewRequiredSchema)
+    if (patchReviewPacket === undefined) return false
     const includesPatchProposalAction = ideWork.allowed_user_actions.includes('request_patch_proposal')
     const isExactPatchProposalAction =
         ideWork.allowed_user_actions.length === 1 && ideWork.allowed_user_actions[0] === 'request_patch_proposal'
@@ -1705,7 +1738,65 @@ function isSafeIdeWorkProjection(ideWork) {
         if (ideWork[key] !== null && !readRouteCardString(ideWork[key], 180)) return false
     }
     if (ideWork.blocked_actions.some((item) => !readRouteCardString(item, 180))) return false
-    return IDE_WORK_FORBIDDEN_TEXT.test(JSON.stringify(ideWork)) ? false : true
+    return IDE_WORK_FORBIDDEN_TEXT.test(JSON.stringify({ ...ideWork, patch_review_packet: null })) ? false : true
+}
+
+function readPatchReviewPacketRows(packet) {
+    const safePacket = readPatchReviewPacket(packet, true)
+    if (!safePacket) return []
+    return [
+        ['Packet status', 'Metadata retained'],
+        ['Changed files', String(safePacket.changed_file_count)],
+        ['Added lines', String(safePacket.added_line_count)],
+        ['Removed lines', String(safePacket.deleted_line_count)],
+        ['Packet bytes', String(safePacket.diff_bytes)],
+        ['Retention', safePacket.retention_label]
+    ]
+}
+
+function readPatchReviewPacket(value, isPatchReviewRequired) {
+    if (value === null) return null
+    if (!isPatchReviewRequired || !isPlainRecord(value)) return undefined
+    const keys = Object.keys(value)
+    if (keys.length !== IDE_WORK_PATCH_REVIEW_PACKET_KEYS.length || keys.some((key) => !IDE_WORK_PATCH_REVIEW_PACKET_KEYS.includes(key))) {
+        return undefined
+    }
+    if (
+        value.schema_version !== 'sentinel.qvc.ide_work_patch_review_packet.v1' ||
+        value.review_mode !== 'metadata_only' ||
+        value.packet_retained !== true ||
+        value.review_packet_status !== 'metadata_only'
+    ) {
+        return undefined
+    }
+    const changedFileCount = readBoundedIdeWorkInteger(value.changed_file_count, 1, IDE_WORK_PATCH_MAX_CHANGED_FILES)
+    const addedLineCount = readBoundedIdeWorkInteger(value.added_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
+    const deletedLineCount = readBoundedIdeWorkInteger(value.deleted_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
+    const diffBytes = readBoundedIdeWorkInteger(value.diff_bytes, 1, IDE_WORK_PATCH_MAX_DIFF_BYTES)
+    if (
+        changedFileCount === null ||
+        addedLineCount === null ||
+        deletedLineCount === null ||
+        diffBytes === null ||
+        value.retention_label !== IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL
+    ) {
+        return undefined
+    }
+    return {
+        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v1',
+        review_mode: 'metadata_only',
+        packet_retained: true,
+        review_packet_status: 'metadata_only',
+        changed_file_count: changedFileCount,
+        added_line_count: addedLineCount,
+        deleted_line_count: deletedLineCount,
+        diff_bytes: diffBytes,
+        retention_label: IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL
+    }
+}
+
+function readBoundedIdeWorkInteger(value, min, max) {
+    return Number.isSafeInteger(value) && value >= min && value <= max ? value : null
 }
 
 function readRouteCardString(value, maxLength) {

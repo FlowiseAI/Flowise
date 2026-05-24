@@ -92,11 +92,28 @@ const IDE_WORK_KEYS = Object.freeze([
     'terminal_note',
     'allowed_user_actions',
     'blocked_actions',
+    'patch_review_packet',
     'safe_error'
 ])
 const IDE_WORK_RESPONSE_KEYS = Object.freeze(['schema_version', 'status', IDE_WORK_KEY, 'safe_error'])
 const IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION = 'sentinel.qvc.ide_work_result_patch_review_required.v1'
 const IDE_WORK_PATCH_REVIEW_REQUIRED_STATE = 'patch_review_required'
+const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v1'
+const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
+    'schema_version',
+    'review_mode',
+    'packet_retained',
+    'review_packet_status',
+    'changed_file_count',
+    'added_line_count',
+    'deleted_line_count',
+    'diff_bytes',
+    'retention_label'
+])
+const IDE_WORK_PATCH_MAX_CHANGED_FILES = 3
+const IDE_WORK_PATCH_MAX_CHANGED_LINES = 50
+const IDE_WORK_PATCH_MAX_DIFF_BYTES = 10 * 1024
+const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for review only.'
 const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
@@ -1108,6 +1125,7 @@ function validateIdeWork(ideWork: unknown) {
     ) {
         throw httpError(500, 'invalid_snapshot')
     }
+    validatePatchReviewPacket(work.patch_review_packet, isPatchReviewRequiredSchema)
     const includesPatchProposalAction = work.allowed_user_actions.includes('request_patch_proposal')
     const isExactPatchProposalAction = work.allowed_user_actions.length === 1 && work.allowed_user_actions[0] === 'request_patch_proposal'
     if (
@@ -1138,8 +1156,38 @@ function validateIdeWork(ideWork: unknown) {
     if (Buffer.byteLength(JSON.stringify(work)) > 4096) {
         throw httpError(500, 'invalid_snapshot')
     }
-    const lower = JSON.stringify(work).toLowerCase()
+    const lower = JSON.stringify({ ...work, patch_review_packet: null }).toLowerCase()
     if (IDE_WORK_FORBIDDEN_FRAGMENTS.some((fragment) => lower.includes(fragment))) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validatePatchReviewPacket(value: unknown, isPatchReviewRequired: boolean) {
+    if (value === null) return
+    if (!isPatchReviewRequired || !value || typeof value !== 'object' || Array.isArray(value)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const packet = value as Record<string, unknown>
+    assertResponseKeys(packet, IDE_WORK_PATCH_REVIEW_PACKET_KEYS)
+    if (
+        packet.schema_version !== IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION ||
+        packet.review_mode !== 'metadata_only' ||
+        packet.packet_retained !== true ||
+        packet.review_packet_status !== 'metadata_only'
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    validateBoundedIdeWorkInteger(packet.changed_file_count, 1, IDE_WORK_PATCH_MAX_CHANGED_FILES)
+    validateBoundedIdeWorkInteger(packet.added_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
+    validateBoundedIdeWorkInteger(packet.deleted_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
+    validateBoundedIdeWorkInteger(packet.diff_bytes, 1, IDE_WORK_PATCH_MAX_DIFF_BYTES)
+    if (packet.retention_label !== IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validateBoundedIdeWorkInteger(value: unknown, min: number, max: number) {
+    if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < min || value > max) {
         throw httpError(500, 'invalid_snapshot')
     }
 }

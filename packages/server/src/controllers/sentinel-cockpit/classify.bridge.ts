@@ -23,6 +23,22 @@ export const IDE_WORK_KEY = 'ide_work'
 export const IDE_WORK_BRIDGE_SCHEMA_VERSION = 'sentinel.cockpit_bridge.ide_work.v1'
 const IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION = 'sentinel.qvc.ide_work_result_patch_review_required.v1'
 const IDE_WORK_PATCH_REVIEW_REQUIRED_STATE = 'patch_review_required'
+const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v1'
+const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
+    'schema_version',
+    'review_mode',
+    'packet_retained',
+    'review_packet_status',
+    'changed_file_count',
+    'added_line_count',
+    'deleted_line_count',
+    'diff_bytes',
+    'retention_label'
+])
+const IDE_WORK_PATCH_MAX_CHANGED_FILES = 3
+const IDE_WORK_PATCH_MAX_CHANGED_LINES = 50
+const IDE_WORK_PATCH_MAX_DIFF_BYTES = 10 * 1024
+const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for review only.'
 export const IDE_WORK_GATEWAY_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
@@ -88,6 +104,7 @@ const IDE_WORK_RAW_KEYS = Object.freeze([
     'terminal_note',
     'allowed_user_actions',
     'blocked_actions',
+    'patch_review_packet',
     'safe_error'
 ])
 const IDE_WORK_REDUCED_KEYS = IDE_WORK_RAW_KEYS
@@ -291,7 +308,20 @@ export type IdeWorkProjection = Readonly<{
     terminal_note: string | null
     allowed_user_actions: string[]
     blocked_actions: string[]
+    patch_review_packet: PatchReviewPacketMetadata | null
     safe_error: string | null
+}>
+
+export type PatchReviewPacketMetadata = Readonly<{
+    schema_version: typeof IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION
+    review_mode: 'metadata_only'
+    packet_retained: true
+    review_packet_status: 'metadata_only'
+    changed_file_count: number
+    added_line_count: number
+    deleted_line_count: number
+    diff_bytes: number
+    retention_label: string
 }>
 
 export type ClassifyBridgeErrorCode =
@@ -1158,6 +1188,10 @@ function projectIdeWork(
     ) {
         return null
     }
+    const patchReviewPacket = projectPatchReviewPacket(input.patch_review_packet, isPatchReviewRequiredSchema)
+    if (patchReviewPacket === undefined) {
+        return null
+    }
     const includesPatchProposalAction = allowedActions.includes('request_patch_proposal')
     const isExactPatchProposalAction = allowedActions.length === 1 && allowedActions[0] === 'request_patch_proposal'
     if (
@@ -1193,12 +1227,56 @@ function projectIdeWork(
         terminal_note: input.terminal_note === null ? null : readIdeWorkString(input.terminal_note, 180),
         allowed_user_actions: actionsEnabled ? allowedActions : ['none'],
         blocked_actions: blockedActions as string[],
+        patch_review_packet: patchReviewPacket,
         safe_error: input.safe_error === null ? null : readIdeWorkString(input.safe_error, 80)
     }
     if (output.review_required_note === undefined || output.terminal_note === undefined || output.safe_error === undefined) {
         return null
     }
     return ideWorkHasForbiddenText(output) ? null : output
+}
+
+function projectPatchReviewPacket(value: unknown, isPatchReviewRequired: boolean): PatchReviewPacketMetadata | null | undefined {
+    if (value === null) return null
+    if (!isPatchReviewRequired || !value || typeof value !== 'object' || Array.isArray(value)) return undefined
+    const packet = value as Record<string, unknown>
+    if (!keysMatch(packet, IDE_WORK_PATCH_REVIEW_PACKET_KEYS)) return undefined
+    if (
+        packet.schema_version !== IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION ||
+        packet.review_mode !== 'metadata_only' ||
+        packet.packet_retained !== true ||
+        packet.review_packet_status !== 'metadata_only'
+    ) {
+        return undefined
+    }
+    const changedFileCount = readBoundedIdeWorkInteger(packet.changed_file_count, 1, IDE_WORK_PATCH_MAX_CHANGED_FILES)
+    const addedLineCount = readBoundedIdeWorkInteger(packet.added_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
+    const deletedLineCount = readBoundedIdeWorkInteger(packet.deleted_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
+    const diffBytes = readBoundedIdeWorkInteger(packet.diff_bytes, 1, IDE_WORK_PATCH_MAX_DIFF_BYTES)
+    if (
+        changedFileCount === null ||
+        addedLineCount === null ||
+        deletedLineCount === null ||
+        diffBytes === null ||
+        packet.retention_label !== IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL
+    ) {
+        return undefined
+    }
+    return {
+        schema_version: IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION,
+        review_mode: 'metadata_only',
+        packet_retained: true,
+        review_packet_status: 'metadata_only',
+        changed_file_count: changedFileCount,
+        added_line_count: addedLineCount,
+        deleted_line_count: deletedLineCount,
+        diff_bytes: diffBytes,
+        retention_label: IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL
+    }
+}
+
+function readBoundedIdeWorkInteger(value: unknown, min: number, max: number): number | null {
+    return typeof value === 'number' && Number.isSafeInteger(value) && value >= min && value <= max ? value : null
 }
 
 function readIdeWorkString(value: unknown, maxLength: number): string | null {

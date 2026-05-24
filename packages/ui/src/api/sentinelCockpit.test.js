@@ -123,7 +123,21 @@ const validIdeWork = (overrides = {}) => ({
     terminal_note: null,
     allowed_user_actions: ['approve_mock_backend_work'],
     blocked_actions: ['No files are edited here.', 'No worker is launched here.', 'No system actions start here.'],
+    patch_review_packet: null,
     safe_error: null,
+    ...overrides
+})
+
+const validPatchReviewPacket = (overrides = {}) => ({
+    schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v1',
+    review_mode: 'metadata_only',
+    packet_retained: true,
+    review_packet_status: 'metadata_only',
+    changed_file_count: 1,
+    added_line_count: 1,
+    deleted_line_count: 1,
+    diff_bytes: 128,
+    retention_label: 'Retained briefly for review only.',
     ...overrides
 })
 
@@ -884,7 +898,7 @@ describe('sentinelCockpit API wrapper', () => {
                 validPlanSession({
                     route_card: validRouteCard(),
                     ide_preview: validIdePreview(),
-                    ide_work: validPatchIdeWork()
+                    ide_work: validPatchIdeWork({ patch_review_packet: validPatchReviewPacket() })
                 })
             )
         )
@@ -897,11 +911,12 @@ describe('sentinelCockpit API wrapper', () => {
             { fetchImpl }
         )
 
-        expect(session.ide_work).toEqual(validPatchIdeWork())
+        expect(session.ide_work).toEqual(validPatchIdeWork({ patch_review_packet: validPatchReviewPacket() }))
         expect(session.ide_work.allowed_user_actions).toEqual(['none'])
         expect(session.ide_work.approval_available).toBe(false)
         expect(session.ide_work.cancel_available).toBe(false)
-        expect(JSON.stringify(session.ide_work)).not.toMatch(/request_patch_proposal|diff|source code|file path|raw output|stdout|stderr/i)
+        expect(session.ide_work.patch_review_packet).toEqual(validPatchReviewPacket())
+        expect(JSON.stringify(session.ide_work)).not.toMatch(/request_patch_proposal|diff_text|source code|file path|raw output|stdout|stderr/i)
     })
 
     it('preserves exact patch proposal approval work without leaking source or raw output', async () => {
@@ -955,6 +970,15 @@ describe('sentinelCockpit API wrapper', () => {
         ['actionful patch terminal', validPatchIdeWork({ approval_available: true, allowed_user_actions: ['approve_mock_backend_work'] })],
         ['cancellable patch terminal', validPatchIdeWork({ cancel_available: true, allowed_user_actions: ['cancel_mock_backend_work'] })],
         ['safe error patch terminal', validPatchIdeWork({ safe_error: 'Patch proposal failed closed.' })],
+        ['packet handle', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ patch_id: 'packet_hidden' }) })],
+        ['packet path', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ file_path: 'src/one.mjs' }) })],
+        ['packet label path', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'src/one.mjs' }) })],
+        ['packet label diff', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'diff --git a/src/one.mjs' }) })],
+        ['packet label handle', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'patch_id: packet_hidden' }) })],
+        ['packet label provider', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'provider model metadata' }) })],
+        ['packet label command', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'command: git diff' }) })],
+        ['packet over file limit', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ changed_file_count: 4 }) })],
+        ['packet on nonterminal', validIdeWork({ patch_review_packet: validPatchReviewPacket() })],
         ['leaky patch terminal', validPatchIdeWork({ short_summary: 'The unified diff should not display.' })],
         ['source code patch terminal', validPatchIdeWork({ short_summary: 'The source code should not display.' })],
         ['schema-state mismatch', validPatchIdeWork({ state: 'review_required' })]
