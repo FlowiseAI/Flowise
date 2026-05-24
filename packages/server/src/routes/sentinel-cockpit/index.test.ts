@@ -47,11 +47,12 @@ function validServerIdePreview() {
 
 function validPatchReviewPacket(overrides: Record<string, unknown> = {}) {
     return {
-        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v1',
-        review_mode: 'metadata_only',
+        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v2',
+        review_mode: 'paths_only',
         packet_retained: true,
-        review_packet_status: 'metadata_only',
+        review_packet_status: 'paths_only',
         changed_file_count: 2,
+        changed_files_list: ['src/one.mjs', 'src/sentinel-gateway/qvc-ide-patch-workspace.mjs'],
         added_line_count: 8,
         deleted_line_count: 3,
         diff_bytes: 512,
@@ -313,6 +314,8 @@ describe('sentinel cockpit router', () => {
         expect(statusSpy).toHaveBeenCalledWith({ request_kind: 'ide_work_status' })
         expect(statusRes.status).toBe(200)
         expect(statusRes.body.ide_work).toEqual(patchIdeWork)
+        expect(statusRes.text).toContain('src/one.mjs')
+        expect(statusRes.text).toContain('src/sentinel-gateway/qvc-ide-patch-workspace.mjs')
         expect(statusRes.text).not.toContain('request_patch_proposal')
         expect(statusRes.text).not.toMatch(/diff_text|source code|file path|raw output|stdout|stderr/i)
 
@@ -326,6 +329,8 @@ describe('sentinel cockpit router', () => {
         expect(actionRes.status).toBe(200)
         expect(actionSpy).toHaveBeenCalledWith({ request_kind: 'ide_work_action', action: 'request_patch_proposal' })
         expect(actionRes.body.ide_work).toEqual(patchIdeWork)
+        expect(actionRes.text).toContain('src/one.mjs')
+        expect(actionRes.text).toContain('src/sentinel-gateway/qvc-ide-patch-workspace.mjs')
         expect(actionRes.text).not.toMatch(/diff_text|source code|file path|raw output|stdout|stderr/i)
 
         actionSpy.mockClear()

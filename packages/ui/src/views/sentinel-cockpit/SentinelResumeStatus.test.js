@@ -136,11 +136,12 @@ const safeIdeWork = (overrides = {}) => ({
 })
 
 const safePatchReviewPacket = (overrides = {}) => ({
-    schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v1',
-    review_mode: 'metadata_only',
+    schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v2',
+    review_mode: 'paths_only',
     packet_retained: true,
-    review_packet_status: 'metadata_only',
+    review_packet_status: 'paths_only',
     changed_file_count: 1,
+    changed_files_list: ['src/one.mjs'],
     added_line_count: 1,
     deleted_line_count: 1,
     diff_bytes: 128,
@@ -947,8 +948,10 @@ describe('SentinelResumeStatus', () => {
         expect(html).toContain('Patch proposal needs review. Nothing was accepted or applied here.')
         expect(html).toContain('Patch review status')
         expect(html).toContain('Patch review packet metadata')
-        expect(html).toContain('Metadata retained')
+        expect(html).toContain('Path list retained')
         expect(html).toContain('Changed files')
+        expect(html).toContain('Changed paths')
+        expect(html).toContain('src/one.mjs')
         expect(html).toContain('Packet bytes')
         expect(html).toContain('Retained briefly for review only.')
         expect(html).toContain('This card is passive and has no action controls.')
@@ -959,7 +962,7 @@ describe('SentinelResumeStatus', () => {
         expect(html).not.toContain('<form')
         expect(html).not.toContain('<input')
         expect(html).not.toMatch(
-            /request_patch_proposal|request_read_only_review|approve_mock_backend_work|cancel_mock_backend_work|run_|sentinel_session|session_id|client_nonce|cockpit_ref|gateway|token|authorization|task_packet|diff|source code|file path|raw output|stdout|stderr/i
+            /request_patch_proposal|request_read_only_review|approve_mock_backend_work|cancel_mock_backend_work|run_|sentinel_session|session_id|client_nonce|cockpit_ref|gateway|token|authorization|task_packet|diff_text|source code|file path|raw output|stdout|stderr/i
         )
         expect(canUseIdeWorkAction(snapshot, 'request_patch_proposal')).toBe(false)
         expect(canUseIdeWorkAction(snapshot, 'request_read_only_review')).toBe(false)
@@ -982,7 +985,7 @@ describe('SentinelResumeStatus', () => {
         expect(approvalHtml).toContain('Nothing is accepted, applied, continued, or changed from this page.')
         expect(approvalHtml).not.toContain('Read-only review')
         expect(approvalHtml).not.toContain('Safe mock check')
-        expect(approvalHtml).not.toMatch(/diff|source code|file path|raw output|stdout|stderr|commit|push|Create PR/i)
+        expect(approvalHtml).not.toMatch(/diff_text|source code|file path|raw output|stdout|stderr|commit|push|Create PR/i)
         ;[
             safePatchApprovalIdeWork({ approval_available: false }),
             safePatchApprovalIdeWork({ cancel_available: true }),
@@ -1013,7 +1016,6 @@ describe('SentinelResumeStatus', () => {
         )
         expect(blockedHtml).not.toContain('Patch proposal review required')
         expect(blockedHtml).not.toContain('source code')
-
         ;['src/one.mjs', 'diff --git a/src/one.mjs', 'patch_id: packet_hidden', 'provider model metadata', 'command: git diff'].forEach(
             (retentionLabel) => {
                 const unsafePacketHtml = renderToStaticMarkup(
@@ -1029,6 +1031,45 @@ describe('SentinelResumeStatus', () => {
                 expect(unsafePacketHtml).not.toContain(retentionLabel)
             }
         )
+        ;[
+            { changed_files_list: undefined },
+            { changed_files_list: ['src/one.mjs', 'src/two.mjs'] },
+            { changed_file_count: 2, changed_files_list: ['src/one.mjs', 'src/one.mjs'] },
+            { changed_files_list: ['src/one file.mjs'] },
+            { changed_files_list: ['src/diff.patch'] },
+            { changed_files_list: ['src/gateway/client.mjs'] },
+            { changed_files_list: ['src/sentinel-gateway/gateway-client.mjs'] },
+            { changed_files_list: ['.github/workflows/build.yml'] },
+            { changed_files_list: ['node_modules/pkg/index.js'] },
+            { changed_files_list: ['pnpm-lock.yaml'] }
+        ].forEach((packetOverrides) => {
+            const unsafePathHtml = renderToStaticMarkup(
+                <PlanSessionCard
+                    snapshot={safePlanSession({
+                        ide_work: safePatchIdeWork({
+                            patch_review_packet: safePatchReviewPacket(packetOverrides)
+                        })
+                    })}
+                />
+            )
+
+            expect(unsafePathHtml).not.toContain('Patch proposal review required')
+        })
+    })
+
+    it('renders approved sentinel-gateway paths without enabling patch actions', () => {
+        const packet = safePatchReviewPacket({
+            changed_files_list: ['src/sentinel-gateway/qvc-ide-patch-workspace.mjs']
+        })
+        const html = renderToStaticMarkup(
+            <PlanSessionCard snapshot={safePlanSession({ ide_work: safePatchIdeWork({ patch_review_packet: packet }) })} />
+        )
+
+        expect(html).toContain('Patch proposal review required')
+        expect(html).toContain('src/sentinel-gateway/qvc-ide-patch-workspace.mjs')
+        expect(html).not.toContain('<button')
+        expect(html).not.toContain('<a ')
+        expect(html).not.toMatch(/request_patch_proposal|diff_text|source code|file path|raw output|stdout|stderr/i)
     })
 
     it('posts only a safe mock-check action and displays the returned status', async () => {

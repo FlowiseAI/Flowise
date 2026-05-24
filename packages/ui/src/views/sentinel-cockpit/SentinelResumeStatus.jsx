@@ -96,6 +96,7 @@ const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
     'packet_retained',
     'review_packet_status',
     'changed_file_count',
+    'changed_files_list',
     'added_line_count',
     'deleted_line_count',
     'diff_bytes',
@@ -105,6 +106,31 @@ const IDE_WORK_PATCH_MAX_CHANGED_FILES = 3
 const IDE_WORK_PATCH_MAX_CHANGED_LINES = 50
 const IDE_WORK_PATCH_MAX_DIFF_BYTES = 10 * 1024
 const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for review only.'
+const IDE_WORK_PATCH_REVIEW_PATH_PATTERN = /^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/
+const IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN =
+    /\b(run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_challenge|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|client_nonce|cockpit_ref|sha256|bearer|authorization|(?:^|[/_.-])(?:token|secret|api[_-]?key|password|raw|stdout|stderr|command|argv|provider|model|diff)(?:[/_.-]|$)/i
+const IDE_WORK_PATCH_REVIEW_DENIED_DIRS = Object.freeze(['.git', '.github', 'node_modules', 'dist', 'build', 'coverage'])
+const IDE_WORK_PATCH_REVIEW_DENIED_FILENAMES = Object.freeze(['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'])
+const IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS = Object.freeze([
+    '.7z',
+    '.db',
+    '.dll',
+    '.env',
+    '.exe',
+    '.gif',
+    '.gz',
+    '.jpg',
+    '.jpeg',
+    '.key',
+    '.lock',
+    '.pdf',
+    '.pem',
+    '.pfx',
+    '.png',
+    '.sqlite',
+    '.webp',
+    '.zip'
+])
 
 const displayRows = [
     ['Current status', 'state'],
@@ -1745,8 +1771,9 @@ function readPatchReviewPacketRows(packet) {
     const safePacket = readPatchReviewPacket(packet, true)
     if (!safePacket) return []
     return [
-        ['Packet status', 'Metadata retained'],
+        ['Packet status', 'Path list retained'],
         ['Changed files', String(safePacket.changed_file_count)],
+        ['Changed paths', safePacket.changed_files_list.join(', ')],
         ['Added lines', String(safePacket.added_line_count)],
         ['Removed lines', String(safePacket.deleted_line_count)],
         ['Packet bytes', String(safePacket.diff_bytes)],
@@ -1762,19 +1789,21 @@ function readPatchReviewPacket(value, isPatchReviewRequired) {
         return undefined
     }
     if (
-        value.schema_version !== 'sentinel.qvc.ide_work_patch_review_packet.v1' ||
-        value.review_mode !== 'metadata_only' ||
+        value.schema_version !== 'sentinel.qvc.ide_work_patch_review_packet.v2' ||
+        value.review_mode !== 'paths_only' ||
         value.packet_retained !== true ||
-        value.review_packet_status !== 'metadata_only'
+        value.review_packet_status !== 'paths_only'
     ) {
         return undefined
     }
     const changedFileCount = readBoundedIdeWorkInteger(value.changed_file_count, 1, IDE_WORK_PATCH_MAX_CHANGED_FILES)
+    const changedFilesList = readPatchReviewPathList(value.changed_files_list, changedFileCount)
     const addedLineCount = readBoundedIdeWorkInteger(value.added_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
     const deletedLineCount = readBoundedIdeWorkInteger(value.deleted_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
     const diffBytes = readBoundedIdeWorkInteger(value.diff_bytes, 1, IDE_WORK_PATCH_MAX_DIFF_BYTES)
     if (
         changedFileCount === null ||
+        changedFilesList === null ||
         addedLineCount === null ||
         deletedLineCount === null ||
         diffBytes === null ||
@@ -1783,11 +1812,12 @@ function readPatchReviewPacket(value, isPatchReviewRequired) {
         return undefined
     }
     return {
-        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v1',
-        review_mode: 'metadata_only',
+        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v2',
+        review_mode: 'paths_only',
         packet_retained: true,
-        review_packet_status: 'metadata_only',
+        review_packet_status: 'paths_only',
         changed_file_count: changedFileCount,
+        changed_files_list: changedFilesList,
         added_line_count: addedLineCount,
         deleted_line_count: deletedLineCount,
         diff_bytes: diffBytes,
@@ -1797,6 +1827,69 @@ function readPatchReviewPacket(value, isPatchReviewRequired) {
 
 function readBoundedIdeWorkInteger(value, min, max) {
     return Number.isSafeInteger(value) && value >= min && value <= max ? value : null
+}
+
+function readPatchReviewPathList(value, expectedCount) {
+    if (
+        !Array.isArray(value) ||
+        expectedCount === null ||
+        value.length !== expectedCount ||
+        value.length > IDE_WORK_PATCH_MAX_CHANGED_FILES
+    ) {
+        return null
+    }
+    const seen = new Set()
+    const paths = []
+    for (const item of value) {
+        const safePath = readPatchReviewPath(item)
+        if (!safePath || seen.has(safePath)) return null
+        seen.add(safePath)
+        paths.push(safePath)
+    }
+    return paths
+}
+
+function readPatchReviewPath(value) {
+    if (typeof value !== 'string' || value.length < 1 || value.length > 260) return null
+    if (
+        value.trim() !== value ||
+        value.startsWith('/') ||
+        value.endsWith('/') ||
+        value.includes('\\') ||
+        value.includes('//') ||
+        value.includes('..') ||
+        !IDE_WORK_PATCH_REVIEW_PATH_PATTERN.test(value) ||
+        IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN.test(value) ||
+        hasForbiddenGatewayPathSegment(value)
+    ) {
+        return null
+    }
+    const parts = value.split('/')
+    if (
+        parts.some(
+            (part) =>
+                part === '.' || part === '..' || part.startsWith('.') || IDE_WORK_PATCH_REVIEW_DENIED_DIRS.includes(part.toLowerCase())
+        )
+    ) {
+        return null
+    }
+    const filename = parts[parts.length - 1].toLowerCase()
+    if (filename.startsWith('.env') || IDE_WORK_PATCH_REVIEW_DENIED_FILENAMES.includes(filename)) return null
+    const dotIndex = filename.lastIndexOf('.')
+    const extension = dotIndex >= 0 ? filename.slice(dotIndex) : ''
+    if (IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS.includes(extension)) return null
+    return value
+}
+
+function hasForbiddenGatewayPathSegment(value) {
+    return value.split('/').some(
+        (segment) =>
+            segment.toLowerCase() !== 'sentinel-gateway' &&
+            segment
+                .toLowerCase()
+                .split(/[_.-]+/)
+                .includes('gateway')
+    )
 }
 
 function readRouteCardString(value, maxLength) {

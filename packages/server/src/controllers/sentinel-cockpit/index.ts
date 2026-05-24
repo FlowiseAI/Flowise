@@ -98,13 +98,14 @@ const IDE_WORK_KEYS = Object.freeze([
 const IDE_WORK_RESPONSE_KEYS = Object.freeze(['schema_version', 'status', IDE_WORK_KEY, 'safe_error'])
 const IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION = 'sentinel.qvc.ide_work_result_patch_review_required.v1'
 const IDE_WORK_PATCH_REVIEW_REQUIRED_STATE = 'patch_review_required'
-const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v1'
+const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v2'
 const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
     'schema_version',
     'review_mode',
     'packet_retained',
     'review_packet_status',
     'changed_file_count',
+    'changed_files_list',
     'added_line_count',
     'deleted_line_count',
     'diff_bytes',
@@ -114,6 +115,31 @@ const IDE_WORK_PATCH_MAX_CHANGED_FILES = 3
 const IDE_WORK_PATCH_MAX_CHANGED_LINES = 50
 const IDE_WORK_PATCH_MAX_DIFF_BYTES = 10 * 1024
 const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for review only.'
+const IDE_WORK_PATCH_REVIEW_PATH_PATTERN = /^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/
+const IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN =
+    /\b(run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_challenge|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|client_nonce|cockpit_ref|sha256|bearer|authorization|(?:^|[/_.-])(?:token|secret|api[_-]?key|password|raw|stdout|stderr|command|argv|provider|model|diff)(?:[/_.-]|$)/i
+const IDE_WORK_PATCH_REVIEW_DENIED_DIRS = Object.freeze(['.git', '.github', 'node_modules', 'dist', 'build', 'coverage'])
+const IDE_WORK_PATCH_REVIEW_DENIED_FILENAMES = Object.freeze(['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'])
+const IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS = Object.freeze([
+    '.7z',
+    '.db',
+    '.dll',
+    '.env',
+    '.exe',
+    '.gif',
+    '.gz',
+    '.jpg',
+    '.jpeg',
+    '.key',
+    '.lock',
+    '.pdf',
+    '.pem',
+    '.pfx',
+    '.png',
+    '.sqlite',
+    '.webp',
+    '.zip'
+])
 const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
@@ -1171,13 +1197,14 @@ function validatePatchReviewPacket(value: unknown, isPatchReviewRequired: boolea
     assertResponseKeys(packet, IDE_WORK_PATCH_REVIEW_PACKET_KEYS)
     if (
         packet.schema_version !== IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION ||
-        packet.review_mode !== 'metadata_only' ||
+        packet.review_mode !== 'paths_only' ||
         packet.packet_retained !== true ||
-        packet.review_packet_status !== 'metadata_only'
+        packet.review_packet_status !== 'paths_only'
     ) {
         throw httpError(500, 'invalid_snapshot')
     }
-    validateBoundedIdeWorkInteger(packet.changed_file_count, 1, IDE_WORK_PATCH_MAX_CHANGED_FILES)
+    const changedFileCount = validateBoundedIdeWorkInteger(packet.changed_file_count, 1, IDE_WORK_PATCH_MAX_CHANGED_FILES)
+    validatePatchReviewPathList(packet.changed_files_list, changedFileCount)
     validateBoundedIdeWorkInteger(packet.added_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
     validateBoundedIdeWorkInteger(packet.deleted_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
     validateBoundedIdeWorkInteger(packet.diff_bytes, 1, IDE_WORK_PATCH_MAX_DIFF_BYTES)
@@ -1186,10 +1213,72 @@ function validatePatchReviewPacket(value: unknown, isPatchReviewRequired: boolea
     }
 }
 
-function validateBoundedIdeWorkInteger(value: unknown, min: number, max: number) {
+function validateBoundedIdeWorkInteger(value: unknown, min: number, max: number): number {
     if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < min || value > max) {
         throw httpError(500, 'invalid_snapshot')
     }
+    return value
+}
+
+function validatePatchReviewPathList(value: unknown, expectedCount: number) {
+    if (!Array.isArray(value) || value.length !== expectedCount || value.length > IDE_WORK_PATCH_MAX_CHANGED_FILES) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const seen = new Set<string>()
+    for (const item of value) {
+        const safePath = validatePatchReviewPath(item)
+        if (seen.has(safePath)) throw httpError(500, 'invalid_snapshot')
+        seen.add(safePath)
+    }
+}
+
+function validatePatchReviewPath(value: unknown): string {
+    if (typeof value !== 'string' || value.length < 1 || value.length > 260) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (
+        value.trim() !== value ||
+        value.startsWith('/') ||
+        value.endsWith('/') ||
+        value.includes('\\') ||
+        value.includes('//') ||
+        value.includes('..') ||
+        !IDE_WORK_PATCH_REVIEW_PATH_PATTERN.test(value) ||
+        IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN.test(value) ||
+        hasForbiddenGatewayPathSegment(value)
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const parts = value.split('/')
+    if (
+        parts.some(
+            (part) =>
+                part === '.' || part === '..' || part.startsWith('.') || IDE_WORK_PATCH_REVIEW_DENIED_DIRS.includes(part.toLowerCase())
+        )
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const filename = parts[parts.length - 1].toLowerCase()
+    if (filename.startsWith('.env') || IDE_WORK_PATCH_REVIEW_DENIED_FILENAMES.includes(filename)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const dotIndex = filename.lastIndexOf('.')
+    const extension = dotIndex >= 0 ? filename.slice(dotIndex) : ''
+    if (IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS.includes(extension)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    return value
+}
+
+function hasForbiddenGatewayPathSegment(value: string): boolean {
+    return value.split('/').some(
+        (segment) =>
+            segment.toLowerCase() !== 'sentinel-gateway' &&
+            segment
+                .toLowerCase()
+                .split(/[_.-]+/)
+                .includes('gateway')
+    )
 }
 
 function validateOptionalIdeWorkText(value: unknown, maxLength: number) {

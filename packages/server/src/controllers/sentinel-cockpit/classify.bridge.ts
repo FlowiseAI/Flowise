@@ -23,13 +23,14 @@ export const IDE_WORK_KEY = 'ide_work'
 export const IDE_WORK_BRIDGE_SCHEMA_VERSION = 'sentinel.cockpit_bridge.ide_work.v1'
 const IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION = 'sentinel.qvc.ide_work_result_patch_review_required.v1'
 const IDE_WORK_PATCH_REVIEW_REQUIRED_STATE = 'patch_review_required'
-const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v1'
+const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v2'
 const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
     'schema_version',
     'review_mode',
     'packet_retained',
     'review_packet_status',
     'changed_file_count',
+    'changed_files_list',
     'added_line_count',
     'deleted_line_count',
     'diff_bytes',
@@ -39,6 +40,31 @@ const IDE_WORK_PATCH_MAX_CHANGED_FILES = 3
 const IDE_WORK_PATCH_MAX_CHANGED_LINES = 50
 const IDE_WORK_PATCH_MAX_DIFF_BYTES = 10 * 1024
 const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for review only.'
+const IDE_WORK_PATCH_REVIEW_PATH_PATTERN = /^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/
+const IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN =
+    /\b(run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_challenge|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|client_nonce|cockpit_ref|sha256|bearer|authorization|(?:^|[/_.-])(?:token|secret|api[_-]?key|password|raw|stdout|stderr|command|argv|provider|model|diff)(?:[/_.-]|$)/i
+const IDE_WORK_PATCH_REVIEW_DENIED_DIRS = Object.freeze(['.git', '.github', 'node_modules', 'dist', 'build', 'coverage'])
+const IDE_WORK_PATCH_REVIEW_DENIED_FILENAMES = Object.freeze(['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'])
+const IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS = Object.freeze([
+    '.7z',
+    '.db',
+    '.dll',
+    '.env',
+    '.exe',
+    '.gif',
+    '.gz',
+    '.jpg',
+    '.jpeg',
+    '.key',
+    '.lock',
+    '.pdf',
+    '.pem',
+    '.pfx',
+    '.png',
+    '.sqlite',
+    '.webp',
+    '.zip'
+])
 export const IDE_WORK_GATEWAY_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
@@ -314,10 +340,11 @@ export type IdeWorkProjection = Readonly<{
 
 export type PatchReviewPacketMetadata = Readonly<{
     schema_version: typeof IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION
-    review_mode: 'metadata_only'
+    review_mode: 'paths_only'
     packet_retained: true
-    review_packet_status: 'metadata_only'
+    review_packet_status: 'paths_only'
     changed_file_count: number
+    changed_files_list: string[]
     added_line_count: number
     deleted_line_count: number
     diff_bytes: number
@@ -1243,18 +1270,20 @@ function projectPatchReviewPacket(value: unknown, isPatchReviewRequired: boolean
     if (!keysMatch(packet, IDE_WORK_PATCH_REVIEW_PACKET_KEYS)) return undefined
     if (
         packet.schema_version !== IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION ||
-        packet.review_mode !== 'metadata_only' ||
+        packet.review_mode !== 'paths_only' ||
         packet.packet_retained !== true ||
-        packet.review_packet_status !== 'metadata_only'
+        packet.review_packet_status !== 'paths_only'
     ) {
         return undefined
     }
     const changedFileCount = readBoundedIdeWorkInteger(packet.changed_file_count, 1, IDE_WORK_PATCH_MAX_CHANGED_FILES)
+    const changedFilesList = readPatchReviewPathList(packet.changed_files_list, changedFileCount)
     const addedLineCount = readBoundedIdeWorkInteger(packet.added_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
     const deletedLineCount = readBoundedIdeWorkInteger(packet.deleted_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
     const diffBytes = readBoundedIdeWorkInteger(packet.diff_bytes, 1, IDE_WORK_PATCH_MAX_DIFF_BYTES)
     if (
         changedFileCount === null ||
+        changedFilesList === null ||
         addedLineCount === null ||
         deletedLineCount === null ||
         diffBytes === null ||
@@ -1264,10 +1293,11 @@ function projectPatchReviewPacket(value: unknown, isPatchReviewRequired: boolean
     }
     return {
         schema_version: IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION,
-        review_mode: 'metadata_only',
+        review_mode: 'paths_only',
         packet_retained: true,
-        review_packet_status: 'metadata_only',
+        review_packet_status: 'paths_only',
         changed_file_count: changedFileCount,
+        changed_files_list: changedFilesList,
         added_line_count: addedLineCount,
         deleted_line_count: deletedLineCount,
         diff_bytes: diffBytes,
@@ -1277,6 +1307,69 @@ function projectPatchReviewPacket(value: unknown, isPatchReviewRequired: boolean
 
 function readBoundedIdeWorkInteger(value: unknown, min: number, max: number): number | null {
     return typeof value === 'number' && Number.isSafeInteger(value) && value >= min && value <= max ? value : null
+}
+
+function readPatchReviewPathList(value: unknown, expectedCount: number | null): string[] | null {
+    if (
+        !Array.isArray(value) ||
+        expectedCount === null ||
+        value.length !== expectedCount ||
+        value.length > IDE_WORK_PATCH_MAX_CHANGED_FILES
+    ) {
+        return null
+    }
+    const seen = new Set<string>()
+    const paths: string[] = []
+    for (const item of value) {
+        const safePath = readPatchReviewPath(item)
+        if (!safePath || seen.has(safePath)) return null
+        seen.add(safePath)
+        paths.push(safePath)
+    }
+    return paths
+}
+
+function readPatchReviewPath(value: unknown): string | null {
+    if (typeof value !== 'string' || value.length < 1 || value.length > 260) return null
+    if (
+        value.trim() !== value ||
+        value.startsWith('/') ||
+        value.endsWith('/') ||
+        value.includes('\\') ||
+        value.includes('//') ||
+        value.includes('..') ||
+        !IDE_WORK_PATCH_REVIEW_PATH_PATTERN.test(value) ||
+        IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN.test(value) ||
+        hasForbiddenGatewayPathSegment(value)
+    ) {
+        return null
+    }
+    const parts = value.split('/')
+    if (
+        parts.some(
+            (part) =>
+                part === '.' || part === '..' || part.startsWith('.') || IDE_WORK_PATCH_REVIEW_DENIED_DIRS.includes(part.toLowerCase())
+        )
+    ) {
+        return null
+    }
+    const filename = parts[parts.length - 1].toLowerCase()
+    if (filename.startsWith('.env') || IDE_WORK_PATCH_REVIEW_DENIED_FILENAMES.includes(filename)) return null
+    const dotIndex = filename.lastIndexOf('.')
+    const extension = dotIndex >= 0 ? filename.slice(dotIndex) : ''
+    if (IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS.includes(extension)) return null
+    return value
+}
+
+function hasForbiddenGatewayPathSegment(value: string): boolean {
+    return value.split('/').some(
+        (segment) =>
+            segment.toLowerCase() !== 'sentinel-gateway' &&
+            segment
+                .toLowerCase()
+                .split(/[_.-]+/)
+                .includes('gateway')
+    )
 }
 
 function readIdeWorkString(value: unknown, maxLength: number): string | null {

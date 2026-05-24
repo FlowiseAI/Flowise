@@ -129,11 +129,12 @@ const validIdeWork = (overrides = {}) => ({
 })
 
 const validPatchReviewPacket = (overrides = {}) => ({
-    schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v1',
-    review_mode: 'metadata_only',
+    schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v2',
+    review_mode: 'paths_only',
     packet_retained: true,
-    review_packet_status: 'metadata_only',
+    review_packet_status: 'paths_only',
     changed_file_count: 1,
+    changed_files_list: ['src/one.mjs'],
     added_line_count: 1,
     deleted_line_count: 1,
     diff_bytes: 128,
@@ -558,7 +559,7 @@ describe('sentinelCockpit API wrapper', () => {
         expect(Object.keys(body).sort()).toEqual([...IDE_WORK_STATUS_BODY_KEYS].sort())
         expect(body).toEqual({ request_kind: 'ide_work_status' })
         expect(response.ide_work).toEqual(validPatchIdeWork())
-        expect(JSON.stringify(response)).not.toMatch(/request_patch_proposal|diff|source code|file path|raw output|stdout|stderr/i)
+        expect(JSON.stringify(response)).not.toMatch(/request_patch_proposal|diff_text|source code|file path|raw output|stdout|stderr/i)
     })
 
     it('builds IDE mock work bodies without accepting hidden Gateway fields', () => {
@@ -893,12 +894,15 @@ describe('sentinelCockpit API wrapper', () => {
     })
 
     it('preserves valid patch review required work as a display-only terminal projection', async () => {
+        const sentinelGatewayPacket = validPatchReviewPacket({
+            changed_files_list: ['src/sentinel-gateway/qvc-ide-patch-workspace.mjs']
+        })
         const fetchImpl = jest.fn().mockResolvedValue(
             fetchResponse(
                 validPlanSession({
                     route_card: validRouteCard(),
                     ide_preview: validIdePreview(),
-                    ide_work: validPatchIdeWork({ patch_review_packet: validPatchReviewPacket() })
+                    ide_work: validPatchIdeWork({ patch_review_packet: sentinelGatewayPacket })
                 })
             )
         )
@@ -911,12 +915,15 @@ describe('sentinelCockpit API wrapper', () => {
             { fetchImpl }
         )
 
-        expect(session.ide_work).toEqual(validPatchIdeWork({ patch_review_packet: validPatchReviewPacket() }))
+        expect(session.ide_work).toEqual(validPatchIdeWork({ patch_review_packet: sentinelGatewayPacket }))
         expect(session.ide_work.allowed_user_actions).toEqual(['none'])
         expect(session.ide_work.approval_available).toBe(false)
         expect(session.ide_work.cancel_available).toBe(false)
-        expect(session.ide_work.patch_review_packet).toEqual(validPatchReviewPacket())
-        expect(JSON.stringify(session.ide_work)).not.toMatch(/request_patch_proposal|diff_text|source code|file path|raw output|stdout|stderr/i)
+        expect(session.ide_work.patch_review_packet).toEqual(sentinelGatewayPacket)
+        expect(session.ide_work.patch_review_packet.changed_files_list).toEqual(['src/sentinel-gateway/qvc-ide-patch-workspace.mjs'])
+        expect(JSON.stringify(session.ide_work)).not.toMatch(
+            /request_patch_proposal|diff_text|source code|file path|raw output|stdout|stderr/i
+        )
     })
 
     it('preserves exact patch proposal approval work without leaking source or raw output', async () => {
@@ -940,7 +947,7 @@ describe('sentinelCockpit API wrapper', () => {
 
         expect(session.ide_work.allowed_user_actions).toEqual(['request_patch_proposal'])
         expect(session.ide_work.approval_available).toBe(true)
-        expect(JSON.stringify(session.ide_work)).not.toMatch(/diff|source code|file path|raw output|stdout|stderr/i)
+        expect(JSON.stringify(session.ide_work)).not.toMatch(/diff_text|source code|file path|raw output|stdout|stderr/i)
     })
 
     it('omits unsafe IDE mock work from initial goal plan-session responses', async () => {
@@ -973,11 +980,64 @@ describe('sentinelCockpit API wrapper', () => {
         ['packet handle', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ patch_id: 'packet_hidden' }) })],
         ['packet path', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ file_path: 'src/one.mjs' }) })],
         ['packet label path', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'src/one.mjs' }) })],
-        ['packet label diff', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'diff --git a/src/one.mjs' }) })],
-        ['packet label handle', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'patch_id: packet_hidden' }) })],
-        ['packet label provider', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'provider model metadata' }) })],
-        ['packet label command', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'command: git diff' }) })],
+        [
+            'packet label diff',
+            validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'diff --git a/src/one.mjs' }) })
+        ],
+        [
+            'packet label handle',
+            validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'patch_id: packet_hidden' }) })
+        ],
+        [
+            'packet label provider',
+            validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'provider model metadata' }) })
+        ],
+        [
+            'packet label command',
+            validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ retention_label: 'command: git diff' }) })
+        ],
         ['packet over file limit', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ changed_file_count: 4 }) })],
+        ['packet missing path list', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ changed_files_list: undefined }) })],
+        [
+            'packet path count mismatch',
+            validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ changed_files_list: ['src/one.mjs', 'src/two.mjs'] }) })
+        ],
+        [
+            'packet duplicate path',
+            validPatchIdeWork({
+                patch_review_packet: validPatchReviewPacket({ changed_file_count: 2, changed_files_list: ['src/one.mjs', 'src/one.mjs'] })
+            })
+        ],
+        [
+            'packet space path',
+            validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ changed_files_list: ['src/one file.mjs'] }) })
+        ],
+        [
+            'packet diff path',
+            validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ changed_files_list: ['src/diff.patch'] }) })
+        ],
+        [
+            'packet gateway path',
+            validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ changed_files_list: ['src/gateway/client.mjs'] }) })
+        ],
+        [
+            'packet gateway file under sentinel-gateway path',
+            validPatchIdeWork({
+                patch_review_packet: validPatchReviewPacket({ changed_files_list: ['src/sentinel-gateway/gateway-client.mjs'] })
+            })
+        ],
+        [
+            'packet hidden path',
+            validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ changed_files_list: ['.github/workflows/build.yml'] }) })
+        ],
+        [
+            'packet dependency path',
+            validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ changed_files_list: ['node_modules/pkg/index.js'] }) })
+        ],
+        [
+            'packet lockfile path',
+            validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ changed_files_list: ['pnpm-lock.yaml'] }) })
+        ],
         ['packet on nonterminal', validIdeWork({ patch_review_packet: validPatchReviewPacket() })],
         ['leaky patch terminal', validPatchIdeWork({ short_summary: 'The unified diff should not display.' })],
         ['source code patch terminal', validPatchIdeWork({ short_summary: 'The source code should not display.' })],

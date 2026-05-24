@@ -143,11 +143,12 @@ function validServerIdeWork(overrides: Record<string, unknown> = {}) {
 
 function validPatchReviewPacket(overrides: Record<string, unknown> = {}) {
     return {
-        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v1',
-        review_mode: 'metadata_only',
+        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v2',
+        review_mode: 'paths_only',
         packet_retained: true,
-        review_packet_status: 'metadata_only',
+        review_packet_status: 'paths_only',
         changed_file_count: 1,
+        changed_files_list: ['src/one.mjs'],
         added_line_count: 1,
         deleted_line_count: 1,
         diff_bytes: 128,
@@ -1071,6 +1072,16 @@ describe('sentinel cockpit controller responses', () => {
                 schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
                 status: 'ok',
                 ide_work: validPatchServerIdeWork({
+                    patch_review_packet: validPatchReviewPacket({
+                        changed_files_list: ['src/sentinel-gateway/qvc-ide-patch-workspace.mjs']
+                    })
+                }) as any,
+                safe_error: null
+            })
+            .mockResolvedValueOnce({
+                schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+                status: 'ok',
+                ide_work: validPatchServerIdeWork({
                     approval_available: true,
                     allowed_user_actions: ['approve_mock_backend_work']
                 }) as any,
@@ -1106,8 +1117,21 @@ describe('sentinel cockpit controller responses', () => {
         expect(statusSpy).toHaveBeenCalledWith({ request_kind: 'ide_work_status' })
         expect(statusRes.statusCode).toBe(200)
         expect(JSON.parse(statusRes.bodyText).ide_work).toEqual(validPatchServerIdeWork({ patch_review_packet: validPatchReviewPacket() }))
+        expect(statusRes.bodyText).toContain('src/one.mjs')
         expect(statusRes.bodyText).not.toContain('request_patch_proposal')
         expect(statusRes.bodyText).not.toMatch(/diff_text|source code|file path|raw output|stdout|stderr/i)
+
+        const sentinelGatewayPathReq = buildReq(statusBody, {
+            path: COCKPIT_IDE_WORK_STATUS_PATH,
+            originalUrl: `${COCKPIT_ROUTE_PREFIX}${COCKPIT_IDE_WORK_STATUS_PATH}`
+        } as Partial<Request>)
+        const sentinelGatewayPathRes = buildRes()
+        await sentinelCockpitController.handleSnapshot(sentinelGatewayPathReq, sentinelGatewayPathRes)
+
+        expect(sentinelGatewayPathRes.statusCode).toBe(200)
+        expect(sentinelGatewayPathRes.bodyText).toContain('src/sentinel-gateway/qvc-ide-patch-workspace.mjs')
+        expect(sentinelGatewayPathRes.bodyText).not.toContain('request_patch_proposal')
+        expect(sentinelGatewayPathRes.bodyText).not.toMatch(/diff_text|source code|file path|raw output|stdout|stderr/i)
 
         const unsafeReq = buildReq(statusBody, {
             path: COCKPIT_IDE_WORK_STATUS_PATH,
@@ -1128,6 +1152,38 @@ describe('sentinel cockpit controller responses', () => {
 
         expect(unsafePacketRes.statusCode).toBe(500)
         expect(JSON.parse(unsafePacketRes.bodyText).error.code).toBe('invalid_snapshot')
+
+        const unsafePathCases = [
+            { changed_files_list: undefined },
+            { changed_files_list: ['src/one.mjs', 'src/two.mjs'] },
+            { changed_file_count: 2, changed_files_list: ['src/one.mjs', 'src/one.mjs'] },
+            { changed_files_list: ['src/one file.mjs'] },
+            { changed_files_list: ['src/diff.patch'] },
+            { changed_files_list: ['src/gateway/client.mjs'] },
+            { changed_files_list: ['src/sentinel-gateway/gateway-client.mjs'] },
+            { changed_files_list: ['.github/workflows/build.yml'] },
+            { changed_files_list: ['node_modules/pkg/index.js'] },
+            { changed_files_list: ['pnpm-lock.yaml'] }
+        ]
+        for (const packetOverrides of unsafePathCases as Array<Record<string, unknown>>) {
+            statusSpy.mockResolvedValueOnce({
+                schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+                status: 'ok',
+                ide_work: validPatchServerIdeWork({
+                    patch_review_packet: validPatchReviewPacket(packetOverrides)
+                }) as any,
+                safe_error: null
+            })
+            const unsafePathReq = buildReq(statusBody, {
+                path: COCKPIT_IDE_WORK_STATUS_PATH,
+                originalUrl: `${COCKPIT_ROUTE_PREFIX}${COCKPIT_IDE_WORK_STATUS_PATH}`
+            } as Partial<Request>)
+            const unsafePathRes = buildRes()
+            await sentinelCockpitController.handleSnapshot(unsafePathReq, unsafePathRes)
+
+            expect(unsafePathRes.statusCode).toBe(500)
+            expect(JSON.parse(unsafePathRes.bodyText).error.code).toBe('invalid_snapshot')
+        }
 
         for (const _label of unsafeRetentionLabels) {
             const unsafePacketLabelReq = buildReq(statusBody, {
@@ -1903,7 +1959,7 @@ describe('sentinel cockpit classify bridge', () => {
         )
         expect(statusSession.ide_work).toEqual(validPatchServerIdeWork())
         expect(JSON.stringify(statusSession)).not.toContain('request_patch_proposal')
-        expect(JSON.stringify(statusSession)).not.toMatch(/diff|source code|file path|raw output|stdout|stderr/i)
+        expect(JSON.stringify(statusSession)).not.toMatch(/diff_text|source code|file path|raw output|stdout|stderr/i)
 
         await expect(
             classifyBridge.createIdeWorkStatusSession(
