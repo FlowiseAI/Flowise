@@ -55,12 +55,31 @@ function getHttpDenyList(): string[] {
  * @throws Error if IP is in deny list
  */
 export function isDeniedIP(ip: string, denyList: string[]): void {
-    const parsedIp = ipaddr.parse(ip)
+    let parsedIp = ipaddr.parse(ip)
+
+    // Normalize IPv4-mapped IPv6 addresses to IPv4 before checking
+    // This prevents bypass of IPv4 deny list rules via ::ffff:x.x.x.x addresses
+    if (parsedIp.kind() === 'ipv6') {
+        const ipv6Addr = parsedIp as ipaddr.IPv6
+        if (ipv6Addr.isIPv4MappedAddress()) {
+            parsedIp = ipv6Addr.toIPv4Address()
+        }
+    }
+
     for (const entry of denyList) {
         if (entry.includes('/')) {
             try {
                 const [range, _] = entry.split('/')
-                const parsedRange = ipaddr.parse(range)
+                let parsedRange = ipaddr.parse(range)
+
+                // Also normalize deny list entries
+                if (parsedRange.kind() === 'ipv6') {
+                    const ipv6Range = parsedRange as ipaddr.IPv6
+                    if (ipv6Range.isIPv4MappedAddress()) {
+                        parsedRange = ipv6Range.toIPv4Address()
+                    }
+                }
+
                 if (parsedIp.kind() === parsedRange.kind()) {
                     if (parsedIp.match(ipaddr.parseCIDR(entry))) {
                         throw new Error('Access to this host is denied by policy.')
@@ -84,7 +103,11 @@ export async function checkDenyList(url: string): Promise<void> {
     const httpDenyList = getHttpDenyList()
 
     const urlObj = new URL(url)
-    const hostname = urlObj.hostname
+    let hostname = urlObj.hostname
+    // Strip IPv6 brackets if present
+    if (hostname.startsWith('[') && hostname.endsWith(']')) {
+        hostname = hostname.slice(1, -1)
+    }
 
     if (ipaddr.isValid(hostname)) {
         isDeniedIP(hostname, httpDenyList)
@@ -254,12 +277,15 @@ async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     const denyList = getHttpDenyList()
 
     const u = new URL(url)
-    const hostname = u.hostname
+    let hostname = u.hostname
+    // Strip IPv6 brackets if present
+    if (hostname.startsWith('[') && hostname.endsWith(']')) {
+        hostname = hostname.slice(1, -1)
+    }
     const protocol: 'http' | 'https' = u.protocol === 'https:' ? 'https' : 'http'
 
     if (ipaddr.isValid(hostname)) {
         isDeniedIP(hostname, denyList)
-
         return {
             hostname,
             ip: hostname,
