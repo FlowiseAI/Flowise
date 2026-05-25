@@ -27,10 +27,10 @@
                 {
                     "path": "args.to",
                     "op": "regex",
-                    "value": "@aivar\\.tech$"
+                    "value": "@internal\\.tech$"
                 }
             ],
-            "message": "Internal @aivar.tech addresses are always permitted."
+            "message": "Internal @internal.tech addresses are always permitted."
         },
         {
             "id": "escalate-external-email",
