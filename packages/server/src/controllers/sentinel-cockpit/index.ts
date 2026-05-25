@@ -121,6 +121,10 @@ const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for revie
 const IDE_WORK_PATCH_REVIEW_PATH_PATTERN = /^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/
 const IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN =
     /\b(run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_challenge|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|client_nonce|cockpit_ref|sha256|bearer|authorization|(?:^|[/_.-])(?:token|secret|api[_-]?key|password|raw|stdout|stderr|command|argv|provider|model|diff)(?:[/_.-]|$)/i
+const IDE_WORK_PATCH_PREVIEW_LOCAL_PATH_TEXT_PATTERN =
+    /(?:\b[A-Za-z]:\\|\\\\[A-Za-z0-9._-]+\\|\/mnt\/[a-z]\/|\/(?:home|var|tmp|etc|usr|opt|root|users?)(?:\/|\b))/i
+const IDE_WORK_PATCH_PREVIEW_SOURCE_TEXT_PATTERN =
+    /(?:https?:\/\/|www\.|localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|:\d{2,5}\b|cookie|set-cookie|authorization|bearer|token|secret|api[_-]?key|password|sha256:|-----BEGIN|private key|\bgateway\b|\b(?:command|argv|provider|model|diff_text|patch_id|task_packet|result_packet|evidence_manifest)\b\s*[:=]|^diff --git\b|^---\s|^\+\+\+\s|@@|<\s*\/?\s*[a-z][^>]*>|on[a-z]+\s*=|\[[^\]]+\]\([^)]+\)|```)/i
 const IDE_WORK_PATCH_REVIEW_DENIED_DIRS = Object.freeze(['.git', '.github', 'node_modules', 'dist', 'build', 'coverage'])
 const IDE_WORK_PATCH_REVIEW_DENIED_FILENAMES = Object.freeze(['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'])
 const IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS = Object.freeze([
@@ -710,7 +714,7 @@ function validateIdeWorkSession(session: {
     ) {
         throw httpError(500, 'invalid_snapshot')
     }
-    validateIdeWork(session.ide_work)
+    validateIdeWork(session.ide_work, { allowPatchReviewRequired: true })
     return session
 }
 
@@ -972,7 +976,9 @@ function validatePlanSession(planSession: classifyBridge.PlanSessionResponse) {
     )
     validateRouteCard((planSession as classifyBridge.PlanSessionResponse & { route_card?: unknown }).route_card)
     validateIdePreview((planSession as classifyBridge.PlanSessionResponse & { ide_preview?: unknown }).ide_preview)
-    validateIdeWork((planSession as classifyBridge.PlanSessionResponse & { ide_work?: unknown }).ide_work)
+    validateIdeWork((planSession as classifyBridge.PlanSessionResponse & { ide_work?: unknown }).ide_work, {
+        allowPatchReviewRequired: false
+    })
     if (planSession.schema_version !== classifyBridge.PLAN_SESSION_SCHEMA_VERSION || !['ok', 'error'].includes(planSession.status)) {
         throw httpError(500, 'invalid_snapshot')
     }
@@ -1103,7 +1109,7 @@ function validateIdePreview(idePreview: unknown) {
     }
 }
 
-function validateIdeWork(ideWork: unknown) {
+function validateIdeWork(ideWork: unknown, options: { allowPatchReviewRequired?: boolean } = {}) {
     if (ideWork == null) {
         return
     }
@@ -1142,6 +1148,9 @@ function validateIdeWork(ideWork: unknown) {
     const isPatchReviewRequiredSchema = work.schema_version === IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION
     const isPatchReviewRequiredState = work.state === IDE_WORK_PATCH_REVIEW_REQUIRED_STATE
     if (isPatchReviewRequiredSchema !== isPatchReviewRequiredState) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (isPatchReviewRequiredSchema && options.allowPatchReviewRequired !== true) {
         throw httpError(500, 'invalid_snapshot')
     }
     if (
@@ -1192,7 +1201,10 @@ function validateIdeWork(ideWork: unknown) {
 }
 
 function validatePatchReviewPacket(value: unknown, isPatchReviewRequired: boolean) {
-    if (value === null) return
+    if (value === null) {
+        if (isPatchReviewRequired) throw httpError(500, 'invalid_snapshot')
+        return
+    }
     if (!isPatchReviewRequired || !value || typeof value !== 'object' || Array.isArray(value)) {
         throw httpError(500, 'invalid_snapshot')
     }
@@ -1314,12 +1326,8 @@ function validatePatchPreviewLine(value: unknown): { kind: 'file' | 'removed' | 
         throw httpError(500, 'invalid_snapshot')
     }
     if (line.kind === 'file') return { kind: 'file', text: validatePatchReviewPath(line.text) }
-    if (/\b[A-Za-z]:\\|\/mnt\/[a-z]\//.test(line.text)) throw httpError(500, 'invalid_snapshot')
-    if (
-        /\b(run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*|sha256:|bearer|authorization|token|secret|api[_-]?key|-----BEGIN|private key|password/i.test(
-            line.text
-        )
-    ) {
+    if (IDE_WORK_PATCH_PREVIEW_LOCAL_PATH_TEXT_PATTERN.test(line.text)) throw httpError(500, 'invalid_snapshot')
+    if (IDE_WORK_PATCH_PREVIEW_SOURCE_TEXT_PATTERN.test(line.text)) {
         throw httpError(500, 'invalid_snapshot')
     }
     return { kind: line.kind, text: line.text }

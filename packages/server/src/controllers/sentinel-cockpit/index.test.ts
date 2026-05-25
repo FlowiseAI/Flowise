@@ -169,6 +169,14 @@ const UNSAFE_PATCH_REVIEW_RETENTION_LABELS = [
     'provider model metadata',
     'command: git diff'
 ]
+const UNSAFE_PATCH_PREVIEW_SOURCE_TEXTS = [
+    'fetch("http://127.0.0.1:39173")',
+    '<button>Run</button>',
+    '@@',
+    'command: git diff',
+    'const home = "/tmp/qvc"',
+    'const host = "gateway"'
+]
 
 function validPatchServerIdeWork(overrides: Record<string, unknown> = {}) {
     return validServerIdeWork({
@@ -188,6 +196,7 @@ function validPatchServerIdeWork(overrides: Record<string, unknown> = {}) {
         terminal_note: 'Nothing was accepted or applied here.',
         allowed_user_actions: ['none'],
         blocked_actions: ['No controls are available here.', 'No changes start from this page.'],
+        patch_review_packet: validPatchReviewPacket(),
         safe_error: null,
         ...overrides
     })
@@ -997,6 +1006,37 @@ describe('sentinel cockpit controller responses', () => {
         expect(res.bodyText).not.toContain('task_packet')
     })
 
+    it('rejects patch review terminal work embedded in nonce-bound plan-session responses', async () => {
+        jest.spyOn(classifyBridge, 'classifyBridgeIsRequested').mockReturnValue(true)
+        jest.spyOn(classifyBridge, 'planDecisionBridgeIsRequested').mockReturnValue(true)
+        jest.spyOn(classifyBridge, 'createClassifySnapshot').mockResolvedValue({
+            schema_version: 'sentinel.cockpit_bridge.plan_session.v1',
+            status: 'ok',
+            state: 'plan_decision_required',
+            plain_summary: 'Sentinel can prepare a plan after an explicit decision.',
+            next_safe_action: 'choose_plan_decision',
+            allowed_user_actions: ['approve_plan', 'revise_plan', 'stop'],
+            blocked_actions: ['No files are edited here.'],
+            cockpit_ref: 'cockpit_a1b2c3d4e5f60718293a4b5c6d7e8f90',
+            plan_card: null,
+            safe_error: null,
+            route_card: validRouteCard(),
+            ide_work: validPatchServerIdeWork()
+        } as any)
+        const body = JSON.stringify({
+            request_kind: 'goal',
+            plain_goal: 'plan this work',
+            client_nonce: 'a1b2c3d4e5f60718293a4b5c6d7e8f90'
+        })
+        const req = buildReq(body)
+        const res = buildRes()
+
+        await sentinelCockpitController.handleSnapshot(req, res)
+
+        expect(res.statusCode).toBe(500)
+        expect(JSON.parse(res.bodyText).error.code).toBe('invalid_snapshot')
+    })
+
     it('routes IDE mock work action and status calls through the server bridge only', async () => {
         const actionSpy = jest.spyOn(classifyBridge, 'createIdeWorkActionSession').mockResolvedValue({
             schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
@@ -1105,6 +1145,12 @@ describe('sentinel cockpit controller responses', () => {
                 }) as any,
                 safe_error: null
             })
+            .mockResolvedValueOnce({
+                schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+                status: 'ok',
+                ide_work: validPatchServerIdeWork({ patch_review_packet: null }) as any,
+                safe_error: null
+            })
         unsafeRetentionLabels.forEach((retentionLabel) => {
             statusSpy.mockResolvedValueOnce({
                 schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
@@ -1164,6 +1210,16 @@ describe('sentinel cockpit controller responses', () => {
         expect(unsafePacketRes.statusCode).toBe(500)
         expect(JSON.parse(unsafePacketRes.bodyText).error.code).toBe('invalid_snapshot')
 
+        const nullPacketReq = buildReq(statusBody, {
+            path: COCKPIT_IDE_WORK_STATUS_PATH,
+            originalUrl: `${COCKPIT_ROUTE_PREFIX}${COCKPIT_IDE_WORK_STATUS_PATH}`
+        } as Partial<Request>)
+        const nullPacketRes = buildRes()
+        await sentinelCockpitController.handleSnapshot(nullPacketReq, nullPacketRes)
+
+        expect(nullPacketRes.statusCode).toBe(500)
+        expect(JSON.parse(nullPacketRes.bodyText).error.code).toBe('invalid_snapshot')
+
         const unsafePathCases = [
             { changed_files_list: undefined },
             { changed_files_list: ['src/one.mjs', 'src/two.mjs'] },
@@ -1190,7 +1246,14 @@ describe('sentinel cockpit controller responses', () => {
                     { kind: 'removed', text: 'token = hidden' },
                     { kind: 'added', text: 'export const value = 2;' }
                 ]
-            }
+            },
+            ...UNSAFE_PATCH_PREVIEW_SOURCE_TEXTS.map((text) => ({
+                preview_lines: [
+                    { kind: 'file', text: 'src/one.mjs' },
+                    { kind: 'removed', text },
+                    { kind: 'added', text: 'export const value = 2;' }
+                ]
+            }))
         ]
         for (const packetOverrides of unsafePathCases as Array<Record<string, unknown>>) {
             statusSpy.mockResolvedValueOnce({
@@ -1393,6 +1456,7 @@ describe('sentinel cockpit classify bridge', () => {
             terminal_note: 'Nothing was accepted or applied here.',
             allowed_user_actions: ['none'],
             blocked_actions: ['No controls are available here.', 'No changes start from this page.'],
+            patch_review_packet: validPatchReviewPacket(),
             safe_error: null,
             ...overrides
         })
@@ -1927,6 +1991,29 @@ describe('sentinel cockpit classify bridge', () => {
         expect(planSession.ide_work).toBeUndefined()
     })
 
+    it('omits patch review terminal work from initial plan-session projections', async () => {
+        const config = buildClassifyConfig({
+            BEZZTY_FLOWISE_SENTINEL_PLAN_DECISION_BRIDGE: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_PROJECTION: '1',
+            BEZZTY_FLOWISE_SENTINEL_IDE_WORK_ACTIONS: '1'
+        })
+        const fetchImpl = jest.fn().mockResolvedValue(
+            gatewayResponse(
+                validGatewayClassify({
+                    ide_work: validGatewayPatchIdeWork()
+                })
+            )
+        )
+
+        const planSession: any = await classifyBridge.createClassifySnapshot(
+            { request_kind: 'goal', plain_goal: goalText, client_nonce: clientNonce },
+            { config, fetchImpl: fetchImpl as any, requestId: 'req_patch_classify_terminal' }
+        )
+
+        expect(planSession.state).toBe('plan_decision_required')
+        expect(planSession.ide_work).toBeUndefined()
+    })
+
     it('projects only terminal-safe patch review required status without enabling a patch trigger', async () => {
         const unsafeRetentionLabels = UNSAFE_PATCH_REVIEW_RETENTION_LABELS
         const config = buildClassifyConfig({
@@ -1963,6 +2050,15 @@ describe('sentinel cockpit classify bridge', () => {
                     })
                 })
             )
+            .mockResolvedValueOnce(
+                gatewayResponse({
+                    schema_version: 'sentinel.gateway.v1',
+                    status: 'ok',
+                    ide_work: validGatewayPatchIdeWork({
+                        patch_review_packet: null
+                    })
+                })
+            )
         unsafeRetentionLabels.forEach((retentionLabel) => {
             fetchImpl.mockResolvedValueOnce(
                 gatewayResponse({
@@ -1970,6 +2066,23 @@ describe('sentinel cockpit classify bridge', () => {
                     status: 'ok',
                     ide_work: validGatewayPatchIdeWork({
                         patch_review_packet: validPatchReviewPacket({ retention_label: retentionLabel })
+                    })
+                })
+            )
+        })
+        UNSAFE_PATCH_PREVIEW_SOURCE_TEXTS.forEach((text) => {
+            fetchImpl.mockResolvedValueOnce(
+                gatewayResponse({
+                    schema_version: 'sentinel.gateway.v1',
+                    status: 'ok',
+                    ide_work: validGatewayPatchIdeWork({
+                        patch_review_packet: validPatchReviewPacket({
+                            preview_lines: [
+                                { kind: 'file', text: 'src/one.mjs' },
+                                { kind: 'removed', text },
+                                { kind: 'added', text: 'export const value = 2;' }
+                            ]
+                        })
                     })
                 })
             )
@@ -2002,11 +2115,26 @@ describe('sentinel cockpit classify bridge', () => {
             )
         ).rejects.toThrow('gateway_rejected')
 
+        await expect(
+            classifyBridge.createIdeWorkStatusSession(
+                { request_kind: 'ide_work_status' },
+                { config, fetchImpl: fetchImpl as any, requestId: 'req_patch_status_null_packet' }
+            )
+        ).rejects.toThrow('gateway_rejected')
+
         for (const [index] of unsafeRetentionLabels.entries()) {
             await expect(
                 classifyBridge.createIdeWorkStatusSession(
                     { request_kind: 'ide_work_status' },
                     { config, fetchImpl: fetchImpl as any, requestId: `req_patch_status_bad_label_${index}` }
+                )
+            ).rejects.toThrow('gateway_rejected')
+        }
+        for (const [index] of UNSAFE_PATCH_PREVIEW_SOURCE_TEXTS.entries()) {
+            await expect(
+                classifyBridge.createIdeWorkStatusSession(
+                    { request_kind: 'ide_work_status' },
+                    { config, fetchImpl: fetchImpl as any, requestId: `req_patch_status_bad_preview_${index}` }
                 )
             ).rejects.toThrow('gateway_rejected')
         }

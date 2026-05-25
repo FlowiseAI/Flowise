@@ -140,6 +140,10 @@ const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for revie
 const IDE_WORK_PATCH_REVIEW_PATH_PATTERN = /^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/
 const IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN =
     /\b(run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_challenge|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|client_nonce|cockpit_ref|sha256|bearer|authorization|(?:^|[/_.-])(?:token|secret|api[_-]?key|password|raw|stdout|stderr|command|argv|provider|model|diff)(?:[/_.-]|$)/i
+const IDE_WORK_PATCH_PREVIEW_LOCAL_PATH_TEXT_PATTERN =
+    /(?:\b[A-Za-z]:\\|\\\\[A-Za-z0-9._-]+\\|\/mnt\/[a-z]\/|\/(?:home|var|tmp|etc|usr|opt|root|users?)(?:\/|\b))/i
+const IDE_WORK_PATCH_PREVIEW_SOURCE_TEXT_PATTERN =
+    /(?:https?:\/\/|www\.|localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|:\d{2,5}\b|cookie|set-cookie|authorization|bearer|token|secret|api[_-]?key|password|sha256:|-----BEGIN|private key|\bgateway\b|\b(?:command|argv|provider|model|diff_text|patch_id|task_packet|result_packet|evidence_manifest)\b\s*[:=]|^diff --git\b|^---\s|^\+\+\+\s|@@|<\s*\/?\s*[a-z][^>]*>|on[a-z]+\s*=|\[[^\]]+\]\([^)]+\)|```)/i
 const IDE_WORK_PATCH_REVIEW_DENIED_DIRS = Object.freeze(['.git', '.github', 'node_modules', 'dist', 'build', 'coverage'])
 const IDE_WORK_PATCH_REVIEW_DENIED_FILENAMES = Object.freeze(['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'])
 const IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS = Object.freeze([
@@ -653,7 +657,7 @@ function narrowPlanSession(body, options = {}) {
         const idePreview = narrowIdePreview(body.ide_preview)
         if (idePreview) narrowed.ide_preview = idePreview
         const ideWork = narrowIdeWork(body.ide_work)
-        if (ideWork) narrowed.ide_work = ideWork
+        if (ideWork && ideWork.state !== 'patch_review_required') narrowed.ide_work = ideWork
     }
     return narrowed
 }
@@ -788,7 +792,7 @@ function narrowIdeWork(value) {
 }
 
 function narrowPatchReviewPacket(value, isPatchReviewRequired) {
-    if (value === null) return null
+    if (value === null) return isPatchReviewRequired ? undefined : null
     if (!isPatchReviewRequired || !isPlainRecord(value)) return undefined
     const keys = Object.keys(value)
     if (keys.length !== IDE_WORK_PATCH_REVIEW_PACKET_KEYS.length || keys.some((key) => !IDE_WORK_PATCH_REVIEW_PACKET_KEYS.includes(key))) {
@@ -923,13 +927,8 @@ function readPatchPreviewLine(value) {
         const safePath = readPatchReviewPath(value.text)
         return safePath ? { kind: 'file', text: safePath } : null
     }
-    if (/\b[A-Za-z]:\\|\/mnt\/[a-z]\//.test(value.text)) return null
-    if (
-        /\b(run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*|sha256:|bearer|authorization|token|secret|api[_-]?key|-----BEGIN|private key|password/i.test(
-            value.text
-        )
-    )
-        return null
+    if (IDE_WORK_PATCH_PREVIEW_LOCAL_PATH_TEXT_PATTERN.test(value.text)) return null
+    if (IDE_WORK_PATCH_PREVIEW_SOURCE_TEXT_PATTERN.test(value.text)) return null
     return { kind: value.kind, text: value.text }
 }
 

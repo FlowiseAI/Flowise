@@ -147,6 +147,15 @@ const validPatchReviewPacket = (overrides = {}) => ({
     ...overrides
 })
 
+const UNSAFE_PATCH_PREVIEW_SOURCE_TEXTS = [
+    'fetch("http://127.0.0.1:39173")',
+    '<button>Run</button>',
+    '@@',
+    'command: git diff',
+    'const home = "/tmp/qvc"',
+    'const host = "gateway"'
+]
+
 const validPatchIdeWork = (overrides = {}) =>
     validIdeWork({
         schema_version: 'sentinel.qvc.ide_work_result_patch_review_required.v1',
@@ -165,6 +174,7 @@ const validPatchIdeWork = (overrides = {}) =>
         terminal_note: 'Nothing was accepted or applied here.',
         allowed_user_actions: ['none'],
         blocked_actions: ['No controls are available here.', 'No changes start from this page.'],
+        patch_review_packet: validPatchReviewPacket(),
         safe_error: null,
         ...overrides
     })
@@ -898,7 +908,7 @@ describe('sentinelCockpit API wrapper', () => {
         )
     })
 
-    it('preserves valid patch review required work as a display-only terminal projection', async () => {
+    it('omits patch review required work from initial goal plan-session responses', async () => {
         const sentinelGatewayPacket = validPatchReviewPacket({
             changed_files_list: ['src/sentinel-gateway/qvc-ide-patch-workspace.mjs'],
             preview_lines: [
@@ -925,16 +935,9 @@ describe('sentinelCockpit API wrapper', () => {
             { fetchImpl }
         )
 
-        expect(session.ide_work).toEqual(validPatchIdeWork({ patch_review_packet: sentinelGatewayPacket }))
-        expect(session.ide_work.allowed_user_actions).toEqual(['none'])
-        expect(session.ide_work.approval_available).toBe(false)
-        expect(session.ide_work.cancel_available).toBe(false)
-        expect(session.ide_work.patch_review_packet).toEqual(sentinelGatewayPacket)
-        expect(session.ide_work.patch_review_packet.changed_files_list).toEqual(['src/sentinel-gateway/qvc-ide-patch-workspace.mjs'])
-        expect(session.ide_work.patch_review_packet.preview_lines).toEqual(sentinelGatewayPacket.preview_lines)
-        expect(JSON.stringify(session.ide_work)).not.toMatch(
-            /request_patch_proposal|diff_text|source code|file path|raw output|stdout|stderr/i
-        )
+        expect(session).not.toHaveProperty('ide_work')
+        expect(Object.keys(session).sort()).toEqual([...PLAN_SESSION_KEYS, 'ide_preview', 'route_card'].sort())
+        expect(JSON.stringify(session)).not.toMatch(/request_patch_proposal|diff_text|source code|file path|raw output|stdout|stderr/i)
     })
 
     it('preserves exact patch proposal approval work without leaking source or raw output', async () => {
@@ -1078,6 +1081,19 @@ describe('sentinelCockpit API wrapper', () => {
                 })
             })
         ],
+        ...UNSAFE_PATCH_PREVIEW_SOURCE_TEXTS.map((text) => [
+            `packet unsafe preview source ${text}`,
+            validPatchIdeWork({
+                patch_review_packet: validPatchReviewPacket({
+                    preview_lines: [
+                        { kind: 'file', text: 'src/one.mjs' },
+                        { kind: 'removed', text },
+                        { kind: 'added', text: 'export const value = 2;' }
+                    ]
+                })
+            })
+        ]),
+        ['packet null on terminal', validPatchIdeWork({ patch_review_packet: null })],
         ['packet on nonterminal', validIdeWork({ patch_review_packet: validPatchReviewPacket() })],
         ['leaky patch terminal', validPatchIdeWork({ short_summary: 'The unified diff should not display.' })],
         ['source code patch terminal', validPatchIdeWork({ short_summary: 'The source code should not display.' })],

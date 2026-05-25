@@ -154,6 +154,15 @@ const safePatchReviewPacket = (overrides = {}) => ({
     ...overrides
 })
 
+const UNSAFE_PATCH_PREVIEW_SOURCE_TEXTS = [
+    'fetch("http://127.0.0.1:39173")',
+    '<button>Run</button>',
+    '@@',
+    'command: git diff',
+    'const home = "/tmp/qvc"',
+    'const host = "gateway"'
+]
+
 const safePatchIdeWork = (overrides = {}) =>
     safeIdeWork({
         schema_version: 'sentinel.qvc.ide_work_result_patch_review_required.v1',
@@ -172,6 +181,7 @@ const safePatchIdeWork = (overrides = {}) =>
         terminal_note: 'Nothing was accepted or applied here.',
         allowed_user_actions: ['none'],
         blocked_actions: ['No controls are available here.', 'No changes start from this page.'],
+        patch_review_packet: safePatchReviewPacket(),
         safe_error: null,
         ...overrides
     })
@@ -946,7 +956,16 @@ describe('SentinelResumeStatus', () => {
         const patchIdeWork = safePatchIdeWork({ patch_review_packet: safePatchReviewPacket() })
         const snapshot = safePlanSession({ ide_work: patchIdeWork })
         const html = renderToStaticMarkup(
-            <PlanSessionCard snapshot={snapshot} canApproveMockWork canCancelMockWork canRequestReadOnlyReview isLoading={false} />
+            <PlanSessionCard
+                snapshot={snapshot}
+                canDecide
+                canPrepareManualPacket
+                canSubmitResultReview
+                canApproveMockWork
+                canCancelMockWork
+                canRequestReadOnlyReview
+                isLoading={false}
+            />
         )
 
         expect(html).toContain('Patch proposal review required')
@@ -1079,6 +1098,30 @@ describe('SentinelResumeStatus', () => {
 
             expect(unsafePathHtml).not.toContain('Patch proposal review required')
         })
+        UNSAFE_PATCH_PREVIEW_SOURCE_TEXTS.forEach((text) => {
+            const unsafeSourceHtml = renderToStaticMarkup(
+                <PlanSessionCard
+                    snapshot={safePlanSession({
+                        ide_work: safePatchIdeWork({
+                            patch_review_packet: safePatchReviewPacket({
+                                preview_lines: [
+                                    { kind: 'file', text: 'src/one.mjs' },
+                                    { kind: 'removed', text },
+                                    { kind: 'added', text: 'export const value = 2;' }
+                                ]
+                            })
+                        })
+                    })}
+                />
+            )
+
+            expect(unsafeSourceHtml).not.toContain('Patch proposal review required')
+            expect(unsafeSourceHtml).not.toContain(text)
+        })
+        const nullPacketHtml = renderToStaticMarkup(
+            <PlanSessionCard snapshot={safePlanSession({ ide_work: safePatchIdeWork({ patch_review_packet: null }) })} />
+        )
+        expect(nullPacketHtml).not.toContain('Patch proposal review required')
     })
 
     it('renders approved sentinel-gateway paths without enabling patch actions', () => {
@@ -1206,7 +1249,13 @@ describe('SentinelResumeStatus', () => {
         await waitForAssertion(() => expect(requestIdeWorkAction).toHaveBeenCalledWith({ action: 'request_patch_proposal' }))
         expect(container.textContent).toContain('Patch proposal review required')
         expect(container.textContent).toContain('Patch proposal needs review. Nothing was accepted or applied here.')
+        expect(container.textContent).toContain(
+            'Patch review is display-only. Plan, handoff, and result controls are not available for this state.'
+        )
         expect(container.textContent).not.toContain('Ask Sentinel for patch proposal')
+        expect(buttonLabels(container)).not.toEqual(
+            expect.arrayContaining(['Approve plan', 'Revise plan', 'Stop', 'Prepare manual worker packet', 'Send for Sentinel review'])
+        )
         expect(container.textContent).not.toMatch(/source code|file path|raw output|stdout|stderr|Create PR/i)
     })
 
