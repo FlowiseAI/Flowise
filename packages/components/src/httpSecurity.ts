@@ -88,7 +88,7 @@ export function isDeniedIP(ip: string, denyList: string[]): void {
             } catch (error) {
                 throw new Error(`isDeniedIP: ${error}`)
             }
-        } else if (ip === entry) {
+        } else if (parsedIp.toString() === entry) {
             throw new Error('Access to this host is denied by policy.')
         }
     }
