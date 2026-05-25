@@ -69,19 +69,18 @@ export function isDeniedIP(ip: string, denyList: string[]): void {
     for (const entry of denyList) {
         if (entry.includes('/')) {
             try {
-                const [range, _] = entry.split('/')
-                let parsedRange = ipaddr.parse(range)
+                const [rangeAddr, mask] = ipaddr.parseCIDR(entry)
+                let parsedRange = rangeAddr
+                let adjustedMask = mask
 
                 // Also normalize deny list entries
-                if (parsedRange.kind() === 'ipv6') {
-                    const ipv6Range = parsedRange as ipaddr.IPv6
-                    if (ipv6Range.isIPv4MappedAddress()) {
-                        parsedRange = ipv6Range.toIPv4Address()
-                    }
+                if (parsedRange.kind() === 'ipv6' && (parsedRange as ipaddr.IPv6).isIPv4MappedAddress()) {
+                    parsedRange = (parsedRange as ipaddr.IPv6).toIPv4Address()
+                    adjustedMask -= 96
                 }
 
                 if (parsedIp.kind() === parsedRange.kind()) {
-                    if (parsedIp.match(ipaddr.parseCIDR(entry))) {
+                    if (parsedIp.match(parsedRange, adjustedMask)) {
                         throw new Error('Access to this host is denied by policy.')
                     }
                 }

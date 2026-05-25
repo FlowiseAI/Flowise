@@ -251,4 +251,37 @@ describe('isDeniedIP - SSRF Protection', () => {
             expect(() => isDeniedIP('::ffff:169.254.169.254', TEST_DENY_LIST)).toThrow('Access to this host is denied by policy.')
         })
     })
+
+    describe('IPv4-Mapped IPv6 CIDR in Deny List', () => {
+        const mappedCIDRDenyList = [
+            '::ffff:10.0.0.0/104', // Equivalent to 10.0.0.0/8
+            '::ffff:127.0.0.0/104', // Equivalent to 127.0.0.0/8
+            '::ffff:192.168.0.0/112' // Equivalent to 192.168.0.0/16
+        ]
+
+        it('should block IPv4 address matching IPv4-mapped IPv6 CIDR in deny list', () => {
+            expect(() => isDeniedIP('10.5.5.5', mappedCIDRDenyList)).toThrow('Access to this host is denied by policy.')
+            expect(() => isDeniedIP('127.0.0.1', mappedCIDRDenyList)).toThrow('Access to this host is denied by policy.')
+            expect(() => isDeniedIP('192.168.1.1', mappedCIDRDenyList)).toThrow('Access to this host is denied by policy.')
+        })
+
+        it('should block IPv4-mapped IPv6 address matching IPv4-mapped IPv6 CIDR in deny list', () => {
+            expect(() => isDeniedIP('::ffff:10.5.5.5', mappedCIDRDenyList)).toThrow('Access to this host is denied by policy.')
+            expect(() => isDeniedIP('::ffff:127.0.0.1', mappedCIDRDenyList)).toThrow('Access to this host is denied by policy.')
+            expect(() => isDeniedIP('::ffff:192.168.1.1', mappedCIDRDenyList)).toThrow('Access to this host is denied by policy.')
+        })
+
+        it('should allow IPv4 address outside IPv4-mapped IPv6 CIDR in deny list', () => {
+            expect(() => isDeniedIP('8.8.8.8', mappedCIDRDenyList)).not.toThrow()
+            expect(() => isDeniedIP('1.1.1.1', mappedCIDRDenyList)).not.toThrow()
+        })
+
+        it('should correctly match CIDR boundaries with IPv4-mapped IPv6 in deny list', () => {
+            // Test edge cases for the mask adjustment logic
+            expect(() => isDeniedIP('10.0.0.0', mappedCIDRDenyList)).toThrow('Access to this host is denied by policy.')
+            expect(() => isDeniedIP('10.255.255.255', mappedCIDRDenyList)).toThrow('Access to this host is denied by policy.')
+            expect(() => isDeniedIP('192.168.0.0', mappedCIDRDenyList)).toThrow('Access to this host is denied by policy.')
+            expect(() => isDeniedIP('192.168.255.255', mappedCIDRDenyList)).toThrow('Access to this host is denied by policy.')
+        })
+    })
 })
