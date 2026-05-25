@@ -136,15 +136,20 @@ const safeIdeWork = (overrides = {}) => ({
 })
 
 const safePatchReviewPacket = (overrides = {}) => ({
-    schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v2',
-    review_mode: 'paths_only',
+    schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v3',
+    review_mode: 'bounded_preview',
     packet_retained: true,
-    review_packet_status: 'paths_only',
+    review_packet_status: 'bounded_preview',
     changed_file_count: 1,
     changed_files_list: ['src/one.mjs'],
     added_line_count: 1,
     deleted_line_count: 1,
     diff_bytes: 128,
+    preview_lines: [
+        { kind: 'file', text: 'src/one.mjs' },
+        { kind: 'removed', text: 'export const value = 1;' },
+        { kind: 'added', text: 'export const value = 2;' }
+    ],
     retention_label: 'Retained briefly for review only.',
     ...overrides
 })
@@ -948,10 +953,13 @@ describe('SentinelResumeStatus', () => {
         expect(html).toContain('Patch proposal needs review. Nothing was accepted or applied here.')
         expect(html).toContain('Patch review status')
         expect(html).toContain('Patch review packet metadata')
-        expect(html).toContain('Path list retained')
+        expect(html).toContain('Bounded preview retained')
         expect(html).toContain('Changed files')
         expect(html).toContain('Changed paths')
         expect(html).toContain('src/one.mjs')
+        expect(html).toContain('Patch proposal preview')
+        expect(html).toContain('export const value = 1;')
+        expect(html).toContain('export const value = 2;')
         expect(html).toContain('Packet bytes')
         expect(html).toContain('Retained briefly for review only.')
         expect(html).toContain('This card is passive and has no action controls.')
@@ -1041,7 +1049,23 @@ describe('SentinelResumeStatus', () => {
             { changed_files_list: ['src/sentinel-gateway/gateway-client.mjs'] },
             { changed_files_list: ['.github/workflows/build.yml'] },
             { changed_files_list: ['node_modules/pkg/index.js'] },
-            { changed_files_list: ['pnpm-lock.yaml'] }
+            { changed_files_list: ['pnpm-lock.yaml'] },
+            { preview_lines: undefined },
+            { preview_lines: [{ kind: 'file', text: 'src/one.mjs' }] },
+            {
+                preview_lines: [
+                    { kind: 'file', text: 'src/two.mjs' },
+                    { kind: 'removed', text: 'export const value = 1;' },
+                    { kind: 'added', text: 'export const value = 2;' }
+                ]
+            },
+            {
+                preview_lines: [
+                    { kind: 'file', text: 'src/one.mjs' },
+                    { kind: 'removed', text: 'token = hidden' },
+                    { kind: 'added', text: 'export const value = 2;' }
+                ]
+            }
         ].forEach((packetOverrides) => {
             const unsafePathHtml = renderToStaticMarkup(
                 <PlanSessionCard
@@ -1059,7 +1083,12 @@ describe('SentinelResumeStatus', () => {
 
     it('renders approved sentinel-gateway paths without enabling patch actions', () => {
         const packet = safePatchReviewPacket({
-            changed_files_list: ['src/sentinel-gateway/qvc-ide-patch-workspace.mjs']
+            changed_files_list: ['src/sentinel-gateway/qvc-ide-patch-workspace.mjs'],
+            preview_lines: [
+                { kind: 'file', text: 'src/sentinel-gateway/qvc-ide-patch-workspace.mjs' },
+                { kind: 'removed', text: 'export const value = 1;' },
+                { kind: 'added', text: 'export const value = 2;' }
+            ]
         })
         const html = renderToStaticMarkup(
             <PlanSessionCard snapshot={safePlanSession({ ide_work: safePatchIdeWork({ patch_review_packet: packet }) })} />

@@ -143,15 +143,20 @@ function validServerIdeWork(overrides: Record<string, unknown> = {}) {
 
 function validPatchReviewPacket(overrides: Record<string, unknown> = {}) {
     return {
-        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v2',
-        review_mode: 'paths_only',
+        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v3',
+        review_mode: 'bounded_preview',
         packet_retained: true,
-        review_packet_status: 'paths_only',
+        review_packet_status: 'bounded_preview',
         changed_file_count: 1,
         changed_files_list: ['src/one.mjs'],
         added_line_count: 1,
         deleted_line_count: 1,
         diff_bytes: 128,
+        preview_lines: [
+            { kind: 'file', text: 'src/one.mjs' },
+            { kind: 'removed', text: 'export const value = 1;' },
+            { kind: 'added', text: 'export const value = 2;' }
+        ],
         retention_label: 'Retained briefly for review only.',
         ...overrides
     }
@@ -1073,7 +1078,12 @@ describe('sentinel cockpit controller responses', () => {
                 status: 'ok',
                 ide_work: validPatchServerIdeWork({
                     patch_review_packet: validPatchReviewPacket({
-                        changed_files_list: ['src/sentinel-gateway/qvc-ide-patch-workspace.mjs']
+                        changed_files_list: ['src/sentinel-gateway/qvc-ide-patch-workspace.mjs'],
+                        preview_lines: [
+                            { kind: 'file', text: 'src/sentinel-gateway/qvc-ide-patch-workspace.mjs' },
+                            { kind: 'removed', text: 'export const value = 1;' },
+                            { kind: 'added', text: 'export const value = 2;' }
+                        ]
                     })
                 }) as any,
                 safe_error: null
@@ -1118,6 +1128,7 @@ describe('sentinel cockpit controller responses', () => {
         expect(statusRes.statusCode).toBe(200)
         expect(JSON.parse(statusRes.bodyText).ide_work).toEqual(validPatchServerIdeWork({ patch_review_packet: validPatchReviewPacket() }))
         expect(statusRes.bodyText).toContain('src/one.mjs')
+        expect(statusRes.bodyText).toContain('export const value = 2;')
         expect(statusRes.bodyText).not.toContain('request_patch_proposal')
         expect(statusRes.bodyText).not.toMatch(/diff_text|source code|file path|raw output|stdout|stderr/i)
 
@@ -1163,7 +1174,23 @@ describe('sentinel cockpit controller responses', () => {
             { changed_files_list: ['src/sentinel-gateway/gateway-client.mjs'] },
             { changed_files_list: ['.github/workflows/build.yml'] },
             { changed_files_list: ['node_modules/pkg/index.js'] },
-            { changed_files_list: ['pnpm-lock.yaml'] }
+            { changed_files_list: ['pnpm-lock.yaml'] },
+            { preview_lines: undefined },
+            { preview_lines: [{ kind: 'file', text: 'src/one.mjs' }] },
+            {
+                preview_lines: [
+                    { kind: 'file', text: 'src/two.mjs' },
+                    { kind: 'removed', text: 'export const value = 1;' },
+                    { kind: 'added', text: 'export const value = 2;' }
+                ]
+            },
+            {
+                preview_lines: [
+                    { kind: 'file', text: 'src/one.mjs' },
+                    { kind: 'removed', text: 'token = hidden' },
+                    { kind: 'added', text: 'export const value = 2;' }
+                ]
+            }
         ]
         for (const packetOverrides of unsafePathCases as Array<Record<string, unknown>>) {
             statusSpy.mockResolvedValueOnce({

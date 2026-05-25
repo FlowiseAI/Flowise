@@ -98,7 +98,7 @@ const IDE_WORK_KEYS = Object.freeze([
 const IDE_WORK_RESPONSE_KEYS = Object.freeze(['schema_version', 'status', IDE_WORK_KEY, 'safe_error'])
 const IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION = 'sentinel.qvc.ide_work_result_patch_review_required.v1'
 const IDE_WORK_PATCH_REVIEW_REQUIRED_STATE = 'patch_review_required'
-const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v2'
+const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v3'
 const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
     'schema_version',
     'review_mode',
@@ -109,11 +109,14 @@ const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
     'added_line_count',
     'deleted_line_count',
     'diff_bytes',
+    'preview_lines',
     'retention_label'
 ])
 const IDE_WORK_PATCH_MAX_CHANGED_FILES = 3
 const IDE_WORK_PATCH_MAX_CHANGED_LINES = 50
 const IDE_WORK_PATCH_MAX_DIFF_BYTES = 10 * 1024
+const IDE_WORK_PATCH_MAX_PREVIEW_LINES = 60
+const IDE_WORK_PATCH_MAX_PREVIEW_LINE_LENGTH = 160
 const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for review only.'
 const IDE_WORK_PATCH_REVIEW_PATH_PATTERN = /^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/
 const IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN =
@@ -1179,7 +1182,7 @@ function validateIdeWork(ideWork: unknown) {
     ) {
         throw httpError(500, 'invalid_snapshot')
     }
-    if (Buffer.byteLength(JSON.stringify(work)) > 4096) {
+    if (Buffer.byteLength(JSON.stringify(work)) > 16 * 1024) {
         throw httpError(500, 'invalid_snapshot')
     }
     const lower = JSON.stringify({ ...work, patch_review_packet: null }).toLowerCase()
@@ -1197,17 +1200,18 @@ function validatePatchReviewPacket(value: unknown, isPatchReviewRequired: boolea
     assertResponseKeys(packet, IDE_WORK_PATCH_REVIEW_PACKET_KEYS)
     if (
         packet.schema_version !== IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION ||
-        packet.review_mode !== 'paths_only' ||
+        packet.review_mode !== 'bounded_preview' ||
         packet.packet_retained !== true ||
-        packet.review_packet_status !== 'paths_only'
+        packet.review_packet_status !== 'bounded_preview'
     ) {
         throw httpError(500, 'invalid_snapshot')
     }
     const changedFileCount = validateBoundedIdeWorkInteger(packet.changed_file_count, 1, IDE_WORK_PATCH_MAX_CHANGED_FILES)
-    validatePatchReviewPathList(packet.changed_files_list, changedFileCount)
-    validateBoundedIdeWorkInteger(packet.added_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
-    validateBoundedIdeWorkInteger(packet.deleted_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
+    const changedFilesList = validatePatchReviewPathList(packet.changed_files_list, changedFileCount)
+    const addedLineCount = validateBoundedIdeWorkInteger(packet.added_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
+    const deletedLineCount = validateBoundedIdeWorkInteger(packet.deleted_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
     validateBoundedIdeWorkInteger(packet.diff_bytes, 1, IDE_WORK_PATCH_MAX_DIFF_BYTES)
+    validatePatchPreviewLines(packet.preview_lines, changedFilesList, addedLineCount, deletedLineCount)
     if (packet.retention_label !== IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL) {
         throw httpError(500, 'invalid_snapshot')
     }
@@ -1220,16 +1224,19 @@ function validateBoundedIdeWorkInteger(value: unknown, min: number, max: number)
     return value
 }
 
-function validatePatchReviewPathList(value: unknown, expectedCount: number) {
+function validatePatchReviewPathList(value: unknown, expectedCount: number): string[] {
     if (!Array.isArray(value) || value.length !== expectedCount || value.length > IDE_WORK_PATCH_MAX_CHANGED_FILES) {
         throw httpError(500, 'invalid_snapshot')
     }
     const seen = new Set<string>()
+    const paths: string[] = []
     for (const item of value) {
         const safePath = validatePatchReviewPath(item)
         if (seen.has(safePath)) throw httpError(500, 'invalid_snapshot')
         seen.add(safePath)
+        paths.push(safePath)
     }
+    return paths
 }
 
 function validatePatchReviewPath(value: unknown): string {
@@ -1268,6 +1275,54 @@ function validatePatchReviewPath(value: unknown): string {
         throw httpError(500, 'invalid_snapshot')
     }
     return value
+}
+
+function validatePatchPreviewLines(value: unknown, changedFilesList: string[], addedLineCount: number, deletedLineCount: number) {
+    if (!Array.isArray(value)) throw httpError(500, 'invalid_snapshot')
+    const expectedLength = changedFilesList.length + addedLineCount + deletedLineCount
+    if (value.length !== expectedLength || value.length < 1 || value.length > IDE_WORK_PATCH_MAX_PREVIEW_LINES) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const fileLines: string[] = []
+    let addedCount = 0
+    let removedCount = 0
+    for (const item of value) {
+        const line = validatePatchPreviewLine(item)
+        if (line.kind === 'file') fileLines.push(line.text)
+        if (line.kind === 'added') addedCount += 1
+        if (line.kind === 'removed') removedCount += 1
+    }
+    if (
+        addedCount !== addedLineCount ||
+        removedCount !== deletedLineCount ||
+        fileLines.length !== changedFilesList.length ||
+        fileLines.some((filePath, index) => filePath !== changedFilesList[index])
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validatePatchPreviewLine(value: unknown): { kind: 'file' | 'removed' | 'added'; text: string } {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) throw httpError(500, 'invalid_snapshot')
+    const line = value as Record<string, unknown>
+    assertResponseKeys(line, ['kind', 'text'])
+    if (line.kind !== 'file' && line.kind !== 'removed' && line.kind !== 'added') throw httpError(500, 'invalid_snapshot')
+    if (typeof line.text !== 'string' || line.text.length < 1 || line.text.length > IDE_WORK_PATCH_MAX_PREVIEW_LINE_LENGTH) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e]/.test(line.text) || /[^\x20-\x7e]/.test(line.text)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (line.kind === 'file') return { kind: 'file', text: validatePatchReviewPath(line.text) }
+    if (/\b[A-Za-z]:\\|\/mnt\/[a-z]\//.test(line.text)) throw httpError(500, 'invalid_snapshot')
+    if (
+        /\b(run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*|sha256:|bearer|authorization|token|secret|api[_-]?key|-----BEGIN|private key|password/i.test(
+            line.text
+        )
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    return { kind: line.kind, text: line.text }
 }
 
 function hasForbiddenGatewayPathSegment(value: string): boolean {

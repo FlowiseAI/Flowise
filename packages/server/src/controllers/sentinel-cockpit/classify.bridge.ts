@@ -23,7 +23,7 @@ export const IDE_WORK_KEY = 'ide_work'
 export const IDE_WORK_BRIDGE_SCHEMA_VERSION = 'sentinel.cockpit_bridge.ide_work.v1'
 const IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION = 'sentinel.qvc.ide_work_result_patch_review_required.v1'
 const IDE_WORK_PATCH_REVIEW_REQUIRED_STATE = 'patch_review_required'
-const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v2'
+const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v3'
 const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
     'schema_version',
     'review_mode',
@@ -34,11 +34,14 @@ const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
     'added_line_count',
     'deleted_line_count',
     'diff_bytes',
+    'preview_lines',
     'retention_label'
 ])
 const IDE_WORK_PATCH_MAX_CHANGED_FILES = 3
 const IDE_WORK_PATCH_MAX_CHANGED_LINES = 50
 const IDE_WORK_PATCH_MAX_DIFF_BYTES = 10 * 1024
+const IDE_WORK_PATCH_MAX_PREVIEW_LINES = 60
+const IDE_WORK_PATCH_MAX_PREVIEW_LINE_LENGTH = 160
 const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for review only.'
 const IDE_WORK_PATCH_REVIEW_PATH_PATTERN = /^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/
 const IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN =
@@ -340,15 +343,21 @@ export type IdeWorkProjection = Readonly<{
 
 export type PatchReviewPacketMetadata = Readonly<{
     schema_version: typeof IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION
-    review_mode: 'paths_only'
+    review_mode: 'bounded_preview'
     packet_retained: true
-    review_packet_status: 'paths_only'
+    review_packet_status: 'bounded_preview'
     changed_file_count: number
     changed_files_list: string[]
     added_line_count: number
     deleted_line_count: number
     diff_bytes: number
+    preview_lines: PatchPreviewLine[]
     retention_label: string
+}>
+
+export type PatchPreviewLine = Readonly<{
+    kind: 'file' | 'removed' | 'added'
+    text: string
 }>
 
 export type ClassifyBridgeErrorCode =
@@ -1270,9 +1279,9 @@ function projectPatchReviewPacket(value: unknown, isPatchReviewRequired: boolean
     if (!keysMatch(packet, IDE_WORK_PATCH_REVIEW_PACKET_KEYS)) return undefined
     if (
         packet.schema_version !== IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION ||
-        packet.review_mode !== 'paths_only' ||
+        packet.review_mode !== 'bounded_preview' ||
         packet.packet_retained !== true ||
-        packet.review_packet_status !== 'paths_only'
+        packet.review_packet_status !== 'bounded_preview'
     ) {
         return undefined
     }
@@ -1281,26 +1290,29 @@ function projectPatchReviewPacket(value: unknown, isPatchReviewRequired: boolean
     const addedLineCount = readBoundedIdeWorkInteger(packet.added_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
     const deletedLineCount = readBoundedIdeWorkInteger(packet.deleted_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
     const diffBytes = readBoundedIdeWorkInteger(packet.diff_bytes, 1, IDE_WORK_PATCH_MAX_DIFF_BYTES)
+    const previewLines = readPatchPreviewLines(packet.preview_lines, changedFilesList, addedLineCount, deletedLineCount)
     if (
         changedFileCount === null ||
         changedFilesList === null ||
         addedLineCount === null ||
         deletedLineCount === null ||
         diffBytes === null ||
+        previewLines === null ||
         packet.retention_label !== IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL
     ) {
         return undefined
     }
     return {
         schema_version: IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION,
-        review_mode: 'paths_only',
+        review_mode: 'bounded_preview',
         packet_retained: true,
-        review_packet_status: 'paths_only',
+        review_packet_status: 'bounded_preview',
         changed_file_count: changedFileCount,
         changed_files_list: changedFilesList,
         added_line_count: addedLineCount,
         deleted_line_count: deletedLineCount,
         diff_bytes: diffBytes,
+        preview_lines: previewLines,
         retention_label: IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL
     }
 }
@@ -1359,6 +1371,54 @@ function readPatchReviewPath(value: unknown): string | null {
     const extension = dotIndex >= 0 ? filename.slice(dotIndex) : ''
     if (IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS.includes(extension)) return null
     return value
+}
+
+function readPatchPreviewLines(
+    value: unknown,
+    changedFilesList: string[] | null,
+    addedLineCount: number | null,
+    deletedLineCount: number | null
+): PatchPreviewLine[] | null {
+    if (!Array.isArray(value) || !changedFilesList || addedLineCount === null || deletedLineCount === null) return null
+    const expectedLength = changedFilesList.length + addedLineCount + deletedLineCount
+    if (value.length !== expectedLength || value.length < 1 || value.length > IDE_WORK_PATCH_MAX_PREVIEW_LINES) return null
+    const fileLines: string[] = []
+    let addedCount = 0
+    let removedCount = 0
+    const lines: PatchPreviewLine[] = []
+    for (const item of value) {
+        const line = readPatchPreviewLine(item)
+        if (!line) return null
+        if (line.kind === 'file') fileLines.push(line.text)
+        if (line.kind === 'added') addedCount += 1
+        if (line.kind === 'removed') removedCount += 1
+        lines.push(line)
+    }
+    if (addedCount !== addedLineCount || removedCount !== deletedLineCount) return null
+    if (fileLines.length !== changedFilesList.length || fileLines.some((filePath, index) => filePath !== changedFilesList[index]))
+        return null
+    return lines
+}
+
+function readPatchPreviewLine(value: unknown): PatchPreviewLine | null {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+    const line = value as Record<string, unknown>
+    if (!keysMatch(line, ['kind', 'text'])) return null
+    if (line.kind !== 'file' && line.kind !== 'removed' && line.kind !== 'added') return null
+    if (typeof line.text !== 'string' || line.text.length < 1 || line.text.length > IDE_WORK_PATCH_MAX_PREVIEW_LINE_LENGTH) return null
+    if (/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e]/.test(line.text) || /[^\x20-\x7e]/.test(line.text)) return null
+    if (line.kind === 'file') {
+        const safePath = readPatchReviewPath(line.text)
+        return safePath ? { kind: 'file', text: safePath } : null
+    }
+    if (/\b[A-Za-z]:\\|\/mnt\/[a-z]\//.test(line.text)) return null
+    if (
+        /\b(run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*|sha256:|bearer|authorization|token|secret|api[_-]?key|-----BEGIN|private key|password/i.test(
+            line.text
+        )
+    )
+        return null
+    return { kind: line.kind, text: line.text }
 }
 
 function hasForbiddenGatewayPathSegment(value: string): boolean {

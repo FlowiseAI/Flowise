@@ -129,15 +129,20 @@ const validIdeWork = (overrides = {}) => ({
 })
 
 const validPatchReviewPacket = (overrides = {}) => ({
-    schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v2',
-    review_mode: 'paths_only',
+    schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v3',
+    review_mode: 'bounded_preview',
     packet_retained: true,
-    review_packet_status: 'paths_only',
+    review_packet_status: 'bounded_preview',
     changed_file_count: 1,
     changed_files_list: ['src/one.mjs'],
     added_line_count: 1,
     deleted_line_count: 1,
     diff_bytes: 128,
+    preview_lines: [
+        { kind: 'file', text: 'src/one.mjs' },
+        { kind: 'removed', text: 'export const value = 1;' },
+        { kind: 'added', text: 'export const value = 2;' }
+    ],
     retention_label: 'Retained briefly for review only.',
     ...overrides
 })
@@ -895,7 +900,12 @@ describe('sentinelCockpit API wrapper', () => {
 
     it('preserves valid patch review required work as a display-only terminal projection', async () => {
         const sentinelGatewayPacket = validPatchReviewPacket({
-            changed_files_list: ['src/sentinel-gateway/qvc-ide-patch-workspace.mjs']
+            changed_files_list: ['src/sentinel-gateway/qvc-ide-patch-workspace.mjs'],
+            preview_lines: [
+                { kind: 'file', text: 'src/sentinel-gateway/qvc-ide-patch-workspace.mjs' },
+                { kind: 'removed', text: 'export const value = 1;' },
+                { kind: 'added', text: 'export const value = 2;' }
+            ]
         })
         const fetchImpl = jest.fn().mockResolvedValue(
             fetchResponse(
@@ -921,6 +931,7 @@ describe('sentinelCockpit API wrapper', () => {
         expect(session.ide_work.cancel_available).toBe(false)
         expect(session.ide_work.patch_review_packet).toEqual(sentinelGatewayPacket)
         expect(session.ide_work.patch_review_packet.changed_files_list).toEqual(['src/sentinel-gateway/qvc-ide-patch-workspace.mjs'])
+        expect(session.ide_work.patch_review_packet.preview_lines).toEqual(sentinelGatewayPacket.preview_lines)
         expect(JSON.stringify(session.ide_work)).not.toMatch(
             /request_patch_proposal|diff_text|source code|file path|raw output|stdout|stderr/i
         )
@@ -1037,6 +1048,35 @@ describe('sentinelCockpit API wrapper', () => {
         [
             'packet lockfile path',
             validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ changed_files_list: ['pnpm-lock.yaml'] }) })
+        ],
+        ['packet missing preview', validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ preview_lines: undefined }) })],
+        [
+            'packet preview count mismatch',
+            validPatchIdeWork({ patch_review_packet: validPatchReviewPacket({ preview_lines: [{ kind: 'file', text: 'src/one.mjs' }] }) })
+        ],
+        [
+            'packet preview path mismatch',
+            validPatchIdeWork({
+                patch_review_packet: validPatchReviewPacket({
+                    preview_lines: [
+                        { kind: 'file', text: 'src/two.mjs' },
+                        { kind: 'removed', text: 'export const value = 1;' },
+                        { kind: 'added', text: 'export const value = 2;' }
+                    ]
+                })
+            })
+        ],
+        [
+            'packet unsafe preview source',
+            validPatchIdeWork({
+                patch_review_packet: validPatchReviewPacket({
+                    preview_lines: [
+                        { kind: 'file', text: 'src/one.mjs' },
+                        { kind: 'removed', text: 'token = hidden' },
+                        { kind: 'added', text: 'export const value = 2;' }
+                    ]
+                })
+            })
         ],
         ['packet on nonterminal', validIdeWork({ patch_review_packet: validPatchReviewPacket() })],
         ['leaky patch terminal', validPatchIdeWork({ short_summary: 'The unified diff should not display.' })],

@@ -100,11 +100,14 @@ const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
     'added_line_count',
     'deleted_line_count',
     'diff_bytes',
+    'preview_lines',
     'retention_label'
 ])
 const IDE_WORK_PATCH_MAX_CHANGED_FILES = 3
 const IDE_WORK_PATCH_MAX_CHANGED_LINES = 50
 const IDE_WORK_PATCH_MAX_DIFF_BYTES = 10 * 1024
+const IDE_WORK_PATCH_MAX_PREVIEW_LINES = 60
+const IDE_WORK_PATCH_MAX_PREVIEW_LINE_LENGTH = 160
 const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for review only.'
 const IDE_WORK_PATCH_REVIEW_PATH_PATTERN = /^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/
 const IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN =
@@ -407,6 +410,33 @@ const pageStyles = {
         margin: '12px 0 0',
         color: '#cbd5e1',
         fontSize: '0.9rem'
+    },
+    patchPreview: {
+        display: 'grid',
+        gap: '4px',
+        margin: '8px 0 12px',
+        padding: '10px',
+        border: '1px solid #334155',
+        borderRadius: '6px',
+        background: '#020617',
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+        fontSize: '0.84rem',
+        lineHeight: 1.45
+    },
+    patchPreviewLine: {
+        display: 'grid',
+        gridTemplateColumns: '24px minmax(0, 1fr)',
+        gap: '8px',
+        minWidth: 0
+    },
+    patchPreviewMark: {
+        color: '#bfdbfe',
+        fontWeight: 700
+    },
+    patchPreviewText: {
+        minWidth: 0,
+        overflowWrap: 'anywhere',
+        whiteSpace: 'pre-wrap'
     }
 }
 
@@ -1077,6 +1107,8 @@ function PatchReviewRequiredCard({ ideWork, rows }) {
 }
 
 function PatchReviewPacketMetadata({ packet }) {
+    const safePacket = readPatchReviewPacket(packet, true)
+    if (!safePacket) return null
     const rows = readPatchReviewPacketRows(packet)
     if (!rows.length) return null
     return (
@@ -1085,6 +1117,21 @@ function PatchReviewPacketMetadata({ packet }) {
                 <div key={label} style={pageStyles.idePreviewRow}>
                     <div style={pageStyles.idePreviewLabel}>{label}</div>
                     <div style={pageStyles.idePreviewValue}>{value}</div>
+                </div>
+            ))}
+            <PatchPreviewLines packet={safePacket} />
+        </div>
+    )
+}
+
+function PatchPreviewLines({ packet }) {
+    if (!Array.isArray(packet.preview_lines) || packet.preview_lines.length === 0) return null
+    return (
+        <div style={pageStyles.patchPreview} aria-label='Patch proposal preview'>
+            {packet.preview_lines.map((line, index) => (
+                <div key={`${line.kind}-${index}`} style={pageStyles.patchPreviewLine}>
+                    <span style={pageStyles.patchPreviewMark}>{formatPatchPreviewMark(line.kind)}</span>
+                    <span style={pageStyles.patchPreviewText}>{formatValue(line.text)}</span>
                 </div>
             ))}
         </div>
@@ -1771,7 +1818,7 @@ function readPatchReviewPacketRows(packet) {
     const safePacket = readPatchReviewPacket(packet, true)
     if (!safePacket) return []
     return [
-        ['Packet status', 'Path list retained'],
+        ['Packet status', 'Bounded preview retained'],
         ['Changed files', String(safePacket.changed_file_count)],
         ['Changed paths', safePacket.changed_files_list.join(', ')],
         ['Added lines', String(safePacket.added_line_count)],
@@ -1789,10 +1836,10 @@ function readPatchReviewPacket(value, isPatchReviewRequired) {
         return undefined
     }
     if (
-        value.schema_version !== 'sentinel.qvc.ide_work_patch_review_packet.v2' ||
-        value.review_mode !== 'paths_only' ||
+        value.schema_version !== 'sentinel.qvc.ide_work_patch_review_packet.v3' ||
+        value.review_mode !== 'bounded_preview' ||
         value.packet_retained !== true ||
-        value.review_packet_status !== 'paths_only'
+        value.review_packet_status !== 'bounded_preview'
     ) {
         return undefined
     }
@@ -1801,26 +1848,29 @@ function readPatchReviewPacket(value, isPatchReviewRequired) {
     const addedLineCount = readBoundedIdeWorkInteger(value.added_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
     const deletedLineCount = readBoundedIdeWorkInteger(value.deleted_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
     const diffBytes = readBoundedIdeWorkInteger(value.diff_bytes, 1, IDE_WORK_PATCH_MAX_DIFF_BYTES)
+    const previewLines = readPatchPreviewLines(value.preview_lines, changedFilesList, addedLineCount, deletedLineCount)
     if (
         changedFileCount === null ||
         changedFilesList === null ||
         addedLineCount === null ||
         deletedLineCount === null ||
         diffBytes === null ||
+        previewLines === null ||
         value.retention_label !== IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL
     ) {
         return undefined
     }
     return {
-        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v2',
-        review_mode: 'paths_only',
+        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v3',
+        review_mode: 'bounded_preview',
         packet_retained: true,
-        review_packet_status: 'paths_only',
+        review_packet_status: 'bounded_preview',
         changed_file_count: changedFileCount,
         changed_files_list: changedFilesList,
         added_line_count: addedLineCount,
         deleted_line_count: deletedLineCount,
         diff_bytes: diffBytes,
+        preview_lines: previewLines,
         retention_label: IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL
     }
 }
@@ -1879,6 +1929,55 @@ function readPatchReviewPath(value) {
     const extension = dotIndex >= 0 ? filename.slice(dotIndex) : ''
     if (IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS.includes(extension)) return null
     return value
+}
+
+function readPatchPreviewLines(value, changedFilesList, addedLineCount, deletedLineCount) {
+    if (!Array.isArray(value) || !Array.isArray(changedFilesList) || addedLineCount === null || deletedLineCount === null) return null
+    const expectedLength = changedFilesList.length + addedLineCount + deletedLineCount
+    if (value.length !== expectedLength || value.length < 1 || value.length > IDE_WORK_PATCH_MAX_PREVIEW_LINES) return null
+    const fileLines = []
+    let addedCount = 0
+    let removedCount = 0
+    const lines = []
+    for (const item of value) {
+        const line = readPatchPreviewLine(item)
+        if (!line) return null
+        if (line.kind === 'file') fileLines.push(line.text)
+        if (line.kind === 'added') addedCount += 1
+        if (line.kind === 'removed') removedCount += 1
+        lines.push(line)
+    }
+    if (addedCount !== addedLineCount || removedCount !== deletedLineCount) return null
+    if (fileLines.length !== changedFilesList.length || fileLines.some((filePath, index) => filePath !== changedFilesList[index]))
+        return null
+    return lines
+}
+
+function readPatchPreviewLine(value) {
+    if (!isPlainRecord(value)) return null
+    const keys = Object.keys(value)
+    if (keys.length !== 2 || !keys.includes('kind') || !keys.includes('text')) return null
+    if (!['file', 'removed', 'added'].includes(value.kind)) return null
+    if (typeof value.text !== 'string' || value.text.length < 1 || value.text.length > IDE_WORK_PATCH_MAX_PREVIEW_LINE_LENGTH) return null
+    if (/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e]/.test(value.text) || /[^\x20-\x7e]/.test(value.text)) return null
+    if (value.kind === 'file') {
+        const safePath = readPatchReviewPath(value.text)
+        return safePath ? { kind: 'file', text: safePath } : null
+    }
+    if (/\b[A-Za-z]:\\|\/mnt\/[a-z]\//.test(value.text)) return null
+    if (
+        /\b(run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*|sha256:|bearer|authorization|token|secret|api[_-]?key|-----BEGIN|private key|password/i.test(
+            value.text
+        )
+    )
+        return null
+    return { kind: value.kind, text: value.text }
+}
+
+function formatPatchPreviewMark(kind) {
+    if (kind === 'added') return '+'
+    if (kind === 'removed') return '-'
+    return 'file'
 }
 
 function hasForbiddenGatewayPathSegment(value) {

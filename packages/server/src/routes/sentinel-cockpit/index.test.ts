@@ -47,15 +47,23 @@ function validServerIdePreview() {
 
 function validPatchReviewPacket(overrides: Record<string, unknown> = {}) {
     return {
-        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v2',
-        review_mode: 'paths_only',
+        schema_version: 'sentinel.qvc.ide_work_patch_review_packet.v3',
+        review_mode: 'bounded_preview',
         packet_retained: true,
-        review_packet_status: 'paths_only',
+        review_packet_status: 'bounded_preview',
         changed_file_count: 2,
         changed_files_list: ['src/one.mjs', 'src/sentinel-gateway/qvc-ide-patch-workspace.mjs'],
-        added_line_count: 8,
-        deleted_line_count: 3,
+        added_line_count: 2,
+        deleted_line_count: 2,
         diff_bytes: 512,
+        preview_lines: [
+            { kind: 'file', text: 'src/one.mjs' },
+            { kind: 'removed', text: 'export const one = 1;' },
+            { kind: 'added', text: 'export const one = 2;' },
+            { kind: 'file', text: 'src/sentinel-gateway/qvc-ide-patch-workspace.mjs' },
+            { kind: 'removed', text: 'export const value = 1;' },
+            { kind: 'added', text: 'export const value = 2;' }
+        ],
         retention_label: 'Retained briefly for review only.',
         ...overrides
     }
