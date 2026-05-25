@@ -13,7 +13,9 @@ export function appendAuditLog(auditPath: string, entry: Omit<AuditEntry, 'ts'>)
         ...entry
     }
 
-    fs.appendFileSync(auditPath, JSON.stringify(line) + '\n', 'utf8')
+    const newLine = JSON.stringify(line) + '\n'
+    const existing = fs.existsSync(auditPath) ? fs.readFileSync(auditPath, 'utf8') : ''
+    fs.writeFileSync(auditPath, newLine + existing, 'utf8')
 }
 
 export function truncateObservation(obs: unknown, maxLen = 500): string {

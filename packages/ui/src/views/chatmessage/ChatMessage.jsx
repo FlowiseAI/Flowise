@@ -2810,23 +2810,35 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                     return (
                                                         <>
                                                             {elem.type === 'agentflowv2-text-input' ? (
-                                                                <textarea
-                                                                    key={index}
-                                                                    rows={4}
-                                                                    style={{
-                                                                        width: '100%',
-                                                                        padding: '8px',
-                                                                        borderRadius: '8px',
-                                                                        border: '1px solid #ccc',
-                                                                        fontFamily: 'monospace',
-                                                                        fontSize: '12px',
-                                                                        resize: 'vertical',
-                                                                        marginBottom: '8px'
-                                                                    }}
-                                                                    defaultValue={elem.default || ''}
-                                                                    placeholder={elem.placeholder || ''}
-                                                                    onChange={(e) => setModifiedArgs(e.target.value)}
-                                                                />
+                                                                <div key={index} style={{ width: '100%', marginBottom: '8px' }}>
+                                                                    {elem.label && (
+                                                                        <div
+                                                                            style={{
+                                                                                fontSize: '11px',
+                                                                                color: '#888',
+                                                                                marginBottom: '4px'
+                                                                            }}
+                                                                        >
+                                                                            {elem.label}
+                                                                        </div>
+                                                                    )}
+                                                                    <textarea
+                                                                        rows={3}
+                                                                        style={{
+                                                                            width: '100%',
+                                                                            padding: '8px',
+                                                                            borderRadius: '8px',
+                                                                            border: '1px solid #ccc',
+                                                                            fontFamily: 'inherit',
+                                                                            fontSize: '13px',
+                                                                            resize: 'vertical',
+                                                                            boxSizing: 'border-box'
+                                                                        }}
+                                                                        value={modifiedArgs}
+                                                                        placeholder={elem.placeholder || ''}
+                                                                        onChange={(e) => setModifiedArgs(e.target.value)}
+                                                                    />
+                                                                </div>
                                                             ) : (elem.type === 'approve-button' && elem.label === 'Yes') ||
                                                               elem.type === 'agentflowv2-approve-button' ? (
                                                                 <Button

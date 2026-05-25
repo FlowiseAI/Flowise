@@ -2887,26 +2887,161 @@ class Agent_Agentflow implements INode {
                     })
                 }
                 if (humanInput.type === 'proceed') {
-                    // Use human-supplied arg overrides if provided (bonus: argument modification).
-                    // modifiedArgs arrives as a parsed object or as a JSON string from the text input widget.
-                    let resolvedModifiedArgs: Record<string, unknown> | undefined
-                    if (humanInput.modifiedArgs) {
-                        if (typeof humanInput.modifiedArgs === 'string') {
-                            try {
-                                resolvedModifiedArgs = JSON.parse(humanInput.modifiedArgs as string)
-                            } catch {
-                                // malformed JSON from the reviewer — fall back to original args
-                                console.warn('[Governance] modifiedArgs is not valid JSON; using original tool args.')
+                    // modifiedArgs is a plain-text instruction from the reviewer.
+                    // If provided, discard the pending tool call and restart LLM reasoning
+                    // with the instruction injected as a new user message.
+                    // If empty, approve as-is and execute the tool with its original args.
+                    const rawModifiedArgs = typeof humanInput.modifiedArgs === 'string' ? (humanInput.modifiedArgs as string).trim() : ''
+
+                    if (rawModifiedArgs) {
+                        // --- REDIRECT PATH: re-invoke LLM with the reviewer's instruction ---
+                        // The checkpoint already pushed the LLM's tool-call message onto `messages`.
+                        // We need to remove it so the conversation history stays valid
+                        // (an assistant tool_call message with no following tool result would
+                        // confuse the LLM), then append the reviewer's instruction as a user turn.
+                        if (messages.length > 0) {
+                            const last = messages[messages.length - 1] as any
+                            if (last?.tool_calls?.length || last?.additional_kwargs?.tool_calls?.length) {
+                                messages.pop()
                             }
+                        }
+
+                        if (governanceConfig) {
+                            const redirectDecision = gateToolCall({
+                                tool: toolCall.name,
+                                args: (toolCall.args || {}) as Record<string, unknown>,
+                                governance: governanceConfig,
+                                sessionId: options.sessionId,
+                                chatId: options.chatId,
+                                nodeId: governanceConfig.context?.nodeId as string | undefined,
+                                skipAudit: true
+                            })
+                            auditHitl(governanceConfig, toolCall.name, (toolCall.args || {}) as Record<string, unknown>, 'proceed', {
+                                sessionId: options.sessionId,
+                                chatId: options.chatId,
+                                nodeId: governanceConfig.context?.nodeId as string | undefined,
+                                ruleId: redirectDecision.ruleId,
+                                feedback: rawModifiedArgs
+                            })
+                            const redirectEvent = buildGovernanceEvent(
+                                'hitl',
+                                generateTraceId(),
+                                toolCall.name,
+                                (toolCall.args || {}) as Record<string, unknown>,
+                                redirectDecision,
+                                'proceed',
+                                rawModifiedArgs
+                            )
+                            sseStreamer?.streamGovernanceEvent?.(chatId, redirectEvent)
+                        }
+
+                        // Inject the reviewer's instruction as a new user message so the LLM
+                        // reasons from it rather than retrying the blocked tool call.
+                        messages.push({ role: 'user', content: rawModifiedArgs })
+
+                        // Bind tools and re-invoke the LLM — full reasoning restart.
+                        if (llmNodeInstance && (llmNodeInstance as any).builtInTools?.length > 0) {
+                            toolsInstance.push(...(llmNodeInstance as any).builtInTools)
+                        }
+                        if (llmNodeInstance && toolsInstance.length > 0) {
+                            if (llmNodeInstance.bindTools === undefined) {
+                                throw new Error(`Agent needs to have a function calling capable model.`)
+                            }
+                            // @ts-ignore
+                            llmNodeInstance = llmNodeInstance.bindTools(toolsInstance)
+                        }
+
+                        let redirectResponse: AIMessageChunk
+                        if (isStreamable) {
+                            redirectResponse = await this.handleStreamingResponse(
+                                sseStreamer,
+                                llmNodeInstance,
+                                messages,
+                                chatId,
+                                abortController,
+                                isStructuredOutput,
+                                isLastNode
+                            )
                         } else {
-                            resolvedModifiedArgs = humanInput.modifiedArgs
+                            redirectResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+                            if (isLastNode && sseStreamer && !isStructuredOutput) {
+                                sseStreamer.streamTokenEvent(chatId, extractResponseContent(redirectResponse))
+                            }
+                        }
+
+                        if (redirectResponse.usage_metadata?.total_tokens) {
+                            totalTokens += redirectResponse.usage_metadata.total_tokens
+                        }
+
+                        let accumulatedReasonContent = (response.additional_kwargs?.reasoning_content as string) || ''
+                        if (redirectResponse.additional_kwargs?.reasoning_content) {
+                            accumulatedReasonContent +=
+                                (accumulatedReasonContent ? '\n\n' : '') + (redirectResponse.additional_kwargs.reasoning_content as string)
+                        }
+                        let accumulatedReasoningDuration =
+                            (typeof response.additional_kwargs?.reasoning_duration === 'number'
+                                ? response.additional_kwargs.reasoning_duration
+                                : 0) +
+                            (typeof redirectResponse.additional_kwargs?.reasoning_duration === 'number'
+                                ? redirectResponse.additional_kwargs.reasoning_duration
+                                : 0)
+
+                        // If the LLM wants to call tools again, handle them through the normal path.
+                        if (redirectResponse.tool_calls && redirectResponse.tool_calls.length > 0) {
+                            const {
+                                response: recursiveResponse,
+                                usedTools: recursiveUsedTools,
+                                sourceDocuments: recursiveSourceDocuments,
+                                artifacts: recursiveArtifacts,
+                                totalTokens: recursiveTokens,
+                                isWaitingForHumanInput: recursiveWaiting,
+                                accumulatedReasonContent: recursiveReason,
+                                accumulatedReasoningDuration: recursiveDuration
+                            } = await this.handleToolCalls({
+                                response: redirectResponse,
+                                messages,
+                                toolsInstance,
+                                sseStreamer,
+                                chatId,
+                                input,
+                                options,
+                                abortController,
+                                llmNodeInstance,
+                                isStreamable,
+                                isLastNode,
+                                iterationContext,
+                                isStructuredOutput,
+                                accumulatedReasonContent,
+                                accumulatedReasoningDuration,
+                                governanceConfig
+                            })
+                            return {
+                                response: recursiveResponse,
+                                usedTools: [...usedTools, ...recursiveUsedTools],
+                                sourceDocuments: [...sourceDocuments, ...recursiveSourceDocuments],
+                                artifacts: [...artifacts, ...recursiveArtifacts],
+                                totalTokens: totalTokens + recursiveTokens,
+                                isWaitingForHumanInput: recursiveWaiting,
+                                accumulatedReasonContent: recursiveReason || undefined,
+                                accumulatedReasoningDuration: recursiveDuration || undefined
+                            }
+                        }
+
+                        return {
+                            response: redirectResponse,
+                            usedTools,
+                            sourceDocuments,
+                            artifacts,
+                            totalTokens,
+                            isWaitingForHumanInput: undefined,
+                            accumulatedReasonContent: accumulatedReasonContent || undefined,
+                            accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
                         }
                     }
+
+                    // --- APPROVE PATH: execute the tool with its original args ---
                     const originalArgs = (toolCall.args || {}) as Record<string, unknown>
-                    const toolArgs = (resolvedModifiedArgs ?? originalArgs) as Record<string, unknown>
-                    // Detect whether the reviewer actually changed any args
-                    const argsWereModified =
-                        resolvedModifiedArgs !== undefined && JSON.stringify(resolvedModifiedArgs) !== JSON.stringify(originalArgs)
+                    const toolArgs = originalArgs
 
                     if (governanceConfig) {
                         const decision = gateToolCall({
@@ -2918,14 +3053,12 @@ class Agent_Agentflow implements INode {
                             nodeId: governanceConfig.context?.nodeId as string | undefined,
                             skipAudit: true
                         })
-                        // Write the hitl audit entry with full arg diff context
+                        // Write the hitl audit entry
                         auditHitl(governanceConfig, toolCall.name, toolArgs, 'proceed', {
                             sessionId: options.sessionId,
                             chatId: options.chatId,
                             nodeId: governanceConfig.context?.nodeId as string | undefined,
                             ruleId: decision.ruleId,
-                            originalArgs: argsWereModified ? originalArgs : undefined,
-                            modifiedArgs: argsWereModified ? resolvedModifiedArgs : undefined,
                             feedback: humanInput.feedback
                         })
                         // Stream the approval as a governance event
@@ -3028,10 +3161,19 @@ class Agent_Agentflow implements INode {
                             }
                         }
 
+                        // Append reviewer feedback to the tool output so the LLM can act on it.
+                        // This is the key step that makes HITL feedback visible to the agent —
+                        // without it the feedback is only written to the audit log and never
+                        // influences the LLM's next reasoning step.
+                        const toolOutputWithFeedback =
+                            humanInput.feedback && humanInput.feedback.trim()
+                                ? `${toolOutput}\n\n[Reviewer note: "${humanInput.feedback.trim()}"]`
+                                : toolOutput
+
                         // Add tool message to conversation
                         messages.push({
                             role: 'tool',
-                            content: toolOutput,
+                            content: toolOutputWithFeedback,
                             tool_call_id: toolCall.id,
                             name: toolCall.name,
                             additional_kwargs: {
@@ -3042,7 +3184,7 @@ class Agent_Agentflow implements INode {
 
                         // Audit the observation (what the agent will see as the tool result)
                         if (governanceConfig) {
-                            auditObserve(governanceConfig, toolCall.name, toolOutput, {
+                            auditObserve(governanceConfig, toolCall.name, toolOutputWithFeedback, {
                                 sessionId: options.sessionId,
                                 chatId: options.chatId,
                                 nodeId: governanceConfig.context?.nodeId as string | undefined
@@ -3056,7 +3198,7 @@ class Agent_Agentflow implements INode {
                         usedTools.push({
                             tool: toolCall.name,
                             toolInput: toolInput ?? toolCall.args,
-                            toolOutput
+                            toolOutput: toolOutputWithFeedback
                         })
                     } catch (e) {
                         if (options.analyticHandlers && toolIds) {
@@ -3232,22 +3374,47 @@ class Agent_Agentflow implements INode {
         const policyPath = nodeData.inputs?.agentPolicyFilePath as string
         const auditPath = nodeData.inputs?.agentAuditLogPath as string
 
+        // Both paths are required for governance to function. Warn and disable rather than
+        // crashing at runtime when loadPolicyFile / appendAuditLog receive undefined paths.
+        if (!policyPath || !policyPath.trim()) {
+            console.warn('[Governance] agentEnableGovernance is true but agentPolicyFilePath is not set; governance disabled.')
+            return undefined
+        }
+        if (!auditPath || !auditPath.trim()) {
+            console.warn('[Governance] agentEnableGovernance is true but agentAuditLogPath is not set; governance disabled.')
+            return undefined
+        }
+
         let context: Record<string, unknown> = { nodeId: nodeData.id }
         const rawContext = nodeData.inputs?.agentGovernanceContext
         if (rawContext) {
-            try {
-                const parsed: unknown = typeof rawContext === 'string' ? JSON.parse(rawContext) : rawContext
-                if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-                    context = { ...context, ...(parsed as Record<string, unknown>) }
+            // rawContext may arrive as an already-parsed object (when the node framework
+            // pre-parses JSON string inputs) or as a raw JSON string from the text field.
+            if (typeof rawContext === 'object' && !Array.isArray(rawContext)) {
+                context = { ...context, ...(rawContext as Record<string, unknown>) }
+            } else if (typeof rawContext === 'string') {
+                const trimmed = rawContext.trim()
+                if (trimmed) {
+                    try {
+                        const parsed: unknown = JSON.parse(trimmed)
+                        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                            context = { ...context, ...(parsed as Record<string, unknown>) }
+                        }
+                    } catch {
+                        console.warn(
+                            `[Governance] agentGovernanceContext is not valid JSON ("${trimmed.slice(
+                                0,
+                                60
+                            )}..."); runtime context signals will be unavailable.`
+                        )
+                    }
                 }
-            } catch {
-                console.warn('[Governance] agentGovernanceContext is not valid JSON; runtime signals will be unavailable.')
             }
         }
 
         return {
-            policyPath,
-            auditPath,
+            policyPath: policyPath.trim(),
+            auditPath: auditPath.trim(),
             context
         }
     }

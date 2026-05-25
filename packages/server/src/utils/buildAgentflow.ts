@@ -1466,17 +1466,18 @@ const executeNode = async ({
                 },
                 elements: [
                     /**
-                     * Governance bonus: argument modification.
-                     * The reviewer sees the pending tool args pre-filled in a JSON textarea.
-                     * Whatever they submit here is sent back as humanInput.modifiedArgs and
-                     * replaces toolCall.args before the tool executes in handleResumedToolCalls.
+                     * Governance: the reviewer can type a plain-text instruction here.
+                     * If left empty, the tool executes with its original args (approve as-is).
+                     * If a string is provided, the agent loop discards the pending tool call
+                     * and re-invokes the LLM with the instruction as a new user message,
+                     * restarting reasoning from that point.
                      */
                     {
                         type: 'agentflowv2-text-input',
-                        label: 'Modify tool arguments (JSON) — leave unchanged to approve as-is',
+                        label: 'Instructions (optional) — leave empty to approve as-is, or type a new instruction to redirect the agent',
                         name: 'modifiedArgs',
-                        placeholder: pendingArgsJson,
-                        default: pendingArgsJson,
+                        placeholder: `Pending tool call:\n${pendingArgsJson}\n\nType an instruction to redirect the agent, or leave empty to proceed.`,
+                        default: '',
                         optional: true
                     },
                     { type: 'agentflowv2-approve-button', label: 'Proceed' },

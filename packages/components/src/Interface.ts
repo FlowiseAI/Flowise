@@ -501,12 +501,13 @@ export interface IHumanInput {
     startNodeId: string
     feedback?: string
     /**
-     * Governance bonus: human-supplied argument overrides for the escalated tool call.
-     * When present on a 'proceed' decision, these values replace the original tool args
-     * before execution. Allows the reviewer to correct or constrain what the agent does.
-     * Example: { "recipient": "safe@aivar.tech", "message": "Approved summary only." }
+     * Reviewer instruction for an escalated tool call.
+     * When present on a 'proceed' decision and non-empty, the agent loop discards the
+     * pending tool call and re-invokes the LLM with this string as a new user message,
+     * restarting reasoning from that point.
+     * When empty or absent, the tool executes with its original args (approve as-is).
      */
-    modifiedArgs?: Record<string, unknown>
+    modifiedArgs?: string
 }
 
 /** Shared return shape for handleToolCalls and handleResumedToolCalls in the Agent node. */
