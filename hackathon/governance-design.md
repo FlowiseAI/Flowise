@@ -13,7 +13,7 @@
     - 3.2 Happy-path (allow)
     - 3.3 Hard-deny path
     - 3.4 Escalation / HITL pause
-    - 3.5 HITL resume — proceed
+    - 3.5 HITL resume — proceed (approve as-is / redirect)
     - 3.6 HITL resume — reject
     - 3.7 Policy evaluation internals
     - 3.8 Audit lifecycle (sequence)
@@ -71,13 +71,15 @@ flowchart LR
     Allow["ALLOW\nExecute immediately\naudit execute + observe"]
     Deny["DENY\nReturn POLICY_DENIED\nto LLM — no execution"]
     Escalate["ESCALATE\nPause agent\nstream HITL event to UI\nwait for human"]
-    Proceed["proceed\n(optionally modify args)\n→ execute"]
+    ProceedApprove["proceed (no instruction)\n→ execute tool as-is\nfeedback appended to tool result"]
+    ProceedRedirect["proceed (with instruction)\n→ discard tool call\n→ inject instruction as user msg\n→ restart LLM reasoning"]
     Reject["reject\n→ synthetic rejection\nmessage to LLM"]
 
     Propose --> Allow
     Propose --> Deny
     Propose --> Escalate
-    Escalate --> Proceed
+    Escalate --> ProceedApprove
+    Escalate --> ProceedRedirect
     Escalate --> Reject
 ```
 
@@ -137,13 +139,11 @@ interface AuditEntry {
     step: AuditStep // see lifecycle below
     tool?: string
     args?: Record<string, unknown>
-    originalArgs?: Record<string, unknown> // HITL: args before reviewer edit
-    modifiedArgs?: Record<string, unknown> // HITL: reviewer-supplied overrides
     ruleId?: string
     effect?: PolicyEffect
     message?: string
     humanDecision?: 'proceed' | 'reject'
-    feedback?: string
+    feedback?: string // reviewer instruction (redirect path) or free-text note
     observation?: string // truncated to 500 chars
     sessionId?: string
     chatId?: string
@@ -171,6 +171,24 @@ interface GovernanceEvent {
 }
 ```
 
+#### IHumanInput (HITL resume payload from UI)
+
+```typescript
+interface IHumanInput {
+    type: 'proceed' | 'reject'
+    startNodeId: string
+    feedback?: string
+    /**
+     * Plain-text reviewer instruction (optional).
+     * - Empty / absent → approve as-is: tool executes with original args.
+     *   Feedback (if any) is appended to the tool result so the LLM sees it.
+     * - Non-empty → redirect: pending tool call is discarded, instruction is
+     *   injected as a new user message, and the LLM is re-invoked from scratch.
+     */
+    modifiedArgs?: string
+}
+```
+
 ### 2.2 Audit Step Lifecycle
 
 ```mermaid
@@ -180,7 +198,8 @@ stateDiagram-v2
     propose --> policy_decision
     policy_decision --> hitl : effect == escalate
     policy_decision --> execute : effect == allow
-    hitl --> execute : humanDecision == proceed
+    hitl --> execute : humanDecision == proceed\n(no instruction)
+    hitl --> propose : humanDecision == proceed\n(with instruction — LLM re-invoked)
     hitl --> [*] : humanDecision == reject\n(synthetic tool msg pushed)
     execute --> observe
     observe --> propose : more tool calls
@@ -309,12 +328,14 @@ flowchart TD
 
 ### 2.6 Configuration (per Agent node)
 
-| Input field              | Type        | Description                                                                               |
-| ------------------------ | ----------- | ----------------------------------------------------------------------------------------- |
-| `agentEnableGovernance`  | boolean     | Master switch                                                                             |
-| `agentPolicyFilePath`    | string      | Absolute path to `agent-policies.json`                                                    |
-| `agentAuditLogPath`      | string      | Absolute path to `audit.jsonl`                                                            |
-| `agentGovernanceContext` | JSON string | Runtime context injected into every policy evaluation e.g. `{"environment":"production"}` |
+| Input field              | Type                  | Description                                                                                                                                                                                 |
+| ------------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `agentEnableGovernance`  | boolean               | Master switch. If true, both path fields below must be set or governance is disabled with a warning.                                                                                        |
+| `agentPolicyFilePath`    | string                | Absolute path to `agent-policies.json`. Required when governance is enabled.                                                                                                                |
+| `agentAuditLogPath`      | string                | Absolute path to `audit.jsonl`. Required when governance is enabled.                                                                                                                        |
+| `agentGovernanceContext` | JSON string or object | Runtime context injected into every policy evaluation e.g. `{"environment":"production"}`. Accepts a raw JSON string or a pre-resolved object (e.g. from a `{{ $flow.state.* }}` variable). |
+
+> **Validation**: `parseGovernanceConfig` returns `undefined` (governance disabled) if either path is missing or blank, logging a `[Governance]` warning. This prevents a crash from `loadPolicyFile(undefined)` at runtime.
 
 ---
 
@@ -471,24 +492,27 @@ sequenceDiagram
 
 ### 3.5 HITL Resume — Proceed
 
+The proceed path has two branches depending on whether the reviewer typed an instruction.
+
+#### 3.5a Proceed — Approve as-is (no instruction)
+
 ```mermaid
 flowchart TD
-    HumanProceed(["Human clicks Proceed\n(optionally edits args / adds feedback)"])
-    ResolveArgs["Resolve args:\nresolvedArgs = modifiedArgs ?? originalArgs\nargsWereModified = JSON.stringify differs"]
-    ReGate["gateToolCall(resolvedArgs, skipAudit=true)\nRe-evaluate policy with resolved args"]
+    HumanProceed(["Human clicks Proceed\n(instruction field left empty)"])
+    ReGate["gateToolCall(originalArgs, skipAudit=true)\nRe-evaluate policy"]
     IsDeny{"effect == deny?"}
     DenyMsg["Push POLICY_DENIED tool message\nSkip execution"]
-    AuditHitl["auditHitl('proceed',\noriginalArgs if modified,\nmodifiedArgs if modified,\nfeedback)"]
+    AuditHitl["auditHitl('proceed', feedback)"]
     StreamApprove["streamGovernanceEvent\n{ step:'hitl', humanDecision:'proceed' }"]
     SetApproved["GovernedTool.humanApproved = true"]
-    Execute["selectedTool.call(resolvedArgs)"]
+    Execute["selectedTool.call(originalArgs)"]
     ResetApproved["GovernedTool.humanApproved = false"]
-    AuditExec["auditExecute(tool, resolvedArgs, toolOutput)"]
-    PushResult["Push tool result to messages"]
-    LLMContinues(["LLM continues reasoning"])
+    AuditExec["auditExecute(tool, args, toolOutput)"]
+    InjectFeedback["Append reviewer feedback to tool result:\ntoolOutput + '[Reviewer note: feedback]'"]
+    PushResult["Push augmented tool result to messages"]
+    LLMContinues(["LLM continues reasoning\n(sees feedback in tool result)"])
 
-    HumanProceed --> ResolveArgs
-    ResolveArgs --> ReGate
+    HumanProceed --> ReGate
     ReGate --> IsDeny
     IsDeny -- Yes --> DenyMsg
     IsDeny -- No --> AuditHitl
@@ -497,8 +521,36 @@ flowchart TD
     SetApproved --> Execute
     Execute --> ResetApproved
     ResetApproved --> AuditExec
-    AuditExec --> PushResult
+    AuditExec --> InjectFeedback
+    InjectFeedback --> PushResult
     PushResult --> LLMContinues
+```
+
+#### 3.5b Proceed — Redirect (instruction provided)
+
+```mermaid
+flowchart TD
+    HumanRedirect(["Human clicks Proceed\nwith a plain-text instruction"])
+    PopToolCall["Pop the LLM's pending tool-call message\nfrom history (keeps conversation valid)"]
+    AuditHitl["auditHitl('proceed', feedback=instruction)"]
+    StreamApprove["streamGovernanceEvent\n{ step:'hitl', humanDecision:'proceed', feedback:instruction }"]
+    InjectUser["Push instruction as new user message\n{ role:'user', content: instruction }"]
+    BindTools["llm.bindTools(toolsInstance)"]
+    InvokeLLM["Re-invoke LLM with updated history\n(streaming or non-streaming)"]
+    HasToolCalls{"LLM wants to\ncall tools?"}
+    HandleTools["handleToolCalls(...)\n(normal governance path)"]
+    ReturnResponse(["Return LLM response"])
+
+    HumanRedirect --> PopToolCall
+    PopToolCall --> AuditHitl
+    AuditHitl --> StreamApprove
+    StreamApprove --> InjectUser
+    InjectUser --> BindTools
+    BindTools --> InvokeLLM
+    InvokeLLM --> HasToolCalls
+    HasToolCalls -- Yes --> HandleTools
+    HasToolCalls -- No --> ReturnResponse
+    HandleTools --> ReturnResponse
 ```
 
 ---
@@ -584,10 +636,14 @@ sequenceDiagram
 
         alt effect == escalate
             Agent->>Gate: auditHitl(tool, args, humanDecision, meta)
-            Gate->>Log: { step:"hitl", traceId, humanDecision, feedback, originalArgs?, modifiedArgs? }
+            Gate->>Log: { step:"hitl", traceId, humanDecision, feedback }
+
+            alt humanDecision == proceed AND instruction provided (redirect)
+                Note over Agent: Tool call discarded\nInstruction injected as user message\nLLM re-invoked — new propose cycle begins
+            end
         end
 
-        alt tool executed (allow or approved escalation)
+        alt tool executed (allow or approved escalation with no instruction)
             Agent->>Gate: auditExecute(tool, args, observation)
             Gate->>Log: { step:"execute", traceId, tool, args, observation }
 

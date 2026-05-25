@@ -332,10 +332,11 @@ console.log(`  Agent proposes: transfer_funds({ amount: 50000, account: "9988776
     }
 }
 
-// ── Scenario 5: ESCALATE → approve WITH arg modification ─────────────────────
-banner('Scenario 5 — ESCALATE → Approve with modified args: transfer_funds')
+// ── Scenario 5: ESCALATE → approve WITH redirect instruction ─────────────────
+banner('Scenario 5 — ESCALATE → Redirect: transfer_funds')
 console.log(`  Agent proposes: transfer_funds({ amount: 50000, account: "9988776655" })`)
-console.log(`  Reviewer lowers amount to $200 before approving.`)
+console.log(`  Reviewer types an instruction instead of approving as-is.`)
+console.log(`  Expected: tool call discarded, LLM re-invoked with instruction as user message.`)
 
 {
     const tool = 'transfer_funds'
@@ -347,25 +348,27 @@ console.log(`  Reviewer lowers amount to $200 before approving.`)
     if (decision.effect === 'escalate') {
         console.log(`\n  ${YELLOW}⏸  Execution paused — waiting for human review...${RESET}`)
 
-        const modifiedArgs = { amount: 200, account: '9988776655' }
-        humanDecision('proceed', 'Approved with reduced amount ($200)')
+        const instruction = 'Use a lower amount, $200 only, and confirm with the user first'
+        humanDecision('proceed', instruction)
 
-        auditHitl(governanceConfig, tool, modifiedArgs, 'proceed', {
+        // Audit the redirect as a hitl entry with the instruction in feedback
+        auditHitl(governanceConfig, tool, originalArgs, 'proceed', {
             ...meta,
             traceId: tid,
             ruleId: decision.ruleId,
-            originalArgs,
-            modifiedArgs,
-            feedback: 'Approved with reduced amount ($200)'
+            feedback: instruction
         })
 
-        const output = execute(tool, modifiedArgs, tid)
-        step('Tool output (with modified args):', output)
-        console.log(`\n  ${GREEN}✓ Human approved with modified args — $200 instead of $50000.${RESET}`)
+        // In the real agent loop, the pending tool-call message is popped from history,
+        // the instruction is injected as a user message, and the LLM is re-invoked.
+        // Here we simulate that by showing what the LLM would receive.
+        console.log(`\n  ${CYAN}→ Tool call discarded. LLM re-invoked with:${RESET}`)
+        console.log(`    { role: 'user', content: '${instruction}' }`)
+        console.log(`\n  ${GREEN}✓ LLM reasons fresh from the instruction — no tool executed.${RESET}`)
     }
 }
 
-sessionEnd('demo complete', 5)
+sessionEnd('demo complete', 4) // scenarios 1–3 execute tools; 4 and 5 are blocked/redirected
 
 // ─── Audit log reader ─────────────────────────────────────────────────────────
 banner('Audit Log — audit-demo.jsonl')
@@ -399,7 +402,7 @@ for (const entry of entries) {
     const human = entry.humanDecision ? `  human=${entry.humanDecision.toUpperCase()}` : ''
     const fb = entry.feedback ? `  feedback="${entry.feedback}"` : ''
     const obs = entry.observation ? `  → ${entry.observation.slice(0, 55)}${entry.observation.length > 55 ? '…' : ''}` : ''
-    const mod = entry.modifiedArgs ? `  ${YELLOW}[args modified]${RESET}` : ''
+    const mod = entry.feedback && entry.humanDecision === 'proceed' ? `  ${YELLOW}[redirect]${RESET}` : ''
 
     console.log(`  ${DIM}${ts}${RESET}  ${color}${entry.step.padEnd(16)}${RESET}${tool}${effect}${rule}${human}${fb}${obs}${mod}`)
 }
