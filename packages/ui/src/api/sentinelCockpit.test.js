@@ -153,7 +153,24 @@ const UNSAFE_PATCH_PREVIEW_SOURCE_TEXTS = [
     '@@',
     'command: git diff',
     'const home = "/tmp/qvc"',
-    'const host = "gateway"'
+    'const host = "gateway"',
+    'const workspace = "/workspace/qvc"',
+    'const srv = "/srv/app"',
+    'const shell = "/bin/sh"',
+    'const dev = "/dev/null"',
+    'const proc = "/proc/self"',
+    'headers: {}',
+    'auth_header = value',
+    'session_id: hidden',
+    'run_id: hidden',
+    'client_nonce: hidden',
+    'cockpit_ref: hidden',
+    'task_packet_hash: hidden',
+    'raw_dto: hidden',
+    'metadata: hidden',
+    'packet_ref: hidden',
+    'retrieval_route: hidden',
+    'fetch("/v1/ide-work-status")'
 ]
 
 const validPatchIdeWork = (overrides = {}) =>

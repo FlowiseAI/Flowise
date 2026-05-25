@@ -141,9 +141,9 @@ const IDE_WORK_PATCH_REVIEW_PATH_PATTERN = /^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+
 const IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN =
     /\b(run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_challenge|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|client_nonce|cockpit_ref|sha256|bearer|authorization|(?:^|[/_.-])(?:token|secret|api[_-]?key|password|raw|stdout|stderr|command|argv|provider|model|diff)(?:[/_.-]|$)/i
 const IDE_WORK_PATCH_PREVIEW_LOCAL_PATH_TEXT_PATTERN =
-    /(?:\b[A-Za-z]:\\|\\\\[A-Za-z0-9._-]+\\|\/mnt\/[a-z]\/|\/(?:home|var|tmp|etc|usr|opt|root|users?)(?:\/|\b))/i
+    /(?:\b[A-Za-z]:[\\/]|\\\\[A-Za-z0-9._-]+[\\/]|\/mnt\/[a-z]\/|(?:^|["'`\s=(:[,])\/(?![/*])(?:[A-Za-z0-9._-]+)(?:\/|\b))/i
 const IDE_WORK_PATCH_PREVIEW_SOURCE_TEXT_PATTERN =
-    /(?:https?:\/\/|www\.|localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|:\d{2,5}\b|cookie|set-cookie|authorization|bearer|token|secret|api[_-]?key|password|sha256:|-----BEGIN|private key|\bgateway\b|\b(?:command|argv|provider|model|diff_text|patch_id|task_packet|result_packet|evidence_manifest)\b\s*[:=]|^diff --git\b|^---\s|^\+\+\+\s|@@|<\s*\/?\s*[a-z][^>]*>|on[a-z]+\s*=|\[[^\]]+\]\([^)]+\)|```)/i
+    /(?:https?:\/\/|www\.|localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|:\d{2,5}\b|cookie|set-cookie|authorization|bearer|auth(?:_header)?|headers?|token|secret|api[_-]?key|password|sha256:|-----BEGIN|private key|\bgateway\b|\b(?:command|argv|provider|model|diff_text|patch_id|task_packet(?:_hash)?|result_packet|evidence_manifest|session_id|run_id|decision_id|approval_id|approval_challenge(?:_hash)?|client_nonce|cockpit_ref|checkpoint_ref|snapshot_ref|task_id|result_id|shield_review_id|raw_dto|metadata|nonce|hash|packet_ref|packet_handle|workspace_root|source_root|temp_root|retrieval_route)\b\s*[:=]?|\/v\d+\/(?:ide-work-status|ide_work_status)\b|^diff --git\b|^---\s|^\+\+\+\s|@@|<\s*\/?\s*[a-z][^>]*>|on[a-z]+\s*=|\[[^\]]+\]\([^)]+\)|```)/i
 const IDE_WORK_PATCH_REVIEW_DENIED_DIRS = Object.freeze(['.git', '.github', 'node_modules', 'dist', 'build', 'coverage'])
 const IDE_WORK_PATCH_REVIEW_DENIED_FILENAMES = Object.freeze(['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'])
 const IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS = Object.freeze([
