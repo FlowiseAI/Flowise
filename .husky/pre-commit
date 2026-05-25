@@ -1,5 +1,13 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-pnpm quick # prettify
-pnpm lint-staged # eslint lint(also include prettify but prettify support more file extensions than eslint, so run prettify first)
+run_pnpm() {
+    if command -v pnpm >/dev/null 2>&1; then
+        pnpm "$@"
+    else
+        corepack pnpm "$@"
+    fi
+}
+
+run_pnpm quick # prettify
+run_pnpm lint-staged # eslint lint(also include prettify but prettify support more file extensions than eslint, so run prettify first)
