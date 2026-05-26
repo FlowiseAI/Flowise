@@ -13,6 +13,7 @@ import {
     IconPlayerPlayFilled,
     IconRelationOneToManyFilled,
     IconRepeat,
+    IconReplace,
     IconReplaceUser,
     IconRobot,
     IconSparkles,
@@ -109,6 +110,11 @@ export const AGENTFLOW_ICONS: AgentflowIcon[] = [
         name: 'executeFlowAgentflow',
         icon: IconVectorBezier2,
         color: tokens.colors.nodes.executeFlow
+    },
+    {
+        name: 'a2aRemoteAgentAgentflow',
+        icon: IconReplace,
+        color: tokens.colors.nodes.a2aRemoteAgent
     }
 ]
 
@@ -130,5 +136,6 @@ export const DEFAULT_AGENTFLOW_NODES = [
     'stickyNoteAgentflow',
     'httpAgentflow',
     'iterationAgentflow',
-    'executeFlowAgentflow'
+    'executeFlowAgentflow',
+    'a2aRemoteAgentAgentflow'
 ]
