@@ -39,10 +39,6 @@ COPY docker/worker/healthcheck/healthcheck.js .
 # Set the main working directory back
 WORKDIR /usr/src
 
-RUN chown -R node:node /usr/src /app/healthcheck
-
-USER node
-
 # Environment variables for port configuration
 ENV WORKER_PORT=5566
 

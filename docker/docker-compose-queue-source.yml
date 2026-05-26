@@ -20,14 +20,14 @@ services:
             - '${PORT}:${PORT}'
         volumes:
             # Mount local .flowise to container's default location
-            - ../.flowise:/home/node/.flowise
+            - ../.flowise:/root/.flowise
         environment:
             # --- Essential Flowise Vars ---
             - PORT=${PORT:-3000}
-            - DATABASE_PATH=/home/node/.flowise
-            - SECRETKEY_PATH=/home/node/.flowise
-            - LOG_PATH=/home/node/.flowise/logs
-            - BLOB_STORAGE_PATH=/home/node/.flowise/storage
+            - DATABASE_PATH=/root/.flowise
+            - SECRETKEY_PATH=/root/.flowise
+            - LOG_PATH=/root/.flowise/logs
+            - BLOB_STORAGE_PATH=/root/.flowise/storage
             # --- Queue Vars (Main Instance) ---
             - MODE=queue
             - QUEUE_NAME=flowise-queue # Ensure this matches worker
@@ -44,14 +44,14 @@ services:
             dockerfile: docker/worker/Dockerfile # Ensure this path is correct
         volumes:
             # Mount same local .flowise to worker
-            - ../.flowise:/home/node/.flowise
+            - ../.flowise:/root/.flowise
         environment:
             # --- Essential Flowise Vars ---
             - WORKER_PORT=${WORKER_PORT:-5566} # Port for worker healthcheck
-            - DATABASE_PATH=/home/node/.flowise
-            - SECRETKEY_PATH=/home/node/.flowise
-            - LOG_PATH=/home/node/.flowise/logs
-            - BLOB_STORAGE_PATH=/home/node/.flowise/storage
+            - DATABASE_PATH=/root/.flowise
+            - SECRETKEY_PATH=/root/.flowise
+            - LOG_PATH=/root/.flowise/logs
+            - BLOB_STORAGE_PATH=/root/.flowise/storage
             # --- Queue Vars (Main Instance) ---
             - MODE=queue
             - QUEUE_NAME=flowise-queue # Ensure this matches worker

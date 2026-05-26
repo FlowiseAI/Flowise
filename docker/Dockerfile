@@ -22,8 +22,4 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 COPY --from=build /usr/local/lib/node_modules /usr/local/lib/node_modules
 COPY --from=build /usr/local/bin /usr/local/bin
 
-RUN mkdir -p /home/node/.flowise && chown -R node:node /home/node/.flowise
-
-USER node
-
 ENTRYPOINT ["flowise", "start"]
