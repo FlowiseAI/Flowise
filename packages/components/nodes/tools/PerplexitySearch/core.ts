@@ -1,8 +1,10 @@
 import { z } from 'zod/v3'
 import { secureFetch } from '../../../src/httpSecurity'
 import { StructuredTool } from '@langchain/core/tools'
+import packageJson from '../../../package.json'
 
 export const desc = `A wrapper around Perplexity's Search API. Useful for retrieving up-to-date, ranked web results with title, URL, and snippet for a given query.`
+export const PERPLEXITY_INTEGRATION_HEADER = `flowise/${packageJson.version}`
 
 export interface PerplexitySearchParameters {
     apiKey: string
@@ -76,7 +78,8 @@ export class PerplexitySearchTool extends StructuredTool {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${this.apiKey}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-Pplx-Integration': PERPLEXITY_INTEGRATION_HEADER
             },
             body: JSON.stringify(this.buildBody(query))
         })
