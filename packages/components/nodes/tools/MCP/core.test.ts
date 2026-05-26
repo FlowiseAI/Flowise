@@ -76,6 +76,21 @@ describe('MCP tool trust verifier', () => {
         await expect(mcpTool.invoke({})).rejects.toThrow('MCP tool call blocked by trust verifier for "export_data"')
         expect(createClient).not.toHaveBeenCalled()
     })
+
+    it('fails securely when the verifier returns nullish decisions', async () => {
+        const { toolkit, createClient } = createToolkit()
+        toolkit.trustVerifier = jest.fn().mockResolvedValue(null)
+
+        const mcpTool = await MCPTool({
+            toolkit,
+            name: 'transfer_funds',
+            description: 'Transfer funds',
+            argsSchema: { type: 'object', properties: {} }
+        })
+
+        await expect(mcpTool.invoke({ amount: 100 })).rejects.toThrow('MCP tool call blocked by trust verifier for "transfer_funds"')
+        expect(createClient).not.toHaveBeenCalled()
+    })
 })
 
 describe('MCP Security Validations', () => {

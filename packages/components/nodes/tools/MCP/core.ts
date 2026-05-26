@@ -17,6 +17,8 @@ export type MCPTrustVerifierContext = {
 export type MCPTrustVerifierDecision =
     | boolean
     | { allowed?: boolean; action?: 'allow' | 'warn' | 'deny'; reason?: string; metadata?: unknown }
+    | null
+    | undefined
 
 export type MCPTrustVerifier = (context: MCPTrustVerifierContext) => MCPTrustVerifierDecision | Promise<MCPTrustVerifierDecision>
 
@@ -170,19 +172,25 @@ const assertMCPToolCallTrusted = async (toolkit: MCPToolkit, toolName: string, i
     })
 
     const action =
-        typeof decision === 'boolean' ? (decision ? 'allow' : 'deny') : decision.action ?? (decision.allowed === false ? 'deny' : 'allow')
+        typeof decision === 'boolean'
+            ? decision
+                ? 'allow'
+                : 'deny'
+            : decision == null
+              ? 'deny'
+              : decision.action ?? (decision.allowed === false ? 'deny' : 'allow')
 
     if (action === 'warn') {
         console.warn(
             `MCP trust verifier warning for tool "${toolName}"${
-                typeof decision === 'object' && decision.reason ? `: ${decision.reason}` : ''
+                typeof decision === 'object' && decision != null && decision.reason ? `: ${decision.reason}` : ''
             }`
         )
         return
     }
 
     if (action === 'deny') {
-        const reason = typeof decision === 'object' && decision.reason ? `: ${decision.reason}` : ''
+        const reason = typeof decision === 'object' && decision != null && decision.reason ? `: ${decision.reason}` : ''
         throw new Error(`MCP tool call blocked by trust verifier for "${toolName}"${reason}`)
     }
 }
