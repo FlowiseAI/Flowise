@@ -58,4 +58,23 @@ describe('ChatOpenAICustom', () => {
             stop: ['<|im_end|>', 'END']
         })
     })
+
+    it('ignores empty stop sequence entries', async () => {
+        const node = new ChatOpenAICustom()
+        const model = await node.init(
+            {
+                credential: 'cred-1',
+                inputs: {
+                    modelName: 'custom-model',
+                    temperature: '0.3',
+                    stopSequence: 'foo,, bar, ',
+                    streaming: false
+                }
+            },
+            '',
+            {}
+        )
+
+        expect(model.fields.stop).toEqual(['foo', 'bar'])
+    })
 })

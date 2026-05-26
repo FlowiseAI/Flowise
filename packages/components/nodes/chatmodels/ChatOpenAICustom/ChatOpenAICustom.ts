@@ -158,8 +158,11 @@ class ChatOpenAICustom_ChatModels implements INode {
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (stopSequence) {
-            const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
-            obj.stop = stopSequenceArray
+            const stopSequenceArray = stopSequence
+                .split(',')
+                .map((item) => item.trim())
+                .filter((item) => item !== '')
+            if (stopSequenceArray.length > 0) obj.stop = stopSequenceArray
         }
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
