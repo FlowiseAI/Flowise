@@ -75,6 +75,7 @@ export function isDeniedIP(ip: string, denyList: string[]): void {
 
                 // Also normalize deny list entries
                 if (parsedRange.kind() === 'ipv6' && (parsedRange as ipaddr.IPv6).isIPv4MappedAddress()) {
+                    if (mask < 96) continue // malformed IPv4-mapped CIDR — skip
                     parsedRange = (parsedRange as ipaddr.IPv6).toIPv4Address()
                     adjustedMask -= 96
                 }

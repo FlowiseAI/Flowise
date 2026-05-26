@@ -284,4 +284,65 @@ describe('isDeniedIP - SSRF Protection', () => {
             expect(() => isDeniedIP('192.168.255.255', mappedCIDRDenyList)).toThrow('Access to this host is denied by policy.')
         })
     })
+
+    describe('Malformed IPv4-Mapped IPv6 CIDR Handling', () => {
+        it('should skip malformed IPv4-mapped IPv6 CIDR with mask < 96', () => {
+            // ::ffff:10.0.0.0/64 would create negative adjustedMask (-32)
+            const malformedList = ['::ffff:10.0.0.0/64']
+
+            // Public IPs should NOT be blocked
+            expect(() => isDeniedIP('8.8.8.8', malformedList)).not.toThrow()
+            expect(() => isDeniedIP('1.1.1.1', malformedList)).not.toThrow()
+        })
+
+        it('should skip malformed entry but still check other valid entries', () => {
+            // Mix malformed and valid entries
+            const mixedList = [
+                '::ffff:10.0.0.0/64', // Malformed - should be skipped
+                '127.0.0.0/8' // Valid - should still work
+            ]
+
+            // Should block based on valid entry
+            expect(() => isDeniedIP('127.0.0.1', mixedList)).toThrow('Access to this host is denied by policy.')
+
+            // Should allow public IPs (malformed entry skipped)
+            expect(() => isDeniedIP('8.8.8.8', mixedList)).not.toThrow()
+        })
+
+        it('should accept valid IPv4-mapped IPv6 CIDR with mask >= 96', () => {
+            // Valid: mask = 104 >= 96, adjustedMask = 104 - 96 = 8
+            const validList = ['::ffff:10.0.0.0/104']
+
+            // Should block 10.x.x.x
+            expect(() => isDeniedIP('10.5.5.5', validList)).toThrow('Access to this host is denied by policy.')
+
+            // Should allow public IPs
+            expect(() => isDeniedIP('8.8.8.8', validList)).not.toThrow()
+        })
+
+        it('should handle edge case: mask = 96 (exactly at boundary)', () => {
+            // Valid: mask = 96, adjustedMask = 96 - 96 = 0 (matches all IPv4)
+            const boundaryList = ['::ffff:0.0.0.0/96']
+
+            // Should block all IPv4 (which is valid behavior for /96)
+            expect(() => isDeniedIP('8.8.8.8', boundaryList)).toThrow('Access to this host is denied by policy.')
+            expect(() => isDeniedIP('1.1.1.1', boundaryList)).toThrow('Access to this host is denied by policy.')
+        })
+
+        it('should skip multiple malformed entries', () => {
+            // Multiple malformed entries
+            const multiMalformedList = [
+                '::ffff:10.0.0.0/64', // Malformed
+                '::ffff:192.168.0.0/50', // Malformed
+                '8.8.8.8' // Valid exact match
+            ]
+
+            // Should block exact match
+            expect(() => isDeniedIP('8.8.8.8', multiMalformedList)).toThrow('Access to this host is denied by policy.')
+
+            // Should allow other IPs (malformed entries skipped)
+            expect(() => isDeniedIP('1.1.1.1', multiMalformedList)).not.toThrow()
+            expect(() => isDeniedIP('10.0.0.1', multiMalformedList)).not.toThrow()
+        })
+    })
 })
