@@ -8,6 +8,7 @@ import {
     COCKPIT_IDE_WORK_STATUS_PATH,
     GOAL_REQUEST_BODY_KEYS,
     IDE_WORK_ACTION_BODY_KEYS,
+    IDE_WORK_PATCH_REVISION_ACTION_BODY_KEYS,
     IDE_WORK_STATUS_BODY_KEYS,
     MANUAL_PACKET_BODY_KEYS,
     PLAN_DECISION_BODY_KEYS,
@@ -191,6 +192,29 @@ const validPatchIdeWork = (overrides = {}) =>
         terminal_note: 'Nothing was accepted or applied here.',
         allowed_user_actions: ['none'],
         blocked_actions: ['No controls are available here.', 'No changes start from this page.'],
+        patch_review_packet: validPatchReviewPacket(),
+        safe_error: null,
+        ...overrides
+    })
+
+const validPatchRevisionIdeWork = (overrides = {}) =>
+    validIdeWork({
+        schema_version: 'sentinel.qvc.ide_work_patch_revision_available.v1',
+        state: 'patch_revision_available',
+        status_label: 'Patch revision available',
+        workflow_label: 'Safe review workflow',
+        persona_label: 'Review helper',
+        skill_label: 'Safe review',
+        short_summary: 'Sentinel prepared a proposal that can be revised once.',
+        current_safe_step: 'Ask only for a review-only patch revision.',
+        what_can_happen_next: 'Sentinel can return one revised review-required patch proposal.',
+        what_will_not_happen: 'Nothing is accepted, applied, changed, or continued from this page.',
+        approval_available: true,
+        cancel_available: false,
+        review_required_note: 'Review is required before anything can be accepted.',
+        terminal_note: null,
+        allowed_user_actions: ['request_patch_revision'],
+        blocked_actions: ['No proposal is applied here.', 'No accepted work starts here.', 'No continuation starts here.'],
         patch_review_packet: validPatchReviewPacket(),
         safe_error: null,
         ...overrides
@@ -540,13 +564,31 @@ describe('sentinelCockpit API wrapper', () => {
             fetchResponse({
                 schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
                 status: 'ok',
+                ide_work: validPatchRevisionIdeWork(),
+                safe_error: null
+            })
+        )
+        const patchResponse = await requestIdeWorkAction({ action: ' request_patch_proposal ' }, { fetchImpl })
+        const patchBody = JSON.parse(fetchImpl.mock.calls[0][1].body)
+        expect(patchBody).toEqual({ request_kind: 'ide_work_action', action: 'request_patch_proposal' })
+        expect(patchResponse.ide_work.state).toBe('patch_revision_available')
+
+        fetchImpl.mockClear()
+        fetchImpl.mockResolvedValueOnce(
+            fetchResponse({
+                schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+                status: 'ok',
                 ide_work: validPatchIdeWork(),
                 safe_error: null
             })
         )
-        await requestIdeWorkAction({ action: ' request_patch_proposal ' }, { fetchImpl })
-        const patchBody = JSON.parse(fetchImpl.mock.calls[0][1].body)
-        expect(patchBody).toEqual({ request_kind: 'ide_work_action', action: 'request_patch_proposal' })
+        await requestIdeWorkAction({ action: ' request_patch_revision ', revisionText: ' Make the safer value smaller. ' }, { fetchImpl })
+        const revisionBody = JSON.parse(fetchImpl.mock.calls[0][1].body)
+        expect(revisionBody).toEqual({
+            request_kind: 'ide_work_action',
+            action: 'request_patch_revision',
+            revision_text: 'Make the safer value smaller.'
+        })
     })
 
     it('keeps IDE work action requests open long enough for live read-only review', async () => {
@@ -607,8 +649,21 @@ describe('sentinelCockpit API wrapper', () => {
             request_kind: 'ide_work_action',
             action: 'request_patch_proposal'
         })
+        expect(buildIdeWorkActionBody({ action: ' request_patch_revision ', revisionText: ' Make it smaller. ' })).toEqual({
+            request_kind: 'ide_work_action',
+            action: 'request_patch_revision',
+            revision_text: 'Make it smaller.'
+        })
+        expect(Object.keys(buildIdeWorkActionBody({ action: 'request_patch_revision', revisionText: 'Make it smaller.' })).sort()).toEqual(
+            [...IDE_WORK_PATCH_REVISION_ACTION_BODY_KEYS].sort()
+        )
         expect(buildIdeWorkStatusBody()).toEqual({ request_kind: 'ide_work_status' })
         expect(() => buildIdeWorkActionBody({ action: 'launch_worker' })).toThrow('invalid_request')
+        expect(() => buildIdeWorkActionBody({ action: 'request_patch_revision' })).toThrow('invalid_request')
+        expect(() => buildIdeWorkActionBody({ action: 'request_patch_revision', revisionText: 'Use header from context.' })).toThrow(
+            'invalid_request'
+        )
+        expect(() => buildIdeWorkActionBody({ action: 'request_patch_proposal', revisionText: 'not allowed' })).toThrow('invalid_request')
         expect(() => buildIdeWorkActionBody({ action: 'approve_mock_backend_work', workspace: 'hidden' })).toThrow('invalid_request')
         expect(() => buildIdeWorkStatusBody({ workspace: 'hidden' })).toThrow('invalid_request')
     })
@@ -925,7 +980,7 @@ describe('sentinelCockpit API wrapper', () => {
         )
     })
 
-    it('omits patch review required work from initial goal plan-session responses', async () => {
+    it('omits patch review terminal and revision work from initial goal plan-session responses', async () => {
         const sentinelGatewayPacket = validPatchReviewPacket({
             changed_files_list: ['src/sentinel-gateway/qvc-ide-patch-workspace.mjs'],
             preview_lines: [
@@ -955,6 +1010,29 @@ describe('sentinelCockpit API wrapper', () => {
         expect(session).not.toHaveProperty('ide_work')
         expect(Object.keys(session).sort()).toEqual([...PLAN_SESSION_KEYS, 'ide_preview', 'route_card'].sort())
         expect(JSON.stringify(session)).not.toMatch(/request_patch_proposal|diff_text|source code|file path|raw output|stdout|stderr/i)
+
+        fetchImpl.mockResolvedValueOnce(
+            fetchResponse(
+                validPlanSession({
+                    route_card: validRouteCard(),
+                    ide_preview: validIdePreview(),
+                    ide_work: validPatchRevisionIdeWork({ patch_review_packet: sentinelGatewayPacket })
+                })
+            )
+        )
+        const revisionSession = await requestGoalSnapshot(
+            {
+                plainGoal: 'Plan the next safe step',
+                clientNonce: 'nonce_abcdefghijklmnop'
+            },
+            { fetchImpl }
+        )
+
+        expect(revisionSession).not.toHaveProperty('ide_work')
+        expect(Object.keys(revisionSession).sort()).toEqual([...PLAN_SESSION_KEYS, 'ide_preview', 'route_card'].sort())
+        expect(JSON.stringify(revisionSession)).not.toMatch(
+            /request_patch_revision|request_patch_proposal|diff_text|source code|file path|raw output|stdout|stderr/i
+        )
     })
 
     it('preserves exact patch proposal approval work without leaking source or raw output', async () => {

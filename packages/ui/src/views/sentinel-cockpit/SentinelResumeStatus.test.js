@@ -20,6 +20,10 @@ import SentinelResumeStatus, {
     NOT_FOUND_ERROR,
     PLAN_DECISION_ERROR,
     PATCH_PROPOSAL_ERROR,
+    PATCH_REVISION_EMPTY_MESSAGE,
+    PATCH_REVISION_ERROR,
+    PATCH_REVISION_TOO_LONG_MESSAGE,
+    PATCH_REVISION_UNSAFE_MESSAGE,
     PlanSessionCard,
     REVISION_EMPTY_MESSAGE,
     REVISION_TOO_LONG_MESSAGE,
@@ -35,7 +39,8 @@ import SentinelResumeStatus, {
     loadManualPacketSession,
     loadPlanDecisionSession,
     loadResultReviewSession,
-    loadResumeSnapshot
+    loadResumeSnapshot,
+    validatePatchRevisionText
 } from './SentinelResumeStatus'
 
 jest.mock('@/api/sentinelCockpit', () => ({
@@ -203,6 +208,29 @@ const safePatchIdeWork = (overrides = {}) =>
         ...overrides
     })
 
+const safePatchRevisionIdeWork = (overrides = {}) =>
+    safeIdeWork({
+        schema_version: 'sentinel.qvc.ide_work_patch_revision_available.v1',
+        state: 'patch_revision_available',
+        status_label: 'Patch revision available',
+        workflow_label: 'Safe review workflow',
+        persona_label: 'Review helper',
+        skill_label: 'Safe review',
+        short_summary: 'Sentinel prepared a proposal that can be revised once.',
+        current_safe_step: 'Ask only for a review-only patch revision.',
+        what_can_happen_next: 'Sentinel can return one revised review-required patch proposal.',
+        what_will_not_happen: 'Nothing is accepted, applied, changed, or continued from this page.',
+        approval_available: true,
+        cancel_available: false,
+        review_required_note: 'Review is required before anything can be accepted.',
+        terminal_note: null,
+        allowed_user_actions: ['request_patch_revision'],
+        blocked_actions: ['No proposal is applied here.', 'No accepted work starts here.', 'No continuation starts here.'],
+        patch_review_packet: safePatchReviewPacket(),
+        safe_error: null,
+        ...overrides
+    })
+
 const safePatchApprovalIdeWork = (overrides = {}) =>
     safeIdeWork({
         status_label: 'Patch proposal available',
@@ -253,6 +281,7 @@ const renderInteractive = () => {
     const getInput = () => container.querySelector('#sentinel-checkpoint-ref')
     const getGoalInput = () => container.querySelector('#sentinel-plain-goal')
     const getResultReviewInput = () => container.querySelector('#sentinel-result-review-text')
+    const getPatchRevisionInput = () => container.querySelector('#sentinel-patch-revision-text')
     const getReviewOnlyCheckbox = () => container.querySelector('input[type="checkbox"]')
     const getButton = (label) => {
         const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent.trim() === label)
@@ -265,6 +294,7 @@ const renderInteractive = () => {
         getInput,
         getGoalInput,
         getResultReviewInput,
+        getPatchRevisionInput,
         getReviewOnlyCheckbox,
         getButton,
         queryByText: (text) => (container.textContent.includes(text) ? text : null),
@@ -281,6 +311,11 @@ const renderInteractive = () => {
         setResultReviewInput: (value) => {
             act(() => {
                 Simulate.change(getResultReviewInput(), { target: { value } })
+            })
+        },
+        setPatchRevisionInput: (value) => {
+            act(() => {
+                Simulate.change(getPatchRevisionInput(), { target: { value } })
             })
         },
         setReviewOnlyConfirmed: (checked) => {
@@ -1141,6 +1176,106 @@ describe('SentinelResumeStatus', () => {
         expect(nullPacketHtml).not.toContain('Patch proposal review required')
     })
 
+    it('renders patch revision available as the only safe follow-up before terminal review', async () => {
+        const revisionIdeWork = safePatchRevisionIdeWork({ patch_review_packet: safePatchReviewPacket() })
+        const snapshot = safePlanSession({ ide_work: revisionIdeWork })
+        const html = renderToStaticMarkup(
+            <PlanSessionCard
+                snapshot={snapshot}
+                canDecide
+                canPrepareManualPacket
+                canSubmitResultReview
+                canApproveMockWork
+                canCancelMockWork
+                canRequestReadOnlyReview
+                canRequestPatchProposal
+                canRequestPatchRevision
+                revisionInput='Make the safer value smaller.'
+                isLoading={false}
+            />
+        )
+
+        expect(canUseIdeWorkAction(snapshot, 'request_patch_revision')).toBe(true)
+        expect(canUseIdeWorkAction(snapshot, 'request_patch_proposal')).toBe(false)
+        expect(canUseIdeWorkAction(snapshot, 'request_read_only_review')).toBe(false)
+        expect(canUseIdeWorkAction(snapshot, 'approve_mock_backend_work')).toBe(false)
+        expect(html).toContain('Patch revision available')
+        expect(html).toContain('Ask Sentinel for revised proposal')
+        expect(html).toContain('Patch revision note')
+        expect(html).toContain('Patch review packet metadata')
+        expect(html).toContain('Changed paths')
+        expect(html).toContain('src/one.mjs')
+        expect(html).not.toContain('Approve plan')
+        expect(html).not.toContain('Ask Sentinel for patch proposal')
+        expect(html).not.toContain('Read-only review')
+        expect(html).not.toContain('Safe mock check')
+        expect(html).not.toMatch(
+            /request_patch_revision|request_patch_proposal|approve_mock_backend_work|cancel_mock_backend_work|run_|sentinel_session|session_id|client_nonce|cockpit_ref|gateway|token|authorization|task_packet|diff_text|source code|file path|raw output|stdout|stderr|commit|push|Create PR/i
+        )
+
+        expect(validatePatchRevisionText('Make the safer value smaller.')).toBe('')
+        expect(validatePatchRevisionText('')).toBe(PATCH_REVISION_EMPTY_MESSAGE)
+        expect(validatePatchRevisionText('x'.repeat(601))).toBe(PATCH_REVISION_TOO_LONG_MESSAGE)
+        expect(validatePatchRevisionText('Use header from context.')).toBe(PATCH_REVISION_UNSAFE_MESSAGE)
+
+        const requestPatchRevisionImpl = jest.fn().mockResolvedValue({
+            schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+            status: 'ok',
+            ide_work: safePatchIdeWork(),
+            safe_error: null
+        })
+        await expect(
+            loadIdeWorkActionSession(
+                { action: 'request_patch_revision', revisionText: ' Make the safer value smaller. ' },
+                requestPatchRevisionImpl
+            )
+        ).resolves.toEqual({
+            ideWork: safePatchIdeWork(),
+            error: ''
+        })
+        expect(requestPatchRevisionImpl).toHaveBeenCalledWith({
+            action: 'request_patch_revision',
+            revisionText: 'Make the safer value smaller.'
+        })
+
+        const blockedPatchRevisionImpl = jest.fn()
+        await expect(
+            loadIdeWorkActionSession(
+                { action: 'request_patch_revision', revisionText: 'Use header from context.' },
+                blockedPatchRevisionImpl
+            )
+        ).resolves.toEqual({
+            ideWork: null,
+            error: PATCH_REVISION_UNSAFE_MESSAGE
+        })
+        expect(blockedPatchRevisionImpl).not.toHaveBeenCalled()
+
+        const failingPatchRevisionImpl = jest.fn().mockRejectedValue(new Error('raw failure'))
+        await expect(
+            loadIdeWorkActionSession(
+                { action: 'request_patch_revision', revisionText: 'Make the safer value smaller.' },
+                failingPatchRevisionImpl
+            )
+        ).resolves.toEqual({
+            ideWork: null,
+            error: PATCH_REVISION_ERROR
+        })
+        expect(failingPatchRevisionImpl).toHaveBeenCalledWith({
+            action: 'request_patch_revision',
+            revisionText: 'Make the safer value smaller.'
+        })
+        ;[
+            safePatchRevisionIdeWork({ approval_available: false }),
+            safePatchRevisionIdeWork({ cancel_available: true }),
+            safePatchRevisionIdeWork({ safe_error: 'patch_action_not_offered' }),
+            safePatchRevisionIdeWork({ allowed_user_actions: ['request_patch_revision', 'request_patch_proposal'] }),
+            safePatchRevisionIdeWork({ state: 'approval_pending' }),
+            safePatchRevisionIdeWork({ patch_review_packet: null })
+        ].forEach((ideWork) => {
+            expect(canUseIdeWorkAction(safePlanSession({ ide_work: ideWork }), 'request_patch_revision')).toBe(false)
+        })
+    })
+
     it('renders approved sentinel-gateway paths without enabling patch actions', () => {
         const packet = safePatchReviewPacket({
             changed_files_list: ['src/sentinel-gateway/qvc-ide-patch-workspace.mjs'],
@@ -1270,6 +1405,38 @@ describe('SentinelResumeStatus', () => {
             'Patch review is display-only. Plan, handoff, and result controls are not available for this state.'
         )
         expect(container.textContent).not.toContain('Ask Sentinel for patch proposal')
+        expect(buttonLabels(container)).not.toEqual(
+            expect.arrayContaining(['Approve plan', 'Revise plan', 'Stop', 'Prepare manual worker packet', 'Send for Sentinel review'])
+        )
+        expect(container.textContent).not.toMatch(/source code|file path|raw output|stdout|stderr|Create PR/i)
+    })
+
+    it('posts only a patch revision action and displays the terminal review card', async () => {
+        requestGoalSnapshot.mockResolvedValueOnce(safePlanSession({ ide_work: safePatchRevisionIdeWork() }))
+        requestIdeWorkAction.mockResolvedValueOnce({
+            schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+            status: 'ok',
+            ide_work: safePatchIdeWork(),
+            safe_error: null
+        })
+        const { container, setGoalInput, submitGoalForm, setPatchRevisionInput, clickButton } = renderInteractive()
+
+        setGoalInput('Please make a simple safe plan.')
+        submitGoalForm()
+
+        await waitForAssertion(() => expect(container.textContent).toContain('Ask Sentinel for revised proposal'))
+        setPatchRevisionInput('Make the safer value smaller.')
+        clickButton('Ask Sentinel for revised proposal')
+
+        await waitForAssertion(() =>
+            expect(requestIdeWorkAction).toHaveBeenCalledWith({
+                action: 'request_patch_revision',
+                revisionText: 'Make the safer value smaller.'
+            })
+        )
+        expect(container.textContent).toContain('Patch proposal review required')
+        expect(container.textContent).toContain('Patch proposal needs review. Nothing was accepted or applied here.')
+        expect(container.textContent).not.toContain('Ask Sentinel for revised proposal')
         expect(buttonLabels(container)).not.toEqual(
             expect.arrayContaining(['Approve plan', 'Revise plan', 'Stop', 'Prepare manual worker packet', 'Send for Sentinel review'])
         )

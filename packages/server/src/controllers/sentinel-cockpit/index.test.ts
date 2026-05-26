@@ -219,6 +219,30 @@ function validPatchServerIdeWork(overrides: Record<string, unknown> = {}) {
     })
 }
 
+function validPatchRevisionServerIdeWork(overrides: Record<string, unknown> = {}) {
+    return validServerIdeWork({
+        schema_version: 'sentinel.qvc.ide_work_patch_revision_available.v1',
+        state: 'patch_revision_available',
+        status_label: 'Patch revision available',
+        workflow_label: 'Safe review workflow',
+        persona_label: 'Review helper',
+        skill_label: 'Safe review',
+        short_summary: 'Sentinel prepared a proposal that can be revised once.',
+        current_safe_step: 'Ask only for a review-only patch revision.',
+        what_can_happen_next: 'Sentinel can return one revised review-required patch proposal.',
+        what_will_not_happen: 'Nothing is accepted, applied, changed, or continued from this page.',
+        approval_available: true,
+        cancel_available: false,
+        review_required_note: 'Review is required before anything can be accepted.',
+        terminal_note: null,
+        allowed_user_actions: ['request_patch_revision'],
+        blocked_actions: ['No proposal is applied here.', 'No accepted work starts here.', 'No continuation starts here.'],
+        patch_review_packet: validPatchReviewPacket(),
+        safe_error: null,
+        ...overrides
+    })
+}
+
 describe('sentinel cockpit controller admission', () => {
     it('rejects duplicate guarded raw headers before normalized header reliance', () => {
         for (const header of guardedHeaders) {
@@ -603,6 +627,17 @@ describe('sentinel cockpit request validation', () => {
             request_kind: 'ide_work_action',
             action: 'request_patch_proposal'
         })
+        expect(
+            validateIdeWorkActionRequest({
+                request_kind: 'ide_work_action',
+                action: 'request_patch_revision',
+                revision_text: ' Make the safer value smaller. '
+            })
+        ).toEqual({
+            request_kind: 'ide_work_action',
+            action: 'request_patch_revision',
+            revision_text: 'Make the safer value smaller.'
+        })
         expect(validateIdeWorkStatusRequest({ request_kind: 'ide_work_status' })).toEqual({
             request_kind: 'ide_work_status'
         })
@@ -619,6 +654,25 @@ describe('sentinel cockpit request validation', () => {
         expect(() => validateIdeWorkStatusRequest({ request_kind: 'ide_work_status', run_id: 'run_hidden' })).toThrow(
             'ide_work_invalid_input'
         )
+        expect(() => validateIdeWorkActionRequest({ request_kind: 'ide_work_action', action: 'request_patch_revision' })).toThrow(
+            'ide_work_invalid_input'
+        )
+        expect(() =>
+            validateIdeWorkActionRequest({
+                request_kind: 'ide_work_action',
+                action: 'request_patch_proposal',
+                revision_text: 'Make the safer value smaller.'
+            })
+        ).toThrow('ide_work_invalid_input')
+        ;['Use header from context.', 'Mention nonce.', 'Mention path.', '```diff'].forEach((revisionText) => {
+            expect(() =>
+                validateIdeWorkActionRequest({
+                    request_kind: 'ide_work_action',
+                    action: 'request_patch_revision',
+                    revision_text: revisionText
+                })
+            ).toThrow('ide_work_invalid_input')
+        })
         ;['workspace', 'path', 'source', 'diff', 'patch', 'model', 'provider', 'command', 'argv', 'token', 'gateway'].forEach((key) => {
             expect(() =>
                 validateIdeWorkActionRequest({ request_kind: 'ide_work_action', action: 'request_patch_proposal', [key]: 'hidden' })
@@ -1107,6 +1161,32 @@ describe('sentinel cockpit controller responses', () => {
         expect(readOnlyRes.statusCode).toBe(200)
         expect(JSON.parse(readOnlyRes.bodyText).ide_work.state).toBe('mock_in_progress')
 
+        actionSpy.mockResolvedValueOnce({
+            schema_version: 'sentinel.cockpit_bridge.ide_work.v1',
+            status: 'ok',
+            ide_work: validPatchRevisionServerIdeWork() as any,
+            safe_error: null
+        })
+        const revisionBody = JSON.stringify({
+            request_kind: 'ide_work_action',
+            action: 'request_patch_revision',
+            revision_text: 'Make the safer value smaller.'
+        })
+        const revisionReq = buildReq(revisionBody, {
+            path: COCKPIT_IDE_WORK_ACTION_PATH,
+            originalUrl: `${COCKPIT_ROUTE_PREFIX}${COCKPIT_IDE_WORK_ACTION_PATH}`
+        } as Partial<Request>)
+        const revisionRes = buildRes()
+        await sentinelCockpitController.handleSnapshot(revisionReq, revisionRes)
+
+        expect(actionSpy).toHaveBeenCalledWith({
+            request_kind: 'ide_work_action',
+            action: 'request_patch_revision',
+            revision_text: 'Make the safer value smaller.'
+        })
+        expect(revisionRes.statusCode).toBe(200)
+        expect(JSON.parse(revisionRes.bodyText).ide_work.state).toBe('patch_revision_available')
+
         const statusBody = JSON.stringify({ request_kind: 'ide_work_status' })
         const statusReq = buildReq(statusBody, {
             path: COCKPIT_IDE_WORK_STATUS_PATH,
@@ -1479,6 +1559,30 @@ describe('sentinel cockpit classify bridge', () => {
         })
     }
 
+    function validGatewayPatchRevisionIdeWork(overrides: Record<string, unknown> = {}) {
+        return validGatewayIdeWork({
+            schema_version: 'sentinel.qvc.ide_work_patch_revision_available.v1',
+            state: 'patch_revision_available',
+            status_label: 'Patch revision available',
+            workflow_label: 'Safe review workflow',
+            persona_label: 'Review helper',
+            skill_label: 'Safe review',
+            short_summary: 'Sentinel prepared a proposal that can be revised once.',
+            current_safe_step: 'Ask only for a review-only patch revision.',
+            what_can_happen_next: 'Sentinel can return one revised review-required patch proposal.',
+            what_will_not_happen: 'Nothing is accepted, applied, changed, or continued from this page.',
+            approval_available: true,
+            cancel_available: false,
+            review_required_note: 'Review is required before anything can be accepted.',
+            terminal_note: null,
+            allowed_user_actions: ['request_patch_revision'],
+            blocked_actions: ['No proposal is applied here.', 'No accepted work starts here.', 'No continuation starts here.'],
+            patch_review_packet: validPatchReviewPacket(),
+            safe_error: null,
+            ...overrides
+        })
+    }
+
     function validGatewayDraftPlan(overrides: Record<string, unknown> = {}) {
         return {
             schema_version: 'sentinel.gateway.v1',
@@ -1817,7 +1921,7 @@ describe('sentinel cockpit classify bridge', () => {
                 { request_kind: 'ide_work_action', action: 'approve_mock_backend_work' },
                 { config, fetchImpl: readOnlyFetch as any }
             )
-        ).rejects.toMatchObject({ code: 'plan_session_state_mismatch' })
+        ).rejects.toMatchObject({ code: 'plan_session_not_found' })
     })
 
     it('binds patch proposal only from exact projection and consumes it before replay', async () => {
@@ -1838,6 +1942,13 @@ describe('sentinel cockpit classify bridge', () => {
         const fetchImpl = jest
             .fn()
             .mockResolvedValueOnce(gatewayResponse(validGatewayClassify({ ide_work: patchApproval })))
+            .mockResolvedValueOnce(
+                gatewayResponse({
+                    schema_version: 'sentinel.gateway.v1',
+                    status: 'ok',
+                    ide_work: validGatewayPatchRevisionIdeWork()
+                })
+            )
             .mockResolvedValueOnce(
                 gatewayResponse({
                     schema_version: 'sentinel.gateway.v1',
@@ -1873,19 +1984,50 @@ describe('sentinel cockpit classify bridge', () => {
             request_kind: 'ide_work_action',
             action: 'request_patch_proposal'
         })
-        expect(actionSession.ide_work.state).toBe('patch_review_required')
-        expect(actionSession.ide_work.allowed_user_actions).toEqual(['none'])
-        expect(actionSession.ide_work.approval_available).toBe(false)
+        expect(actionSession.ide_work.state).toBe('patch_revision_available')
+        expect(actionSession.ide_work.allowed_user_actions).toEqual(['request_patch_revision'])
+        expect(actionSession.ide_work.approval_available).toBe(true)
         expect(actionSession.ide_work.cancel_available).toBe(false)
         expect(actionSession.ide_work.safe_error).toBeNull()
 
+        const revisionSession = await classifyBridge.createIdeWorkActionSession(
+            {
+                request_kind: 'ide_work_action',
+                action: 'request_patch_revision',
+                revision_text: 'Make the safer value smaller.'
+            },
+            { config, fetchImpl: fetchImpl as any, requestId: 'req_patch_revision' }
+        )
+        const revisionBody = JSON.parse(fetchImpl.mock.calls[2][1].body)
+        expect(revisionBody).toEqual({
+            schema_version: 'sentinel.gateway.v1',
+            request_id: 'req_patch_revision',
+            client: {
+                client_type: 'flowise',
+                client_instance_id: 'flowise_sentinel_cockpit'
+            },
+            operator: {
+                operator_id: 'flowise_local_operator'
+            },
+            run_id: 'run_hidden_123',
+            sentinel_session_id: 'session_hidden_123',
+            request_kind: 'ide_work_action',
+            action: 'request_patch_revision',
+            revision_text: 'Make the safer value smaller.'
+        })
+        expect(revisionSession.ide_work.state).toBe('patch_review_required')
+        expect(revisionSession.ide_work.allowed_user_actions).toEqual(['none'])
+        expect(revisionSession.ide_work.approval_available).toBe(false)
+        expect(revisionSession.ide_work.cancel_available).toBe(false)
+        expect(revisionSession.ide_work.safe_error).toBeNull()
+
         await expect(
             classifyBridge.createIdeWorkActionSession(
-                { request_kind: 'ide_work_action', action: 'request_patch_proposal' },
+                { request_kind: 'ide_work_action', action: 'request_patch_revision', revision_text: 'Make the safer value smaller.' },
                 { config, fetchImpl: fetchImpl as any }
             )
         ).rejects.toMatchObject({ code: 'plan_session_not_found' })
-        expect(fetchImpl).toHaveBeenCalledTimes(2)
+        expect(fetchImpl).toHaveBeenCalledTimes(3)
     })
 
     it('refuses near-miss patch proposal projections before binding', async () => {

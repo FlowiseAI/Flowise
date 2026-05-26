@@ -98,6 +98,8 @@ const IDE_WORK_KEYS = Object.freeze([
 const IDE_WORK_RESPONSE_KEYS = Object.freeze(['schema_version', 'status', IDE_WORK_KEY, 'safe_error'])
 const IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION = 'sentinel.qvc.ide_work_result_patch_review_required.v1'
 const IDE_WORK_PATCH_REVIEW_REQUIRED_STATE = 'patch_review_required'
+const IDE_WORK_PATCH_REVISION_AVAILABLE_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_revision_available.v1'
+const IDE_WORK_PATCH_REVISION_AVAILABLE_STATE = 'patch_revision_available'
 const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v3'
 const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
     'schema_version',
@@ -151,7 +153,8 @@ const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
     'sentinel.qvc.ide_work_result_review_required.v1',
-    IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION
+    IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION,
+    IDE_WORK_PATCH_REVISION_AVAILABLE_SCHEMA_VERSION
 ])
 const IDE_WORK_STATES = Object.freeze([
     'disabled',
@@ -165,6 +168,7 @@ const IDE_WORK_STATES = Object.freeze([
     'failed_closed',
     'review_required',
     IDE_WORK_PATCH_REVIEW_REQUIRED_STATE,
+    IDE_WORK_PATCH_REVISION_AVAILABLE_STATE,
     'expired'
 ])
 const IDE_WORK_ACTIONS = Object.freeze([
@@ -172,6 +176,7 @@ const IDE_WORK_ACTIONS = Object.freeze([
     'cancel_mock_backend_work',
     'request_read_only_review',
     'request_patch_proposal',
+    'request_patch_revision',
     'none'
 ])
 const ROUTE_CARD_KEYS = Object.freeze([
@@ -669,19 +674,33 @@ export function validateIdeWorkActionRequest(body: unknown): classifyBridge.IdeW
     if (typeof requestKind !== 'string' || !IDE_WORK_ACTION_REQUEST_KINDS.includes(requestKind)) {
         throw httpError(400, 'ide_work_invalid_input')
     }
-    assertExactAllowedKeys(requestBody, Object.freeze(['request_kind', 'action']), 'ide_work_invalid_input')
-    rejectForbiddenFields(requestBody)
     const action = requestBody.action
     if (
         typeof action !== 'string' ||
-        !['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'request_patch_proposal'].includes(action)
+        ![
+            'approve_mock_backend_work',
+            'cancel_mock_backend_work',
+            'request_read_only_review',
+            'request_patch_proposal',
+            'request_patch_revision'
+        ].includes(action)
     ) {
         throw httpError(400, 'ide_work_invalid_input')
     }
-    return {
+    const allowedKeys =
+        action === 'request_patch_revision'
+            ? Object.freeze(['request_kind', 'action', 'revision_text'])
+            : Object.freeze(['request_kind', 'action'])
+    assertExactAllowedKeys(requestBody, allowedKeys, 'ide_work_invalid_input')
+    rejectForbiddenFields(requestBody)
+    const request: { request_kind: 'ide_work_action'; action: classifyBridge.IdeWorkActionRequest['action']; revision_text?: string } = {
         request_kind: 'ide_work_action',
-        action
-    } as classifyBridge.IdeWorkActionRequest
+        action: action as classifyBridge.IdeWorkActionRequest['action']
+    }
+    if (action === 'request_patch_revision') {
+        request.revision_text = validatePatchRevisionText(requestBody.revision_text)
+    }
+    return request as classifyBridge.IdeWorkActionRequest
 }
 
 export function validateIdeWorkStatusRequest(body: unknown): classifyBridge.IdeWorkStatusRequest {
@@ -844,6 +863,26 @@ function validateText(value: unknown, maxLength: number, allowEmpty: boolean): s
     }
     assertNoForbiddenText(trimmed)
     return trimmed
+}
+
+function validatePatchRevisionText(value: unknown): string {
+    if (typeof value !== 'string') {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    const normalized = value.trim().replace(/\s+/g, ' ')
+    const forbiddenPattern =
+        /\b(?:run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*\b|\b(?:sentinel_session|session_id|decision_id|approval_challenge|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|client_nonce|cockpit_ref|sha256|nonce|id|ref|hash|control|session|run|cockpit|packet|header|headers|bearer|authorization|token|gateway|adapter|path|file|source|diff|patch|hunk|raw|stdout|stderr|command|argv|pid|provider|model|confidence|mcp|agentflow|hitl|repo|repo-write|workspace|root|retrieval|endpoint|route|git|stage|commit|push|pr|apply|accept|discard|continue|resume|merge|deploy|publish|copy|download|export)\b|https?:\/\/|www\.|localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|:\d{2,5}\b|```|^diff --git\b|^---\s|^\+\+\+\s|@@|^\s*[+-]\s*\S|[A-Za-z]:[\\/]|\\\\[A-Za-z0-9._-]+[\\/]|\/(?:mnt|workspace|srv|bin|dev|proc|tmp|var|etc|home|opt|root|usr|users|private)(?:\/|\b)|<\s*\/?\s*[a-z][^>]*>|\[[^\]]+\]\([^)]+\)|^\s*[{[]/i
+    if (
+        !normalized ||
+        normalized.length > 600 ||
+        hasDisallowedControlCharacter(normalized) ||
+        hasHiddenControlCharacter(normalized) ||
+        /[^\x20-\x7e]/.test(normalized) ||
+        forbiddenPattern.test(normalized)
+    ) {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    return normalized
 }
 
 function validateGoalText(value: unknown): string {
@@ -1147,10 +1186,12 @@ function validateIdeWork(ideWork: unknown, options: { allowPatchReviewRequired?:
     }
     const isPatchReviewRequiredSchema = work.schema_version === IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION
     const isPatchReviewRequiredState = work.state === IDE_WORK_PATCH_REVIEW_REQUIRED_STATE
-    if (isPatchReviewRequiredSchema !== isPatchReviewRequiredState) {
+    const isPatchRevisionAvailableSchema = work.schema_version === IDE_WORK_PATCH_REVISION_AVAILABLE_SCHEMA_VERSION
+    const isPatchRevisionAvailableState = work.state === IDE_WORK_PATCH_REVISION_AVAILABLE_STATE
+    if (isPatchReviewRequiredSchema !== isPatchReviewRequiredState || isPatchRevisionAvailableSchema !== isPatchRevisionAvailableState) {
         throw httpError(500, 'invalid_snapshot')
     }
-    if (isPatchReviewRequiredSchema && options.allowPatchReviewRequired !== true) {
+    if ((isPatchReviewRequiredSchema || isPatchRevisionAvailableSchema) && options.allowPatchReviewRequired !== true) {
         throw httpError(500, 'invalid_snapshot')
     }
     if (
@@ -1163,7 +1204,17 @@ function validateIdeWork(ideWork: unknown, options: { allowPatchReviewRequired?:
     ) {
         throw httpError(500, 'invalid_snapshot')
     }
-    validatePatchReviewPacket(work.patch_review_packet, isPatchReviewRequiredSchema)
+    if (
+        isPatchRevisionAvailableSchema &&
+        (work.approval_available !== true ||
+            work.cancel_available !== false ||
+            work.safe_error !== null ||
+            work.allowed_user_actions.length !== 1 ||
+            work.allowed_user_actions[0] !== 'request_patch_revision')
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    validatePatchReviewPacket(work.patch_review_packet, isPatchReviewRequiredSchema || isPatchRevisionAvailableSchema)
     const includesPatchProposalAction = work.allowed_user_actions.includes('request_patch_proposal')
     const isExactPatchProposalAction = work.allowed_user_actions.length === 1 && work.allowed_user_actions[0] === 'request_patch_proposal'
     if (

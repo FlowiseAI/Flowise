@@ -28,6 +28,7 @@ export const RESULT_REVIEW_BODY_KEYS = Object.freeze([
     'review_only_confirmation'
 ])
 export const IDE_WORK_ACTION_BODY_KEYS = Object.freeze(['request_kind', 'action'])
+export const IDE_WORK_PATCH_REVISION_ACTION_BODY_KEYS = Object.freeze(['request_kind', 'action', 'revision_text'])
 export const IDE_WORK_STATUS_BODY_KEYS = Object.freeze(['request_kind'])
 export const SNAPSHOT_KEYS = Object.freeze([
     'schema_version',
@@ -170,7 +171,8 @@ const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
     'sentinel.qvc.ide_work_result_review_required.v1',
-    'sentinel.qvc.ide_work_result_patch_review_required.v1'
+    'sentinel.qvc.ide_work_result_patch_review_required.v1',
+    'sentinel.qvc.ide_work_patch_revision_available.v1'
 ])
 const IDE_WORK_STATES = Object.freeze([
     'disabled',
@@ -184,6 +186,7 @@ const IDE_WORK_STATES = Object.freeze([
     'failed_closed',
     'review_required',
     'patch_review_required',
+    'patch_revision_available',
     'expired'
 ])
 const IDE_WORK_ALLOWED_ACTIONS = Object.freeze([
@@ -191,6 +194,7 @@ const IDE_WORK_ALLOWED_ACTIONS = Object.freeze([
     'cancel_mock_backend_work',
     'request_read_only_review',
     'request_patch_proposal',
+    'request_patch_revision',
     'none'
 ])
 const IDE_WORK_FORBIDDEN_TEXT =
@@ -245,7 +249,7 @@ const GOAL_CALLER_INPUT_KEYS = Object.freeze(['plainGoal', 'clientNonce'])
 const PLAN_DECISION_CALLER_INPUT_KEYS = Object.freeze(['cockpitRef', 'clientNonce', 'decision', 'revisionText'])
 const MANUAL_PACKET_CALLER_INPUT_KEYS = Object.freeze(['cockpitRef', 'clientNonce'])
 const RESULT_REVIEW_CALLER_INPUT_KEYS = Object.freeze(['cockpitRef', 'clientNonce', 'resultText', 'reviewOnlyConfirmation'])
-const IDE_WORK_ACTION_CALLER_INPUT_KEYS = Object.freeze(['action'])
+const IDE_WORK_ACTION_CALLER_INPUT_KEYS = Object.freeze(['action', 'revisionText'])
 const IDE_WORK_STATUS_CALLER_INPUT_KEYS = Object.freeze([])
 const PLAN_DECISIONS = Object.freeze(['approve_plan', 'revise_plan', 'stop'])
 const FORBIDDEN_CALLER_KEYS = Object.freeze([
@@ -481,13 +485,27 @@ export function buildResultReviewBody(input = {}) {
 export function buildIdeWorkActionBody(input = {}) {
     validateCallerInput(input, IDE_WORK_ACTION_CALLER_INPUT_KEYS)
     const action = readRequiredString(input.action)
-    if (!['approve_mock_backend_work', 'cancel_mock_backend_work', 'request_read_only_review', 'request_patch_proposal'].includes(action)) {
+    if (
+        ![
+            'approve_mock_backend_work',
+            'cancel_mock_backend_work',
+            'request_read_only_review',
+            'request_patch_proposal',
+            'request_patch_revision'
+        ].includes(action)
+    ) {
         throw new SentinelCockpitError('invalid_request')
     }
-    return {
+    const body = {
         request_kind: IDE_WORK_ACTION_REQUEST_KIND,
         action
     }
+    if (action === 'request_patch_revision') {
+        body.revision_text = readRequiredPatchRevisionString(input.revisionText)
+    } else if (input.revisionText !== undefined) {
+        throw new SentinelCockpitError('invalid_request')
+    }
+    return body
 }
 
 export function buildIdeWorkStatusBody(input = {}) {
@@ -513,6 +531,21 @@ function readRequiredString(value) {
     const trimmed = readOptionalString(value)
     if (trimmed === undefined) throw new SentinelCockpitError('invalid_request')
     return trimmed
+}
+
+function readRequiredPatchRevisionString(value) {
+    const trimmed = readRequiredString(value)
+    const forbiddenPattern =
+        /\b(?:run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*\b|\b(?:sentinel_session|session_id|decision_id|approval_challenge|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|client_nonce|cockpit_ref|sha256|nonce|id|ref|hash|control|session|run|cockpit|packet|header|headers|bearer|authorization|token|gateway|adapter|path|file|source|diff|patch|hunk|raw|stdout|stderr|command|argv|pid|provider|model|confidence|mcp|agentflow|hitl|repo|repo-write|workspace|root|retrieval|endpoint|route|git|stage|commit|push|pr|apply|accept|discard|continue|resume|merge|deploy|publish|copy|download|export)\b|https?:\/\/|www\.|localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|:\d{2,5}\b|```|^diff --git\b|^---\s|^\+\+\+\s|@@|^\s*[+-]\s*\S|[A-Za-z]:[\\/]|\\\\[A-Za-z0-9._-]+[\\/]|\/(?:mnt|workspace|srv|bin|dev|proc|tmp|var|etc|home|opt|root|usr|users|private)(?:\/|\b)|<\s*\/?\s*[a-z][^>]*>|\[[^\]]+\]\([^)]+\)|^\s*[{[]/i
+    if (
+        trimmed.length > 600 ||
+        /[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e]/.test(trimmed) ||
+        /[^\x20-\x7e]/.test(trimmed) ||
+        forbiddenPattern.test(trimmed)
+    ) {
+        throw new SentinelCockpitError('invalid_request')
+    }
+    return trimmed.replace(/\s+/g, ' ')
 }
 
 function readOptionalString(value) {
@@ -657,7 +690,8 @@ function narrowPlanSession(body, options = {}) {
         const idePreview = narrowIdePreview(body.ide_preview)
         if (idePreview) narrowed.ide_preview = idePreview
         const ideWork = narrowIdeWork(body.ide_work)
-        if (ideWork && ideWork.state !== 'patch_review_required') narrowed.ide_work = ideWork
+        if (ideWork && ideWork.state !== 'patch_review_required' && ideWork.state !== 'patch_revision_available')
+            narrowed.ide_work = ideWork
     }
     return narrowed
 }
@@ -726,7 +760,10 @@ function narrowIdeWork(value) {
     }
     const isPatchReviewRequiredSchema = value.schema_version === 'sentinel.qvc.ide_work_result_patch_review_required.v1'
     const isPatchReviewRequiredState = value.state === 'patch_review_required'
-    if (isPatchReviewRequiredSchema !== isPatchReviewRequiredState) return null
+    const isPatchRevisionAvailableSchema = value.schema_version === 'sentinel.qvc.ide_work_patch_revision_available.v1'
+    const isPatchRevisionAvailableState = value.state === 'patch_revision_available'
+    if (isPatchReviewRequiredSchema !== isPatchReviewRequiredState || isPatchRevisionAvailableSchema !== isPatchRevisionAvailableState)
+        return null
     if (
         isPatchReviewRequiredSchema &&
         (value.approval_available !== false ||
@@ -737,7 +774,20 @@ function narrowIdeWork(value) {
     ) {
         return null
     }
-    const patchReviewPacket = narrowPatchReviewPacket(value.patch_review_packet, isPatchReviewRequiredSchema)
+    if (
+        isPatchRevisionAvailableSchema &&
+        (value.approval_available !== true ||
+            value.cancel_available !== false ||
+            value.safe_error !== null ||
+            value.allowed_user_actions.length !== 1 ||
+            value.allowed_user_actions[0] !== 'request_patch_revision')
+    ) {
+        return null
+    }
+    const patchReviewPacket = narrowPatchReviewPacket(
+        value.patch_review_packet,
+        isPatchReviewRequiredSchema || isPatchRevisionAvailableSchema
+    )
     if (patchReviewPacket === undefined) return null
     const includesPatchProposalAction = value.allowed_user_actions.includes('request_patch_proposal')
     const isExactPatchProposalAction = value.allowed_user_actions.length === 1 && value.allowed_user_actions[0] === 'request_patch_proposal'

@@ -23,6 +23,8 @@ export const IDE_WORK_KEY = 'ide_work'
 export const IDE_WORK_BRIDGE_SCHEMA_VERSION = 'sentinel.cockpit_bridge.ide_work.v1'
 const IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION = 'sentinel.qvc.ide_work_result_patch_review_required.v1'
 const IDE_WORK_PATCH_REVIEW_REQUIRED_STATE = 'patch_review_required'
+const IDE_WORK_PATCH_REVISION_AVAILABLE_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_revision_available.v1'
+const IDE_WORK_PATCH_REVISION_AVAILABLE_STATE = 'patch_revision_available'
 const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v3'
 const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
     'schema_version',
@@ -76,7 +78,8 @@ export const IDE_WORK_GATEWAY_SCHEMA_VERSIONS = Object.freeze([
     'sentinel.qvc.ide_work_approval.v1',
     'sentinel.qvc.ide_work_progress.v1',
     'sentinel.qvc.ide_work_result_review_required.v1',
-    IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION
+    IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION,
+    IDE_WORK_PATCH_REVISION_AVAILABLE_SCHEMA_VERSION
 ])
 export const IDE_PREVIEW_REDUCED_KEYS = Object.freeze([
     'status_label',
@@ -153,6 +156,7 @@ const IDE_WORK_STATES = Object.freeze([
     'failed_closed',
     'review_required',
     IDE_WORK_PATCH_REVIEW_REQUIRED_STATE,
+    IDE_WORK_PATCH_REVISION_AVAILABLE_STATE,
     'expired'
 ])
 const IDE_WORK_ALLOWED_ACTIONS = Object.freeze([
@@ -160,6 +164,7 @@ const IDE_WORK_ALLOWED_ACTIONS = Object.freeze([
     'cancel_mock_backend_work',
     'request_read_only_review',
     'request_patch_proposal',
+    'request_patch_revision',
     'none'
 ])
 const IDE_PREVIEW_STATUS_LABELS = Object.freeze({
@@ -313,6 +318,7 @@ export type IdeWorkProjection = Readonly<{
         | 'sentinel.qvc.ide_work_progress.v1'
         | 'sentinel.qvc.ide_work_result_review_required.v1'
         | typeof IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION
+        | typeof IDE_WORK_PATCH_REVISION_AVAILABLE_SCHEMA_VERSION
     status: 'ok'
     state:
         | 'disabled'
@@ -326,6 +332,7 @@ export type IdeWorkProjection = Readonly<{
         | 'failed_closed'
         | 'review_required'
         | typeof IDE_WORK_PATCH_REVIEW_REQUIRED_STATE
+        | typeof IDE_WORK_PATCH_REVISION_AVAILABLE_STATE
         | 'expired'
     status_label: string
     workflow_label: string
@@ -427,7 +434,13 @@ export type ResultReviewRequest = Readonly<{
 
 export type IdeWorkActionRequest = Readonly<{
     request_kind: 'ide_work_action'
-    action: 'approve_mock_backend_work' | 'cancel_mock_backend_work' | 'request_read_only_review' | 'request_patch_proposal'
+    action:
+        | 'approve_mock_backend_work'
+        | 'cancel_mock_backend_work'
+        | 'request_read_only_review'
+        | 'request_patch_proposal'
+        | 'request_patch_revision'
+    revision_text?: string
 }>
 
 export type IdeWorkStatusRequest = Readonly<{
@@ -846,10 +859,21 @@ export async function createIdeWorkActionSession(
     if (!runtimeFetch) {
         throw classifyBridgeError(503, 'gateway_unavailable')
     }
+    const actionBody: {
+        request_kind: IdeWorkActionRequest['request_kind']
+        action: IdeWorkActionRequest['action']
+        revision_text?: string
+    } = {
+        request_kind: request.request_kind,
+        action: request.action
+    }
+    if (request.action === 'request_patch_revision') {
+        actionBody.revision_text = request.revision_text
+    }
     const gatewayBody = await fetchGatewayIdeWork(
         IDE_WORK_ACTION_PATHS.action,
         binding,
-        { request_kind: request.request_kind, action: request.action },
+        actionBody,
         config.token,
         config.gatewayOrigin,
         runtimeFetch,
@@ -860,6 +884,16 @@ export async function createIdeWorkActionSession(
         throw classifyBridgeError(502, 'gateway_rejected')
     }
     assertIdeWorkSafe(ideWork, config.token)
+    const nextAction = readIdeWorkBindingAction(ideWork)
+    ideWorkBinding = nextAction
+        ? {
+              runId: binding.runId,
+              sentinelSessionId: binding.sentinelSessionId,
+              allowedAction: nextAction,
+              createdAt: Date.now(),
+              expiresAt: Date.now() + PLAN_BINDING_MAX_TTL_MS
+          }
+        : null
     return {
         schema_version: IDE_WORK_BRIDGE_SCHEMA_VERSION,
         status: 'ok',
@@ -1215,9 +1249,12 @@ function projectIdeWork(
     const allowedActions = input.allowed_user_actions as string[]
     const isPatchReviewRequiredSchema = input.schema_version === IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION
     const isPatchReviewRequiredState = input.state === IDE_WORK_PATCH_REVIEW_REQUIRED_STATE
-    if (isPatchReviewRequiredSchema !== isPatchReviewRequiredState) {
+    const isPatchRevisionAvailableSchema = input.schema_version === IDE_WORK_PATCH_REVISION_AVAILABLE_SCHEMA_VERSION
+    const isPatchRevisionAvailableState = input.state === IDE_WORK_PATCH_REVISION_AVAILABLE_STATE
+    if (isPatchReviewRequiredSchema !== isPatchReviewRequiredState || isPatchRevisionAvailableSchema !== isPatchRevisionAvailableState) {
         return null
     }
+    if (isPatchReviewRequiredSchema && isPatchRevisionAvailableSchema) return null
     if (
         isPatchReviewRequiredSchema &&
         (input.approval_available !== false ||
@@ -1228,7 +1265,18 @@ function projectIdeWork(
     ) {
         return null
     }
-    const patchReviewPacket = projectPatchReviewPacket(input.patch_review_packet, isPatchReviewRequiredSchema)
+    if (
+        isPatchRevisionAvailableSchema &&
+        (input.approval_available !== true ||
+            input.cancel_available !== false ||
+            input.safe_error !== null ||
+            allowedActions.length !== 1 ||
+            allowedActions[0] !== 'request_patch_revision')
+    ) {
+        return null
+    }
+    const requiresPatchReviewPacket = isPatchReviewRequiredSchema || isPatchRevisionAvailableSchema
+    const patchReviewPacket = projectPatchReviewPacket(input.patch_review_packet, requiresPatchReviewPacket)
     if (patchReviewPacket === undefined) {
         return null
     }
@@ -1513,7 +1561,10 @@ function createPlanDecisionRequiredSession(
         state: 'pending'
     })
     const sessionIdeWork =
-        ideWork?.schema_version === IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION && ideWork.state === IDE_WORK_PATCH_REVIEW_REQUIRED_STATE
+        (ideWork?.schema_version === IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION &&
+            ideWork.state === IDE_WORK_PATCH_REVIEW_REQUIRED_STATE) ||
+        (ideWork?.schema_version === IDE_WORK_PATCH_REVISION_AVAILABLE_SCHEMA_VERSION &&
+            ideWork.state === IDE_WORK_PATCH_REVISION_AVAILABLE_STATE)
             ? null
             : ideWork
     const ideWorkAllowedAction = readIdeWorkBindingAction(sessionIdeWork)
@@ -1579,6 +1630,9 @@ function readIdeWorkBindingAction(ideWork: IdeWorkProjection | null): IdeWorkAct
     if (action === 'request_patch_proposal') {
         return isPatchProposalIdeWorkApproval(ideWork) ? action : null
     }
+    if (action === 'request_patch_revision') {
+        return isPatchRevisionAvailableIdeWork(ideWork) ? action : null
+    }
     return null
 }
 
@@ -1592,6 +1646,20 @@ function isPatchProposalIdeWorkApproval(ideWork: IdeWorkProjection): boolean {
         ideWork.safe_error === null &&
         ideWork.allowed_user_actions.length === 1 &&
         ideWork.allowed_user_actions[0] === 'request_patch_proposal'
+    )
+}
+
+function isPatchRevisionAvailableIdeWork(ideWork: IdeWorkProjection): boolean {
+    return (
+        ideWork.schema_version === IDE_WORK_PATCH_REVISION_AVAILABLE_SCHEMA_VERSION &&
+        ideWork.status === 'ok' &&
+        ideWork.state === IDE_WORK_PATCH_REVISION_AVAILABLE_STATE &&
+        ideWork.approval_available === true &&
+        ideWork.cancel_available === false &&
+        ideWork.safe_error === null &&
+        ideWork.allowed_user_actions.length === 1 &&
+        ideWork.allowed_user_actions[0] === 'request_patch_revision' &&
+        ideWork.patch_review_packet !== null
     )
 }
 
@@ -1610,7 +1678,7 @@ function claimIdeWorkBinding(requireFresh = true, action?: IdeWorkActionRequest[
     if (action && binding.allowedAction !== action) {
         throw classifyBridgeError(403, 'plan_session_state_mismatch')
     }
-    if (action === 'request_patch_proposal') {
+    if (action === 'request_patch_proposal' || action === 'request_patch_revision') {
         ideWorkBinding = null
     }
     return binding
