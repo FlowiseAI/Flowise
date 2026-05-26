@@ -504,6 +504,7 @@ describe('isValidURL', () => {
         it.each([
             ['double quote', 'http://localhost:3000/path"suffix'],
             ['single quote', "http://localhost:3000/path'suffix"],
+            ['backtick', 'http://localhost:3000/path`suffix'],
             ['backslash', 'http://localhost:3000/path\\suffix'],
             ['newline', 'http://localhost:3000/path\nsuffix'],
             ['carriage return', 'http://localhost:3000/path\rsuffix'],

@@ -184,7 +184,7 @@ class ExecuteFlow_Agentflow implements INode {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const chatflowApiKey = getCredentialParam('chatflowApiKey', credentialData, nodeData)
 
-            if (baseURL && !isValidURL(baseURL)) throw new Error('Invalid base URL: must be a valid URL')
+            if (!baseURL || !isValidURL(baseURL)) throw new Error('Invalid base URL: must be a valid URL')
 
             if (selectedFlowId === options.chatflowid) throw new Error('Cannot call the same agentflow!')
 
