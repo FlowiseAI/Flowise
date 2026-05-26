@@ -285,6 +285,55 @@ describe('isDeniedIP - SSRF Protection', () => {
         })
     })
 
+    describe('Non-Canonical IPv6 Address Matching', () => {
+        it('should block IPv6 address when deny list has uppercase variant', () => {
+            // Deny list has FE80::1 (uppercase), should still match fe80::1
+            const denyListUppercase = ['FE80::1']
+            expect(() => isDeniedIP('fe80::1', denyListUppercase)).toThrow('Access to this host is denied by policy.')
+        })
+
+        it('should block IPv6 address when deny list has leading zeros', () => {
+            // Deny list has 2001:0DB8::1 (leading zeros), should still match 2001:db8::1
+            const denyListLeadingZeros = ['2001:0DB8::1']
+            expect(() => isDeniedIP('2001:db8::1', denyListLeadingZeros)).toThrow('Access to this host is denied by policy.')
+        })
+
+        it('should block canonical IPv6 when deny list has non-canonical form', () => {
+            // Deny list has non-canonical form, canonical request should still be blocked
+            const denyListNonCanonical = ['FE80:0000:0000:0000:0000:0000:0000:0001']
+            expect(() => isDeniedIP('fe80::1', denyListNonCanonical)).toThrow('Access to this host is denied by policy.')
+        })
+
+        it('should block non-canonical IPv6 when deny list has canonical form', () => {
+            // Deny list has canonical form, non-canonical request should still be blocked
+            const denyListCanonical = ['fe80::1']
+            expect(() => isDeniedIP('FE80::1', denyListCanonical)).toThrow('Access to this host is denied by policy.')
+            expect(() => isDeniedIP('FE80:0000:0000:0000:0000:0000:0000:0001', denyListCanonical)).toThrow(
+                'Access to this host is denied by policy.'
+            )
+        })
+
+        it('should block IPv4-mapped IPv6 with mixed case in deny list', () => {
+            // Deny list has ::FFFF:127.0.0.1 (uppercase), should match any variant
+            const denyListMixedCase = ['::FFFF:127.0.0.1']
+            expect(() => isDeniedIP('::ffff:127.0.0.1', denyListMixedCase)).toThrow('Access to this host is denied by policy.')
+            expect(() => isDeniedIP('127.0.0.1', denyListMixedCase)).toThrow('Access to this host is denied by policy.')
+        })
+
+        it('should normalize both sides when deny list has non-canonical IPv4-mapped IPv6', () => {
+            // Deny list has 0000:0000:0000:0000:0000:FFFF:7F00:0001 (non-canonical form of ::ffff:127.0.0.1)
+            const denyListLongForm = ['0000:0000:0000:0000:0000:FFFF:7F00:0001']
+            expect(() => isDeniedIP('::ffff:127.0.0.1', denyListLongForm)).toThrow('Access to this host is denied by policy.')
+            expect(() => isDeniedIP('127.0.0.1', denyListLongForm)).toThrow('Access to this host is denied by policy.')
+        })
+
+        it('should allow IPv6 addresses that do not match despite normalization', () => {
+            const denyListFe80 = ['FE80::1']
+            expect(() => isDeniedIP('fe80::2', denyListFe80)).not.toThrow()
+            expect(() => isDeniedIP('2001:4860:4860::8888', denyListFe80)).not.toThrow()
+        })
+    })
+
     describe('Malformed IPv4-Mapped IPv6 CIDR Handling', () => {
         it('should skip malformed IPv4-mapped IPv6 CIDR with mask < 96', () => {
             // ::ffff:10.0.0.0/64 would create negative adjustedMask (-32)

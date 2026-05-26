@@ -88,8 +88,27 @@ export function isDeniedIP(ip: string, denyList: string[]): void {
             } catch (error) {
                 throw new Error(`isDeniedIP: ${error}`)
             }
-        } else if (parsedIp.toString() === entry) {
-            throw new Error('Access to this host is denied by policy.')
+        } else {
+            // Try to parse and normalize the deny list entry for consistent comparison
+            // This handles non-canonical IPv6 addresses (e.g., FE80::1, 2001:0DB8::1)
+            if (ipaddr.isValid(entry)) {
+                let parsedEntry = ipaddr.parse(entry)
+
+                // Normalize IPv4-mapped IPv6 entries
+                if (parsedEntry.kind() === 'ipv6' && (parsedEntry as ipaddr.IPv6).isIPv4MappedAddress()) {
+                    parsedEntry = (parsedEntry as ipaddr.IPv6).toIPv4Address()
+                }
+
+                // Compare normalized forms
+                if (parsedIp.toString() === parsedEntry.toString()) {
+                    throw new Error('Access to this host is denied by policy.')
+                }
+            } else {
+                // Not a valid IP - compare as-is (e.g., hostname like "localhost")
+                if (parsedIp.toString() === entry) {
+                    throw new Error('Access to this host is denied by policy.')
+                }
+            }
         }
     }
 }
