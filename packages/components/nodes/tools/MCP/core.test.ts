@@ -1,10 +1,82 @@
 import {
+    MCPTool,
+    MCPToolkit,
     validateCommandFlags,
     validateCommandInjection,
     validateArgsForLocalFileAccess,
     validateEnvironmentVariables,
     validateMCPServerConfig
 } from './core'
+
+describe('MCP tool trust verifier', () => {
+    const createToolkit = () => {
+        const toolkit = new MCPToolkit({ url: 'https://mcp.example.com', headers: { authorization: 'Bearer static' } }, 'http')
+        const request = jest.fn().mockResolvedValue({ content: [{ type: 'text', text: 'ok' }] })
+        const close = jest.fn().mockResolvedValue(undefined)
+        const createClient = jest.fn().mockResolvedValue({ request, close })
+        toolkit.createClient = createClient as any
+
+        return { toolkit, request, close, createClient }
+    }
+
+    it('passes MCP call context to the verifier before dispatching the tool call', async () => {
+        const { toolkit, request } = createToolkit()
+        toolkit.trustVerifier = jest.fn().mockReturnValue({ action: 'allow', reason: 'trusted test server' })
+
+        const mcpTool = await MCPTool({
+            toolkit,
+            name: 'list_records',
+            description: 'List records',
+            argsSchema: { type: 'object', properties: {} }
+        })
+
+        await mcpTool.invoke({ limit: 5 })
+
+        expect(toolkit.trustVerifier).toHaveBeenCalledWith({
+            transportType: 'http',
+            serverParams: { url: 'https://mcp.example.com', headers: { authorization: 'Bearer static' } },
+            serverUrl: 'https://mcp.example.com',
+            toolName: 'list_records',
+            input: { limit: 5 }
+        })
+        expect(request).toHaveBeenCalledWith(
+            { method: 'tools/call', params: { name: 'list_records', arguments: { limit: 5 } } },
+            expect.anything()
+        )
+    })
+
+    it('blocks denied MCP tool calls before creating a client', async () => {
+        const { toolkit, createClient } = createToolkit()
+        toolkit.trustVerifier = jest.fn().mockReturnValue({ action: 'deny', reason: 'untrusted server' })
+
+        const mcpTool = await MCPTool({
+            toolkit,
+            name: 'delete_records',
+            description: 'Delete records',
+            argsSchema: { type: 'object', properties: {} }
+        })
+
+        await expect(mcpTool.invoke({ ids: ['1'] })).rejects.toThrow(
+            'MCP tool call blocked by trust verifier for "delete_records": untrusted server'
+        )
+        expect(createClient).not.toHaveBeenCalled()
+    })
+
+    it('supports boolean verifier decisions', async () => {
+        const { toolkit, createClient } = createToolkit()
+        toolkit.trustVerifier = jest.fn().mockResolvedValue(false)
+
+        const mcpTool = await MCPTool({
+            toolkit,
+            name: 'export_data',
+            description: 'Export data',
+            argsSchema: { type: 'object', properties: {} }
+        })
+
+        await expect(mcpTool.invoke({})).rejects.toThrow('MCP tool call blocked by trust verifier for "export_data"')
+        expect(createClient).not.toHaveBeenCalled()
+    })
+})
 
 describe('MCP Security Validations', () => {
     describe('validateCommandFlags', () => {
