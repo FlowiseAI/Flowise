@@ -99,7 +99,7 @@ export class X402PaymentTool extends DynamicStructuredTool {
         // V2 format: accepts[] array
         if (body.accepts && Array.isArray(body.accepts) && body.accepts.length > 0) {
             // Find a compatible requirement (matching user's preferred network or USDC asset)
-            const compatibleReq = body.accepts.find((req: X402PaymentAccept) => {
+            const compatibleReq = body.accepts.find((req: any) => {
                 const reqNetwork = req.network.toLowerCase()
                 const userNet = userNetwork.toLowerCase()
 
@@ -135,8 +135,35 @@ export class X402PaymentTool extends DynamicStructuredTool {
                 return net
             })()
 
+            // Normalize amount field: handle maxAmountRequired (decimal), amount (atomic), or price (legacy)
+            const rawAmount = compatibleReq.maxAmountRequired ?? compatibleReq.amount ?? compatibleReq.price
+            if (!rawAmount) {
+                throw new Error('No amount field found in accepts[] entry (expected maxAmountRequired, amount, or price)')
+            }
+
+            // Convert to atomic units based on field semantics
+            let atomicAmount: string
+            if (compatibleReq.maxAmountRequired) {
+                // maxAmountRequired is decimal-style (e.g., "0.001"), convert by decimals
+                const decimalAmount = parseFloat(String(compatibleReq.maxAmountRequired))
+                if (isNaN(decimalAmount)) {
+                    throw new Error('Invalid maxAmountRequired value in accepts[] entry')
+                }
+                atomicAmount = (BigInt(Math.round(decimalAmount * (10 ** decimals)))).toString()
+            } else if (compatibleReq.amount) {
+                // amount is atomic-style (e.g., "1000"), keep as-is
+                atomicAmount = String(compatibleReq.amount)
+            } else {
+                // price is treated as decimal-style for backward compatibility
+                const decimalAmount = parseFloat(String(compatibleReq.price))
+                if (isNaN(decimalAmount)) {
+                    throw new Error('Invalid price value in accepts[] entry')
+                }
+                atomicAmount = (BigInt(Math.round(decimalAmount * (10 ** decimals)))).toString()
+            }
+
             return {
-                maxAmountRequired: compatibleReq.price,
+                maxAmountRequired: atomicAmount,
                 asset: asset.toLowerCase(),
                 payTo: compatibleReq.payTo,
                 network: normalizedNetwork,
