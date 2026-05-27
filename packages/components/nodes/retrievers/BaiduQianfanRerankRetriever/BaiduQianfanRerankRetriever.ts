@@ -110,8 +110,13 @@ class BaiduQianfanRerankRetriever_Retrievers implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const qianfanApiKey =
-            getCredentialParam('qianfanApiKey', credentialData, nodeData) || getCredentialParam('qianfanAccessKey', credentialData, nodeData)
-        const k = topN ? parseFloat(topN) : (baseRetriever as VectorStoreRetriever).k ?? 4
+            getCredentialParam('qianfanApiKey', credentialData, nodeData) ||
+            getCredentialParam('qianfanAccessKey', credentialData, nodeData)
+        if (!qianfanApiKey) {
+            throw new Error('Baidu Qianfan API Key is missing in credentials.')
+        }
+
+        const k = topN ? parseInt(topN, 10) : (baseRetriever as VectorStoreRetriever).k ?? 4
 
         const qianfanCompressor = new BaiduQianfanRerank(qianfanApiKey, customModelName || modelName, k)
         const retriever = new ContextualCompressionRetriever({

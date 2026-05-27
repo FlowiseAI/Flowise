@@ -138,6 +138,55 @@ describe('BaiduQianfanRerankRetriever', () => {
         expect(BaiduQianfanRerank).toHaveBeenCalledWith('api-key', 'custom-reranker', 3)
     })
 
+    it('parses topN as an integer', async () => {
+        ;(getCredentialData as jest.Mock).mockResolvedValue({
+            qianfanApiKey: 'api-key'
+        })
+        ;(getCredentialParam as jest.Mock).mockImplementation((key, credentialData) => credentialData[key])
+
+        const node = new BaiduQianfanRerankRetriever()
+        await node.init(
+            {
+                credential: 'cred-1',
+                inputs: {
+                    baseRetriever: { k: 10 },
+                    modelName: 'bce-reranker-base',
+                    topN: '3.7'
+                },
+                outputs: {
+                    output: 'retriever'
+                }
+            },
+            'user query',
+            {}
+        )
+
+        expect(BaiduQianfanRerank).toHaveBeenCalledWith('api-key', 'bce-reranker-base', 3)
+    })
+
+    it('throws when the Qianfan API key is missing from credentials', async () => {
+        ;(getCredentialData as jest.Mock).mockResolvedValue({})
+        ;(getCredentialParam as jest.Mock).mockImplementation((key, credentialData) => credentialData[key])
+
+        const node = new BaiduQianfanRerankRetriever()
+        await expect(
+            node.init(
+                {
+                    credential: 'cred-1',
+                    inputs: {
+                        baseRetriever: { k: 4 },
+                        modelName: 'bce-reranker-base'
+                    },
+                    outputs: {
+                        output: 'retriever'
+                    }
+                },
+                'user query',
+                {}
+            )
+        ).rejects.toThrow('Baidu Qianfan API Key is missing in credentials.')
+    })
+
     it('returns document output by invoking the rerank retriever', async () => {
         ;(getCredentialData as jest.Mock).mockResolvedValue({
             qianfanApiKey: 'api-key'
