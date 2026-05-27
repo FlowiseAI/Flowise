@@ -6,23 +6,22 @@ jest.mock('@langchain/classic/retrievers/contextual_compression', () => ({
     }))
 }))
 
-jest.mock('../../../src', () => ({
+jest.mock('../../../src/utils', () => ({
     getCredentialData: jest.fn(),
     getCredentialParam: jest.fn(),
     handleEscapeCharacters: jest.fn((text: string) => text)
 }))
 
 jest.mock('./BaiduQianfanRerank', () => ({
-    BaiduQianfanRerank: jest.fn().mockImplementation((qianfanAccessKey, qianfanSecretKey, model, topN) => ({
-        qianfanAccessKey,
-        qianfanSecretKey,
+    BaiduQianfanRerank: jest.fn().mockImplementation((qianfanApiKey, model, topN) => ({
+        qianfanApiKey,
         model,
         topN
     }))
 }))
 
 import { ContextualCompressionRetriever } from '@langchain/classic/retrievers/contextual_compression'
-import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src'
+import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import { BaiduQianfanRerank } from './BaiduQianfanRerank'
 
 const { nodeClass: BaiduQianfanRerankRetriever } = require('./BaiduQianfanRerankRetriever')
@@ -45,17 +44,18 @@ describe('BaiduQianfanRerankRetriever', () => {
         })
         expect(node.credential).toMatchObject({
             name: 'credential',
-            credentialNames: ['baiduQianfanApi']
+            credentialNames: ['baiduQianfanApiKey', 'baiduQianfanApi']
         })
         expect(modelInput).toMatchObject({
             type: 'options',
-            default: 'bce-reranker-base_v1',
-            options: [{ label: 'bce-reranker-base_v1', name: 'bce-reranker-base_v1' }]
+            default: 'bce-reranker-base',
+            options: [{ label: 'bce-reranker-base', name: 'bce-reranker-base' }]
         })
     })
 
-    it('creates a contextual compression retriever with Qianfan credentials and base retriever k by default', async () => {
+    it('creates a contextual compression retriever with Qianfan API key and base retriever k by default', async () => {
         ;(getCredentialData as jest.Mock).mockResolvedValue({
+            qianfanApiKey: 'api-key',
             qianfanAccessKey: 'access-key',
             qianfanSecretKey: 'secret-key'
         })
@@ -68,7 +68,7 @@ describe('BaiduQianfanRerankRetriever', () => {
                 credential: 'cred-1',
                 inputs: {
                     baseRetriever,
-                    modelName: 'bce-reranker-base_v1'
+                    modelName: 'bce-reranker-base'
                 },
                 outputs: {
                     output: 'retriever'
@@ -78,18 +78,42 @@ describe('BaiduQianfanRerankRetriever', () => {
             {}
         )
 
-        expect(BaiduQianfanRerank).toHaveBeenCalledWith('access-key', 'secret-key', 'bce-reranker-base_v1', 6)
+        expect(BaiduQianfanRerank).toHaveBeenCalledWith('api-key', 'bce-reranker-base', 6)
         expect(ContextualCompressionRetriever).toHaveBeenCalledWith({
-            baseCompressor: expect.objectContaining({ model: 'bce-reranker-base_v1', topN: 6 }),
+            baseCompressor: expect.objectContaining({ model: 'bce-reranker-base', topN: 6 }),
             baseRetriever
         })
         expect(result).toMatchObject({ baseRetriever })
     })
 
+    it('falls back to Qianfan access key when the dedicated API key field is not configured', async () => {
+        ;(getCredentialData as jest.Mock).mockResolvedValue({
+            qianfanAccessKey: 'fallback-api-key'
+        })
+        ;(getCredentialParam as jest.Mock).mockImplementation((key, credentialData) => credentialData[key])
+
+        const node = new BaiduQianfanRerankRetriever()
+        await node.init(
+            {
+                credential: 'cred-1',
+                inputs: {
+                    baseRetriever: { k: 4 },
+                    modelName: 'bce-reranker-base'
+                },
+                outputs: {
+                    output: 'retriever'
+                }
+            },
+            'user query',
+            {}
+        )
+
+        expect(BaiduQianfanRerank).toHaveBeenCalledWith('fallback-api-key', 'bce-reranker-base', 4)
+    })
+
     it('uses custom model names and explicit topN values', async () => {
         ;(getCredentialData as jest.Mock).mockResolvedValue({
-            qianfanAccessKey: 'access-key',
-            qianfanSecretKey: 'secret-key'
+            qianfanApiKey: 'api-key'
         })
         ;(getCredentialParam as jest.Mock).mockImplementation((key, credentialData) => credentialData[key])
 
@@ -99,7 +123,7 @@ describe('BaiduQianfanRerankRetriever', () => {
                 credential: 'cred-1',
                 inputs: {
                     baseRetriever: { k: 10 },
-                    modelName: 'bce-reranker-base_v1',
+                    modelName: 'bce-reranker-base',
                     customModelName: 'custom-reranker',
                     topN: '3'
                 },
@@ -111,13 +135,12 @@ describe('BaiduQianfanRerankRetriever', () => {
             {}
         )
 
-        expect(BaiduQianfanRerank).toHaveBeenCalledWith('access-key', 'secret-key', 'custom-reranker', 3)
+        expect(BaiduQianfanRerank).toHaveBeenCalledWith('api-key', 'custom-reranker', 3)
     })
 
     it('returns document output by invoking the rerank retriever', async () => {
         ;(getCredentialData as jest.Mock).mockResolvedValue({
-            qianfanAccessKey: 'access-key',
-            qianfanSecretKey: 'secret-key'
+            qianfanApiKey: 'api-key'
         })
         ;(getCredentialParam as jest.Mock).mockImplementation((key, credentialData) => credentialData[key])
 
@@ -127,7 +150,7 @@ describe('BaiduQianfanRerankRetriever', () => {
                 credential: 'cred-1',
                 inputs: {
                     baseRetriever: { k: 4 },
-                    modelName: 'bce-reranker-base_v1',
+                    modelName: 'bce-reranker-base',
                     query: 'override query'
                 },
                 outputs: {
@@ -145,8 +168,7 @@ describe('BaiduQianfanRerankRetriever', () => {
 
     it('returns text output by concatenating reranked documents', async () => {
         ;(getCredentialData as jest.Mock).mockResolvedValue({
-            qianfanAccessKey: 'access-key',
-            qianfanSecretKey: 'secret-key'
+            qianfanApiKey: 'api-key'
         })
         ;(getCredentialParam as jest.Mock).mockImplementation((key, credentialData) => credentialData[key])
 
@@ -156,7 +178,7 @@ describe('BaiduQianfanRerankRetriever', () => {
                 credential: 'cred-1',
                 inputs: {
                     baseRetriever: { k: 4 },
-                    modelName: 'bce-reranker-base_v1'
+                    modelName: 'bce-reranker-base'
                 },
                 outputs: {
                     output: 'text'

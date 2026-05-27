@@ -1,7 +1,7 @@
 import { BaseRetriever } from '@langchain/core/retrievers'
 import { VectorStoreRetriever } from '@langchain/core/vectorstores'
 import { ContextualCompressionRetriever } from '@langchain/classic/retrievers/contextual_compression'
-import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src'
+import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { BaiduQianfanRerank } from './BaiduQianfanRerank'
 
@@ -31,7 +31,7 @@ class BaiduQianfanRerankRetriever_Retrievers implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['baiduQianfanApi']
+            credentialNames: ['baiduQianfanApiKey', 'baiduQianfanApi']
         }
         this.inputs = [
             {
@@ -45,18 +45,18 @@ class BaiduQianfanRerankRetriever_Retrievers implements INode {
                 type: 'options',
                 options: [
                     {
-                        label: 'bce-reranker-base_v1',
-                        name: 'bce-reranker-base_v1'
+                        label: 'bce-reranker-base',
+                        name: 'bce-reranker-base'
                     }
                 ],
-                default: 'bce-reranker-base_v1',
+                default: 'bce-reranker-base',
                 optional: true
             },
             {
                 label: 'Custom Model Name',
                 name: 'customModelName',
                 type: 'string',
-                placeholder: 'bce-reranker-base_v1',
+                placeholder: 'bce-reranker-base',
                 description: 'Custom model name to use. If provided, it will override the selected model.',
                 additionalParams: true,
                 optional: true
@@ -109,11 +109,11 @@ class BaiduQianfanRerankRetriever_Retrievers implements INode {
         const output = nodeData.outputs?.output as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const qianfanAccessKey = getCredentialParam('qianfanAccessKey', credentialData, nodeData)
-        const qianfanSecretKey = getCredentialParam('qianfanSecretKey', credentialData, nodeData)
+        const qianfanApiKey =
+            getCredentialParam('qianfanApiKey', credentialData, nodeData) || getCredentialParam('qianfanAccessKey', credentialData, nodeData)
         const k = topN ? parseFloat(topN) : (baseRetriever as VectorStoreRetriever).k ?? 4
 
-        const qianfanCompressor = new BaiduQianfanRerank(qianfanAccessKey, qianfanSecretKey, customModelName || modelName, k)
+        const qianfanCompressor = new BaiduQianfanRerank(qianfanApiKey, customModelName || modelName, k)
         const retriever = new ContextualCompressionRetriever({
             baseCompressor: qianfanCompressor,
             baseRetriever

@@ -1,7 +1,8 @@
 import { Callbacks } from '@langchain/core/callbacks/manager'
 import { Document } from '@langchain/core/documents'
 import { BaseDocumentCompressor } from '@langchain/classic/retrievers/document_compressors'
-import { Reranker } from '@baiducloud/qianfan'
+
+const QIANFAN_RERANK_API_URL = 'https://qianfan.baidubce.com/v2/rerank'
 
 type QianfanRerankResult = {
     index: number
@@ -13,21 +14,14 @@ type QianfanRerankResponse = {
     results?: QianfanRerankResult[]
 }
 
-type QianfanRerankerClient = {
-    reranker: (body: { query: string; documents: string[]; top_n?: number }, model?: string) => Promise<QianfanRerankResponse>
-}
-
 export class BaiduQianfanRerank extends BaseDocumentCompressor {
-    private readonly client: QianfanRerankerClient
+    private readonly qianfanApiKey: string
     private readonly model: string
     private readonly topN: number
 
-    constructor(qianfanAccessKey: string, qianfanSecretKey: string, model: string, topN: number) {
+    constructor(qianfanApiKey: string, model: string, topN: number) {
         super()
-        this.client = new Reranker({
-            QIANFAN_ACCESS_KEY: qianfanAccessKey,
-            QIANFAN_SECRET_KEY: qianfanSecretKey
-        }) as QianfanRerankerClient
+        this.qianfanApiKey = qianfanApiKey
         this.model = model
         this.topN = topN
     }
@@ -40,19 +34,28 @@ export class BaiduQianfanRerank extends BaseDocumentCompressor {
         if (documents.length === 0) return []
 
         try {
-            const response = await this.client.reranker(
-                {
+            const response = await fetch(QIANFAN_RERANK_API_URL, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${this.qianfanApiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: this.model,
                     query,
                     documents: documents.map((doc) => doc.pageContent),
                     top_n: this.topN
-                },
-                this.model
-            )
+                })
+            })
 
-            if (!Array.isArray(response.results)) return documents
+            if (!response.ok) throw new Error(`Baidu Qianfan Rerank API call failed with status ${response.status}`)
+
+            const rerankResponse = (await response.json()) as QianfanRerankResponse
+
+            if (!Array.isArray(rerankResponse.results)) return documents
 
             const rerankedDocuments: Document<Record<string, any>>[] = []
-            for (const result of response.results) {
+            for (const result of rerankResponse.results) {
                 const doc = documents[result.index]
                 if (!doc) return documents
                 rerankedDocuments.push(
