@@ -18,6 +18,7 @@ import Placeholder from '@tiptap/extension-placeholder'
 import { mergeAttributes } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Markdown } from '@tiptap/markdown'
+import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { common, createLowlight } from 'lowlight'
 import { suggestionOptions } from '@/ui-component/input/suggestionOption'
@@ -26,6 +27,41 @@ import { CustomMention } from '@/utils/customMention'
 import { isHtmlContent, escapeXmlTags, unescapeXmlEntities, unescapeXmlTags } from '@/utils/xmlTagUtils'
 
 const lowlight = createLowlight(common)
+
+const MarkdownTable = Table.extend({
+    renderMarkdown: (node, h) => {
+        const rows =
+            node.content?.map((rowNode) =>
+                (rowNode.content || []).map((cellNode) => {
+                    const text = (cellNode.content || [])
+                        .map((childNode) => h.renderChildren(childNode))
+                        .join(' ')
+                        .replace(/\s+/g, ' ')
+                        .trim()
+                    return { text, isHeader: cellNode.type === 'tableHeader' }
+                })
+            ) || []
+        const columnCount = rows.reduce((max, row) => Math.max(max, row.length), 0)
+
+        if (!columnCount) return ''
+
+        const renderRow = (row = []) =>
+            `| ${new Array(columnCount)
+                .fill(0)
+                .map((_, index) => row[index]?.text || '')
+                .join(' | ')} |`
+
+        const headerRow = rows[0] || []
+        const hasHeader = headerRow.some((cell) => cell.isHeader)
+        const bodyRows = hasHeader ? rows.slice(1) : rows
+
+        return [
+            renderRow(hasHeader ? headerRow : []),
+            `| ${new Array(columnCount).fill('---').join(' | ')} |`,
+            ...bodyRows.map(renderRow)
+        ].join('\n')
+    }
+})
 
 // Store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
@@ -115,7 +151,16 @@ const extensions = (availableNodesForVariable, availableState, acceptNodeOutputA
     StarterKit.configure({
         codeBlock: false
     }),
-    Markdown,
+    MarkdownTable,
+    TableRow,
+    TableHeader,
+    TableCell,
+    Markdown.configure({
+        markedOptions: {
+            gfm: true,
+            breaks: false
+        }
+    }),
     CustomMention.configure({
         HTMLAttributes: {
             class: 'variable'
