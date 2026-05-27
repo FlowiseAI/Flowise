@@ -1443,6 +1443,24 @@ describe('SentinelResumeStatus', () => {
         expect(container.textContent).not.toMatch(/source code|file path|raw output|stdout|stderr|Create PR/i)
     })
 
+    it('keeps patch revision controls visible after unsafe local revision text', async () => {
+        requestGoalSnapshot.mockResolvedValueOnce(safePlanSession({ ide_work: safePatchRevisionIdeWork() }))
+        const { container, setGoalInput, submitGoalForm, setPatchRevisionInput, getPatchRevisionInput, clickButton } = renderInteractive()
+
+        setGoalInput('Please make a simple safe plan.')
+        submitGoalForm()
+
+        await waitForAssertion(() => expect(container.textContent).toContain('Ask Sentinel for revised proposal'))
+        setPatchRevisionInput('Use header from context.')
+        clickButton('Ask Sentinel for revised proposal')
+
+        expect(requestIdeWorkAction).not.toHaveBeenCalled()
+        expect(container.textContent).toContain(PATCH_REVISION_UNSAFE_MESSAGE)
+        expect(container.textContent).toContain('Patch revision note')
+        expect(getPatchRevisionInput()).not.toBeNull()
+        expect(container.textContent).toContain('Ask Sentinel for revised proposal')
+    })
+
     it('uses patch proposal-specific error copy', async () => {
         const requestPatchActionImpl = jest.fn().mockRejectedValue(new Error('raw failure'))
 

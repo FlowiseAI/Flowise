@@ -889,7 +889,7 @@ export default function SentinelResumeStatus() {
                         {isLoading ? (loadingMode === 'goal' ? GOAL_LOADING_MESSAGE : LOADING_MESSAGE) : EMPTY_MESSAGE}
                     </div>
                 ) : null}
-                {!error && snapshot && isPlanSessionResponse(snapshot) ? (
+                {snapshot && isPlanSessionResponse(snapshot) ? (
                     <PlanSessionCard
                         snapshot={snapshot}
                         canDecide={planDecisionReady}
@@ -914,7 +914,7 @@ export default function SentinelResumeStatus() {
                         canRequestPatchRevision={patchRevisionReady}
                     />
                 ) : null}
-                {!error && snapshot && !isPlanSessionResponse(snapshot) ? (
+                {snapshot && !isPlanSessionResponse(snapshot) ? (
                     <ResumeSnapshot snapshot={snapshot} showIdePreview={showIdePreview && !isLoading} />
                 ) : null}
             </section>
