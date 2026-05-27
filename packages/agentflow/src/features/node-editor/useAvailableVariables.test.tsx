@@ -63,9 +63,11 @@ describe('useAvailableVariables', () => {
         const { result } = renderHook(() => useAvailableVariables('agent_0'))
 
         const nodeOutputs = result.current.filter((i) => i.category === 'Node Outputs')
-        expect(nodeOutputs).toHaveLength(1)
+        expect(nodeOutputs).toHaveLength(2)
         expect(nodeOutputs[0].value).toBe('{{llm_0}}')
         expect(nodeOutputs[0].label).toBe('llm_0')
+        expect(nodeOutputs[1].value).toBe('{{llm_0.output.artifacts}}')
+        expect(nodeOutputs[1].label).toBe('llm_0.output.artifacts')
     })
 
     it('excludes startAgentflow from node outputs', () => {
@@ -96,6 +98,7 @@ describe('useAvailableVariables', () => {
 
         const nodeOutputs = result.current.filter((i) => i.category === 'Node Outputs')
         expect(nodeOutputs[0].label).toBe('myFunc')
+        expect(nodeOutputs[1].label).toBe('myFunc.output.artifacts')
     })
 
     it('returns flow state variables from startAgentflow node', () => {
