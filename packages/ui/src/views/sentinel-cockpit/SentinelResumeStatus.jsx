@@ -491,6 +491,15 @@ const PATCH_REVIEW_ROWS = Object.freeze([
     ['What will not happen', 'what_will_not_happen']
 ])
 
+const PATCH_PROPOSAL_STATUS_ROWS = Object.freeze([
+    ['Patch proposal status', 'status_label'],
+    ['Suggested workflow', 'workflow_label'],
+    ['Summary', 'short_summary'],
+    ['Current safe step', 'current_safe_step'],
+    ['What can happen next', 'what_can_happen_next'],
+    ['What will not happen', 'what_will_not_happen']
+])
+
 export default function SentinelResumeStatus() {
     const goalRef = useRef('')
     const checkpointRef = useRef('')
@@ -1129,6 +1138,38 @@ function PatchProposalRequestCard({ ideWork, rows, canRequest, isLoading, onIdeW
     )
 }
 
+function PatchProposalStatusCard({ ideWork, rows }) {
+    return (
+        <section style={pageStyles.idePreview} aria-label='Patch proposal status'>
+            <h2 style={pageStyles.idePreviewTitle}>Patch proposal status</h2>
+            <p style={pageStyles.idePreviewCopy}>
+                Review-only patch proposal status. Nothing was accepted, applied, continued, or changed from this page.
+            </p>
+            <div style={pageStyles.idePreviewGrid}>
+                {rows.map(([label, value]) => (
+                    <div key={label} style={pageStyles.idePreviewRow}>
+                        <div style={pageStyles.idePreviewLabel}>{label}</div>
+                        <div style={pageStyles.idePreviewValue}>{value}</div>
+                    </div>
+                ))}
+            </div>
+            {ideWork?.review_required_note ? (
+                <p style={pageStyles.idePreviewCopy}>Review note: {formatValue(ideWork.review_required_note)}</p>
+            ) : null}
+            {ideWork?.terminal_note ? <p style={pageStyles.idePreviewCopy}>Closeout: {formatValue(ideWork.terminal_note)}</p> : null}
+            {Array.isArray(ideWork?.blocked_actions) && ideWork.blocked_actions.length > 0 ? (
+                <div style={pageStyles.idePreviewGrid}>
+                    <div style={pageStyles.idePreviewRow}>
+                        <div style={pageStyles.idePreviewLabel}>Blocked actions</div>
+                        <div style={pageStyles.idePreviewValue}>{formatList(ideWork.blocked_actions)}</div>
+                    </div>
+                </div>
+            ) : null}
+            <p style={{ ...pageStyles.idePreviewCopy, marginBottom: 0 }}>This card is passive and has no action controls.</p>
+        </section>
+    )
+}
+
 function PatchReviewRequiredCard({ ideWork, rows }) {
     return (
         <section style={pageStyles.idePreview} aria-label='Patch proposal review required'>
@@ -1273,11 +1314,26 @@ export function PlanSessionCard({
         !showPatchReviewRequired && canRequestPatchRevision && isPatchRevisionAvailableIdeWork(snapshot.ide_work)
     const showPatchProposalRequest =
         !showPatchReviewRequired && !showPatchRevisionRequest && canRequestPatchProposal && isPatchProposalIdeWork(snapshot.ide_work)
+    const showPatchProposalStatus =
+        !showPatchReviewRequired &&
+        !showPatchRevisionRequest &&
+        !showPatchProposalRequest &&
+        isPatchProposalStatusIdeWork(snapshot.ide_work)
     const showReadOnlyReview =
-        !showPatchReviewRequired && !showPatchRevisionRequest && (canRequestReadOnlyReview || isReadOnlyReviewIdeWork(snapshot.ide_work))
+        !showPatchReviewRequired &&
+        !showPatchRevisionRequest &&
+        !showPatchProposalStatus &&
+        (canRequestReadOnlyReview || isReadOnlyReviewIdeWork(snapshot.ide_work))
+    const showPatchSurface = showPatchReviewRequired || showPatchRevisionRequest || showPatchProposalRequest || showPatchProposalStatus
     const ideWorkRows = readIdeWorkRows(
         snapshot.ide_work,
-        showPatchReviewRequired || showPatchRevisionRequest ? PATCH_REVIEW_ROWS : showReadOnlyReview ? READ_ONLY_REVIEW_ROWS : IDE_WORK_ROWS
+        showPatchReviewRequired || showPatchRevisionRequest
+            ? PATCH_REVIEW_ROWS
+            : showPatchProposalRequest || showPatchProposalStatus
+            ? PATCH_PROPOSAL_STATUS_ROWS
+            : showReadOnlyReview
+            ? READ_ONLY_REVIEW_ROWS
+            : IDE_WORK_ROWS
     )
 
     return (
@@ -1305,6 +1361,8 @@ export function PlanSessionCard({
                     isLoading={isLoading}
                     onIdeWorkAction={onIdeWorkAction}
                 />
+            ) : ideWorkRows.length > 0 && showPatchProposalStatus ? (
+                <PatchProposalStatusCard ideWork={snapshot.ide_work} rows={ideWorkRows} />
             ) : ideWorkRows.length > 0 && showReadOnlyReview ? (
                 <ReadOnlyReviewCard
                     ideWork={snapshot.ide_work}
@@ -1349,9 +1407,9 @@ export function PlanSessionCard({
                 <div style={pageStyles.rowLabel}>Blocked actions</div>
                 <div style={pageStyles.rowValue}>{formatList(snapshot.blocked_actions)}</div>
             </div>
-            {showPatchReviewRequired || showPatchRevisionRequest ? (
+            {showPatchSurface ? (
                 <p style={pageStyles.note}>
-                    Patch review is display-only. Plan, handoff, and result controls are not available for this state.
+                    Patch proposal review is display-only. Plan, handoff, and result controls are not available for this patch state.
                 </p>
             ) : canDecide ? (
                 <>
@@ -1928,6 +1986,20 @@ function isPatchRevisionAvailableIdeWork(ideWork) {
         ideWork.safe_error === null &&
         ideWork.allowed_user_actions.length === 1 &&
         ideWork.allowed_user_actions[0] === 'request_patch_revision'
+    )
+}
+
+function isPatchProposalStatusIdeWork(ideWork) {
+    if (!isSafeIdeWorkProjection(ideWork)) return false
+    return (
+        ideWork.schema_version === 'sentinel.qvc.ide_work_progress.v1' &&
+        ideWork.approval_available === false &&
+        ideWork.cancel_available === false &&
+        ideWork.patch_review_packet === null &&
+        typeof ideWork.safe_error === 'string' &&
+        ideWork.safe_error.startsWith('patch_') &&
+        ideWork.allowed_user_actions.length === 1 &&
+        ideWork.allowed_user_actions[0] === 'none'
     )
 }
 

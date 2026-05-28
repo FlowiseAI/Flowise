@@ -244,6 +244,25 @@ const safePatchApprovalIdeWork = (overrides = {}) =>
         ...overrides
     })
 
+const safePatchBlockedIdeWork = (overrides = {}) =>
+    safeIdeWork({
+        schema_version: 'sentinel.qvc.ide_work_progress.v1',
+        state: 'failed_closed',
+        status_label: 'Patch proposal could not be prepared',
+        short_summary: 'Sentinel could not prepare a review-only patch preview for this request.',
+        current_safe_step: 'Start a new review-only patch proposal from the current cockpit flow, or continue with the manual plan.',
+        what_can_happen_next: 'You can try a fresh review-only proposal or continue with the manual plan.',
+        what_will_not_happen: 'Nothing is accepted, applied, changed, or continued from this page.',
+        approval_available: false,
+        cancel_available: false,
+        terminal_note: 'No patch proposal was accepted or applied.',
+        allowed_user_actions: ['none'],
+        blocked_actions: ['No patch is applied here.', 'No source repo is changed here.', 'No continuation starts here.'],
+        patch_review_packet: null,
+        safe_error: 'patch_failed_closed',
+        ...overrides
+    })
+
 let activeDom = null
 let activeRoot = null
 
@@ -1060,10 +1079,12 @@ describe('SentinelResumeStatus', () => {
         expect(canUseIdeWorkAction(approvalSnapshot, 'request_patch_proposal')).toBe(true)
         expect(canUseIdeWorkAction(approvalSnapshot, 'request_read_only_review')).toBe(false)
         expect(approvalHtml).toContain('Patch proposal request')
+        expect(approvalHtml).toContain('Patch proposal status')
         expect(approvalHtml).toContain('Ask Sentinel for patch proposal')
         expect(approvalHtml).toContain('Nothing is accepted, applied, continued, or changed from this page.')
         expect(approvalHtml).not.toContain('Read-only review')
         expect(approvalHtml).not.toContain('Safe mock check')
+        expect(approvalHtml).not.toContain('Mock check status')
         expect(approvalHtml).not.toMatch(/diff_text|source code|file path|raw output|stdout|stderr|commit|push|Create PR/i)
         ;[
             safePatchApprovalIdeWork({ approval_available: false }),
@@ -1074,6 +1095,18 @@ describe('SentinelResumeStatus', () => {
         ].forEach((ideWork) => {
             expect(canUseIdeWorkAction(safePlanSession({ ide_work: ideWork }), 'request_patch_proposal')).toBe(false)
         })
+
+        const blockedSnapshot = safePlanSession({ ide_work: safePatchBlockedIdeWork() })
+        const blockedStatusHtml = renderToStaticMarkup(<PlanSessionCard snapshot={blockedSnapshot} />)
+        expect(blockedStatusHtml).toContain('Patch proposal status')
+        expect(blockedStatusHtml).toContain('Patch proposal could not be prepared')
+        expect(blockedStatusHtml).toContain('No patch proposal was accepted or applied.')
+        expect(blockedStatusHtml).toContain(
+            'Patch proposal review is display-only. Plan, handoff, and result controls are not available for this patch state.'
+        )
+        expect(blockedStatusHtml).not.toContain('Safe mock check')
+        expect(blockedStatusHtml).not.toContain('Mock check status')
+        expect(blockedStatusHtml).not.toContain('Plan decision controls are not available for this state.')
 
         const patchResponse = safePatchIdeWork()
         const requestPatchActionImpl = jest.fn().mockResolvedValue({
@@ -1402,7 +1435,7 @@ describe('SentinelResumeStatus', () => {
         expect(container.textContent).toContain('Patch proposal review required')
         expect(container.textContent).toContain('Patch proposal needs review. Nothing was accepted or applied here.')
         expect(container.textContent).toContain(
-            'Patch review is display-only. Plan, handoff, and result controls are not available for this state.'
+            'Patch proposal review is display-only. Plan, handoff, and result controls are not available for this patch state.'
         )
         expect(container.textContent).not.toContain('Ask Sentinel for patch proposal')
         expect(buttonLabels(container)).not.toEqual(
