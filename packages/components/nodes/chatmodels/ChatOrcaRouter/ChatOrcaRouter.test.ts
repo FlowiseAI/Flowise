@@ -176,6 +176,34 @@ describe('ChatOrcaRouter', () => {
         expect(model.fields.temperature).toBeUndefined()
     })
 
+    it('honours an explicit 0 for numeric params instead of dropping the falsy-but-valid value', async () => {
+        ;(getCredentialData as jest.Mock).mockResolvedValue({ orcaRouterApiKey: 'sk-orca-x' })
+        ;(getCredentialParam as jest.Mock).mockImplementation((key, credentialData) => credentialData[key])
+
+        const node = new ChatOrcaRouter()
+        const model = await node.init(
+            {
+                id: 'node-1',
+                credential: 'cred-1',
+                inputs: {
+                    modelName: 'openai/gpt-5.5',
+                    temperature: 0,
+                    topP: 0,
+                    frequencyPenalty: 0,
+                    presencePenalty: 0,
+                    streaming: true
+                }
+            },
+            '',
+            {}
+        )
+
+        expect(model.fields.temperature).toBe(0)
+        expect(model.fields.topP).toBe(0)
+        expect(model.fields.frequencyPenalty).toBe(0)
+        expect(model.fields.presencePenalty).toBe(0)
+    })
+
     it('merges user-provided Base Options on top of the default attribution headers', async () => {
         ;(getCredentialData as jest.Mock).mockResolvedValue({ orcaRouterApiKey: 'sk-orca-x' })
         ;(getCredentialParam as jest.Mock).mockImplementation((key, credentialData) => credentialData[key])
