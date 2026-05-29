@@ -303,25 +303,19 @@ function _convertLangChainContentToPart(content: MessageContentComplex, isMultim
     } else if ('functionCall' in content) {
         return undefined
     } else if (content.type === 'thinking') {
-        // Gemini's "thinking" / "thought summary" parts. Created by the
-        // response parsers in this file (see the two locations that emit
-        // `{ type: 'thinking' as const, thinking: p.text, signature: ... }`).
-        // When the assistant message is echoed back to the API as
-        // conversation history, the part must be in Google's native
-        // shape — a regular text Part with `thought: true` (and the
-        // optional `thoughtSignature` Gemini 3 expects for tool-call
-        // continuity). Without this branch the converter falls through
-        // to the throwing else, surfacing as
-        // "Error in Agent node: Unknown content type thinking" on the
-        // SECOND iteration of any agent loop running on a thinking
-        // model (gemini-2.5-* with thinking, gemini-3-flash-preview, …).
-        //
-        // Schema reference: https://ai.google.dev/gemini-api/docs/thinking
-        // Signature reference: https://ai.google.dev/gemini-api/docs/thought-signatures
-        const text = (content as any).thinking ?? (content as any).text ?? ''
+        // Map LangChain `thinking` blocks back to Google's native shape:
+        // a text Part with `thought: true` and optional `thoughtSignature`.
+        // https://ai.google.dev/gemini-api/docs/thinking
+        const text = (content as any).thinking ?? (content as any).text
+        if (text !== undefined && typeof text !== 'string') {
+            throw new Error(`Invalid 'thinking' content: expected string, got ${typeof text}`)
+        }
         const signature = (content as any).signature ?? (content as any).thoughtSignature
+        if (signature !== undefined && typeof signature !== 'string') {
+            throw new Error(`Invalid 'thinking' signature: expected string, got ${typeof signature}`)
+        }
         return {
-            text: typeof text === 'string' ? text : String(text ?? ''),
+            text: text ?? '',
             thought: true,
             ...(signature ? { thoughtSignature: signature } : {})
         } as Part

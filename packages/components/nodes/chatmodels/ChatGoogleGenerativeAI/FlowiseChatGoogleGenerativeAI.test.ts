@@ -2,25 +2,6 @@ import { AIMessage } from '@langchain/core/messages'
 import { convertMessageContentToParts } from './FlowiseChatGoogleGenerativeAI'
 
 describe('convertMessageContentToParts — Gemini "thinking" content blocks', () => {
-    // Background: When a Gemini model with thinking enabled
-    // (gemini-2.5-* with thinkingConfig, gemini-3-flash-preview, etc.)
-    // emits a thought summary, Flowise's response parser stores it as a
-    // LangChain content block of shape:
-    //
-    //   { type: 'thinking', thinking: 'reasoning text…', signature: '…' }
-    //
-    // On the NEXT iteration of an agent loop, the assistant message is
-    // echoed back to the API as conversation history, and each content
-    // block runs through `_convertLangChainContentToPart`. Without a
-    // branch for type='thinking', the converter throws
-    // "Unknown content type thinking" and the agent node errors out.
-    //
-    // Google's native shape is a text Part with a boolean `thought: true`
-    // flag and an optional `thoughtSignature` for Gemini-3 tool-call
-    // signature continuity. See:
-    //   https://ai.google.dev/gemini-api/docs/thinking
-    //   https://ai.google.dev/gemini-api/docs/thought-signatures
-
     it('round-trips a thinking content block back into a Gemini text Part with thought=true', () => {
         const msg = new AIMessage({
             content: [
@@ -79,14 +60,32 @@ describe('convertMessageContentToParts — Gemini "thinking" content blocks', ()
         expect(p.thoughtSignature).toBe('sig-from-alt-key')
     })
 
-    it('coerces non-string thinking payload to a string instead of throwing', () => {
+    it('treats undefined/null thinking as empty text rather than throwing', () => {
+        // Producer sites in this file always emit a string `thinking`,
+        // but defensive: missing fields should not crash the converter
+        // — they should just degrade to an empty thought part. (`??`
+        // collapses both undefined and null into the fallback.)
         const msg = new AIMessage({
-            content: [{ type: 'thinking', thinking: null } as any]
+            content: [{ type: 'thinking' } as any] // no `thinking` field at all
         })
         const parts = convertMessageContentToParts(msg, false, [])
         const p = parts[0] as any
         expect(p.thought).toBe(true)
-        expect(typeof p.text).toBe('string')
+        expect(p.text).toBe('')
+    })
+
+    it('fails fast on non-string thinking payload (per code-review feedback)', () => {
+        const msg = new AIMessage({
+            content: [{ type: 'thinking', thinking: 42 } as any]
+        })
+        expect(() => convertMessageContentToParts(msg, false, [])).toThrow(/Invalid 'thinking' content: expected string, got number/)
+    })
+
+    it('fails fast on non-string thinking signature', () => {
+        const msg = new AIMessage({
+            content: [{ type: 'thinking', thinking: 'ok', signature: 42 } as any]
+        })
+        expect(() => convertMessageContentToParts(msg, false, [])).toThrow(/Invalid 'thinking' signature: expected string, got number/)
     })
 
     it('still throws "Unknown content type" for truly unrecognized types', () => {
