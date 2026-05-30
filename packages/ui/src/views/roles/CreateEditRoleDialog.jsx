@@ -5,14 +5,14 @@ import { createPortal } from 'react-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
 // Material
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, OutlinedInput, Typography } from '@mui/material'
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, OutlinedInput, Tooltip, Typography } from '@mui/material'
 
 // Project imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // Icons
-import { IconUser, IconX } from '@tabler/icons-react'
+import { IconAlertTriangle, IconUser, IconX } from '@tabler/icons-react'
 
 // API
 import authApi from '@/api/auth'
@@ -374,7 +374,7 @@ const CreateEditRoleDialog = ({ show, dialogProps, onCancel, onConfirm, setError
                                                     key={permission.key}
                                                     className={`permission-item ${index % 2 === 0 ? 'left-column' : 'right-column'}`}
                                                 >
-                                                    <label>
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                         <input
                                                             type='checkbox'
                                                             checked={selectedPermissions[category]?.[permission.key] || false}
@@ -385,6 +385,15 @@ const CreateEditRoleDialog = ({ show, dialogProps, onCancel, onConfirm, setError
                                                             onChange={() => handlePermissionChange(category, permission.key)}
                                                         />
                                                         {permission.value}
+                                                        {(permission.key === 'workspace:export' ||
+                                                            permission.key === 'workspace:import') && (
+                                                            <Tooltip
+                                                                title='Administrative privilege: Performs workspace-level actions with implicit access to all contained resources. Intended for backup/restore and migration operations. Restrict to authorized administrators only.'
+                                                                placement='right'
+                                                            >
+                                                                <IconAlertTriangle size={16} color='orange' style={{ flexShrink: 0 }} />
+                                                            </Tooltip>
+                                                        )}
                                                     </label>
                                                 </div>
                                             ))}
