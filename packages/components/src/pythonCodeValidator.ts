@@ -68,6 +68,8 @@ const FORBIDDEN_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
     { pattern: /\bdir\s*\(/g, reason: 'dir()' },
     { pattern: /\b__dict__\b/g, reason: '__dict__ (attribute reflection)' },
     { pattern: /\b__module__\b/g, reason: '__module__ (module reflection)' },
+    { pattern: /\b__getattribute__\b/g, reason: '__getattribute__ (attribute access bypass)' },
+    { pattern: /\b__getattr__\b/g, reason: '__getattr__ (attribute access bypass)' },
     // Unsafe deserialization — read_pickle() executes arbitrary Python objects
     { pattern: /\bread_pickle\b/g, reason: 'read_pickle (unsafe deserialization / RCE)' },
     { pattern: /\bpickle\b/g, reason: 'pickle module (unsafe deserialization)' },
