@@ -155,6 +155,14 @@ const dashboard = {
                     icon: icons.IconFiles,
                     breadcrumbs: true,
                     permission: 'documentStores:view'
+                },
+                {
+                    id: 'sentinel-cockpit',
+                    title: 'Quality Cockpit',
+                    type: 'item',
+                    url: '/sentinel-cockpit',
+                    icon: icons.IconShieldLock,
+                    breadcrumbs: true
                 }
             ]
         },

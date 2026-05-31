@@ -27,6 +27,7 @@ import { ScheduleBeat } from './schedule/ScheduleBeat'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import { initWebhookListenerRegistry } from './services/webhook-listener'
 import flowiseApiV1Router from './routes'
+import sentinelCockpitRouter from './routes/sentinel-cockpit'
 import { UsageCacheManager } from './UsageCacheManager'
 import { getEncryptionKey, getNodeModulesPackagePath } from './utils'
 import { API_KEY_BLACKLIST_URLS, WHITELIST_URLS } from './utils/constants'
@@ -177,6 +178,7 @@ export class App {
         const captureRawBody = (req: Request, _res: Response, buf: Buffer) => {
             ;(req as any).rawBody = buf
         }
+        this.app.use('/sentinel-cockpit/v1', sentinelCockpitRouter)
         this.app.use(express.json({ limit: flowise_file_size_limit, verify: captureRawBody }))
         this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true, verify: captureRawBody }))
 

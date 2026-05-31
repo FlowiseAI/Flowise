@@ -1,0 +1,1666 @@
+import { Buffer } from 'buffer'
+import { Request, Response } from 'express'
+import * as classifyBridge from './classify.bridge'
+import { COCKPIT_ALLOWED_USER_ACTIONS, COCKPIT_SNAPSHOT_SCHEMA_VERSION, CockpitRequest } from './snapshot.static'
+import * as resumeBridge from './resume.bridge'
+import * as snapshotStatic from './snapshot.static'
+
+export const COCKPIT_ERROR_SCHEMA_VERSION = 'sentinel.cockpit_bridge.error.v1'
+export const COCKPIT_ROUTE_PREFIX = '/sentinel-cockpit/v1'
+export const COCKPIT_SNAPSHOT_PATH = '/snapshot'
+export const COCKPIT_PLAN_DECISION_PATH = '/plan-decision'
+export const COCKPIT_MANUAL_WORKER_PACKET_PATH = '/manual-worker-packet'
+export const COCKPIT_RESULT_REVIEW_PATH = '/result-review'
+export const COCKPIT_IDE_WORK_ACTION_PATH = '/ide-work-action'
+export const COCKPIT_IDE_WORK_STATUS_PATH = '/ide-work-status'
+export const COCKPIT_BODY_LIMIT_BYTES = 16 * 1024
+export const COCKPIT_RESPONSE_LIMIT_BYTES = 64 * 1024
+export const FLOWISE_LOCAL_ORIGIN_ENV = 'FLOWISE_LOCAL_ORIGIN'
+export const FLOWISE_LOCAL_HOST_ENV = 'FLOWISE_LOCAL_HOST'
+export const DEFAULT_FLOWISE_LOCAL_ORIGIN = 'http://127.0.0.1:3000'
+export const DEFAULT_FLOWISE_LOCAL_HOST = '127.0.0.1:3000'
+export const FLOWISE_LOCAL_ORIGIN = readFlowiseLocalConfig(process.env).origin
+export const FLOWISE_LOCAL_HOST = readFlowiseLocalConfig(process.env).host
+
+const REQUEST_KINDS = Object.freeze(['goal', 'choice', 'resume'])
+const PLAN_DECISION_REQUEST_KINDS = Object.freeze(['plan_decision'])
+const MANUAL_PACKET_REQUEST_KINDS = Object.freeze(['manual_worker_packet'])
+const RESULT_REVIEW_REQUEST_KINDS = Object.freeze(['result_review'])
+const IDE_WORK_ACTION_REQUEST_KINDS = Object.freeze(['ide_work_action'])
+const IDE_WORK_STATUS_REQUEST_KINDS = Object.freeze(['ide_work_status'])
+const CHOICES = Object.freeze(['revise', 'stop', 'cancel', 'continue', 'approve_manual_handoff', 'confirm_result_source_status_only'])
+const PLAN_DECISIONS = Object.freeze(['approve_plan', 'revise_plan', 'stop'])
+const SNAPSHOT_KEYS = Object.freeze([
+    'schema_version',
+    'status',
+    'snapshot_ref',
+    'state',
+    'plain_summary',
+    'next_safe_action',
+    'allowed_user_actions',
+    'blocked_actions',
+    'checkpoint_ref',
+    'evidence_refs',
+    'manual_handoff_preview',
+    'worker_status',
+    'result_status',
+    'shield_summary',
+    'accepted_state',
+    'stale_doc_warning'
+])
+const PLAN_SESSION_KEYS = Object.freeze([
+    'schema_version',
+    'status',
+    'state',
+    'plain_summary',
+    'next_safe_action',
+    'allowed_user_actions',
+    'blocked_actions',
+    'cockpit_ref',
+    'plan_card',
+    'safe_error'
+])
+const ROUTE_CARD_KEY = 'route_card'
+const IDE_PREVIEW_KEY = 'ide_preview'
+const IDE_WORK_KEY = 'ide_work'
+const IDE_PREVIEW_KEYS = Object.freeze([
+    'status_label',
+    'workflow_label',
+    'persona_label',
+    'skill_label',
+    'summary',
+    'what_can_happen_next',
+    'what_will_not_happen',
+    'approval_copy',
+    'expires_at_label'
+])
+const IDE_WORK_KEYS = Object.freeze([
+    'schema_version',
+    'status',
+    'state',
+    'status_label',
+    'workflow_label',
+    'persona_label',
+    'skill_label',
+    'short_summary',
+    'current_safe_step',
+    'what_can_happen_next',
+    'what_will_not_happen',
+    'approval_available',
+    'cancel_available',
+    'review_required_note',
+    'terminal_note',
+    'allowed_user_actions',
+    'blocked_actions',
+    'patch_review_packet',
+    'safe_error'
+])
+const IDE_WORK_RESPONSE_KEYS = Object.freeze(['schema_version', 'status', IDE_WORK_KEY, 'safe_error'])
+const IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION = 'sentinel.qvc.ide_work_result_patch_review_required.v1'
+const IDE_WORK_PATCH_REVIEW_REQUIRED_STATE = 'patch_review_required'
+const IDE_WORK_PATCH_REVISION_AVAILABLE_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_revision_available.v1'
+const IDE_WORK_PATCH_REVISION_AVAILABLE_STATE = 'patch_revision_available'
+const IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION = 'sentinel.qvc.ide_work_patch_review_packet.v3'
+const IDE_WORK_PATCH_REVIEW_PACKET_KEYS = Object.freeze([
+    'schema_version',
+    'review_mode',
+    'packet_retained',
+    'review_packet_status',
+    'changed_file_count',
+    'changed_files_list',
+    'added_line_count',
+    'deleted_line_count',
+    'diff_bytes',
+    'preview_lines',
+    'retention_label'
+])
+const IDE_WORK_PATCH_MAX_CHANGED_FILES = 3
+const IDE_WORK_PATCH_MAX_CHANGED_LINES = 50
+const IDE_WORK_PATCH_MAX_DIFF_BYTES = 10 * 1024
+const IDE_WORK_PATCH_MAX_PREVIEW_LINES = 60
+const IDE_WORK_PATCH_MAX_PREVIEW_LINE_LENGTH = 160
+const IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL = 'Retained briefly for review only.'
+const IDE_WORK_PATCH_REVIEW_PATH_PATTERN = /^[a-zA-Z0-9_.-]+(?:\/[a-zA-Z0-9_.-]+)*$/
+const IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN =
+    /\b(run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*|sentinel_session|session_id|decision_id|approval_challenge|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|client_nonce|cockpit_ref|sha256|bearer|authorization|(?:^|[/_.-])(?:token|secret|api[_-]?key|password|raw|stdout|stderr|command|argv|provider|model|diff)(?:[/_.-]|$)/i
+const IDE_WORK_PATCH_PREVIEW_LOCAL_PATH_TEXT_PATTERN =
+    /(?:\b[A-Za-z]:[\\/]|\\\\[A-Za-z0-9._-]+[\\/]|\/mnt\/[a-z]\/|(?:^|["'`\s=(:[,])\/(?![/*])(?:[A-Za-z0-9._-]+)(?:\/|\b))/i
+const IDE_WORK_PATCH_PREVIEW_SOURCE_TEXT_PATTERN =
+    /(?:https?:\/\/|www\.|localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|:\d{2,5}\b|cookie|set-cookie|authorization|bearer|auth(?:_header)?|headers?|token|secret|api[_-]?key|password|sha256:|-----BEGIN|private key|\bgateway\b|\b(?:command|argv|provider|model|diff_text|patch_id|task_packet(?:_hash)?|result_packet|evidence_manifest|session_id|run_id|decision_id|approval_id|approval_challenge(?:_hash)?|client_nonce|cockpit_ref|checkpoint_ref|snapshot_ref|task_id|result_id|shield_review_id|raw_dto|metadata|nonce|hash|packet_ref|packet_handle|workspace_root|source_root|temp_root|retrieval_route)\b\s*[:=]?|\/v\d+\/(?:ide-work-status|ide_work_status)\b|^diff --git\b|^---\s|^\+\+\+\s|@@|<\s*\/?\s*[a-z][^>]*>|on[a-z]+\s*=|\[[^\]]+\]\([^)]+\)|```)/i
+const IDE_WORK_PATCH_REVIEW_DENIED_DIRS = Object.freeze(['.git', '.github', 'node_modules', 'dist', 'build', 'coverage'])
+const IDE_WORK_PATCH_REVIEW_DENIED_FILENAMES = Object.freeze(['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'])
+const IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS = Object.freeze([
+    '.7z',
+    '.db',
+    '.dll',
+    '.env',
+    '.exe',
+    '.gif',
+    '.gz',
+    '.jpg',
+    '.jpeg',
+    '.key',
+    '.lock',
+    '.pdf',
+    '.pem',
+    '.pfx',
+    '.png',
+    '.sqlite',
+    '.webp',
+    '.zip'
+])
+const IDE_WORK_SCHEMA_VERSIONS = Object.freeze([
+    'sentinel.qvc.ide_work_approval.v1',
+    'sentinel.qvc.ide_work_progress.v1',
+    'sentinel.qvc.ide_work_result_review_required.v1',
+    IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION,
+    IDE_WORK_PATCH_REVISION_AVAILABLE_SCHEMA_VERSION
+])
+const IDE_WORK_STATES = Object.freeze([
+    'disabled',
+    'approval_unavailable',
+    'approval_pending',
+    'starting',
+    'mock_in_progress',
+    'cancel_requested',
+    'cancelled',
+    'timed_out',
+    'failed_closed',
+    'review_required',
+    IDE_WORK_PATCH_REVIEW_REQUIRED_STATE,
+    IDE_WORK_PATCH_REVISION_AVAILABLE_STATE,
+    'expired'
+])
+const IDE_WORK_ACTIONS = Object.freeze([
+    'approve_mock_backend_work',
+    'cancel_mock_backend_work',
+    'request_read_only_review',
+    'request_patch_proposal',
+    'request_patch_revision',
+    'none'
+])
+const ROUTE_CARD_KEYS = Object.freeze([
+    'schema_version',
+    'category',
+    'title',
+    'summary',
+    'what_can_happen_next',
+    'what_will_not_happen',
+    'needs_clarification',
+    'clarification_question',
+    'blocked_reason'
+])
+const ROUTE_CARD_CATEGORIES = Object.freeze([
+    'planning',
+    'review',
+    'audit',
+    'debug_diagnose',
+    'manual_coding_work',
+    'result_review',
+    'policy_help',
+    'unclear',
+    'blocked_unsafe'
+])
+const ROUTE_CARD_FORBIDDEN_FRAGMENTS = Object.freeze([
+    'run_',
+    'sentinel_session_id',
+    'session_id',
+    'decision_id',
+    'approval_id',
+    'plan_id',
+    'task_id',
+    'task_packet_hash',
+    'approval_challenge',
+    'approval_challenge_hash',
+    'action_inputs',
+    'task_packet',
+    'copyable_worker_prompt',
+    'result_packet',
+    'evidence_manifest',
+    'gateway',
+    'bearer',
+    'authorization',
+    'token',
+    'client_nonce',
+    'cockpit_ref',
+    'sha256:',
+    'dto'
+])
+const IDE_PREVIEW_FORBIDDEN_FRAGMENTS = Object.freeze([
+    ...ROUTE_CARD_FORBIDDEN_FRAGMENTS,
+    'schema_version',
+    'allowed_user_actions',
+    'approval_required',
+    'blocked_reason',
+    'unsafe_goal',
+    'ide_preview_',
+    'sentinel.qvc.ide_preview',
+    'raw dto',
+    'json dto',
+    'provider output',
+    'worker output',
+    'tool trace',
+    'confidence',
+    'command line',
+    'environment variable',
+    'source snippet',
+    'codex',
+    'opencode',
+    'hermes',
+    'mcp',
+    'agentflow',
+    'hitl',
+    'worker_type',
+    'worker_launch',
+    'subprocess',
+    'shell',
+    'command',
+    'provider',
+    'model',
+    'repo-write',
+    'commit',
+    'publish',
+    'deploy',
+    '127.0.0.1',
+    'localhost',
+    ':39173',
+    'c:\\',
+    '/mnt/'
+])
+const IDE_WORK_FORBIDDEN_FRAGMENTS = Object.freeze([
+    ...ROUTE_CARD_FORBIDDEN_FRAGMENTS,
+    'raw dto',
+    'json dto',
+    'provider output',
+    'worker output',
+    'tool trace',
+    'confidence',
+    'command line',
+    'environment variable',
+    'path',
+    'diff',
+    'raw',
+    'raw output',
+    'stdout',
+    'stderr',
+    'source code',
+    'source snippet',
+    'adapter',
+    'argv',
+    'codex',
+    'opencode',
+    'hermes',
+    'mcp',
+    'agentflow',
+    'hitl',
+    'worker_type',
+    'worker_launch',
+    'subprocess',
+    'shell',
+    'provider',
+    'model',
+    'repo-write',
+    'commit',
+    'publish',
+    'deploy',
+    '127.0.0.1',
+    'localhost',
+    ':39173',
+    'c:\\',
+    '/mnt/'
+])
+const PLAN_CARD_KEYS = Object.freeze(['plain_title', 'plain_summary', 'plain_steps', 'will_not_do'])
+const REQUEST_KEYS_BY_KIND: Record<string, readonly string[]> = Object.freeze({
+    goal: Object.freeze(['request_kind', 'plain_goal']),
+    choice: Object.freeze(['request_kind', 'choice', 'checkpoint_ref', 'displayed_prompt_ref', 'client_nonce']),
+    resume: Object.freeze(['request_kind', 'checkpoint_ref', 'displayed_prompt_ref', 'client_nonce'])
+})
+const GUARDED_DUPLICATE_HEADERS = Object.freeze([
+    'host',
+    'origin',
+    'referer',
+    'content-type',
+    'content-length',
+    'authorization',
+    'cookie',
+    'proxy-authorization',
+    'transfer-encoding',
+    'expect'
+])
+const FORBIDDEN_REQUEST_FIELDS = Object.freeze([
+    'token',
+    'secret',
+    'auth',
+    'authorization',
+    'cookie',
+    'shell',
+    'tool',
+    'mcp',
+    'worker',
+    'callback_url',
+    'webhook',
+    'runtime_ingest',
+    'file',
+    'path',
+    'command',
+    'commit',
+    'publish',
+    'send',
+    'deploy',
+    'result_packet',
+    'task_packet'
+])
+const ERROR_MESSAGE = 'The cockpit snapshot request was blocked.'
+
+type ErrorCode =
+    | 'method_not_allowed'
+    | 'not_found'
+    | 'preflight_denied'
+    | 'header_denied'
+    | 'unsupported_media_type'
+    | 'unsupported_content_encoding'
+    | 'body_too_large'
+    | 'invalid_json'
+    | 'invalid_request'
+    | 'invalid_snapshot'
+    | 'sentinel_classify_unavailable'
+    | 'sentinel_classify_malformed'
+    | 'sentinel_resume_disabled'
+    | 'sentinel_resume_binding_invalid'
+    | 'sentinel_resume_binding_not_found'
+    | 'sentinel_resume_unavailable'
+    | 'sentinel_resume_malformed'
+    | 'feature_disabled'
+    | 'plan_session_not_found'
+    | 'plan_session_expired'
+    | 'plan_session_consumed'
+    | 'plan_session_owner_mismatch'
+    | 'plan_session_nonce_mismatch'
+    | 'plan_session_state_mismatch'
+    | 'manual_packet_invalid_input'
+    | 'manual_packet_not_found'
+    | 'manual_packet_expired'
+    | 'manual_packet_consumed'
+    | 'manual_packet_nonce_mismatch'
+    | 'manual_packet_state_mismatch'
+    | 'result_review_invalid_input'
+    | 'result_review_not_found'
+    | 'result_review_expired'
+    | 'result_review_consumed'
+    | 'result_review_nonce_mismatch'
+    | 'result_review_state_mismatch'
+    | 'plan_decision_invalid_input'
+    | 'ide_work_invalid_input'
+    | 'ide_work_unavailable'
+    | 'gateway_unavailable'
+    | 'gateway_rejected'
+    | 'internal_error'
+
+type AdmissionResult = Readonly<{
+    ok: boolean
+    statusCode?: number
+    code?: ErrorCode
+}>
+
+type FlowiseLocalConfig = Readonly<{
+    ok: boolean
+    origin: string
+    host: string
+}>
+
+const okAdmission: AdmissionResult = Object.freeze({ ok: true })
+
+async function handleSnapshot(req: Request, res: Response): Promise<void> {
+    try {
+        const admission = admitRequest(req)
+        if (!admission.ok) {
+            sendError(res, admission.statusCode || 400, admission.code || 'invalid_request')
+            return
+        }
+
+        const body = await readJsonBody(req)
+        if (req.path === COCKPIT_PLAN_DECISION_PATH) {
+            const planDecisionRequest = validatePlanDecisionRequest(body)
+            const planSession = await classifyBridge.createPlanDecisionSession(planDecisionRequest)
+            const validatedPlanSession = validatePlanSession(planSession)
+            sendJson(res, 200, validatedPlanSession)
+            return
+        }
+        if (req.path === COCKPIT_MANUAL_WORKER_PACKET_PATH) {
+            const manualPacketRequest = validateManualPacketRequest(body)
+            const planSession = await classifyBridge.createManualPacketSession(manualPacketRequest)
+            const validatedPlanSession = validatePlanSession(planSession)
+            sendJson(res, 200, validatedPlanSession)
+            return
+        }
+        if (req.path === COCKPIT_RESULT_REVIEW_PATH) {
+            const resultReviewRequest = validateResultReviewRequest(body)
+            const planSession = await classifyBridge.createResultReviewSession(resultReviewRequest)
+            const validatedPlanSession = validatePlanSession(planSession)
+            sendJson(res, 200, validatedPlanSession)
+            return
+        }
+        if (req.path === COCKPIT_IDE_WORK_ACTION_PATH) {
+            const ideWorkRequest = validateIdeWorkActionRequest(body)
+            const ideWorkSession = await classifyBridge.createIdeWorkActionSession(ideWorkRequest)
+            sendJson(res, 200, validateIdeWorkSession(ideWorkSession))
+            return
+        }
+        if (req.path === COCKPIT_IDE_WORK_STATUS_PATH) {
+            const ideWorkRequest = validateIdeWorkStatusRequest(body)
+            const ideWorkSession = await classifyBridge.createIdeWorkStatusSession(ideWorkRequest)
+            sendJson(res, 200, validateIdeWorkSession(ideWorkSession))
+            return
+        }
+
+        const cockpitRequest = validateCockpitRequest(body)
+        const snapshot =
+            cockpitRequest.request_kind === 'resume' && resumeBridge.resumeBridgeIsRequested()
+                ? await resumeBridge.createResumeSnapshot(cockpitRequest)
+                : cockpitRequest.request_kind === 'goal' && classifyBridge.classifyBridgeIsRequested()
+                ? await classifyBridge.createClassifySnapshot(cockpitRequest)
+                : snapshotStatic.createStaticSnapshot(cockpitRequest)
+        if (isPlanSessionResponse(snapshot)) {
+            sendJson(res, 200, validatePlanSession(snapshot))
+            return
+        }
+
+        const validatedSnapshot = validateSnapshot(snapshot, cockpitRequest)
+        sendJson(res, 200, validatedSnapshot)
+    } catch (error) {
+        const statusCode = getErrorStatusCode(error)
+        const code = getErrorCode(error)
+        sendError(res, statusCode, code)
+    }
+}
+
+export function admitRequest(req: Request): AdmissionResult {
+    if (
+        ![
+            COCKPIT_SNAPSHOT_PATH,
+            COCKPIT_PLAN_DECISION_PATH,
+            COCKPIT_MANUAL_WORKER_PACKET_PATH,
+            COCKPIT_RESULT_REVIEW_PATH,
+            COCKPIT_IDE_WORK_ACTION_PATH,
+            COCKPIT_IDE_WORK_STATUS_PATH
+        ].includes(req.path) ||
+        hasQueryString(req)
+    ) {
+        return { ok: false, statusCode: 404, code: 'not_found' }
+    }
+    if (req.method === 'OPTIONS') {
+        return { ok: false, statusCode: 403, code: 'preflight_denied' }
+    }
+    if (req.method !== 'POST') {
+        return { ok: false, statusCode: 405, code: 'method_not_allowed' }
+    }
+    if (!rawGuardedHeadersAreSafe(req.rawHeaders || [])) {
+        return { ok: false, statusCode: 403, code: 'header_denied' }
+    }
+    if (!normalizedHeadersAreSafe(req.headers)) {
+        return { ok: false, statusCode: 403, code: 'header_denied' }
+    }
+    if (!isJsonContentType(req.headers['content-type'])) {
+        return { ok: false, statusCode: 415, code: 'unsupported_media_type' }
+    }
+    if (!contentEncodingIsSafe(req.headers['content-encoding'])) {
+        return { ok: false, statusCode: 415, code: 'unsupported_content_encoding' }
+    }
+    return okAdmission
+}
+
+export function rawGuardedHeadersAreSafe(rawHeaders: string[]): boolean {
+    for (const name of GUARDED_DUPLICATE_HEADERS) {
+        if (countRawHeader(rawHeaders, name) > 1) {
+            return false
+        }
+    }
+    return true
+}
+
+export function validateCockpitRequest(body: unknown): CockpitRequest {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        throw httpError(400, 'invalid_request')
+    }
+
+    const requestBody = body as Record<string, unknown>
+    const requestKind = requestBody.request_kind
+    if (typeof requestKind !== 'string' || !REQUEST_KINDS.includes(requestKind)) {
+        throw httpError(400, 'invalid_request')
+    }
+
+    const allowedKeys =
+        requestKind === 'goal' && classifyBridge.planDecisionBridgeIsRequested()
+            ? Object.freeze(['request_kind', 'plain_goal', 'client_nonce'])
+            : REQUEST_KEYS_BY_KIND[requestKind]
+    assertExactAllowedKeys(requestBody, allowedKeys)
+    rejectForbiddenFields(requestBody)
+
+    const request: Record<string, string> = { request_kind: requestKind }
+    if (requestKind === 'goal') {
+        request.plain_goal = validateGoalText(requestBody.plain_goal)
+    }
+    if (requestKind === 'choice') {
+        if (typeof requestBody.choice !== 'string' || !CHOICES.includes(requestBody.choice)) {
+            throw httpError(400, 'invalid_request')
+        }
+        request.choice = requestBody.choice
+        if (requestBody.checkpoint_ref !== undefined) {
+            request.checkpoint_ref = validateRef(requestBody.checkpoint_ref)
+        } else if (requestBody.choice !== 'confirm_result_source_status_only') {
+            throw httpError(400, 'invalid_request')
+        }
+    }
+    if (requestKind === 'resume') {
+        request.checkpoint_ref = validateRef(requestBody.checkpoint_ref)
+    }
+    if (requestBody.displayed_prompt_ref !== undefined) {
+        request.displayed_prompt_ref = validateRef(requestBody.displayed_prompt_ref)
+    }
+    if (requestBody.client_nonce !== undefined) {
+        request.client_nonce = validateClientNonce(
+            requestBody.client_nonce,
+            requestKind === 'goal' ? 'plan_decision_invalid_input' : 'invalid_request'
+        )
+    }
+
+    if (requestKind !== 'goal') {
+        assertRequestTextSafeWithoutAuthorityRefs(request)
+    }
+    return request as CockpitRequest
+}
+
+export function validatePlanDecisionRequest(body: unknown): classifyBridge.PlanDecisionRequest {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        throw httpError(400, 'plan_decision_invalid_input')
+    }
+    const requestBody = body as Record<string, unknown>
+    const requestKind = requestBody.request_kind
+    if (typeof requestKind !== 'string' || !PLAN_DECISION_REQUEST_KINDS.includes(requestKind)) {
+        throw httpError(400, 'plan_decision_invalid_input')
+    }
+
+    const decision = requestBody.decision
+    const allowedKeys =
+        decision === 'revise_plan'
+            ? Object.freeze(['request_kind', 'cockpit_ref', 'client_nonce', 'decision', 'revision_text'])
+            : Object.freeze(['request_kind', 'cockpit_ref', 'client_nonce', 'decision'])
+    assertExactAllowedKeys(requestBody, allowedKeys, 'plan_decision_invalid_input')
+    rejectForbiddenFields(requestBody)
+
+    if (typeof decision !== 'string' || !PLAN_DECISIONS.includes(decision)) {
+        throw httpError(400, 'plan_decision_invalid_input')
+    }
+
+    const request: Record<string, string> = {
+        request_kind: 'plan_decision',
+        cockpit_ref: validateCockpitRef(requestBody.cockpit_ref),
+        client_nonce: validateClientNonce(requestBody.client_nonce, 'plan_decision_invalid_input'),
+        decision
+    }
+    if (decision === 'revise_plan') {
+        if (typeof requestBody.revision_text !== 'string') {
+            throw httpError(400, 'plan_decision_invalid_input')
+        }
+        try {
+            request.revision_text = validateText(requestBody.revision_text, 2000, false)
+        } catch {
+            throw httpError(400, 'plan_decision_invalid_input')
+        }
+    }
+
+    assertRequestTextSafeWithoutAuthorityRefs(request)
+    return request as classifyBridge.PlanDecisionRequest
+}
+
+export function validateManualPacketRequest(body: unknown): classifyBridge.ManualPacketRequest {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        throw httpError(400, 'manual_packet_invalid_input')
+    }
+    const requestBody = body as Record<string, unknown>
+    const requestKind = requestBody.request_kind
+    if (typeof requestKind !== 'string' || !MANUAL_PACKET_REQUEST_KINDS.includes(requestKind)) {
+        throw httpError(400, 'manual_packet_invalid_input')
+    }
+
+    assertExactAllowedKeys(requestBody, Object.freeze(['request_kind', 'cockpit_ref', 'client_nonce']), 'manual_packet_invalid_input')
+    rejectForbiddenFields(requestBody)
+
+    const request: Record<string, string> = {
+        request_kind: 'manual_worker_packet',
+        cockpit_ref: validateCockpitRef(requestBody.cockpit_ref, 'manual_packet_invalid_input'),
+        client_nonce: validateClientNonce(requestBody.client_nonce, 'manual_packet_invalid_input')
+    }
+
+    assertRequestTextSafeWithoutAuthorityRefs(request)
+    return request as classifyBridge.ManualPacketRequest
+}
+
+export function validateResultReviewRequest(body: unknown): classifyBridge.ResultReviewRequest {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        throw httpError(400, 'result_review_invalid_input')
+    }
+    const requestBody = body as Record<string, unknown>
+    const requestKind = requestBody.request_kind
+    if (typeof requestKind !== 'string' || !RESULT_REVIEW_REQUEST_KINDS.includes(requestKind)) {
+        throw httpError(400, 'result_review_invalid_input')
+    }
+
+    assertExactAllowedKeys(
+        requestBody,
+        Object.freeze(['request_kind', 'cockpit_ref', 'client_nonce', 'result_text', 'review_only_confirmation']),
+        'result_review_invalid_input'
+    )
+    rejectForbiddenFields(requestBody)
+    if (requestBody.review_only_confirmation !== true) {
+        throw httpError(400, 'result_review_invalid_input')
+    }
+
+    return {
+        request_kind: 'result_review',
+        cockpit_ref: validateCockpitRef(requestBody.cockpit_ref, 'result_review_invalid_input'),
+        client_nonce: validateClientNonce(requestBody.client_nonce, 'result_review_invalid_input'),
+        result_text: validateResultText(requestBody.result_text),
+        review_only_confirmation: true
+    }
+}
+
+export function validateIdeWorkActionRequest(body: unknown): classifyBridge.IdeWorkActionRequest {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    const requestBody = body as Record<string, unknown>
+    const requestKind = requestBody.request_kind
+    if (typeof requestKind !== 'string' || !IDE_WORK_ACTION_REQUEST_KINDS.includes(requestKind)) {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    const action = requestBody.action
+    if (
+        typeof action !== 'string' ||
+        ![
+            'approve_mock_backend_work',
+            'cancel_mock_backend_work',
+            'request_read_only_review',
+            'request_patch_proposal',
+            'request_patch_revision'
+        ].includes(action)
+    ) {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    const allowedKeys =
+        action === 'request_patch_revision'
+            ? Object.freeze(['request_kind', 'action', 'revision_text'])
+            : Object.freeze(['request_kind', 'action'])
+    assertExactAllowedKeys(requestBody, allowedKeys, 'ide_work_invalid_input')
+    rejectForbiddenFields(requestBody)
+    const request: { request_kind: 'ide_work_action'; action: classifyBridge.IdeWorkActionRequest['action']; revision_text?: string } = {
+        request_kind: 'ide_work_action',
+        action: action as classifyBridge.IdeWorkActionRequest['action']
+    }
+    if (action === 'request_patch_revision') {
+        request.revision_text = validatePatchRevisionText(requestBody.revision_text)
+    }
+    return request as classifyBridge.IdeWorkActionRequest
+}
+
+export function validateIdeWorkStatusRequest(body: unknown): classifyBridge.IdeWorkStatusRequest {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    const requestBody = body as Record<string, unknown>
+    const requestKind = requestBody.request_kind
+    if (typeof requestKind !== 'string' || !IDE_WORK_STATUS_REQUEST_KINDS.includes(requestKind)) {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    assertExactAllowedKeys(requestBody, Object.freeze(['request_kind']), 'ide_work_invalid_input')
+    rejectForbiddenFields(requestBody)
+    return {
+        request_kind: 'ide_work_status'
+    }
+}
+
+function validateIdeWorkSession(session: {
+    schema_version: typeof classifyBridge.IDE_WORK_BRIDGE_SCHEMA_VERSION
+    status: 'ok'
+    ide_work: classifyBridge.IdeWorkProjection
+    safe_error: null
+}) {
+    assertResponseKeys(session as unknown as Record<string, unknown>, IDE_WORK_RESPONSE_KEYS)
+    if (
+        session.schema_version !== classifyBridge.IDE_WORK_BRIDGE_SCHEMA_VERSION ||
+        session.status !== 'ok' ||
+        session.safe_error !== null
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    validateIdeWork(session.ide_work, { allowPatchReviewRequired: true })
+    return session
+}
+
+function normalizedHeadersAreSafe(headers: Request['headers']): boolean {
+    const localConfig = readFlowiseLocalConfig(process.env)
+    if (!localConfig.ok) return false
+    if (readSafeLocalHost(headers.host) !== localConfig.host) return false
+    if (readSafeLocalOrigin(headers.origin)?.origin !== localConfig.origin) return false
+    if (headers.referer !== undefined) return false
+    if (headers.authorization !== undefined || headers.cookie !== undefined || headers['proxy-authorization'] !== undefined) return false
+    if (headers['transfer-encoding'] !== undefined || headers.expect !== undefined) return false
+    for (const [name, value] of Object.entries(headers)) {
+        if (/(?:token|secret|api[-_]?key|gateway|guard|mcp|worker|callback|webhook|upload|publish|deploy|shell|tool)/i.test(name)) {
+            return false
+        }
+        if (headerValueHasForbiddenText(value)) {
+            return false
+        }
+    }
+    const contentLength = headers['content-length']
+    if (typeof contentLength === 'string') {
+        if (!/^[0-9]+$/.test(contentLength) || Number(contentLength) > COCKPIT_BODY_LIMIT_BYTES) return false
+    }
+    return true
+}
+
+function hasQueryString(req: Request): boolean {
+    const originalUrl = typeof req.originalUrl === 'string' ? req.originalUrl : ''
+    const expected = `${COCKPIT_ROUTE_PREFIX}${req.path}`
+    return originalUrl !== expected
+}
+
+function countRawHeader(rawHeaders: string[], targetName: string): number {
+    let count = 0
+    for (let index = 0; index < rawHeaders.length; index += 2) {
+        if (String(rawHeaders[index]).toLowerCase() === targetName) {
+            count += 1
+        }
+    }
+    return count
+}
+
+function isJsonContentType(contentType: unknown): boolean {
+    if (typeof contentType !== 'string') return false
+    const parts = contentType.split(';').map((part) => part.trim().toLowerCase())
+    return parts[0] === 'application/json' && parts.slice(1).every((part) => part === 'charset=utf-8')
+}
+
+function contentEncodingIsSafe(contentEncoding: unknown): boolean {
+    return contentEncoding === undefined || contentEncoding === 'identity'
+}
+
+function readJsonBody(req: Request): Promise<unknown> {
+    const contentLength = req.headers['content-length']
+    if (typeof contentLength === 'string' && (!/^[0-9]+$/.test(contentLength) || Number(contentLength) > COCKPIT_BODY_LIMIT_BYTES)) {
+        throw httpError(413, 'body_too_large')
+    }
+
+    return new Promise((resolve, reject) => {
+        let raw = ''
+        let size = 0
+        let settled = false
+
+        req.setEncoding('utf8')
+        req.on('data', (chunk: string) => {
+            if (settled) return
+            size += Buffer.byteLength(chunk)
+            if (size > COCKPIT_BODY_LIMIT_BYTES) {
+                settled = true
+                reject(httpError(413, 'body_too_large'))
+                req.destroy()
+                return
+            }
+            raw += chunk
+        })
+        req.on('end', () => {
+            if (settled) return
+            settled = true
+            if (!raw) {
+                reject(httpError(400, 'invalid_json'))
+                return
+            }
+            try {
+                resolve(JSON.parse(raw))
+            } catch {
+                reject(httpError(400, 'invalid_json'))
+            }
+        })
+        req.on('error', () => {
+            if (!settled) {
+                settled = true
+                reject(httpError(400, 'invalid_json'))
+            }
+        })
+        req.on('aborted', () => {
+            if (!settled) {
+                settled = true
+                reject(httpError(400, 'invalid_json'))
+            }
+        })
+    })
+}
+
+function assertExactAllowedKeys(body: Record<string, unknown>, allowedKeys: readonly string[], code: ErrorCode = 'invalid_request') {
+    for (const key of Object.keys(body)) {
+        if (!allowedKeys.includes(key)) {
+            throw httpError(400, code)
+        }
+    }
+}
+
+function rejectForbiddenFields(body: Record<string, unknown>) {
+    for (const key of Object.keys(body)) {
+        if (FORBIDDEN_REQUEST_FIELDS.includes(key.toLowerCase())) {
+            throw httpError(400, 'invalid_request')
+        }
+    }
+}
+
+function validateText(value: unknown, maxLength: number, allowEmpty: boolean): string {
+    if (typeof value !== 'string' || value.length > maxLength || hasDisallowedControlCharacter(value)) {
+        throw httpError(400, 'invalid_request')
+    }
+    const trimmed = value.trim()
+    if (!allowEmpty && !trimmed) {
+        throw httpError(400, 'invalid_request')
+    }
+    assertNoForbiddenText(trimmed)
+    return trimmed
+}
+
+function validatePatchRevisionText(value: unknown): string {
+    if (typeof value !== 'string') {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    const normalized = value.trim().replace(/\s+/g, ' ')
+    const forbiddenPattern =
+        /\b(?:run_|sess_|dec_|plan_|ap_|task_|result_|shield_|cockpit_|req_)[a-z0-9._:-]*\b|\b(?:sentinel_session|session_id|decision_id|approval_challenge|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|client_nonce|cockpit_ref|sha256|nonce|id|ref|hash|control|session|run|cockpit|packet|header|headers|bearer|authorization|token|gateway|adapter|path|file|source|diff|patch|hunk|raw|stdout|stderr|command|argv|pid|provider|model|confidence|mcp|agentflow|hitl|repo|repo-write|workspace|root|retrieval|endpoint|route|git|stage|commit|push|pr|apply|accept|discard|continue|resume|merge|deploy|publish|copy|download|export)\b|https?:\/\/|www\.|localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|:\d{2,5}\b|```|^diff --git\b|^---\s|^\+\+\+\s|@@|^\s*[+-]\s*\S|[A-Za-z]:[\\/]|\\\\[A-Za-z0-9._-]+[\\/]|\/(?:mnt|workspace|srv|bin|dev|proc|tmp|var|etc|home|opt|root|usr|users|private)(?:\/|\b)|<\s*\/?\s*[a-z][^>]*>|\[[^\]]+\]\([^)]+\)|^\s*[{[]/i
+    if (
+        !normalized ||
+        normalized.length > 600 ||
+        hasDisallowedControlCharacter(normalized) ||
+        hasHiddenControlCharacter(normalized) ||
+        /[^\x20-\x7e]/.test(normalized) ||
+        forbiddenPattern.test(normalized)
+    ) {
+        throw httpError(400, 'ide_work_invalid_input')
+    }
+    return normalized
+}
+
+function validateGoalText(value: unknown): string {
+    if (typeof value !== 'string') {
+        throw httpError(400, 'invalid_request')
+    }
+    const normalized = value
+        .replace(/[\t\r\n]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+    if (!normalized || normalized.length > 1024 || hasDisallowedControlCharacter(normalized) || hasHiddenControlCharacter(normalized)) {
+        throw httpError(400, 'invalid_request')
+    }
+    if (secretTextPresent(normalized)) {
+        throw httpError(400, 'invalid_request')
+    }
+    return normalized
+}
+
+function validateResultText(value: unknown): string {
+    if (typeof value !== 'string') {
+        throw httpError(400, 'result_review_invalid_input')
+    }
+    const normalized = value.replace(/\r\n?/g, '\n').trim()
+    if (
+        normalized.length < 20 ||
+        normalized.length > 12000 ||
+        Buffer.byteLength(normalized, 'utf8') > 14 * 1024 ||
+        hasDisallowedControlCharacter(normalized) ||
+        hasHiddenControlCharacter(normalized)
+    ) {
+        throw httpError(400, 'result_review_invalid_input')
+    }
+    if (looksLikeTopLevelJson(normalized) || resultTextHasProtocolAuthority(normalized) || secretTextPresent(normalized)) {
+        throw httpError(400, 'result_review_invalid_input')
+    }
+    if (/<\s*\/?\s*[a-z][^>]*>|on[a-z]+\s*=/i.test(normalized)) {
+        throw httpError(400, 'result_review_invalid_input')
+    }
+    return normalized
+}
+
+function validateRef(value: unknown): string {
+    if (typeof value !== 'string' || value.length < 1 || value.length > 128 || !/^[A-Za-z0-9._:-]+$/.test(value)) {
+        throw httpError(400, 'invalid_request')
+    }
+    assertNoForbiddenText(value)
+    return value
+}
+
+function validateClientNonce(value: unknown, code: ErrorCode = 'invalid_request'): string {
+    if (
+        typeof value !== 'string' ||
+        value.length < 22 ||
+        value.length > 128 ||
+        !/^[A-Za-z0-9_-]+$/.test(value) ||
+        hasDisallowedControlCharacter(value) ||
+        hasHiddenControlCharacter(value)
+    ) {
+        throw httpError(400, code)
+    }
+    return value
+}
+
+function validateCockpitRef(value: unknown, code: ErrorCode = 'plan_decision_invalid_input'): string {
+    if (
+        typeof value !== 'string' ||
+        value.length < 32 ||
+        value.length > 128 ||
+        !/^cockpit_[A-Za-z0-9_-]+$/.test(value) ||
+        hasDisallowedControlCharacter(value) ||
+        hasHiddenControlCharacter(value)
+    ) {
+        throw httpError(400, code)
+    }
+    return value
+}
+
+function validateSnapshot(snapshot: ReturnType<typeof snapshotStatic.createStaticSnapshot>, request: CockpitRequest) {
+    assertResponseKeys(snapshot as Record<string, unknown>, SNAPSHOT_KEYS, Object.freeze([ROUTE_CARD_KEY, IDE_PREVIEW_KEY]))
+    validateRouteCard((snapshot as { route_card?: unknown }).route_card)
+    validateIdePreview((snapshot as { ide_preview?: unknown }).ide_preview)
+    if (snapshot.schema_version !== COCKPIT_SNAPSHOT_SCHEMA_VERSION || snapshot.status !== 'ok') {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (!snapshot.allowed_user_actions.every((action) => COCKPIT_ALLOWED_USER_ACTIONS.includes(action))) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (snapshot.allowed_user_actions.length !== 1 || snapshot.allowed_user_actions[0] !== 'none') {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (request.choice === 'confirm_result_source_status_only') {
+        if (snapshot.state === 'accepted' || snapshot.accepted_state !== 'not_accepted' || snapshot.shield_summary !== 'not_reviewed') {
+            throw httpError(500, 'invalid_snapshot')
+        }
+        if (snapshot.evidence_refs.length > 0 || snapshot.manual_handoff_preview !== null) {
+            throw httpError(500, 'invalid_snapshot')
+        }
+    }
+    const serialized = JSON.stringify(snapshot)
+    if (Buffer.byteLength(serialized) > COCKPIT_RESPONSE_LIMIT_BYTES) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const {
+        route_card: _routeCard,
+        ide_preview: _idePreview,
+        ...snapshotWithoutRouteCard
+    } = snapshot as typeof snapshot & {
+        route_card?: unknown
+        ide_preview?: unknown
+    }
+    assertNoForbiddenText(JSON.stringify(snapshotWithoutRouteCard))
+    return snapshot
+}
+
+function isPlanSessionResponse(value: unknown): value is classifyBridge.PlanSessionResponse {
+    return (
+        !!value &&
+        typeof value === 'object' &&
+        !Array.isArray(value) &&
+        (value as { schema_version?: unknown }).schema_version === classifyBridge.PLAN_SESSION_SCHEMA_VERSION
+    )
+}
+
+function validatePlanSession(planSession: classifyBridge.PlanSessionResponse) {
+    assertResponseKeys(
+        planSession as unknown as Record<string, unknown>,
+        PLAN_SESSION_KEYS,
+        Object.freeze([ROUTE_CARD_KEY, IDE_PREVIEW_KEY, IDE_WORK_KEY])
+    )
+    validateRouteCard((planSession as classifyBridge.PlanSessionResponse & { route_card?: unknown }).route_card)
+    validateIdePreview((planSession as classifyBridge.PlanSessionResponse & { ide_preview?: unknown }).ide_preview)
+    validateIdeWork((planSession as classifyBridge.PlanSessionResponse & { ide_work?: unknown }).ide_work, {
+        allowPatchReviewRequired: false
+    })
+    if (planSession.schema_version !== classifyBridge.PLAN_SESSION_SCHEMA_VERSION || !['ok', 'error'].includes(planSession.status)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const actionKeys = planSession.allowed_user_actions
+    if (!Array.isArray(actionKeys)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (planSession.state === 'plan_decision_required') {
+        if (actionKeys.join(',') !== 'approve_plan,revise_plan,stop' || !planSession.cockpit_ref) {
+            throw httpError(500, 'invalid_snapshot')
+        }
+    } else if (planSession.state === 'manual_packet_preparation_required') {
+        if (actionKeys.join(',') !== 'prepare_manual_worker_packet' || !planSession.cockpit_ref) {
+            throw httpError(500, 'invalid_snapshot')
+        }
+    } else if (planSession.state === 'result_review_required') {
+        if (actionKeys.join(',') !== 'submit_result_review' || !planSession.cockpit_ref) {
+            throw httpError(500, 'invalid_snapshot')
+        }
+    } else if (actionKeys.length !== 1 || actionKeys[0] !== 'none' || planSession.cockpit_ref !== null) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (planSession.plan_card !== null) {
+        const planCardKeys = Object.keys(planSession.plan_card).sort()
+        const expectedPlanCardKeys = [...PLAN_CARD_KEYS].sort()
+        if (planCardKeys.length !== expectedPlanCardKeys.length || planCardKeys.some((key, index) => key !== expectedPlanCardKeys[index])) {
+            throw httpError(500, 'invalid_snapshot')
+        }
+    }
+    const serialized = JSON.stringify(planSession)
+    if (Buffer.byteLength(serialized) > COCKPIT_RESPONSE_LIMIT_BYTES) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const forbiddenFragments = [
+        'run_',
+        'sentinel_session_id',
+        'decision_id',
+        'approval_id',
+        'plan_id',
+        'task_id',
+        'task_packet_hash',
+        'approval_challenge',
+        'approval_challenge_hash',
+        'action_inputs',
+        'task_packet',
+        'copyable_worker_prompt',
+        'result_packet',
+        'evidence_manifest',
+        'gateway',
+        'bearer',
+        'authorization'
+    ]
+    const lower = serialized.toLowerCase()
+    if (forbiddenFragments.some((fragment) => lower.includes(fragment))) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    return planSession
+}
+
+function assertResponseKeys(
+    body: Record<string, unknown>,
+    requiredKeys: readonly string[],
+    optionalKeys: readonly string[] = Object.freeze([])
+) {
+    const keys = Object.keys(body)
+    const allowedKeys = new Set([...requiredKeys, ...optionalKeys])
+    if (requiredKeys.some((key) => !keys.includes(key)) || keys.some((key) => !allowedKeys.has(key))) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validateRouteCard(routeCard: unknown) {
+    if (routeCard == null) {
+        return
+    }
+    if (!routeCard || typeof routeCard !== 'object' || Array.isArray(routeCard)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+
+    const card = routeCard as Record<string, unknown>
+    assertResponseKeys(card, ROUTE_CARD_KEYS)
+    if (card.schema_version !== 'sentinel.qvc.route_card.v1') {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (typeof card.category !== 'string' || !ROUTE_CARD_CATEGORIES.includes(card.category)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    validateRouteCardText(card.title, 96)
+    validateRouteCardText(card.summary, 320)
+    validateRouteCardText(card.what_can_happen_next, 320)
+    validateRouteCardText(card.what_will_not_happen, 360)
+    if (typeof card.needs_clarification !== 'boolean') {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    validateOptionalRouteCardText(card.clarification_question, 240)
+    validateOptionalRouteCardText(card.blocked_reason, 240)
+
+    const lower = JSON.stringify(card).toLowerCase()
+    if (ROUTE_CARD_FORBIDDEN_FRAGMENTS.some((fragment) => lower.includes(fragment))) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validateIdePreview(idePreview: unknown) {
+    if (idePreview == null) {
+        return
+    }
+    if (!idePreview || typeof idePreview !== 'object' || Array.isArray(idePreview)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const preview = idePreview as Record<string, unknown>
+    assertResponseKeys(preview, IDE_PREVIEW_KEYS)
+    validateIdePreviewText(preview.status_label, 80)
+    validateIdePreviewText(preview.workflow_label, 80)
+    validateIdePreviewText(preview.persona_label, 80)
+    validateIdePreviewText(preview.skill_label, 80)
+    validateIdePreviewText(preview.summary, 260)
+    validateIdePreviewText(preview.what_can_happen_next, 260)
+    validateIdePreviewText(preview.what_will_not_happen, 260)
+    validateIdePreviewText(preview.approval_copy, 160)
+    validateIdePreviewText(preview.expires_at_label, 80)
+    if (Buffer.byteLength(JSON.stringify(preview)) > 2048) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const lower = JSON.stringify(preview).toLowerCase()
+    if (IDE_PREVIEW_FORBIDDEN_FRAGMENTS.some((fragment) => lower.includes(fragment))) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validateIdeWork(ideWork: unknown, options: { allowPatchReviewRequired?: boolean } = {}) {
+    if (ideWork == null) {
+        return
+    }
+    if (!ideWork || typeof ideWork !== 'object' || Array.isArray(ideWork)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const work = ideWork as Record<string, unknown>
+    assertResponseKeys(work, IDE_WORK_KEYS)
+    if (typeof work.schema_version !== 'string' || !IDE_WORK_SCHEMA_VERSIONS.includes(work.schema_version)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (work.status !== 'ok' || typeof work.state !== 'string' || !IDE_WORK_STATES.includes(work.state)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    validateIdePreviewText(work.status_label, 80)
+    validateIdePreviewText(work.workflow_label, 80)
+    validateIdePreviewText(work.persona_label, 80)
+    validateIdePreviewText(work.skill_label, 80)
+    validateIdePreviewText(work.short_summary, 240)
+    validateIdePreviewText(work.current_safe_step, 240)
+    validateIdePreviewText(work.what_can_happen_next, 260)
+    validateIdePreviewText(work.what_will_not_happen, 260)
+    if (typeof work.approval_available !== 'boolean' || typeof work.cancel_available !== 'boolean') {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    validateOptionalIdeWorkText(work.review_required_note, 180)
+    validateOptionalIdeWorkText(work.terminal_note, 180)
+    validateOptionalIdeWorkText(work.safe_error, 80)
+    if (
+        !Array.isArray(work.allowed_user_actions) ||
+        !work.allowed_user_actions.length ||
+        work.allowed_user_actions.some((action) => typeof action !== 'string' || !IDE_WORK_ACTIONS.includes(action))
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const isPatchReviewRequiredSchema = work.schema_version === IDE_WORK_PATCH_REVIEW_REQUIRED_SCHEMA_VERSION
+    const isPatchReviewRequiredState = work.state === IDE_WORK_PATCH_REVIEW_REQUIRED_STATE
+    const isPatchRevisionAvailableSchema = work.schema_version === IDE_WORK_PATCH_REVISION_AVAILABLE_SCHEMA_VERSION
+    const isPatchRevisionAvailableState = work.state === IDE_WORK_PATCH_REVISION_AVAILABLE_STATE
+    if (isPatchReviewRequiredSchema !== isPatchReviewRequiredState || isPatchRevisionAvailableSchema !== isPatchRevisionAvailableState) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if ((isPatchReviewRequiredSchema || isPatchRevisionAvailableSchema) && options.allowPatchReviewRequired !== true) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (
+        isPatchReviewRequiredSchema &&
+        (work.approval_available !== false ||
+            work.cancel_available !== false ||
+            work.safe_error !== null ||
+            work.allowed_user_actions.length !== 1 ||
+            work.allowed_user_actions[0] !== 'none')
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (
+        isPatchRevisionAvailableSchema &&
+        (work.approval_available !== true ||
+            work.cancel_available !== false ||
+            work.safe_error !== null ||
+            work.allowed_user_actions.length !== 1 ||
+            work.allowed_user_actions[0] !== 'request_patch_revision')
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    validatePatchReviewPacket(work.patch_review_packet, isPatchReviewRequiredSchema || isPatchRevisionAvailableSchema)
+    const includesPatchProposalAction = work.allowed_user_actions.includes('request_patch_proposal')
+    const isExactPatchProposalAction = work.allowed_user_actions.length === 1 && work.allowed_user_actions[0] === 'request_patch_proposal'
+    if (
+        includesPatchProposalAction &&
+        (!isExactPatchProposalAction ||
+            work.schema_version !== 'sentinel.qvc.ide_work_approval.v1' ||
+            work.state !== 'approval_pending' ||
+            work.approval_available !== true ||
+            work.cancel_available !== false ||
+            work.safe_error !== null)
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (
+        !Array.isArray(work.blocked_actions) ||
+        !work.blocked_actions.length ||
+        work.blocked_actions.some((action) => {
+            try {
+                validateIdePreviewText(action, 180)
+                return false
+            } catch {
+                return true
+            }
+        })
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (Buffer.byteLength(JSON.stringify(work)) > 16 * 1024) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const lower = JSON.stringify({ ...work, patch_review_packet: null }).toLowerCase()
+    if (IDE_WORK_FORBIDDEN_FRAGMENTS.some((fragment) => lower.includes(fragment))) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validatePatchReviewPacket(value: unknown, isPatchReviewRequired: boolean) {
+    if (value === null) {
+        if (isPatchReviewRequired) throw httpError(500, 'invalid_snapshot')
+        return
+    }
+    if (!isPatchReviewRequired || !value || typeof value !== 'object' || Array.isArray(value)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const packet = value as Record<string, unknown>
+    assertResponseKeys(packet, IDE_WORK_PATCH_REVIEW_PACKET_KEYS)
+    if (
+        packet.schema_version !== IDE_WORK_PATCH_REVIEW_PACKET_SCHEMA_VERSION ||
+        packet.review_mode !== 'bounded_preview' ||
+        packet.packet_retained !== true ||
+        packet.review_packet_status !== 'bounded_preview'
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const changedFileCount = validateBoundedIdeWorkInteger(packet.changed_file_count, 1, IDE_WORK_PATCH_MAX_CHANGED_FILES)
+    const changedFilesList = validatePatchReviewPathList(packet.changed_files_list, changedFileCount)
+    const addedLineCount = validateBoundedIdeWorkInteger(packet.added_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
+    const deletedLineCount = validateBoundedIdeWorkInteger(packet.deleted_line_count, 0, IDE_WORK_PATCH_MAX_CHANGED_LINES)
+    validateBoundedIdeWorkInteger(packet.diff_bytes, 1, IDE_WORK_PATCH_MAX_DIFF_BYTES)
+    validatePatchPreviewLines(packet.preview_lines, changedFilesList, addedLineCount, deletedLineCount)
+    if (packet.retention_label !== IDE_WORK_PATCH_REVIEW_PACKET_RETENTION_LABEL) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validateBoundedIdeWorkInteger(value: unknown, min: number, max: number): number {
+    if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < min || value > max) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    return value
+}
+
+function validatePatchReviewPathList(value: unknown, expectedCount: number): string[] {
+    if (!Array.isArray(value) || value.length !== expectedCount || value.length > IDE_WORK_PATCH_MAX_CHANGED_FILES) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const seen = new Set<string>()
+    const paths: string[] = []
+    for (const item of value) {
+        const safePath = validatePatchReviewPath(item)
+        if (seen.has(safePath)) throw httpError(500, 'invalid_snapshot')
+        seen.add(safePath)
+        paths.push(safePath)
+    }
+    return paths
+}
+
+function validatePatchReviewPath(value: unknown): string {
+    if (typeof value !== 'string' || value.length < 1 || value.length > 260) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (
+        value.trim() !== value ||
+        value.startsWith('/') ||
+        value.endsWith('/') ||
+        value.includes('\\') ||
+        value.includes('//') ||
+        value.includes('..') ||
+        !IDE_WORK_PATCH_REVIEW_PATH_PATTERN.test(value) ||
+        IDE_WORK_PATCH_REVIEW_PATH_FORBIDDEN_PATTERN.test(value) ||
+        hasForbiddenGatewayPathSegment(value)
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const parts = value.split('/')
+    if (
+        parts.some(
+            (part) =>
+                part === '.' || part === '..' || part.startsWith('.') || IDE_WORK_PATCH_REVIEW_DENIED_DIRS.includes(part.toLowerCase())
+        )
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const filename = parts[parts.length - 1].toLowerCase()
+    if (filename.startsWith('.env') || IDE_WORK_PATCH_REVIEW_DENIED_FILENAMES.includes(filename)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const dotIndex = filename.lastIndexOf('.')
+    const extension = dotIndex >= 0 ? filename.slice(dotIndex) : ''
+    if (IDE_WORK_PATCH_REVIEW_DENIED_EXTENSIONS.includes(extension)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    return value
+}
+
+function validatePatchPreviewLines(value: unknown, changedFilesList: string[], addedLineCount: number, deletedLineCount: number) {
+    if (!Array.isArray(value)) throw httpError(500, 'invalid_snapshot')
+    const expectedLength = changedFilesList.length + addedLineCount + deletedLineCount
+    if (value.length !== expectedLength || value.length < 1 || value.length > IDE_WORK_PATCH_MAX_PREVIEW_LINES) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    const fileLines: string[] = []
+    let addedCount = 0
+    let removedCount = 0
+    for (const item of value) {
+        const line = validatePatchPreviewLine(item)
+        if (line.kind === 'file') fileLines.push(line.text)
+        if (line.kind === 'added') addedCount += 1
+        if (line.kind === 'removed') removedCount += 1
+    }
+    if (
+        addedCount !== addedLineCount ||
+        removedCount !== deletedLineCount ||
+        fileLines.length !== changedFilesList.length ||
+        fileLines.some((filePath, index) => filePath !== changedFilesList[index])
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validatePatchPreviewLine(value: unknown): { kind: 'file' | 'removed' | 'added'; text: string } {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) throw httpError(500, 'invalid_snapshot')
+    const line = value as Record<string, unknown>
+    assertResponseKeys(line, ['kind', 'text'])
+    if (line.kind !== 'file' && line.kind !== 'removed' && line.kind !== 'added') throw httpError(500, 'invalid_snapshot')
+    if (typeof line.text !== 'string' || line.text.length < 1 || line.text.length > IDE_WORK_PATCH_MAX_PREVIEW_LINE_LENGTH) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e]/.test(line.text) || /[^\x20-\x7e]/.test(line.text)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    if (line.kind === 'file') return { kind: 'file', text: validatePatchReviewPath(line.text) }
+    if (IDE_WORK_PATCH_PREVIEW_LOCAL_PATH_TEXT_PATTERN.test(line.text)) throw httpError(500, 'invalid_snapshot')
+    if (IDE_WORK_PATCH_PREVIEW_SOURCE_TEXT_PATTERN.test(line.text)) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+    return { kind: line.kind, text: line.text }
+}
+
+function hasForbiddenGatewayPathSegment(value: string): boolean {
+    return value.split('/').some(
+        (segment) =>
+            segment.toLowerCase() !== 'sentinel-gateway' &&
+            segment
+                .toLowerCase()
+                .split(/[_.-]+/)
+                .includes('gateway')
+    )
+}
+
+function validateOptionalIdeWorkText(value: unknown, maxLength: number) {
+    if (value === null) return
+    validateIdePreviewText(value, maxLength)
+}
+
+function validateIdePreviewText(value: unknown, maxLength: number) {
+    if (
+        typeof value !== 'string' ||
+        !value.trim() ||
+        value.length > maxLength ||
+        hasDisallowedControlCharacter(value) ||
+        hasHiddenControlCharacter(value) ||
+        /[^\x20-\x7e]/.test(value) ||
+        secretTextPresent(value)
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validateRouteCardText(value: unknown, maxLength: number) {
+    if (
+        typeof value !== 'string' ||
+        !value.trim() ||
+        value.length > maxLength ||
+        hasDisallowedControlCharacter(value) ||
+        hasHiddenControlCharacter(value) ||
+        secretTextPresent(value)
+    ) {
+        throw httpError(500, 'invalid_snapshot')
+    }
+}
+
+function validateOptionalRouteCardText(value: unknown, maxLength: number) {
+    if (value === null) {
+        return
+    }
+    validateRouteCardText(value, maxLength)
+}
+
+function sendJson(res: Response, statusCode: number, body: unknown) {
+    const serialized = `${JSON.stringify(body)}\n`
+    res.status(statusCode)
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    res.setHeader('Content-Length', String(Buffer.byteLength(serialized)))
+    res.setHeader('Cache-Control', 'no-store')
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    res.setHeader('Referrer-Policy', 'no-referrer')
+    res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; connect-src 'none'"
+    )
+    res.end(serialized)
+}
+
+function sendError(res: Response, statusCode: number, code: ErrorCode) {
+    sendJson(res, statusCode, {
+        schema_version: COCKPIT_ERROR_SCHEMA_VERSION,
+        status: 'error',
+        error: {
+            code,
+            message: ERROR_MESSAGE
+        }
+    })
+}
+
+export function readFlowiseLocalConfig(env: NodeJS.ProcessEnv): FlowiseLocalConfig {
+    const origin = readSafeLocalOrigin(env[FLOWISE_LOCAL_ORIGIN_ENV] || DEFAULT_FLOWISE_LOCAL_ORIGIN)
+    if (!origin) {
+        return { ok: false, origin: DEFAULT_FLOWISE_LOCAL_ORIGIN, host: DEFAULT_FLOWISE_LOCAL_HOST }
+    }
+    const host = readSafeLocalHost(env[FLOWISE_LOCAL_HOST_ENV] || origin.host)
+    if (!host || host !== origin.host) {
+        return { ok: false, origin: origin.origin, host: origin.host }
+    }
+    return { ok: true, origin: origin.origin, host }
+}
+
+function readSafeLocalOrigin(value: unknown): { origin: string; host: string } | null {
+    if (typeof value !== 'string') return null
+    const trimmed = value.trim()
+    if (!trimmed || trimmed.length > 160 || hasDisallowedControlCharacter(trimmed) || hasHiddenControlCharacter(trimmed)) return null
+    let parsed: URL
+    try {
+        parsed = new URL(trimmed)
+    } catch {
+        return null
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol)) return null
+    if (parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash) return null
+    if (!isLocalOrPrivateHostname(parsed.hostname)) return null
+    return { origin: parsed.origin, host: parsed.host }
+}
+
+function readSafeLocalHost(value: unknown): string | null {
+    if (typeof value !== 'string') return null
+    const trimmed = value.trim()
+    if (!trimmed || trimmed.length > 128 || hasDisallowedControlCharacter(trimmed) || hasHiddenControlCharacter(trimmed)) return null
+    if (/[/?#@\\]/.test(trimmed)) return null
+    let parsed: URL
+    try {
+        parsed = new URL(`http://${trimmed}`)
+    } catch {
+        return null
+    }
+    if (parsed.username || parsed.password || parsed.pathname !== '/' || parsed.search || parsed.hash) return null
+    if (!isLocalOrPrivateHostname(parsed.hostname)) return null
+    return parsed.host
+}
+
+function isLocalOrPrivateHostname(hostname: string): boolean {
+    const host = hostname.toLowerCase().replace(/^\[/, '').replace(/\]$/, '')
+    if (host === 'localhost' || host === '::1') return true
+    const parts = host.split('.')
+    if (parts.length !== 4 || parts.some((part) => !/^[0-9]+$/.test(part))) return false
+    const octets = parts.map((part) => Number(part))
+    if (octets.some((part) => part < 0 || part > 255)) return false
+    const [first, second] = octets
+    return first === 127 || first === 10 || (first === 192 && second === 168) || (first === 172 && second >= 16 && second <= 31)
+}
+
+function getErrorStatusCode(error: unknown): number {
+    const maybe = error as { statusCode?: unknown }
+    return typeof maybe?.statusCode === 'number' ? maybe.statusCode : 500
+}
+
+function getErrorCode(error: unknown): ErrorCode {
+    const maybe = error as { code?: unknown }
+    const code = typeof maybe?.code === 'string' ? maybe.code : 'internal_error'
+    if (
+        [
+            'method_not_allowed',
+            'not_found',
+            'preflight_denied',
+            'header_denied',
+            'unsupported_media_type',
+            'unsupported_content_encoding',
+            'body_too_large',
+            'invalid_json',
+            'invalid_request',
+            'invalid_snapshot',
+            'sentinel_classify_unavailable',
+            'sentinel_classify_malformed',
+            'sentinel_resume_disabled',
+            'sentinel_resume_binding_invalid',
+            'sentinel_resume_binding_not_found',
+            'sentinel_resume_unavailable',
+            'sentinel_resume_malformed',
+            'feature_disabled',
+            'plan_session_not_found',
+            'plan_session_expired',
+            'plan_session_consumed',
+            'plan_session_owner_mismatch',
+            'plan_session_nonce_mismatch',
+            'plan_session_state_mismatch',
+            'manual_packet_invalid_input',
+            'manual_packet_not_found',
+            'manual_packet_expired',
+            'manual_packet_consumed',
+            'manual_packet_nonce_mismatch',
+            'manual_packet_state_mismatch',
+            'result_review_invalid_input',
+            'result_review_not_found',
+            'result_review_expired',
+            'result_review_consumed',
+            'result_review_nonce_mismatch',
+            'result_review_state_mismatch',
+            'plan_decision_invalid_input',
+            'ide_work_invalid_input',
+            'ide_work_unavailable',
+            'gateway_unavailable',
+            'gateway_rejected',
+            'internal_error'
+        ].includes(code)
+    ) {
+        return code as ErrorCode
+    }
+    return 'internal_error'
+}
+
+function httpError(statusCode: number, code: ErrorCode) {
+    const error = new Error(code) as Error & { statusCode: number; code: ErrorCode }
+    error.statusCode = statusCode
+    error.code = code
+    return error
+}
+
+function headerValueHasForbiddenText(value: unknown): boolean {
+    const values = Array.isArray(value) ? value : [value]
+    return values.some((entry) => typeof entry === 'string' && forbiddenTextPresent(entry))
+}
+
+function assertNoForbiddenText(value: string) {
+    if (forbiddenTextPresent(value)) {
+        throw httpError(400, 'invalid_request')
+    }
+}
+
+function assertRequestTextSafeWithoutAuthorityRefs(request: Record<string, string>) {
+    const { client_nonce: _clientNonce, cockpit_ref: _cockpitRef, ...scannedRequest } = request
+    assertNoForbiddenText(JSON.stringify(scannedRequest))
+}
+
+function forbiddenTextPresent(value: string): boolean {
+    return (
+        /\b(?:SENTINEL_GATEWAY_TOKEN|authorization|bearer|token|secret|password|api[-_]?key|approval_challenge|task_packet|result_packet|callback_url|webhook|runtime[-_]?ingest|worker|mcp|tool|shell|command|commit|publish|send|deploy|risk_class|authority_ladder|artifact_registry|persona|DTO)\b/i.test(
+            value
+        ) || containsTokenShapedText(value)
+    )
+}
+
+function secretTextPresent(value: string): boolean {
+    return (
+        /\b(?:SENTINEL_GATEWAY_TOKEN|authorization|bearer|token|secret|password|passwd|api[-_]?key|apikey|cookie|private\s+key)\b/i.test(
+            value
+        ) ||
+        /BEGIN [A-Z ]*PRIVATE KEY/i.test(value) ||
+        /\b(?:sk-|ghp_|github_pat_|xoxb-|AKIA)[A-Za-z0-9_./+=-]{8,}\b/.test(value) ||
+        /\b[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/.test(value) ||
+        /https?:\/\/[^/\s:@]+:[^/\s@]+@/i.test(value) ||
+        containsTokenShapedText(value)
+    )
+}
+
+function looksLikeTopLevelJson(value: string): boolean {
+    const trimmed = value.trim()
+    if (!/^[{[]/.test(trimmed)) return false
+    try {
+        const parsed = JSON.parse(trimmed)
+        return !!parsed && typeof parsed === 'object'
+    } catch {
+        return false
+    }
+}
+
+function resultTextHasProtocolAuthority(value: string): boolean {
+    return (
+        /\b(?:run_id|sentinel_session_id|session_id|decision_id|approval_id|plan_id|task_id|task_packet_hash|result_id|shield_review_id|result_packet|evidence_manifest|gateway_url|client_nonce|cockpit_ref|action_inputs|task_packet|copyable_worker_prompt|authorization|bearer|token)\b/i.test(
+            value
+        ) || /127\.0\.0\.1:39173/i.test(value)
+    )
+}
+
+function containsTokenShapedText(value: string): boolean {
+    const candidates = value.match(/[A-Za-z0-9._~:-]{32,256}/g) || []
+    return candidates.some((candidate) => {
+        if (candidate === COCKPIT_SNAPSHOT_SCHEMA_VERSION || candidate === COCKPIT_ERROR_SCHEMA_VERSION) return false
+        if (!/[A-Za-z]/.test(candidate) || !/[0-9]/.test(candidate) || /^(.)\1+$/.test(candidate)) return false
+        const lower = candidate.toLowerCase()
+        return !['placeholder', 'example', 'sample'].some((fragment) => lower.includes(fragment))
+    })
+}
+
+function hasDisallowedControlCharacter(value: string): boolean {
+    for (let index = 0; index < value.length; index += 1) {
+        const code = value.charCodeAt(index)
+        if ((code >= 0 && code <= 8) || code === 11 || code === 12 || (code >= 14 && code <= 31) || code === 127) {
+            return true
+        }
+    }
+    return false
+}
+
+function hasHiddenControlCharacter(value: string): boolean {
+    return /[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/.test(value)
+}
+
+export default {
+    handleSnapshot
+}
