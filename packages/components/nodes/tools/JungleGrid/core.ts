@@ -144,7 +144,7 @@ export class JungleGridClient {
         })
 
         if (response.status < 200 || response.status >= 300) {
-            throw new Error(await responseErrorMessage(response, method, path))
+            throw new Error(responseErrorMessage(response, method, path))
         }
 
         if (response.status === 204) return { ok: true }
