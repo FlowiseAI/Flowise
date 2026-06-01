@@ -312,7 +312,7 @@ function redactSensitiveParams(params: any): any {
     return output
 }
 
-async function responseErrorMessage(response: any, method: string, path: string): Promise<string> {
+function responseErrorMessage(response: any, method: string, path: string): string {
     const fallback = `${method} ${path} failed with status ${response.status}`
     const payload = response.data
     if (payload === undefined || payload === null || payload === '') return fallback
