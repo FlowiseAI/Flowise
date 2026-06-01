@@ -19,7 +19,7 @@ import { ILLMMessage, IResponseMetadata } from '../Interface.Agentflow'
 import { Tool } from '@langchain/core/tools'
 import { ARTIFACTS_PREFIX, SOURCE_DOCUMENTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
 import { flatten } from 'lodash'
-import zodToJsonSchema from 'zod-to-json-schema'
+import { toolSchemaToJsonSchema, type ToolJsonSchema } from '../../../src/utils'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
 import { randomBytes } from 'crypto'
@@ -30,6 +30,7 @@ import {
     getUniqueImageMessages,
     processMessagesWithImages,
     revertBase64ImagesToFileRefs,
+    normalizeMessagesForStorage,
     replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
@@ -67,7 +68,7 @@ interface IKnowledgeBaseVSEmbeddings {
 interface ISimpliefiedTool {
     name: string
     description: string
-    schema: any
+    schema: ToolJsonSchema
     toolNode: {
         label: string
         name: string
@@ -743,10 +744,7 @@ class Agent_Agentflow implements INode {
                 }
                 const componentNode = options.componentNodes[agentSelectedTool]
 
-                const jsonSchema = zodToJsonSchema(tool.schema as any)
-                if (jsonSchema.$schema) {
-                    delete jsonSchema.$schema
-                }
+                const jsonSchema = toolSchemaToJsonSchema(tool.schema)
 
                 return {
                     name: tool.name,
@@ -800,10 +798,7 @@ class Agent_Agentflow implements INode {
 
                     toolsInstance.push(retrieverToolInstance as Tool)
 
-                    const jsonSchema = zodToJsonSchema(retrieverToolInstance.schema)
-                    if (jsonSchema.$schema) {
-                        delete jsonSchema.$schema
-                    }
+                    const jsonSchema = toolSchemaToJsonSchema(retrieverToolInstance.schema)
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
@@ -875,10 +870,7 @@ class Agent_Agentflow implements INode {
 
                     toolsInstance.push(retrieverToolInstance as Tool)
 
-                    const jsonSchema = zodToJsonSchema(retrieverToolInstance.schema)
-                    if (jsonSchema.$schema) {
-                        delete jsonSchema.$schema
-                    }
+                    const jsonSchema = toolSchemaToJsonSchema(retrieverToolInstance.schema)
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
@@ -1471,7 +1463,8 @@ class Agent_Agentflow implements INode {
              * This is to avoid storing the actual base64 data into database
              */
             const messagesToStore = messages.filter((msg: any) => !msg._isTemporaryImageMessage)
-            const messagesWithFileReferences = revertBase64ImagesToFileRefs(messagesToStore)
+            const normalizedMessagesToStore = normalizeMessagesForStorage(messagesToStore)
+            const messagesWithFileReferences = revertBase64ImagesToFileRefs(normalizedMessagesToStore)
 
             // Only add to runtime chat history if this is the first node
             const inputMessages = []
@@ -2235,13 +2228,7 @@ class Agent_Agentflow implements INode {
         }
 
         // Add LLM response with tool calls to messages
-        messages.push({
-            id: response.id,
-            role: 'assistant',
-            content: response.content,
-            tool_calls: response.tool_calls,
-            usage_metadata: response.usage_metadata
-        })
+        messages.push(response)
 
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
@@ -2622,13 +2609,7 @@ class Agent_Agentflow implements INode {
         }
 
         // Add LLM response with tool calls to messages
-        messages.push({
-            id: response.id,
-            role: 'assistant',
-            content: response.content,
-            tool_calls: response.tool_calls,
-            usage_metadata: response.usage_metadata
-        })
+        messages.push(response)
 
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {

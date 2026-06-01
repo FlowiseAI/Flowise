@@ -7,6 +7,11 @@
  * Architecture:
  * 1. Base colors - Primitive color values (single source of truth)
  * 2. Semantic colors - Referenced from base colors for consistency
+ *
+ * Base palette and node type colors are duplicated in
+ * packages/observe/src/core/theme/tokens.ts — keep in sync until
+ * extracted to packages/shared-ui in FLOWISE-628. Agentflow extends
+ * the shared base with ReactFlow + syntax highlight tokens, which stay here.
  */
 
 // Base primitive colors - define once, reference everywhere
@@ -28,6 +33,7 @@ const baseColors = {
     gray800: '#333',
 
     // Dark mode grays
+    lightBorderDefault: '#21212125',
     darkBorderDefault: 'rgba(255, 255, 255, 0.145)',
     darkGray100: '#1a1a1a',
     darkGray200: '#1a1a2e',
@@ -35,6 +41,7 @@ const baseColors = {
     darkGray350: '#23262c',
     darkGray400: '#2d2d2d',
     darkGray450: '#32353b',
+    darkGray460: '#454c59',
     darkGray500: '#404040',
     darkBlueHover: '#233345',
     darkGray600: '#525252',
@@ -59,6 +66,9 @@ const baseColors = {
     secondaryLight: '#ede7f6',
     secondaryMain: '#673ab7',
     secondaryDark: '#5e35b1',
+    darkSecondaryLight: '#454c59',
+    darkSecondaryMain: '#7c4dff',
+    darkSecondaryDark: '#ffffff',
 
     // MUI palette colors - success (green)
     successLight: '#cdf5d8',
@@ -94,7 +104,10 @@ const baseColors = {
 
     // Gradient colors
     gradientOrange: '#FF6B6B',
-    gradientRed: '#FF8E53'
+    gradientRed: '#FF8E53',
+
+    // CSS keyword 'orange' — used by V2 sync-nodes FAB; kept explicit so it tracks V2 exactly
+    orange: '#ffa500'
 } as const
 
 export const tokens = {
@@ -125,14 +138,15 @@ export const tokens = {
             card: { light: baseColors.white, dark: baseColors.darkGray350 },
             cardHover: { light: baseColors.gray75, dark: baseColors.darkGray500 },
             header: { light: baseColors.white, dark: baseColors.darkGray400 },
-            input: { light: baseColors.white, dark: baseColors.darkGray450 },
-            optionHover: { light: '', dark: baseColors.darkBlueHover }
+            input: { light: baseColors.gray50, dark: baseColors.darkGray450 },
+            optionHover: { light: '', dark: baseColors.darkBlueHover },
+            listItemSelected: { light: '', dark: baseColors.darkGray460 }
         },
 
         border: {
             default: { light: baseColors.gray300, dark: baseColors.darkBorderDefault },
             hover: { light: baseColors.gray400, dark: baseColors.darkGray600 },
-            input: { light: baseColors.gray400, dark: baseColors.darkGray750 },
+            input: { light: baseColors.lightBorderDefault, dark: baseColors.darkGray750 },
             validation: baseColors.nodeCondition
         },
 
@@ -150,9 +164,9 @@ export const tokens = {
                 dark: baseColors.primaryDark
             },
             secondary: {
-                light: baseColors.secondaryLight,
-                main: baseColors.secondaryMain,
-                dark: baseColors.secondaryDark
+                light: { light: baseColors.secondaryLight, dark: baseColors.darkSecondaryLight },
+                main: { light: baseColors.secondaryMain, dark: baseColors.darkSecondaryMain },
+                dark: { light: baseColors.secondaryDark, dark: baseColors.darkSecondaryDark }
             },
             success: {
                 light: baseColors.successLight,
@@ -178,7 +192,8 @@ export const tokens = {
             warning: baseColors.warning,
             warningBg: baseColors.warningBg,
             warningText: baseColors.warningText,
-            info: baseColors.info
+            info: baseColors.info,
+            syncNodesFab: baseColors.orange
         },
 
         // ReactFlow specific colors - referenced from base
@@ -241,6 +256,21 @@ export const tokens = {
 
     // Typography
     typography: {
+        // Font size scale
+        fontSize: {
+            xs: '0.625rem', // 10px — badge, compact caption
+            sm: '0.75rem', // 12px — secondary label, helper text
+            md: '0.875rem', // 14px — body, input, primary label
+            lg: '1rem' // 16px — section heading
+        },
+
+        // Font weight scale
+        fontWeight: {
+            regular: 400,
+            medium: 500,
+            semibold: 600
+        },
+
         /** Matches MUI OutlinedInput's default line-height (1.4375em) so the
          *  RichTextEditor aligns with standard TextField height at the same row count. */
         rowHeightRem: 1.4375,
@@ -262,7 +292,11 @@ export const tokens = {
     // All values sit below the Canvas Kit modal overlay (30–50).
     zIndex: {
         canvasButton: 10, // FABs and button containers
-        canvasPanel: 20 // Open panels/poppers anchored to buttons
+        canvasPanel: 20, // Open panels/poppers anchored to buttons
+        // ReactFlow renders group/parent nodes at an elevated stacking context; edges drawn
+        // between children inside an iteration group must exceed that context to stay visible
+        // above the group body. 9999 is the conventional ReactFlow ceiling for this use case.
+        iterationEdge: 9999
     }
 } as const
 

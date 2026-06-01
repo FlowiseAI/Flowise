@@ -589,3 +589,23 @@ describe('NodeInputHandler – credential type rendering', () => {
         })
     })
 })
+
+describe('NodeInputHandler – Loop node inputs', () => {
+    it('fallbackMessage — multiline VariableInput renders when variableItems are provided', () => {
+        const variableItems = [{ label: 'question', value: '{{question}}', category: 'Chat Context' }]
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ name: 'fallbackMessage', type: 'string', rows: 4, acceptVariable: true })}
+                data={{ ...baseNodeData, inputs: { fallbackMessage: '' } }}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                variableItems={variableItems}
+            />
+        )
+
+        // VariableInput takes priority over RichTextEditor when suggestions exist,
+        // even for multiline (rows) fields
+        expect(screen.getByTestId('variable-input')).toBeInTheDocument()
+        expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
+    })
+})

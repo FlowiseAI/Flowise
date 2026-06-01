@@ -18,7 +18,18 @@ const getAssistantVectorStore = async (req: Request, res: Response, next: NextFu
                 `Error: openaiAssistantsVectorStoreController.getAssistantVectorStore - credential not provided!`
             )
         }
-        const apiResponse = await openAIAssistantVectorStoreService.getAssistantVectorStore(req.query.credential as string, req.params.id)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: openaiAssistantsVectorStoreController.getAssistantVectorStore - workspace not found!`
+            )
+        }
+        const apiResponse = await openAIAssistantVectorStoreService.getAssistantVectorStore(
+            req.query.credential as string,
+            req.params.id,
+            workspaceId
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -33,7 +44,14 @@ const listAssistantVectorStore = async (req: Request, res: Response, next: NextF
                 `Error: openaiAssistantsVectorStoreController.listAssistantVectorStore - credential not provided!`
             )
         }
-        const apiResponse = await openAIAssistantVectorStoreService.listAssistantVectorStore(req.query.credential as string)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: openaiAssistantsVectorStoreController.listAssistantVectorStore - workspace not found!`
+            )
+        }
+        const apiResponse = await openAIAssistantVectorStoreService.listAssistantVectorStore(req.query.credential as string, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -54,7 +72,18 @@ const createAssistantVectorStore = async (req: Request, res: Response, next: Nex
                 `Error: openaiAssistantsVectorStoreController.createAssistantVectorStore - credential not provided!`
             )
         }
-        const apiResponse = await openAIAssistantVectorStoreService.createAssistantVectorStore(req.query.credential as string, req.body)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: openaiAssistantsVectorStoreController.createAssistantVectorStore - workspace not found!`
+            )
+        }
+        const apiResponse = await openAIAssistantVectorStoreService.createAssistantVectorStore(
+            req.query.credential as string,
+            req.body,
+            workspaceId
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -81,10 +110,18 @@ const updateAssistantVectorStore = async (req: Request, res: Response, next: Nex
                 `Error: openaiAssistantsVectorStoreController.updateAssistantVectorStore - body not provided!`
             )
         }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: openaiAssistantsVectorStoreController.updateAssistantVectorStore - workspace not found!`
+            )
+        }
         const apiResponse = await openAIAssistantVectorStoreService.updateAssistantVectorStore(
             req.query.credential as string,
             req.params.id,
-            req.body
+            req.body,
+            workspaceId
         )
         return res.json(apiResponse)
     } catch (error) {
@@ -106,9 +143,17 @@ const deleteAssistantVectorStore = async (req: Request, res: Response, next: Nex
                 `Error: openaiAssistantsVectorStoreController.updateAssistantVectorStore - credential not provided!`
             )
         }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: openaiAssistantsVectorStoreController.deleteAssistantVectorStore - workspace not found!`
+            )
+        }
         const apiResponse = await openAIAssistantVectorStoreService.deleteAssistantVectorStore(
             req.query.credential as string,
-            req.params.id as string
+            req.params.id as string,
+            workspaceId
         )
         return res.json(apiResponse)
     } catch (error) {
@@ -154,10 +199,18 @@ const uploadFilesToAssistantVectorStore = async (req: Request, res: Response, ne
             }
         }
 
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: openaiAssistantsVectorStoreController.uploadFilesToAssistantVectorStore - workspace not found!`
+            )
+        }
         const apiResponse = await openAIAssistantVectorStoreService.uploadFilesToAssistantVectorStore(
             req.query.credential as string,
             req.params.id as string,
-            uploadFiles
+            uploadFiles,
+            workspaceId
         )
         return res.json(apiResponse)
     } catch (error) {
@@ -186,10 +239,18 @@ const deleteFilesFromAssistantVectorStore = async (req: Request, res: Response, 
             )
         }
 
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: openaiAssistantsVectorStoreController.deleteFilesFromAssistantVectorStore - workspace not found!`
+            )
+        }
         const apiResponse = await openAIAssistantVectorStoreService.deleteFilesFromAssistantVectorStore(
             req.query.credential as string,
             req.params.id as string,
-            req.body.file_ids
+            req.body.file_ids,
+            workspaceId
         )
         return res.json(apiResponse)
     } catch (error) {

@@ -70,14 +70,25 @@ export function useAvailableVariables(nodeId: string): VariableItem[] {
     return useMemo(() => {
         const items: VariableItem[] = [...GLOBAL_VARIABLES]
 
+        // Nodes inside an iteration group (extent === 'parent') get access to $iteration
+        const currentNode = nodes.find((n) => n.id === nodeId)
+        if (currentNode?.extent === 'parent') {
+            items.unshift({
+                label: '$iteration',
+                description: 'Iteration item. For JSON, use dot notation: $iteration.name',
+                category: 'Iteration',
+                value: '{{$iteration}}'
+            })
+        }
+
         // ── Upstream node outputs ────────────────────────────────────────
         const upstreamNodes = getUpstreamNodes(nodeId, nodes, edges)
         for (const node of upstreamNodes) {
+            if (node.data.name === 'startAgentflow') continue
             const displayName =
                 (node.data.inputs?.chainName as string) ??
                 (node.data.inputs?.functionName as string) ??
                 (node.data.inputs?.variableName as string) ??
-                node.data.label ??
                 node.data.id
 
             const agentflowIcon = getAgentflowIcon(node.data.name)
@@ -85,7 +96,7 @@ export function useAvailableVariables(nodeId: string): VariableItem[] {
                 label: displayName,
                 description: `Output from ${node.data.label ?? node.data.name}`,
                 category: 'Node Outputs',
-                value: `{{${node.id}.data.instance}}`,
+                value: `{{${node.id}}}`,
                 icon: agentflowIcon?.icon,
                 iconColor: agentflowIcon?.color
             })

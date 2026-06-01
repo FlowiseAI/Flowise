@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { FormControl, OutlinedInput, InputBase, Popover, InputAdornment, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import Visibility from '@mui/icons-material/Visibility'
-import VisibilityOff from '@mui/icons-material/VisibilityOff'
+import { IconEye, IconEyeOff } from '@tabler/icons-react'
 import SelectVariable from '@/ui-component/json/SelectVariable'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 
@@ -17,10 +16,8 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlu
     const inputElementRef = useRef(null)
     const selectionRangeRef = useRef({ start: null, end: null })
 
-    const isPasswordField = inputParam?.type === 'password'
-    const hasPasswordToggle = isPasswordField && !!inputParam?.enablePasswordToggle
-
     const openPopOver = Boolean(anchorEl)
+    const hasPasswordToggle = (inputParam?.type === 'password' || inputParam?.type === 'url') && !!inputParam?.enablePasswordToggle
 
     const handleClosePopOver = () => {
         setAnchorEl(null)
@@ -37,6 +34,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlu
             case 'string':
                 return 'text'
             case 'password':
+            case 'url':
                 return 'password'
             case 'number':
                 return 'number'
@@ -46,6 +44,27 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlu
                 return 'text'
         }
     }
+
+    const handleTogglePasswordVisibility = () => {
+        const inputElement = inputElementRef.current
+        if (inputElement) {
+            selectionRangeRef.current = {
+                start: inputElement.selectionStart,
+                end: inputElement.selectionEnd
+            }
+        }
+        setIsPasswordVisible((prev) => !prev)
+    }
+
+    useEffect(() => {
+        if (!hasPasswordToggle) return
+        const { start, end } = selectionRangeRef.current
+        if (start === null || end === null || !inputElementRef.current) return
+        requestAnimationFrame(() => {
+            inputElementRef.current?.focus()
+            inputElementRef.current?.setSelectionRange(start, end)
+        })
+    }, [hasPasswordToggle, isPasswordVisible])
 
     useEffect(() => {
         if (!disabled && nodes && edges && nodeId && inputParam) {
@@ -59,28 +78,6 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlu
             setAnchorEl(ref.current)
         }
     }, [myValue])
-
-    useEffect(() => {
-        if (!hasPasswordToggle) return
-        const { start, end } = selectionRangeRef.current
-        if (start === null || end === null || !inputElementRef.current) return
-
-        requestAnimationFrame(() => {
-            inputElementRef.current?.focus()
-            inputElementRef.current?.setSelectionRange(start, end)
-        })
-    }, [hasPasswordToggle, isPasswordVisible])
-
-    const handleTogglePasswordVisibility = () => {
-        const inputElement = inputElementRef.current
-        if (inputElement) {
-            selectionRangeRef.current = {
-                start: inputElement.selectionStart,
-                end: inputElement.selectionEnd
-            }
-        }
-        setIsPasswordVisible((prev) => !prev)
-    }
 
     return (
         <>
@@ -156,9 +153,9 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlu
                                         edge='end'
                                         onClick={handleTogglePasswordVisibility}
                                         onMouseDown={(e) => e.preventDefault()}
-                                        aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
+                                        aria-label={isPasswordVisible ? 'Hide' : 'Show'}
                                     >
-                                        {isPasswordVisible ? <VisibilityOff fontSize='small' /> : <Visibility fontSize='small' />}
+                                        {isPasswordVisible ? <IconEyeOff size={18} /> : <IconEye size={18} />}
                                     </IconButton>
                                 </InputAdornment>
                             ) : undefined

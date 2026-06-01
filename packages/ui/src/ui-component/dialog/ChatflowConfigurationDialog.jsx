@@ -167,26 +167,46 @@ function getSectionStatus(sectionId, chatflow) {
         case 'chatFeedback':
             return chatbotConfig?.chatFeedback?.status === true
         case 'speechToText': {
-            const stt = chatbotConfig?.speechToText
-            if (!stt) return false
-            return Object.values(stt).some((provider) => provider?.status === true)
+            if (!chatflow.speechToText) return false
+            try {
+                const stt = JSON.parse(chatflow.speechToText)
+                // "none" with status:true means disabled — ignore it
+                return Object.entries(stt).some(([key, provider]) => key !== 'none' && provider?.status === true)
+            } catch {
+                return false
+            }
         }
         case 'textToSpeech': {
-            const tts = chatbotConfig?.textToSpeech
-            if (!tts) return false
-            return Object.values(tts).some((provider) => provider?.status === true)
+            if (!chatflow.textToSpeech) return false
+            try {
+                const tts = JSON.parse(chatflow.textToSpeech)
+                return Object.entries(tts).some(([key, provider]) => key !== 'none' && provider?.status === true)
+            } catch {
+                return false
+            }
         }
         case 'fileUpload':
             return chatbotConfig?.fullFileUpload?.status === true
         case 'analyseChatflow': {
-            const ap = chatbotConfig?.analyticsProviders
-            if (!ap) return false
-            return Object.values(ap).some((provider) => provider?.status === true)
+            if (!chatflow.analytic) return false
+            try {
+                const ap = JSON.parse(chatflow.analytic)
+                return Object.values(ap).some((provider) => provider?.status === true)
+            } catch {
+                return false
+            }
         }
         case 'postProcessing':
-            return chatbotConfig?.postProcessing?.status === true
-        case 'mcpServer':
-            return chatbotConfig?.mcpServer?.status === true
+            return chatbotConfig?.postProcessing?.enabled === true
+        case 'mcpServer': {
+            if (!chatflow.mcpServerConfig) return false
+            try {
+                const mcp = typeof chatflow.mcpServerConfig === 'string' ? JSON.parse(chatflow.mcpServerConfig) : chatflow.mcpServerConfig
+                return mcp?.enabled === true
+            } catch {
+                return false
+            }
+        }
         case 'overrideConfig':
             return apiConfig?.overrideConfig?.status === true
         default:
@@ -206,7 +226,6 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
     const customization = useSelector((state) => state.customization)
 
     const [activeSection, setActiveSection] = useState('rateLimit')
-    const [mcpServerEnabled, setMcpServerEnabled] = useState(false)
 
     const isDark = theme.palette.mode === 'dark' || customization?.isDarkMode
 
@@ -253,7 +272,7 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
             case 'postProcessing':
                 return <PostProcessing {...props} />
             case 'mcpServer':
-                return <McpServer {...props} onStatusChange={(enabled) => setMcpServerEnabled(enabled)} />
+                return <McpServer {...props} />
             case 'overrideConfig':
                 return <OverrideConfig {...props} hideTitle />
             default:
@@ -346,8 +365,7 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                                     {/* Section items */}
                                     {group.sections.map((section) => {
                                         const isActive = currentSection === section.id
-                                        const isEnabled =
-                                            section.id === 'mcpServer' ? mcpServerEnabled : getSectionStatus(section.id, chatflow)
+                                        const isEnabled = getSectionStatus(section.id, chatflow)
                                         const SectionIcon = section.icon
 
                                         return (

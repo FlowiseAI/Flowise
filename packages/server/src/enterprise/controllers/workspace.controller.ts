@@ -15,6 +15,7 @@ import { RoleErrorMessage, RoleService } from '../services/role.service'
 import { UserErrorMessage, UserService } from '../services/user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from '../services/workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from '../services/workspace.service'
+import { assertQueryOrganizationMatchesActiveOrg, assertWorkspaceIdAccessibleToUser, getLoggedInUser } from '../utils/tenantRequestGuards'
 
 export class WorkspaceController {
     public async create(req: Request, res: Response, next: NextFunction) {
@@ -30,10 +31,13 @@ export class WorkspaceController {
     public async read(req: Request, res: Response, next: NextFunction) {
         let queryRunner
         try {
+            const user = getLoggedInUser(req)
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             const query = req.query as Partial<Workspace>
             const workspaceService = new WorkspaceService()
+
+            assertQueryOrganizationMatchesActiveOrg(user, query.organizationId)
 
             let workspace:
                 | Workspace
@@ -42,9 +46,15 @@ export class WorkspaceController {
                       userCount: number
                   })[]
             if (query.id) {
+                await assertWorkspaceIdAccessibleToUser(user, query.id, queryRunner)
                 workspace = await workspaceService.readWorkspaceById(query.id, queryRunner)
             } else if (query.organizationId) {
                 workspace = await workspaceService.readWorkspaceByOrganizationId(query.organizationId, queryRunner)
+                if (!user.isOrganizationAdmin && Array.isArray(workspace)) {
+                    const allowed = new Set((user.assignedWorkspaces ?? []).map((w) => w.id))
+                    if (user.activeWorkspaceId) allowed.add(user.activeWorkspaceId)
+                    workspace = workspace.filter((w) => allowed.has(w.id))
+                }
             } else {
                 throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
             }

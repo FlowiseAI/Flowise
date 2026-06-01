@@ -11,7 +11,7 @@ import { createMockRequest } from '../../utils/mockRequest'
 import mcpServerService from '../mcp-server/index'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import logger from '../../utils/logger'
-import { ChatType, IMcpServerConfig, IReactFlowObject } from '../../Interface'
+import { ChatType, IMcpServerConfig, IReactFlowObject, StartInputType } from '../../Interface'
 
 /**
  * Build the MCP tool name from config + chatflow
@@ -49,7 +49,7 @@ function getToolInputType(chatflow: ChatFlow): 'question' | 'form' {
             const flowData: IReactFlowObject = JSON.parse(chatflow.flowData)
             const nodes = flowData.nodes || []
             const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
-            const startInputType = startNode?.data?.inputs?.startInputType as 'chatInput' | 'formInput'
+            const startInputType = startNode?.data?.inputs?.startInputType as StartInputType | undefined
             return startInputType === 'formInput' ? 'form' : 'question'
         } catch (error) {
             logger.error(`Failed to parse flowData for chatflow ${chatflow.id}: ${getErrorMessage(error)}`)

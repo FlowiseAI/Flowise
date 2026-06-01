@@ -6,6 +6,13 @@ import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { WorkspaceUser } from '../database/entities/workspace-user.entity'
 import { WorkspaceUserService } from '../services/workspace-user.service'
+import {
+    assertMayReadTargetUser,
+    assertQueryOrganizationMatchesActiveOrg,
+    assertWorkspaceIdAccessibleToUser,
+    getLoggedInUser,
+    userMayManageOrgUsers
+} from '../utils/tenantRequestGuards'
 
 export class WorkspaceUserController {
     public async create(req: Request, res: Response, next: NextFunction) {
@@ -21,6 +28,7 @@ export class WorkspaceUserController {
     public async read(req: Request, res: Response, next: NextFunction) {
         let queryRunner
         try {
+            const user = getLoggedInUser(req)
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             const query = req.query as Partial<WorkspaceUser & { organizationId: string | undefined }>
@@ -28,23 +36,47 @@ export class WorkspaceUserController {
 
             let workspaceUser: any
             if (query.workspaceId && query.userId) {
+                // Caller must have access to the workspace (own, assigned, or org admin within their org).
+                await assertWorkspaceIdAccessibleToUser(user, query.workspaceId, queryRunner)
                 workspaceUser = await workspaceUserService.readWorkspaceUserByWorkspaceIdUserId(
                     query.workspaceId,
                     query.userId,
                     queryRunner
                 )
             } else if (query.workspaceId) {
+                // Caller must have access to the workspace (own, assigned, or org admin within their org).
+                await assertWorkspaceIdAccessibleToUser(user, query.workspaceId, queryRunner)
                 workspaceUser = await workspaceUserService.readWorkspaceUserByWorkspaceId(query.workspaceId, queryRunner)
             } else if (query.organizationId && query.userId) {
+                // organizationId must match the caller's active org to prevent cross-org access.
+                // Caller must be the target user or an org user manager whose target belongs to the same org (IDOR guard).
+                assertQueryOrganizationMatchesActiveOrg(user, query.organizationId)
+                await assertMayReadTargetUser(user, query.userId, queryRunner)
                 workspaceUser = await workspaceUserService.readWorkspaceUserByOrganizationIdUserId(
                     query.organizationId,
                     query.userId,
                     queryRunner
                 )
             } else if (query.userId) {
-                workspaceUser = await workspaceUserService.readWorkspaceUserByUserId(query.userId, queryRunner)
+                if (query.userId === user.id) {
+                    // Self-lookup: return memberships across all orgs so the user can switch to an invited org/workspace.
+                    workspaceUser = await workspaceUserService.readWorkspaceUserByUserId(query.userId, queryRunner)
+                } else {
+                    // Non-self: caller must be an org user manager and the target must belong to the caller's active org (IDOR guard).
+                    // Results are scoped to the caller's active org to prevent cross-org data leakage.
+                    await assertMayReadTargetUser(user, query.userId, queryRunner)
+                    workspaceUser = await workspaceUserService.readWorkspaceUserByOrganizationIdUserId(
+                        user.activeOrganizationId,
+                        query.userId,
+                        queryRunner
+                    )
+                }
             } else if (query.roleId) {
-                workspaceUser = await workspaceUserService.readWorkspaceUserByRoleId(query.roleId, queryRunner)
+                // Only org user managers may list workspace members by role.
+                if (!userMayManageOrgUsers(user)) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
+                workspaceUser = await workspaceUserService.readWorkspaceUserByRoleId(query.roleId, queryRunner, user.activeOrganizationId)
             } else {
                 throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
             }
