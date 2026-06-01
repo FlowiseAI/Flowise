@@ -287,7 +287,7 @@ function removeUndefined(value: any): any {
     if (Array.isArray(value)) {
         return value.map(removeUndefined)
     }
-    if (value && typeof value === 'object') {
+    if (value != null && typeof value === 'object' && (value.constructor === Object || Object.getPrototypeOf(value) === null)) {
         const output: Record<string, any> = {}
         for (const [key, child] of Object.entries(value)) {
             if (child !== undefined) output[key] = removeUndefined(child)
