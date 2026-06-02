@@ -3,6 +3,7 @@ import { getBaseClasses, getUserHome } from '../../../src/utils'
 import { ListKeyOptions, RecordManagerInterface, UpdateOptions } from '@langchain/community/indexes/base'
 import { DataSource } from 'typeorm'
 import path from 'path'
+import { sanitizeDataSourceOptions } from '../../../src/sanitizeDataSourceOptions'
 
 class SQLiteRecordManager_RecordManager implements INode {
     label: string
@@ -36,6 +37,8 @@ class SQLiteRecordManager_RecordManager implements INode {
                 label: 'Additional Connection Configuration',
                 name: 'additionalConfig',
                 type: 'json',
+                description:
+                    'Optional TypeORM connection options (e.g. ssl, connectTimeout). entities, subscribers, migrations, and extra are not allowed.',
                 additionalParams: true,
                 optional: true
             },
@@ -113,6 +116,7 @@ class SQLiteRecordManager_RecordManager implements INode {
             } catch (exception) {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
+            additionalConfiguration = sanitizeDataSourceOptions(additionalConfiguration)
         }
 
         const database = path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite')

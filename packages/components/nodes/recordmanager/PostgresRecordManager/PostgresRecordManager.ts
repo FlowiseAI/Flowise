@@ -4,6 +4,7 @@ import { ListKeyOptions, RecordManagerInterface, UpdateOptions } from '@langchai
 import { DataSource } from 'typeorm'
 import { getHost, getSSL } from '../../vectorstores/Postgres/utils'
 import { getDatabase, getPort, getTableName } from './utils'
+import { sanitizeDataSourceOptions } from '../../../src/sanitizeDataSourceOptions'
 
 const serverCredentialsExists = !!process.env.POSTGRES_RECORDMANAGER_USER && !!process.env.POSTGRES_RECORDMANAGER_PASSWORD
 
@@ -63,6 +64,8 @@ class PostgresRecordManager_RecordManager implements INode {
                 label: 'Additional Connection Configuration',
                 name: 'additionalConfig',
                 type: 'json',
+                description:
+                    'Optional TypeORM connection options (e.g. ssl, connectTimeout). entities, subscribers, migrations, and extra are not allowed.',
                 additionalParams: true,
                 optional: true
             },
@@ -149,6 +152,7 @@ class PostgresRecordManager_RecordManager implements INode {
             } catch (exception) {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
+            additionalConfiguration = sanitizeDataSourceOptions(additionalConfiguration)
         }
 
         const postgresConnectionOptions = {

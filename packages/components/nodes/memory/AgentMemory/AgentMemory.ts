@@ -6,6 +6,7 @@ import { SqliteSaver } from './SQLiteAgentMemory/sqliteSaver'
 import { DataSource } from 'typeorm'
 import { PostgresSaver } from './PostgresAgentMemory/pgSaver'
 import { MySQLSaver } from './MySQLAgentMemory/mysqlSaver'
+import { sanitizeDataSourceOptions } from '../../../src/sanitizeDataSourceOptions'
 
 class AgentMemory_Memory implements INode {
     label: string
@@ -96,6 +97,8 @@ class AgentMemory_Memory implements INode {
                 label: 'Additional Connection Configuration',
                 name: 'additionalConfig',
                 type: 'json',
+                description:
+                    'Optional TypeORM connection options (e.g. ssl, connectTimeout). entities, subscribers, migrations, and extra are not allowed.',
                 additionalParams: true,
                 optional: true
             }
@@ -118,6 +121,7 @@ class AgentMemory_Memory implements INode {
             } catch (exception) {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
+            additionalConfiguration = sanitizeDataSourceOptions(additionalConfiguration)
         }
 
         const threadId = options.sessionId || options.chatId
