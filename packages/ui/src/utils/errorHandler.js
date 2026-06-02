@@ -21,6 +21,7 @@ const getAxiosErrorMessage = (error) => {
 
     if (responseData && typeof responseData === 'object') {
         if (typeof responseData.message === 'string') return responseData.message
+        if (Array.isArray(responseData.message)) return responseData.message.join(', ')
         if (typeof responseData.error === 'string') return responseData.error
 
         try {
