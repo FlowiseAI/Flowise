@@ -286,6 +286,57 @@ export const validateVectorStorePath = (userProvidedPath: string | undefined): s
 }
 
 /**
+ * Validates and sanitizes a SQLite database file path to prevent path traversal
+ * and arbitrary file write attacks.
+ *
+ * Relative paths are resolved within ~/.flowise/. Absolute paths must fall inside
+ * ~/.flowise/. Set PATH_TRAVERSAL_SAFETY=false to bypass all checks (not recommended).
+ *
+ * @param {string | undefined} userProvidedPath - File path supplied by the user in the node config
+ * @returns {string} A validated, absolute path within ~/.flowise/
+ * @throws {Error} If the path is missing, contains traversal patterns, or is outside ~/.flowise/
+ */
+export const validateSQLitePath = (userProvidedPath: string | undefined): string => {
+    const allowedDir = path.join(getUserHome(), '.flowise')
+
+    if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
+        if (!userProvidedPath || userProvidedPath.trim() === '') {
+            return path.join(allowedDir, 'database.sqlite')
+        }
+        const bypassPath = userProvidedPath.trim()
+        return path.isAbsolute(bypassPath) ? bypassPath : path.resolve(path.join(allowedDir, bypassPath))
+    }
+
+    if (!userProvidedPath || userProvidedPath.trim() === '') {
+        throw new Error('Invalid SQLite path: database path is required')
+    }
+
+    const basePath = userProvidedPath.trim()
+
+    if (basePath.includes('..')) throw new Error('Invalid SQLite path: path traversal attempt detected')
+    if (basePath.toLowerCase().includes('%2e') || basePath.toLowerCase().includes('%2f') || basePath.toLowerCase().includes('%5c'))
+        throw new Error('Invalid SQLite path: encoded path traversal attempt detected')
+    // eslint-disable-next-line no-control-regex
+    if (/\0/.test(basePath) || /[\x00-\x1f]/.test(basePath))
+        throw new Error('Invalid SQLite path: null bytes or control characters detected')
+    if (/^[a-zA-Z]:\\/.test(basePath)) throw new Error('Invalid SQLite path: Windows absolute paths are not allowed')
+    if (/^\\\\[^\\]/.test(basePath)) throw new Error('Invalid SQLite path: UNC paths are not allowed')
+    if (/^\\\\\?\\/.test(basePath)) throw new Error('Invalid SQLite path: extended-length paths are not allowed')
+
+    const resolvedPath = path.isAbsolute(basePath) ? path.resolve(basePath) : path.resolve(path.join(allowedDir, basePath))
+
+    if (resolvedPath.includes('..')) throw new Error('Invalid SQLite path: path traversal detected in resolved path')
+
+    const normalizedResolved = path.normalize(resolvedPath)
+    const normalizedAllowed = path.normalize(allowedDir)
+    if (normalizedResolved !== normalizedAllowed && !normalizedResolved.startsWith(normalizedAllowed + path.sep)) {
+        throw new Error(`Invalid SQLite path: path must be within ${allowedDir}. Attempted path: ${resolvedPath}`)
+    }
+
+    return resolvedPath
+}
+
+/**
  * Sanitize a file name to prevent path traversal attacks.
  * Strips common storage prefixes, extracts the basename, runs it through
  * the `sanitize-filename` package, and rejects anything that still looks unsafe.
