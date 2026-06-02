@@ -17,7 +17,5 @@ describe("Python code validator blocks all known RCE bypass patterns", () => {
   test.each(payloads)("%s", (_label, code, shouldBeValid) => {
     const result = validatePythonCodeForDataFrame(code);
     expect(result.valid).toBe(shouldBeValid);
-      expect(result.isValid).toBe(false);
-    }
   });
 });
