@@ -4,7 +4,8 @@ import { SaverOptions } from '../interface'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeParams } from '../../../../src/Interface'
 import { SqliteSaver } from './sqliteSaver'
 import { DataSource } from 'typeorm'
-import { sanitizeDataSourceOptions } from '../../../../src/sanitizeDataSourceOptions'
+import { mergeDataSourceOptions, sanitizeDataSourceOptions } from '../../../../src/sanitizeDataSourceOptions'
+import { validateSQLitePath } from '../../../../src/validator'
 
 class SQLiteAgentMemory_Memory implements INode {
     label: string
@@ -68,13 +69,15 @@ class SQLiteAgentMemory_Memory implements INode {
 
         const threadId = options.sessionId || options.chatId
 
-        const database = path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite')
+        const database = validateSQLitePath(path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite'))
 
-        let datasourceOptions: ICommonObject = {
-            database,
-            ...additionalConfiguration,
-            type: 'sqlite'
-        }
+        const datasourceOptions: ICommonObject = mergeDataSourceOptions(
+            {
+                database,
+                type: 'sqlite'
+            },
+            additionalConfiguration
+        )
 
         const args: SaverOptions = {
             datasourceOptions,

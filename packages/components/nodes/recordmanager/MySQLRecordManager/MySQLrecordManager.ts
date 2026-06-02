@@ -1,6 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { sanitizeDataSourceOptions } from '../../../src/sanitizeDataSourceOptions'
+import { mergeDataSourceOptions, sanitizeDataSourceOptions } from '../../../src/sanitizeDataSourceOptions'
+import { sanitizeRecordManagerNamespace, sanitizeRecordManagerTableName } from '../../../src/recordManagerSecurity'
 import { ListKeyOptions, RecordManagerInterface, UpdateOptions } from '@langchain/community/indexes/base'
 import { DataSource } from 'typeorm'
 
@@ -121,10 +122,10 @@ class MySQLRecordManager_RecordManager implements INode {
         const user = getCredentialParam('user', credentialData, nodeData)
         const password = getCredentialParam('password', credentialData, nodeData)
         const _tableName = nodeData.inputs?.tableName as string
-        const tableName = _tableName ? _tableName : 'upsertion_records'
+        const tableName = sanitizeRecordManagerTableName(_tableName ? _tableName : 'upsertion_records')
         const additionalConfig = nodeData.inputs?.additionalConfig as string
         const _namespace = nodeData.inputs?.namespace as string
-        const namespace = _namespace ? _namespace : options.chatflowid
+        const namespace = _namespace ? sanitizeRecordManagerNamespace(_namespace) : options.chatflowid
         const cleanup = nodeData.inputs?.cleanup as string
         const _sourceIdKey = nodeData.inputs?.sourceIdKey as string
         const sourceIdKey = _sourceIdKey ? _sourceIdKey : 'source'
@@ -139,15 +140,17 @@ class MySQLRecordManager_RecordManager implements INode {
             additionalConfiguration = sanitizeDataSourceOptions(additionalConfiguration)
         }
 
-        const mysqlOptions = {
-            ...additionalConfiguration,
-            type: 'mysql',
-            host: nodeData.inputs?.host as string,
-            port: nodeData.inputs?.port as number,
-            username: user,
-            password: password,
-            database: nodeData.inputs?.database as string
-        }
+        const mysqlOptions = mergeDataSourceOptions(
+            {
+                type: 'mysql',
+                host: nodeData.inputs?.host as string,
+                port: nodeData.inputs?.port as number,
+                username: user,
+                password: password,
+                database: nodeData.inputs?.database as string
+            },
+            additionalConfiguration
+        )
 
         const args = {
             mysqlOptions,
@@ -182,15 +185,7 @@ class MySQLRecordManager implements RecordManagerInterface {
     }
 
     sanitizeTableName(tableName: string): string {
-        // Trim and normalize case, turn whitespace into underscores
-        tableName = tableName.trim().toLowerCase().replace(/\s+/g, '_')
-
-        // Validate using a regex (alphanumeric and underscores only)
-        if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
-            throw new Error('Invalid table name')
-        }
-
-        return tableName
+        return sanitizeRecordManagerTableName(tableName)
     }
 
     private async getDataSource(): Promise<DataSource> {

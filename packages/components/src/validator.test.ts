@@ -584,6 +584,30 @@ describe('validateSQLitePath', () => {
         })
     })
 
+    describe('DATABASE_PATH allowlist', () => {
+        const originalDatabasePath = process.env.DATABASE_PATH
+
+        afterEach(() => {
+            if (originalDatabasePath === undefined) {
+                delete process.env.DATABASE_PATH
+            } else {
+                process.env.DATABASE_PATH = originalDatabasePath
+            }
+        })
+
+        it('should accept database file under DATABASE_PATH when set', () => {
+            const customBase = path.join(userHome, 'custom-flowise-data')
+            process.env.DATABASE_PATH = customBase
+            const dbPath = path.join(customBase, 'database.sqlite')
+            expect(validateSQLitePath(dbPath)).toBe(path.resolve(dbPath))
+        })
+
+        it('should still reject paths outside DATABASE_PATH and .flowise', () => {
+            process.env.DATABASE_PATH = path.join(userHome, 'custom-flowise-data')
+            expect(() => validateSQLitePath('/etc/chromium/exploit.conf')).toThrow(/Invalid SQLite path:/)
+        })
+    })
+
     describe('PATH_TRAVERSAL_SAFETY=false bypasses all checks', () => {
         beforeEach(() => {
             process.env.PATH_TRAVERSAL_SAFETY = 'false'

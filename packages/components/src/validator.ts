@@ -285,26 +285,43 @@ export const validateVectorStorePath = (userProvidedPath: string | undefined): s
     return resolvedPath
 }
 
+const getAllowedSQLiteBaseDirs = (): string[] => {
+    const dirs = [path.join(getUserHome(), '.flowise')]
+    if (process.env.DATABASE_PATH) {
+        dirs.push(path.resolve(process.env.DATABASE_PATH))
+    }
+    return dirs
+}
+
+const isPathWithinAllowedSQLiteDirs = (resolvedPath: string, allowedDirs: string[]): boolean => {
+    const normalizedResolved = path.normalize(resolvedPath)
+    return allowedDirs.some((allowedDir) => {
+        const normalizedAllowed = path.normalize(allowedDir)
+        return normalizedResolved === normalizedAllowed || normalizedResolved.startsWith(normalizedAllowed + path.sep)
+    })
+}
+
 /**
  * Validates and sanitizes a SQLite database file path to prevent path traversal
  * and arbitrary file write attacks.
  *
  * Relative paths are resolved within ~/.flowise/. Absolute paths must fall inside
- * ~/.flowise/. Set PATH_TRAVERSAL_SAFETY=false to bypass all checks (not recommended).
+ * ~/.flowise/ or DATABASE_PATH when set. Set PATH_TRAVERSAL_SAFETY=false to bypass all checks (not recommended).
  *
  * @param {string | undefined} userProvidedPath - File path supplied by the user in the node config
- * @returns {string} A validated, absolute path within ~/.flowise/
- * @throws {Error} If the path is missing, contains traversal patterns, or is outside ~/.flowise/
+ * @returns {string} A validated, absolute path within an allowed base directory
+ * @throws {Error} If the path is missing, contains traversal patterns, or is outside allowed directories
  */
 export const validateSQLitePath = (userProvidedPath: string | undefined): string => {
-    const allowedDir = path.join(getUserHome(), '.flowise')
+    const allowedDirs = getAllowedSQLiteBaseDirs()
+    const defaultDir = allowedDirs[0]
 
     if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
         if (!userProvidedPath || userProvidedPath.trim() === '') {
-            return path.join(allowedDir, 'database.sqlite')
+            return path.join(defaultDir, 'database.sqlite')
         }
         const bypassPath = userProvidedPath.trim()
-        return path.isAbsolute(bypassPath) ? bypassPath : path.resolve(path.join(allowedDir, bypassPath))
+        return path.isAbsolute(bypassPath) ? bypassPath : path.resolve(path.join(defaultDir, bypassPath))
     }
 
     if (!userProvidedPath || userProvidedPath.trim() === '') {
@@ -323,14 +340,14 @@ export const validateSQLitePath = (userProvidedPath: string | undefined): string
     if (/^\\\\[^\\]/.test(basePath)) throw new Error('Invalid SQLite path: UNC paths are not allowed')
     if (/^\\\\\?\\/.test(basePath)) throw new Error('Invalid SQLite path: extended-length paths are not allowed')
 
-    const resolvedPath = path.isAbsolute(basePath) ? path.resolve(basePath) : path.resolve(path.join(allowedDir, basePath))
+    const resolvedPath = path.isAbsolute(basePath) ? path.resolve(basePath) : path.resolve(path.join(defaultDir, basePath))
 
     if (resolvedPath.includes('..')) throw new Error('Invalid SQLite path: path traversal detected in resolved path')
 
-    const normalizedResolved = path.normalize(resolvedPath)
-    const normalizedAllowed = path.normalize(allowedDir)
-    if (normalizedResolved !== normalizedAllowed && !normalizedResolved.startsWith(normalizedAllowed + path.sep)) {
-        throw new Error(`Invalid SQLite path: path must be within ${allowedDir}. Attempted path: ${resolvedPath}`)
+    if (!isPathWithinAllowedSQLiteDirs(resolvedPath, allowedDirs)) {
+        throw new Error(
+            `Invalid SQLite path: path must be within allowed directories (${allowedDirs.join(', ')}). Attempted path: ${resolvedPath}`
+        )
     }
 
     return resolvedPath
