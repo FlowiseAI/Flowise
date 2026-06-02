@@ -2194,6 +2194,30 @@
             ]
         },
         {
+            "name": "chatMiniMax",
+            "models": [
+                {
+                    "label": "MiniMax-M3",
+                    "name": "MiniMax-M3",
+                    "description": "MiniMax M3 - 512K context, 128K max output, image input",
+                    "input_cost": 6e-7,
+                    "output_cost": 2.4e-6
+                },
+                {
+                    "label": "MiniMax-M2.7",
+                    "name": "MiniMax-M2.7",
+                    "input_cost": 3e-7,
+                    "output_cost": 1.2e-6
+                },
+                {
+                    "label": "MiniMax-M2.7-highspeed",
+                    "name": "MiniMax-M2.7-highspeed",
+                    "input_cost": 6e-7,
+                    "output_cost": 2.4e-6
+                }
+            ]
+        },
+        {
             "name": "chatMistralAI",
             "models": [
                 {
