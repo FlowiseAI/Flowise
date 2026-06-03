@@ -8,7 +8,7 @@ import { Workspace } from '../database/entities/workspace.entity'
 import { LoggedInUser } from '../Interface.Enterprise'
 
 const mockReadOrganizationUserByOrganizationIdUserId = jest.fn() as jest.MockedFunction<
-    (organizationId: string, userId: string, queryRunner: QueryRunner) => Promise<{ organizationUser: unknown }>
+    (_organizationId: string, _userId: string, _queryRunner: QueryRunner) => Promise<{ organizationUser: unknown }>
 >
 
 jest.mock('../services/organization-user.service', () => ({
@@ -49,7 +49,7 @@ function makeRequest(user: Partial<LoggedInUser> | undefined): Request {
     return { user } as unknown as Request
 }
 
-function makeQueryRunner(findOneByImpl?: jest.MockedFunction<(entity: unknown, where: { id: string }) => Promise<unknown>>): QueryRunner {
+function makeQueryRunner(findOneByImpl?: jest.MockedFunction<(_entity: unknown, _where: { id: string }) => Promise<unknown>>): QueryRunner {
     const findOneBy = findOneByImpl ?? jest.fn()
     return {
         manager: { findOneBy }
@@ -184,7 +184,7 @@ describe('tenantRequestGuards', () => {
 
         it('org admin: resolves when workspace belongs to active organization', async () => {
             const findOneBy = jest
-                .fn<(entity: unknown, where: { id: string }) => Promise<unknown>>()
+                .fn<(_entity: unknown, _where: { id: string }) => Promise<unknown>>()
                 .mockResolvedValue({ id: 'ws-remote', organizationId: 'org-1' })
             const user = makeLoggedInUser({
                 activeWorkspaceId: 'ws-active',
@@ -197,7 +197,7 @@ describe('tenantRequestGuards', () => {
         })
 
         it('org admin: throws when workspace is not found', async () => {
-            const findOneBy = jest.fn<(entity: unknown, where: { id: string }) => Promise<unknown>>().mockResolvedValue(null)
+            const findOneBy = jest.fn<(_entity: unknown, _where: { id: string }) => Promise<unknown>>().mockResolvedValue(null)
             const user = makeLoggedInUser({ isOrganizationAdmin: true, activeOrganizationId: 'org-1' })
             await expect(assertWorkspaceIdAccessibleToUser(user, 'missing-ws', makeQueryRunner(findOneBy))).rejects.toMatchObject({
                 statusCode: StatusCodes.FORBIDDEN,
@@ -207,7 +207,7 @@ describe('tenantRequestGuards', () => {
 
         it('org admin: throws when workspace is in another organization', async () => {
             const findOneBy = jest
-                .fn<(entity: unknown, where: { id: string }) => Promise<unknown>>()
+                .fn<(_entity: unknown, _where: { id: string }) => Promise<unknown>>()
                 .mockResolvedValue({ id: 'ws-remote', organizationId: 'org-other' })
             const user = makeLoggedInUser({ isOrganizationAdmin: true, activeOrganizationId: 'org-1' })
             await expect(assertWorkspaceIdAccessibleToUser(user, 'ws-remote', makeQueryRunner(findOneBy))).rejects.toMatchObject({
