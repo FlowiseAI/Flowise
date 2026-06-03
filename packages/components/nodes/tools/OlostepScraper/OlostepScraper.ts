@@ -106,6 +106,9 @@ class OlostepScraper_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
+        if (!apiKey) {
+            throw new Error('API Key is required for Olostep Scraper')
+        }
 
         const description = nodeData.inputs?.description as string
 
