@@ -4,7 +4,6 @@ class OlostepApi implements INodeCredential {
     label: string
     name: string
     version: number
-    description: string
     inputs: INodeParams[]
 
     constructor() {
