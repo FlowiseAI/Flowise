@@ -286,6 +286,25 @@ class ChatOpenAI_ChatModels implements INode {
             }
         }
 
+        if (parsedBaseOptions?.stop) {
+            const stop = parsedBaseOptions.stop
+
+            if (!obj.stop) {
+                obj.stop = Array.isArray(stop)
+                    ? stop.map((item) => String(item).trim()).filter(Boolean)
+                    : String(stop)
+                          .split(',')
+                          .map((item) => item.trim())
+                          .filter(Boolean)
+            }
+
+            delete parsedBaseOptions.stop
+
+            if (Object.keys(parsedBaseOptions).length === 0) {
+                parsedBaseOptions = undefined
+            }
+        }
+
         if (basePath || parsedBaseOptions) {
             obj.configuration = {
                 baseURL: basePath,
