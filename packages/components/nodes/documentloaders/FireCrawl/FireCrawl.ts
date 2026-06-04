@@ -37,9 +37,6 @@ interface LoaderParams {
     ignoreQueryParameters?: boolean
     allowExternalLinks?: boolean
     delay?: number
-    // extract
-    schema?: Record<string, any>
-    prompt?: string
     // search
     tbs?: string
     location?: string
@@ -61,7 +58,7 @@ interface FirecrawlLoaderParameters {
     query?: string
     apiKey?: string
     apiUrl?: string
-    mode?: 'crawl' | 'scrape' | 'extract' | 'search'
+    mode?: 'crawl' | 'scrape' | 'search'
     params?: LoaderParams
 }
 
@@ -70,7 +67,7 @@ export class FireCrawlLoader extends BaseDocumentLoader {
     private apiUrl: string
     private url?: string
     private query?: string
-    private mode: 'crawl' | 'scrape' | 'extract' | 'search'
+    private mode: 'crawl' | 'scrape' | 'search'
     private params?: LoaderParams
 
     constructor(loaderParams: FirecrawlLoaderParameters) {
@@ -189,42 +186,8 @@ export class FireCrawlLoader extends BaseDocumentLoader {
                 throw new Error('Firecrawl: Crawl job failed')
             }
             firecrawlDocs = response.data || []
-        } else if (this.mode === 'extract') {
-            if (!this.url) {
-                throw new Error('Firecrawl: URL is required for extract mode')
-            }
-
-            const response = await app.extract({
-                urls: [this.url],
-                prompt: this.params?.prompt,
-                schema: this.params?.schema,
-                integration: FIRECRAWL_INTEGRATION
-            })
-
-            if (response.success === false || response.status === 'failed') {
-                throw new Error('Firecrawl: extract failed. Error: ' + (response.error ?? 'unknown error'))
-            }
-
-            if (response.data) {
-                const content = JSON.stringify(response.data, null, 2)
-                const metadata: Record<string, any> = {
-                    source: this.url,
-                    type: 'extracted_data',
-                    data: response.data
-                }
-                if (response.status) metadata.status = response.status
-                if (response.expiresAt) metadata.expiresAt = response.expiresAt
-
-                return [
-                    new Document({
-                        pageContent: content,
-                        metadata
-                    })
-                ]
-            }
-            return []
         } else {
-            throw new Error(`Unrecognized mode '${this.mode}'. Expected one of 'crawl', 'scrape', 'extract', 'search'.`)
+            throw new Error(`Unrecognized mode '${this.mode}'. Expected one of 'crawl', 'scrape', 'search'.`)
         }
 
         // Convert Firecrawl documents to LangChain documents
@@ -302,11 +265,6 @@ class FireCrawl_DocumentLoaders implements INode {
                         description: 'Scrape a URL and get its content'
                     },
                     {
-                        label: 'Extract',
-                        name: 'extract',
-                        description: 'Extract data from a URL'
-                    },
-                    {
                         label: 'Search',
                         name: 'search',
                         description: 'Search the web using FireCrawl'
@@ -318,11 +276,11 @@ class FireCrawl_DocumentLoaders implements INode {
                 label: 'URLs',
                 name: 'url',
                 type: 'string',
-                description: 'URL to be crawled/scraped/extracted',
+                description: 'URL to be crawled/scraped',
                 placeholder: 'https://docs.flowiseai.com',
                 optional: true,
                 show: {
-                    crawlerType: ['crawl', 'scrape', 'extract']
+                    crawlerType: ['crawl', 'scrape']
                 }
             },
             {
@@ -397,28 +355,6 @@ class FireCrawl_DocumentLoaders implements INode {
                 additionalParams: true,
                 show: {
                     crawlerType: ['crawl']
-                }
-            },
-            {
-                label: 'Schema',
-                name: 'extractSchema',
-                type: 'json',
-                description: 'JSON schema for data extraction',
-                optional: true,
-                additionalParams: true,
-                show: {
-                    crawlerType: ['extract']
-                }
-            },
-            {
-                label: 'Prompt',
-                name: 'extractPrompt',
-                type: 'string',
-                description: 'Prompt for data extraction',
-                optional: true,
-                additionalParams: true,
-                show: {
-                    crawlerType: ['extract']
                 }
             },
             {
@@ -519,8 +455,6 @@ class FireCrawl_DocumentLoaders implements INode {
         const includeTags = nodeData.inputs?.includeTags ? (nodeData.inputs.includeTags.split(',') as string[]) : undefined
         const excludeTags = nodeData.inputs?.excludeTags ? (nodeData.inputs.excludeTags.split(',') as string[]) : undefined
 
-        const extractSchema = nodeData.inputs?.extractSchema
-        const extractPrompt = nodeData.inputs?.extractPrompt as string
 
         const searchQuery = nodeData.inputs?.searchQuery as string
         const searchLimit = nodeData.inputs?.searchLimit as string
@@ -530,7 +464,7 @@ class FireCrawl_DocumentLoaders implements INode {
         const input: FirecrawlLoaderParameters = {
             url,
             query: searchQuery,
-            mode: crawlerType as 'crawl' | 'scrape' | 'extract' | 'search',
+            mode: crawlerType as 'crawl' | 'scrape' | 'search',
             apiKey: firecrawlApiToken,
             apiUrl: firecrawlApiUrl,
             params: {
@@ -541,8 +475,6 @@ class FireCrawl_DocumentLoaders implements INode {
                     includeTags,
                     excludeTags
                 },
-                schema: extractSchema || undefined,
-                prompt: extractPrompt || undefined
             }
         }
 
