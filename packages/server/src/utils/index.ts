@@ -590,8 +590,8 @@ export const buildFlow = async ({
             // cloneDeep copies the prototype but bypasses the constructor, breaking ES private-member
             // brand checks (e.g. openai v6 OpenAI.buildURL). Exclude it from the clone, re-attach the original.
             const { instance, ...rest } = reactFlowNode.data
-            let flowNodeData = cloneDeep(rest)
-            if (instance != null) flowNodeData.instance = instance
+            let flowNodeData = cloneDeep(rest) as INodeData
+            if (instance !== undefined) flowNodeData.instance = instance
 
             // Only override the config if its status is true
             if (overrideConfig && apiOverrideStatus) {
@@ -1044,8 +1044,8 @@ export const resolveVariables = async (
     // clone is missing from openai v6's private-member brand WeakSet and throws in OpenAI.buildURL:
     // "Cannot read private member from an object whose class did not declare it". Exclude + re-attach.
     const { instance, ...rest } = reactFlowNodeData
-    let flowNodeData = cloneDeep(rest)
-    if (instance != null) flowNodeData.instance = instance
+    let flowNodeData = cloneDeep(rest) as INodeData
+    if (instance !== undefined) flowNodeData.instance = instance
 
     const getParamValues = async (paramsObj: ICommonObject) => {
         for (const key in paramsObj) {
