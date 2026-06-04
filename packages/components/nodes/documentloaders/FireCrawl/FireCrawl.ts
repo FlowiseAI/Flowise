@@ -201,6 +201,10 @@ export class FireCrawlLoader extends BaseDocumentLoader {
                 integration: FIRECRAWL_INTEGRATION
             })
 
+            if (response.success === false || response.status === 'failed') {
+                throw new Error('Firecrawl: extract failed. Error: ' + (response.error ?? 'unknown error'))
+            }
+
             if (response.data) {
                 const content = JSON.stringify(response.data, null, 2)
                 const metadata: Record<string, any> = {
