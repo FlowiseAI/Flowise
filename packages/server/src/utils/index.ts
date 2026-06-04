@@ -1039,6 +1039,10 @@ export const resolveVariables = async (
     availableVariables: IVariable[] = [],
     variableOverrides: ICommonObject[] = []
 ): Promise<INodeData> => {
+    if (!reactFlowNodeData) {
+        return reactFlowNodeData
+    }
+
     // Do not deep-clone a node's already-built live `instance` (e.g. an OpenAI SDK client, a gRPC
     // channel, or a FAISS store). cloneDeep copies the prototype but bypasses the constructor, so the
     // clone is missing from openai v6's private-member brand WeakSet and throws in OpenAI.buildURL:
