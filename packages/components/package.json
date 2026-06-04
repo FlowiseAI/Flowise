@@ -85,7 +85,7 @@
         "@langchain/weaviate": "1.0.1",
         "@langchain/xai": "1.3.1",
         "@mem0/community": "^0.0.1",
-        "@mendable/firecrawl-js": "^4.25.2",
+        "firecrawl": "^4.25.2",
         "@mistralai/mistralai": "1.14.0",
         "@modelcontextprotocol/sdk": "1.29.0",
         "@modelcontextprotocol/server-postgres": "^0.6.2",
