@@ -7,7 +7,7 @@ import Firecrawl, {
     type CrawlOptions,
     type SearchRequest,
     type SearchResultWeb
-} from '@mendable/firecrawl-js'
+} from 'firecrawl'
 import { INode, INodeData, INodeParams, ICommonObject, INodeOutputsValue } from '../../../src/Interface'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 
