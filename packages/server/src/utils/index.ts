@@ -27,7 +27,7 @@ import {
     IVariableOverride,
     IncomingInput
 } from '../Interface'
-import { cloneDeep, get, isEqual } from 'lodash'
+import { cloneDeep, get, isEqual, omit } from 'lodash'
 import {
     convertChatHistoryToText,
     getInputVariables,
@@ -1034,7 +1034,12 @@ export const resolveVariables = async (
     availableVariables: IVariable[] = [],
     variableOverrides: ICommonObject[] = []
 ): Promise<INodeData> => {
-    let flowNodeData = cloneDeep(reactFlowNodeData)
+    // Do not deep-clone a node's already-built live `instance` (e.g. an OpenAI SDK client, a gRPC
+    // channel, or a FAISS store). cloneDeep copies the prototype but bypasses the constructor, so the
+    // clone is missing from openai v6's private-member brand WeakSet and throws in OpenAI.buildURL:
+    // "Cannot read private member from an object whose class did not declare it".
+    let flowNodeData = cloneDeep(omit(reactFlowNodeData, ['instance']))
+    if (reactFlowNodeData.instance) flowNodeData.instance = reactFlowNodeData.instance
 
     const getParamValues = async (paramsObj: ICommonObject) => {
         for (const key in paramsObj) {
