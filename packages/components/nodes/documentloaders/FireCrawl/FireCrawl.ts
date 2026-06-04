@@ -179,6 +179,7 @@ export class FireCrawlLoader extends BaseDocumentLoader {
             const limit = this.params?.scrapeOptions?.limit ?? this.params?.limit
             if (limit !== undefined && limit !== null) crawlOptions.limit = limit
             if (this.params?.maxDiscoveryDepth !== undefined) crawlOptions.maxDiscoveryDepth = this.params.maxDiscoveryDepth
+            else if (this.params?.maxDepth !== undefined) crawlOptions.maxDiscoveryDepth = this.params.maxDepth // back-compat: v1 crawlerOptions used maxDepth
             if (this.params?.ignoreQueryParameters !== undefined) crawlOptions.ignoreQueryParameters = this.params.ignoreQueryParameters
             if (this.params?.allowExternalLinks !== undefined) crawlOptions.allowExternalLinks = this.params.allowExternalLinks
             if (this.params?.delay !== undefined) crawlOptions.delay = this.params.delay
