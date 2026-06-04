@@ -21,6 +21,19 @@ export interface PythonCodeValidationResult {
 }
 
 /**
+ * Normalize code the same way CPython does before tokenizing identifiers.
+ *
+ * Python 3 applies NFKC normalization to every identifier at parse time
+ * (PEP 3131), so source such as `__cl\u{1D41A}ss__` is executed as `__class__`.
+ * The ASCII-only regex denylist below never sees that normalized form, which
+ * lets Unicode homoglyphs slip past every pattern. Normalizing here makes the
+ * validator observe exactly what the interpreter will run, closing the bypass.
+ */
+function normalizeForValidation(code: string): string {
+    return code.normalize('NFKC')
+}
+
+/**
  * Forbidden patterns that indicate unsafe Python code.
  * Uses word boundaries and context to minimize false positives (e.g. df.astype is allowed).
  */
@@ -68,6 +81,10 @@ const FORBIDDEN_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
     { pattern: /\bdir\s*\(/g, reason: 'dir()' },
     { pattern: /\b__dict__\b/g, reason: '__dict__ (attribute reflection)' },
     { pattern: /\b__module__\b/g, reason: '__module__ (module reflection)' },
+    // chr()/ord() are used to assemble forbidden names (e.g. "__import__") at runtime,
+    // dodging the literal patterns above. Disallow them outright.
+    { pattern: /\bchr\s*\(/g, reason: 'chr() (runtime string assembly)' },
+    { pattern: /\bord\s*\(/g, reason: 'ord() (runtime string assembly)' },
     // Unsafe deserialization — read_pickle() executes arbitrary Python objects
     { pattern: /\bread_pickle\b/g, reason: 'read_pickle (unsafe deserialization / RCE)' },
     { pattern: /\bpickle\b/g, reason: 'pickle module (unsafe deserialization)' },
@@ -313,9 +330,11 @@ function validateReadCSVArguments(args: string): PythonCodeValidationResult {
  * Call this before passing LLM-generated code to pyodide.runPythonAsync().
  */
 export function validatePythonCodeForDataFrame(code: string): PythonCodeValidationResult {
+    const normalizedCode = normalizeForValidation(code)
+
     for (const { pattern, reason } of FORBIDDEN_PATTERNS) {
         pattern.lastIndex = 0
-        if (pattern.test(code)) {
+        if (pattern.test(normalizedCode)) {
             return { valid: false, reason: `Forbidden construct: ${reason}` }
         }
     }
@@ -333,7 +352,7 @@ export function validatePythonCodeForDataFrame(code: string): PythonCodeValidati
  *                  read_csv(csv_data, sep=';', header=0)
  */
 export function validateCustomReadCSVFunction(code: string): PythonCodeValidationResult {
-    const trimmed = code.trim()
+    const trimmed = normalizeForValidation(code).trim()
 
     if (trimmed.length > MAX_CUSTOM_READ_CSV_LENGTH) {
         return { valid: false, reason: `Custom read_csv code must be ${MAX_CUSTOM_READ_CSV_LENGTH} characters or fewer` }
