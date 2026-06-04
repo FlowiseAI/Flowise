@@ -130,7 +130,14 @@ describe('validatePythonCodeForDataFrame', () => {
         it('should block chr() used to assemble forbidden names at runtime', () => {
             const result = validatePythonCodeForDataFrame("bi[chr(95)*2 + 'imp' + 'ort' + chr(95)*2]")
             expect(result.valid).toBe(false)
-            expect(result.reason).toContain('chr()')
+            expect(result.reason).toContain('chr() (runtime string assembly)')
+        })
+
+        it('should block backslash line continuation bypasses', () => {
+            // Python explicit line joining: eval\<newline>(...) is parsed as eval(...)
+            const result = validatePythonCodeForDataFrame('eval\\\n(\'__import__("os").system("id")\')')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('eval()')
         })
 
         it('should block the full reported homoglyph + chr() RCE payload', () => {
@@ -341,6 +348,18 @@ describe('validatePythonCodeForDataFrame', () => {
             expect(result.valid).toBe(false)
             expect(result.reason).toContain('__closure__')
         })
+
+        it('should block __getattribute__ (attribute reflection bypass)', () => {
+            const result = validatePythonCodeForDataFrame('df.__getattribute__("columns")')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('__getattribute__ (attribute reflection bypass)')
+        })
+
+        it('should block __getattr__ (attribute reflection bypass)', () => {
+            const result = validatePythonCodeForDataFrame('obj.__getattr__("columns")')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('__getattr__ (attribute reflection bypass)')
+        })
     })
 
     describe('newly added patterns are blocked', () => {
@@ -389,6 +408,18 @@ describe('validatePythonCodeForDataFrame', () => {
         it('should block vars() used in a reflection chain', () => {
             const result = validatePythonCodeForDataFrame("vars(__builtins__)['__import__']('os').system('x')")
             expect(result.valid).toBe(false)
+        })
+
+        it('should block ord() used in runtime string assembly', () => {
+            const result = validatePythonCodeForDataFrame("ord('A')")
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('ord() (runtime string assembly)')
+        })
+
+        it('should block ord() used in a character code comparison', () => {
+            const result = validatePythonCodeForDataFrame('if ord(c) == 95: pass')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('ord() (runtime string assembly)')
         })
     })
 

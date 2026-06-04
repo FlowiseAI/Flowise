@@ -28,9 +28,14 @@ export interface PythonCodeValidationResult {
  * The ASCII-only regex denylist below never sees that normalized form, which
  * lets Unicode homoglyphs slip past every pattern. Normalizing here makes the
  * validator observe exactly what the interpreter will run, closing the bypass.
+ *
+ * CPython's lexer also performs explicit line joining: a backslash immediately
+ * followed by a newline is silently removed before tokenization. This means
+ * `eval\<newline>(...)` is parsed identically to `eval(...)`. Strip those
+ * continuations here so the denylist sees the joined form.
  */
 function normalizeForValidation(code: string): string {
-    return code.normalize('NFKC')
+    return code.normalize('NFKC').replace(/\\\n/g, '')
 }
 
 /**
