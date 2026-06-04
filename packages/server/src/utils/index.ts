@@ -27,7 +27,7 @@ import {
     IVariableOverride,
     IncomingInput
 } from '../Interface'
-import { cloneDeep, get, isEqual, omit } from 'lodash'
+import { cloneDeep, get, isEqual } from 'lodash'
 import {
     convertChatHistoryToText,
     getInputVariables,
@@ -588,9 +588,10 @@ export const buildFlow = async ({
 
             // Don't deep-clone a node's already-built live `instance` (re-evaluated in loops):
             // cloneDeep copies the prototype but bypasses the constructor, breaking ES private-member
-            // brand checks (e.g. openai v6 OpenAI.buildURL). Omit it from the clone, re-attach the original.
-            let flowNodeData = cloneDeep(omit(reactFlowNode.data, ['instance']))
-            if (reactFlowNode.data.instance != null) flowNodeData.instance = reactFlowNode.data.instance
+            // brand checks (e.g. openai v6 OpenAI.buildURL). Exclude it from the clone, re-attach the original.
+            const { instance, ...rest } = reactFlowNode.data
+            let flowNodeData = cloneDeep(rest)
+            if (instance != null) flowNodeData.instance = instance
 
             // Only override the config if its status is true
             if (overrideConfig && apiOverrideStatus) {
@@ -1041,9 +1042,10 @@ export const resolveVariables = async (
     // Do not deep-clone a node's already-built live `instance` (e.g. an OpenAI SDK client, a gRPC
     // channel, or a FAISS store). cloneDeep copies the prototype but bypasses the constructor, so the
     // clone is missing from openai v6's private-member brand WeakSet and throws in OpenAI.buildURL:
-    // "Cannot read private member from an object whose class did not declare it".
-    let flowNodeData = cloneDeep(omit(reactFlowNodeData, ['instance']))
-    if (reactFlowNodeData.instance != null) flowNodeData.instance = reactFlowNodeData.instance
+    // "Cannot read private member from an object whose class did not declare it". Exclude + re-attach.
+    const { instance, ...rest } = reactFlowNodeData
+    let flowNodeData = cloneDeep(rest)
+    if (instance != null) flowNodeData.instance = instance
 
     const getParamValues = async (paramsObj: ICommonObject) => {
         for (const key in paramsObj) {
