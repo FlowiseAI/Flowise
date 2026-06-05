@@ -44,7 +44,8 @@ class ChatXAI_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'grok-3'
+                default: 'grok-3-mini',
+                freeSolo: true
             },
             {
                 label: 'Temperature',
