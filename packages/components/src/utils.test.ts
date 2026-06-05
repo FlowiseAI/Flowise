@@ -313,4 +313,10 @@ describe('mapExtToInputField', () => {
     it('falls back to txtFile for unknown extensions', () => {
         expect(mapExtToInputField('.unknown')).toBe('txtFile')
     })
+
+    it('falls back to txtFile for empty or nullish extensions', () => {
+        expect(mapExtToInputField('')).toBe('txtFile')
+        expect(mapExtToInputField(undefined)).toBe('txtFile')
+        expect(mapExtToInputField(null as unknown as string)).toBe('txtFile')
+    })
 })
