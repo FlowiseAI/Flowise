@@ -1,4 +1,10 @@
-import { removeInvalidImageMarkdown, convertRequireToImport, COMMONJS_REQUIRE_REGEX, IMPORT_EXTRACTION_REGEX } from './utils'
+import {
+    removeInvalidImageMarkdown,
+    convertRequireToImport,
+    COMMONJS_REQUIRE_REGEX,
+    IMPORT_EXTRACTION_REGEX,
+    loadLegacyPdfJs
+} from './utils'
 
 describe('removeInvalidImageMarkdown', () => {
     describe('strips non-http/https image markdown', () => {
@@ -227,5 +233,19 @@ describe('Import extraction regex (utils.ts line 1596 pattern)', () => {
 
     it('returns empty array when there are no imports', () => {
         expect(extractModules('console.log("hello")')).toEqual([])
+    })
+})
+
+describe('loadLegacyPdfJs', () => {
+    it('loads pdfjs-dist legacy pdf.mjs through a native file URL import', async () => {
+        const getDocument = jest.fn()
+        const importer = jest.fn().mockResolvedValue({ getDocument, version: '5.3.93' })
+        const resolver = jest.fn().mockReturnValue('/tmp/pdfjs-dist/legacy/build/pdf.mjs')
+
+        const loaded = await loadLegacyPdfJs(importer as any, resolver as any)
+
+        expect(resolver).toHaveBeenCalledWith('pdfjs-dist/legacy/build/pdf.mjs')
+        expect(importer).toHaveBeenCalledWith('file:///tmp/pdfjs-dist/legacy/build/pdf.mjs')
+        expect(loaded).toEqual({ getDocument, version: '5.3.93' })
     })
 })

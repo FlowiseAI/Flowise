@@ -11,7 +11,7 @@ import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
 import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
 import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from '../../../src/storageUtils'
-import { handleEscapeCharacters, mapMimeTypeToExt } from '../../../src/utils'
+import { handleEscapeCharacters, loadLegacyPdfJs, mapMimeTypeToExt } from '../../../src/utils'
 
 class File_DocumentLoaders implements INode {
     label: string
@@ -236,13 +236,13 @@ class File_DocumentLoaders implements INode {
                           splitPages: false,
                           pdfjs: () =>
                               // @ts-ignore
-                              legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                              legacyBuild ? loadLegacyPdfJs() : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
                       })
                     : // @ts-ignore
                       new PDFLoader(blob, {
                           pdfjs: () =>
                               // @ts-ignore
-                              legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                              legacyBuild ? loadLegacyPdfJs() : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
                       }),
             '': (blob) => new TextLoader(blob)
         })

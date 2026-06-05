@@ -14,6 +14,7 @@ import { JSDOM } from 'jsdom'
 import JSON5 from 'json5'
 import { cloneDeep, get, omit } from 'lodash'
 import * as path from 'path'
+import { pathToFileURL } from 'url'
 import TurndownService from 'turndown'
 import { DataSource, Equal } from 'typeorm'
 import { NodeVM } from 'vm2'
@@ -27,6 +28,26 @@ import { getFileFromStorage } from './storageUtils'
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
 export const FLOWISE_CHATID = 'flowise_chatId'
+
+type NativeModuleImporter = (specifier: string) => Promise<any>
+type ModuleResolver = (specifier: string) => string
+
+// Keep import() behind Function so TypeScript does not lower it to require(),
+// which cannot load pdfjs-dist's legacy ESM build from CommonJS output.
+const nativeImport: NativeModuleImporter = new Function('specifier', 'return import(specifier)') as NativeModuleImporter
+
+export const loadLegacyPdfJs = async (
+    importer: NativeModuleImporter = nativeImport,
+    resolver: ModuleResolver = (specifier) => require.resolve(specifier)
+): Promise<{ getDocument: unknown; version?: string }> => {
+    const modulePath = resolver('pdfjs-dist/legacy/build/pdf.mjs')
+    const pdfjs = await importer(pathToFileURL(modulePath).href)
+
+    return {
+        getDocument: pdfjs.getDocument,
+        version: pdfjs.version
+    }
+}
 
 let secretsManagerClient: SecretsManagerClient | null = null
 const USE_AWS_SECRETS_MANAGER = process.env.SECRETKEY_STORAGE_TYPE === 'aws'
