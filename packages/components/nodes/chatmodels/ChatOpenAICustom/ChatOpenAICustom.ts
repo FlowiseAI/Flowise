@@ -165,7 +165,7 @@ class ChatOpenAICustom_ChatModels implements INode {
                 const parsedModelKwargs = typeof modelKwargs === 'object' ? modelKwargs : JSON.parse(modelKwargs)
                 obj.modelKwargs = parsedModelKwargs
             } catch (exception) {
-                throw new Error("Invalid JSON in the ChatOpenAI's Model Kwargs: " + exception)
+                throw new Error("Invalid JSON in the ChatOpenAICustom's Model Kwargs: " + exception)
             }
         }
 
