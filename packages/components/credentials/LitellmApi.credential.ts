@@ -17,18 +17,11 @@ class LitellmApi implements INodeCredential {
                 type: 'password'
             },
             {
-                label: 'Team Name',
-                name: 'litellmTeamName',
+                label: 'Custom Headers',
+                name: 'litellmCustomHeaders',
                 type: 'string',
                 optional: true,
-                placeholder: 'e.g. Activation'
-            },
-            {
-                label: 'User Name',
-                name: 'litellmUserName',
-                type: 'string',
-                optional: true,
-                placeholder: 'e.g. user@company.com'
+                placeholder: '{"x-litellm-tags": "team:activation,env:prod"}'
             }
         ]
     }
