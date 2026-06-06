@@ -133,28 +133,51 @@ class ChatAGIone_ChatModels implements INode {
 
         const cache = nodeData.inputs?.cache as BaseCache
 
+        const parseOptionalFloat = (value: unknown): number | undefined => {
+            if (value === undefined || value === null || value === '') return undefined
+            const parsedValue = typeof value === 'number' ? value : parseFloat(value as string)
+            return Number.isNaN(parsedValue) ? undefined : parsedValue
+        }
+
+        const parseOptionalInteger = (value: unknown): number | undefined => {
+            if (value === undefined || value === null || value === '') return undefined
+            const parsedValue = typeof value === 'number' ? value : parseInt(value as string, 10)
+            return Number.isNaN(parsedValue) ? undefined : parsedValue
+        }
+
         const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: agioneApiKey,
             apiKey: agioneApiKey,
             streaming: streaming ?? true
         }
 
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
+        const parsedTemperature = parseOptionalFloat(temperature)
+        const parsedMaxTokens = parseOptionalInteger(maxTokens)
+        const parsedTopP = parseOptionalFloat(topP)
+        const parsedFrequencyPenalty = parseOptionalFloat(frequencyPenalty)
+        const parsedPresencePenalty = parseOptionalFloat(presencePenalty)
+
+        if (parsedTemperature !== undefined) obj.temperature = parsedTemperature
+        if (parsedMaxTokens !== undefined) obj.maxTokens = parsedMaxTokens
+        if (parsedTopP !== undefined) obj.topP = parsedTopP
+        if (parsedFrequencyPenalty !== undefined) obj.frequencyPenalty = parsedFrequencyPenalty
+        if (parsedPresencePenalty !== undefined) obj.presencePenalty = parsedPresencePenalty
         if (cache) obj.cache = cache
 
-        let parsedBaseOptions: any | undefined = undefined
+        let parsedBaseOptions: Record<string, unknown> | undefined = undefined
 
         if (baseOptions) {
             try {
-                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
-                if (parsedBaseOptions.baseURL) {
-                    console.warn("The 'baseURL' parameter is not allowed when using the ChatAGIone node.")
-                    parsedBaseOptions.baseURL = undefined
+                const parsedOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+                if (parsedOptions && typeof parsedOptions === 'object' && !Array.isArray(parsedOptions)) {
+                    parsedBaseOptions = parsedOptions as Record<string, unknown>
+                    if ('baseURL' in parsedBaseOptions) {
+                        console.warn("The 'baseURL' parameter is not allowed when using the ChatAGIone node.")
+                        parsedBaseOptions.baseURL = undefined
+                    }
+                } else if (parsedOptions !== null) {
+                    throw new Error('BaseOptions must be a JSON object')
                 }
             } catch (exception) {
                 throw new Error('Invalid JSON in the BaseOptions: ' + exception)
