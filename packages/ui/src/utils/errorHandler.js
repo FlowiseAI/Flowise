@@ -37,8 +37,17 @@ export const getErrorMessage = (error) => {
 export const getAxiosErrorMessage = (error) => {
     if (error?.response?.data) {
         const data = error.response.data
-        if (typeof data === 'object') {
-            return data.message || data.error || getErrorMessage(error)
+        if (typeof data === 'object' && data !== null) {
+            // Some APIs nest the message (e.g. { error: { message } }) and NestJS
+            // validation returns an array of messages — resolve both to a string
+            // so the UI never renders "[object Object]".
+            const raw =
+                data.message ||
+                (typeof data.error === 'object' && data.error !== null ? data.error.message || data.error.error : data.error)
+            if (!raw) return getErrorMessage(error)
+            if (Array.isArray(raw)) return raw.join(', ')
+            if (typeof raw === 'object') return JSON.stringify(raw)
+            return String(raw)
         }
         return String(data)
     }

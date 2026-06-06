@@ -37,6 +37,16 @@ describe('getAxiosErrorMessage', () => {
         expect(getAxiosErrorMessage(error)).toBe('Unauthorized')
     })
 
+    it('resolves a nested error object ({ error: { message } }) to its message', () => {
+        const error = { response: { data: { error: { message: 'Nested failure' } } } }
+        expect(getAxiosErrorMessage(error)).toBe('Nested failure')
+    })
+
+    it('joins an array of messages (NestJS validation) into a single string', () => {
+        const error = { response: { data: { message: ['name is required', 'email is invalid'] } } }
+        expect(getAxiosErrorMessage(error)).toBe('name is required, email is invalid')
+    })
+
     it('returns a plain string response body as-is', () => {
         const error = { response: { data: 'Internal Server Error' } }
         expect(getAxiosErrorMessage(error)).toBe('Internal Server Error')
