@@ -129,7 +129,10 @@ class ChatLitellm_ChatModels implements INode {
         let defaultHeaders: ICommonObject = {}
         if (customHeadersRaw) {
             try {
-                defaultHeaders = JSON.parse(customHeadersRaw)
+                const parsed = JSON.parse(customHeadersRaw)
+                if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                    defaultHeaders = parsed
+                }
             } catch {
                 // ignore malformed JSON
             }

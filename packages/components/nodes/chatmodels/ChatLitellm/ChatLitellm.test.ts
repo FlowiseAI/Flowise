@@ -130,6 +130,36 @@ describe('ChatLitellm', () => {
         )
     })
 
+    it('ignores non-object JSON values (array, string, number)', async () => {
+        for (const badValue of ['["a","b"]', '"just-a-string"', '42']) {
+            jest.clearAllMocks()
+            ;(getCredentialData as jest.Mock).mockResolvedValue({})
+            ;(getCredentialParam as jest.Mock).mockImplementation((key: string) => {
+                if (key === 'litellmApiKey') return 'sk-test-key'
+                if (key === 'litellmCustomHeaders') return badValue
+                return undefined
+            })
+
+            const node = new ChatLitellm()
+            await node.init(
+                {
+                    credential: 'cred-1',
+                    inputs: {
+                        basePath: 'https://litellm.example.com',
+                        modelName: 'gpt-4o',
+                        temperature: '0.9',
+                        streaming: true
+                    }
+                },
+                '',
+                {}
+            )
+
+            const callArgs = (ChatOpenAI as unknown as jest.Mock).mock.calls[0][1]
+            expect(callArgs.configuration).toEqual({ baseURL: 'https://litellm.example.com' })
+        }
+    })
+
     it('works without custom headers (backward compatible)', async () => {
         ;(getCredentialParam as jest.Mock).mockImplementation((key: string) => {
             if (key === 'litellmApiKey') return 'sk-test-key'
