@@ -10,8 +10,8 @@ const ALL_ACTIONS: { label: string; name: JungleGridAction }[] = [
     { label: 'Get Job Runtime', name: 'getJobRuntime' },
     { label: 'Cancel Job', name: 'cancelJob' },
     { label: 'Get Job Logs', name: 'getJobLogs' },
-    { label: 'List Job Artifacts', name: 'listJobArtifacts' },
-    { label: 'Get Artifact Download URL', name: 'getArtifactDownloadUrl' }
+    { label: 'List Artifacts', name: 'listArtifacts' },
+    { label: 'Get Artifact', name: 'getArtifact' }
 ]
 
 class JungleGrid_Tools implements INode {
@@ -35,7 +35,7 @@ class JungleGrid_Tools implements INode {
         this.icon = 'junglegrid.svg'
         this.category = 'Tools'
         this.description = 'Estimate, submit, monitor, cancel, and retrieve artifacts for asynchronous Jungle Grid workloads'
-        this.documentation = 'https://junglegrid.dev/docs/mcp'
+        this.documentation = 'https://junglegrid.dev/docs/api'
         this.baseClasses = [this.type, 'Tool']
         this.credential = {
             label: 'Jungle Grid Credential',
@@ -49,15 +49,7 @@ class JungleGrid_Tools implements INode {
                 name: 'actions',
                 type: 'multiOptions',
                 options: ALL_ACTIONS,
-                default: [
-                    'estimateJob',
-                    'submitJob',
-                    'getJob',
-                    'getJobRuntime',
-                    'getJobLogs',
-                    'listJobArtifacts',
-                    'getArtifactDownloadUrl'
-                ],
+                default: ['estimateJob', 'submitJob', 'getJob', 'getJobRuntime', 'getJobLogs', 'listArtifacts', 'getArtifact'],
                 description: 'Choose which Jungle Grid tools to expose to the agent.'
             }
         ]
