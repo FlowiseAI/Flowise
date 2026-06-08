@@ -87,6 +87,78 @@ describe('validatePythonCodeForDataFrame', () => {
         })
     })
 
+    describe('Unicode homoglyph bypass (NFKC normalization)', () => {
+        // Python NFKC-normalizes identifiers at parse time (PEP 3131), so these
+        // homoglyph forms execute as their ASCII equivalents. The validator must
+        // normalize before matching or they slip past the ASCII-only denylist.
+        it('should block import written with a subscript "i" (\\u1D62)', () => {
+            const result = validatePythonCodeForDataFrame('\u1D62mport js')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('import statement')
+        })
+
+        it('should block eval written with a script "e" (\\u212F)', () => {
+            const result = validatePythonCodeForDataFrame('\u212Fval("__import__(\'os\')")')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('eval()')
+        })
+
+        it('should block __class__ with a bold "a" (\\u1D41A)', () => {
+            const result = validatePythonCodeForDataFrame('().__cl\u{1D41A}ss__')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('__class__')
+        })
+
+        it('should block __subclasses__ with a bold "a" (\\u1D41A)', () => {
+            const result = validatePythonCodeForDataFrame('object.__subcl\u{1D41A}sses__()')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('__subclasses__')
+        })
+
+        it('should block __builtins__ with a bold "u" (\\u1D42E)', () => {
+            const result = validatePythonCodeForDataFrame('x.__b\u{1D42E}iltins__')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('__builtins__')
+        })
+
+        it('should block getattr with a script "g" (\\u210A)', () => {
+            const result = validatePythonCodeForDataFrame('\u210Aetattr(df, "__class__")')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('getattr()')
+        })
+
+        it('should block chr() used to assemble forbidden names at runtime', () => {
+            const result = validatePythonCodeForDataFrame("bi[chr(95)*2 + 'imp' + 'ort' + chr(95)*2]")
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('chr() (runtime string assembly)')
+        })
+
+        it('should block backslash line continuation bypasses', () => {
+            // Python explicit line joining: eval\<newline>(...) is parsed as eval(...)
+            const result = validatePythonCodeForDataFrame('eval\\\n(\'__import__("os").system("id")\')')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('eval()')
+        })
+
+        it('should block the full reported homoglyph + chr() RCE payload', () => {
+            const payload = [
+                'cls = ().__cl\u{1D41A}ss__',
+                'base = cls.__b\u{1D41A}se__',
+                'subs = base.__subcl\u{1D41A}sses__()',
+                'for c in subs:',
+                "    if c.__name__ == 'catch_warnings':",
+                '        cw = c()',
+                '        bi = cw._module.__b\u{1D42E}iltins__',
+                "        imp_name = chr(95)*2 + 'imp' + 'ort' + chr(95)*2",
+                '        imp = bi[imp_name]',
+                '        js_mod = imp(chr(106)+chr(115))',
+                '        break'
+            ].join('\n')
+            const result = validatePythonCodeForDataFrame(payload)
+            expect(result.valid).toBe(false)
+        })
+    })
+
     describe('legitimate pandas and numpy code passes validation', () => {
         it('should allow simple column access', () => {
             expect(validatePythonCodeForDataFrame("df['Age'].mean()").valid).toBe(true)
@@ -276,6 +348,18 @@ describe('validatePythonCodeForDataFrame', () => {
             expect(result.valid).toBe(false)
             expect(result.reason).toContain('__closure__')
         })
+
+        it('should block __getattribute__ (attribute reflection bypass)', () => {
+            const result = validatePythonCodeForDataFrame('df.__getattribute__("columns")')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('__getattribute__ (attribute reflection bypass)')
+        })
+
+        it('should block __getattr__ (attribute reflection bypass)', () => {
+            const result = validatePythonCodeForDataFrame('obj.__getattr__("columns")')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('__getattr__ (attribute reflection bypass)')
+        })
     })
 
     describe('newly added patterns are blocked', () => {
@@ -324,6 +408,18 @@ describe('validatePythonCodeForDataFrame', () => {
         it('should block vars() used in a reflection chain', () => {
             const result = validatePythonCodeForDataFrame("vars(__builtins__)['__import__']('os').system('x')")
             expect(result.valid).toBe(false)
+        })
+
+        it('should block ord() used in runtime string assembly', () => {
+            const result = validatePythonCodeForDataFrame("ord('A')")
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('ord() (runtime string assembly)')
+        })
+
+        it('should block ord() used in a character code comparison', () => {
+            const result = validatePythonCodeForDataFrame('if ord(c) == 95: pass')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('ord() (runtime string assembly)')
         })
     })
 
@@ -481,6 +577,23 @@ describe('validateCustomReadCSVFunction', () => {
             const result = validateCustomReadCSVFunction("read_csv(csv_data) or pd.io.common.os.system('id')")
             expect(result.valid).toBe(false)
             expect(result.reason).toContain('exactly one complete')
+        })
+
+        it('should block homoglyph reflection chained onto a single-line read_csv call', () => {
+            const result = validateCustomReadCSVFunction('read_csv(csv_data).__cl\u{1D41A}ss__')
+            expect(result.valid).toBe(false)
+            expect(result.reason).toContain('exactly one complete')
+        })
+
+        it('should block a multi-line homoglyph payload smuggled into the custom read_csv field', () => {
+            const payload = 'read_csv(csv_data)\ncls = ().__cl\u{1D41A}ss__'
+            const result = validateCustomReadCSVFunction(payload)
+            expect(result.valid).toBe(false)
+        })
+
+        it('should still allow a benign read_csv even when spelled with a homoglyph (normalized to ASCII)', () => {
+            const result = validateCustomReadCSVFunction('r\u212Fad_csv(csv_data)')
+            expect(result.valid).toBe(true)
         })
     })
 })
