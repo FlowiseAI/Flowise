@@ -46,7 +46,7 @@ Flowise has 3 different modules in a single mono repository.
 
 -   Install [PNPM](https://pnpm.io/installation). The project is currently tested with pnpm `10.26.x`.
     ```bash
-    npm i -g pnpm
+    npm i -g pnpm@10
     ```
 -   Use Node `24.x` for local development.
     ```bash
