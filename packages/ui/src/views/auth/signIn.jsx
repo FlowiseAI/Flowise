@@ -53,7 +53,8 @@ const SignInPage = () => {
         label: 'Password',
         name: 'password',
         type: 'password',
-        placeholder: '********'
+        placeholder: '********',
+        enablePasswordToggle: true
     }
     const [usernameVal, setUsernameVal] = useState('')
     const [passwordVal, setPasswordVal] = useState('')

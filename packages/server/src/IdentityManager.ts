@@ -16,6 +16,7 @@ import * as fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import path from 'path'
+import Stripe from 'stripe'
 import { LoginMethodStatus } from './enterprise/database/entities/login-method.entity'
 import { ErrorMessage, LoggedInUser } from './enterprise/Interface.Enterprise'
 import { Permissions } from './enterprise/rbac/Permissions'
@@ -33,7 +34,6 @@ import { UsageCacheManager } from './UsageCacheManager'
 import { GeneralErrorMessage, LICENSE_QUOTAS } from './utils/constants'
 import { getRunningExpressApp } from './utils/getRunningExpressApp'
 import { ENTERPRISE_FEATURE_FLAGS } from './utils/quotaUsage'
-import Stripe from 'stripe'
 
 const allSSOProviders = ['azure', 'google', 'auth0', 'github']
 export class IdentityManager {
@@ -312,6 +312,11 @@ export class IdentityManager {
         return await this.stripeManager.getCustomerWithDefaultSource(customerId)
     }
 
+    public async updateStripeCustomerEmail(customerId: string, email: string) {
+        if (!this.stripeManager) throw new Error('Stripe manager is not initialized')
+        await this.stripeManager.updateCustomerEmail(customerId, email)
+    }
+
     public async getAdditionalSeatsProration(subscriptionId: string, newQuantity: number) {
         if (!subscriptionId) return {}
         if (!this.stripeManager) {
@@ -520,5 +525,25 @@ export class IdentityManager {
             console.error('Error creating Stripe user and subscription:', error)
             throw error
         }
+    }
+
+    /**
+     * Cancels a Stripe subscription and syncs the result to the usage cache.
+     *
+     * Requests cancellation via Stripe, then updates the subscription data in cache
+     * so usage and billing state stay consistent. Throws if the Stripe manager
+     * is not initialized.
+     *
+     * @param subscriptionId - The Stripe subscription ID to cancel
+     * @returns The cancelled Stripe subscription object
+     */
+    public async cancelSubscription(subscriptionId: string) {
+        if (!this.stripeManager) throw new Error('Stripe manager is not initialized')
+        const subscription = await this.stripeManager.cancelSubscription(subscriptionId)
+        const cacheManager = await UsageCacheManager.getInstance()
+        await cacheManager.updateSubscriptionDataToCache(subscriptionId, {
+            subsriptionDetails: this.stripeManager.getSubscriptionObject(subscription)
+        })
+        return subscription
     }
 }

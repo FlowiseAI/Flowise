@@ -1,10 +1,11 @@
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { Document, DocumentInterface } from '@langchain/core/documents'
-import { BaseDocumentLoader } from 'langchain/document_loaders/base'
+import { BaseDocumentLoader } from '@langchain/classic/document_loaders/base'
 import { INode, INodeData, INodeParams, ICommonObject, INodeOutputsValue } from '../../../src/Interface'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
-import axios, { AxiosResponse, AxiosRequestHeaders } from 'axios'
-import { z } from 'zod'
+import { AxiosResponse, AxiosRequestHeaders } from 'axios'
+import { secureAxiosRequest } from '../../../src/httpSecurity'
+import { z } from 'zod/v3'
 
 // FirecrawlApp interfaces
 interface FirecrawlAppConfig {
@@ -466,12 +467,12 @@ class FirecrawlApp {
     }
 
     private async postRequest(url: string, data: Params, headers: AxiosRequestHeaders): Promise<AxiosResponse> {
-        const result = await axios.post(url, data, { headers })
+        const result = await secureAxiosRequest({ method: 'POST', url, data, headers })
         return result
     }
 
     private getRequest(url: string, headers: AxiosRequestHeaders): Promise<AxiosResponse> {
-        return axios.get(url, { headers })
+        return secureAxiosRequest({ method: 'GET', url, headers })
     }
 
     private async monitorJobStatus(jobId: string, headers: AxiosRequestHeaders, checkInterval: number): Promise<CrawlStatusResponse> {

@@ -11,27 +11,37 @@ import {
     IServerSideEventStreamer,
     IUsedTool
 } from '../../../src/Interface'
-import { AIMessageChunk, BaseMessageLike, MessageContentText } from '@langchain/core/messages'
+import { ContentBlock } from 'langchain'
+import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import { AnalyticHandler } from '../../../src/handler'
 import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
-import { ILLMMessage } from '../Interface.Agentflow'
+import { ILLMMessage, IResponseMetadata } from '../Interface.Agentflow'
 import { Tool } from '@langchain/core/tools'
 import { ARTIFACTS_PREFIX, SOURCE_DOCUMENTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
 import { flatten } from 'lodash'
-import zodToJsonSchema from 'zod-to-json-schema'
+import { toolSchemaToJsonSchema, type ToolJsonSchema } from '../../../src/utils'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
+import { randomBytes } from 'crypto'
 import {
     addImageArtifactsToMessages,
     extractArtifactsFromResponse,
     getPastChatHistoryImageMessages,
     getUniqueImageMessages,
     processMessagesWithImages,
-    replaceBase64ImagesWithFileReferences,
+    revertBase64ImagesToFileRefs,
+    normalizeMessagesForStorage,
     replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
-import { convertMultiOptionsToStringArray, processTemplateVariables, configureStructuredOutput } from '../../../src/utils'
+import {
+    convertMultiOptionsToStringArray,
+    processTemplateVariables,
+    configureStructuredOutput,
+    extractResponseContent
+} from '../../../src/utils'
+import { sanitizeFileName } from '../../../src/validator'
+import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
 
 interface ITool {
     agentSelectedTool: string
@@ -58,11 +68,32 @@ interface IKnowledgeBaseVSEmbeddings {
 interface ISimpliefiedTool {
     name: string
     description: string
-    schema: any
+    schema: ToolJsonSchema
     toolNode: {
         label: string
         name: string
     }
+}
+
+/**
+ * Sanitizes a string to be used as a tool name.
+ * Restricts to ASCII characters [a-z0-9_-] for LLM API compatibility (OpenAI, Anthropic, Gemini).
+ * Non-ASCII titles (Korean, Chinese, Japanese, etc.) will use auto-generated fallback names.
+ * This prevents 'Invalid tools[0].function.name: empty string' errors.
+ */
+const sanitizeToolName = (name: string): string => {
+    const sanitized = name
+        .toLowerCase()
+        .replace(/ /g, '_')
+        .replace(/[^a-z0-9_-]/g, '') // ASCII only for LLM API compatibility
+
+    // If the result is empty (e.g., non-ASCII only input), generate a unique fallback name
+    if (!sanitized) {
+        return `tool_${Date.now()}_${randomBytes(4).toString('hex').slice(0, 5)}`
+    }
+
+    // Enforce 64 character limit common for tool names
+    return sanitized.slice(0, 64)
 }
 
 class Agent_Agentflow implements INode {
@@ -243,6 +274,7 @@ class Agent_Agentflow implements INode {
                 name: 'agentKnowledgeDocumentStores',
                 type: 'array',
                 description: 'Give your agent context about different document sources. Document stores must be upserted in advance.',
+                client: ['agentflowv2'],
                 array: [
                     {
                         label: 'Document Store',
@@ -273,6 +305,7 @@ class Agent_Agentflow implements INode {
                 name: 'agentKnowledgeVSEmbeddings',
                 type: 'array',
                 description: 'Give your agent context about different document sources from existing vector stores and embeddings',
+                client: ['agentflowv2'],
                 array: [
                     {
                         label: 'Vector Store',
@@ -664,6 +697,7 @@ class Agent_Agentflow implements INode {
             if (!model) {
                 throw new Error('Model is required')
             }
+            const modelName = modelConfig?.model ?? modelConfig?.modelName
 
             // Extract tools
             const tools = nodeData.inputs?.agentTools as ITool[]
@@ -710,10 +744,7 @@ class Agent_Agentflow implements INode {
                 }
                 const componentNode = options.componentNodes[agentSelectedTool]
 
-                const jsonSchema = zodToJsonSchema(tool.schema as any)
-                if (jsonSchema.$schema) {
-                    delete jsonSchema.$schema
-                }
+                const jsonSchema = toolSchemaToJsonSchema(tool.schema)
 
                 return {
                     name: tool.name,
@@ -757,10 +788,7 @@ class Agent_Agentflow implements INode {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
-                            name: storeName
-                                .toLowerCase()
-                                .replace(/ /g, '_')
-                                .replace(/[^a-z0-9_-]/g, ''),
+                            name: sanitizeToolName(storeName),
                             description: knowledgeBase.docStoreDescription,
                             retriever: docStoreVectorInstance,
                             returnSourceDocuments: knowledgeBase.returnSourceDocuments
@@ -770,17 +798,11 @@ class Agent_Agentflow implements INode {
 
                     toolsInstance.push(retrieverToolInstance as Tool)
 
-                    const jsonSchema = zodToJsonSchema(retrieverToolInstance.schema)
-                    if (jsonSchema.$schema) {
-                        delete jsonSchema.$schema
-                    }
+                    const jsonSchema = toolSchemaToJsonSchema(retrieverToolInstance.schema)
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
-                        name: storeName
-                            .toLowerCase()
-                            .replace(/ /g, '_')
-                            .replace(/[^a-z0-9_-]/g, ''),
+                        name: sanitizeToolName(storeName),
                         description: knowledgeBase.docStoreDescription,
                         schema: jsonSchema,
                         toolNode: {
@@ -838,10 +860,7 @@ class Agent_Agentflow implements INode {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
-                            name: knowledgeName
-                                .toLowerCase()
-                                .replace(/ /g, '_')
-                                .replace(/[^a-z0-9_-]/g, ''),
+                            name: sanitizeToolName(knowledgeName),
                             description: knowledgeBase.knowledgeDescription,
                             retriever: vectorStoreInstance,
                             returnSourceDocuments: knowledgeBase.returnSourceDocuments
@@ -851,17 +870,11 @@ class Agent_Agentflow implements INode {
 
                     toolsInstance.push(retrieverToolInstance as Tool)
 
-                    const jsonSchema = zodToJsonSchema(retrieverToolInstance.schema)
-                    if (jsonSchema.$schema) {
-                        delete jsonSchema.$schema
-                    }
+                    const jsonSchema = toolSchemaToJsonSchema(retrieverToolInstance.schema)
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
-                        name: knowledgeName
-                            .toLowerCase()
-                            .replace(/ /g, '_')
-                            .replace(/[^a-z0-9_-]/g, ''),
+                        name: sanitizeToolName(knowledgeName),
                         description: knowledgeBase.knowledgeDescription,
                         schema: jsonSchema,
                         toolNode: {
@@ -901,7 +914,7 @@ class Agent_Agentflow implements INode {
             }
 
             const llmWithoutToolsBind = (await newLLMNodeInstance.init(newNodeData, '', options)) as BaseChatModel
-            let llmNodeInstance = llmWithoutToolsBind
+            let llmNodeInstance = llmWithoutToolsBind // save the original LLM instance for later use in withStructuredOutput, getNumTokens
 
             const isStructuredOutput = _agentStructuredOutput && Array.isArray(_agentStructuredOutput) && _agentStructuredOutput.length > 0
 
@@ -990,10 +1003,6 @@ class Agent_Agentflow implements INode {
 
             // Prepare messages array
             const messages: BaseMessageLike[] = []
-            // Use to store messages with image file references as we do not want to store the base64 data into database
-            let runtimeImageMessagesWithFileRef: BaseMessageLike[] = []
-            // Use to keep track of past messages with image file references
-            let pastImageMessagesWithFileRef: BaseMessageLike[] = []
 
             // Prepend history ONLY if it is the first node
             if (prependedChatHistory.length > 0 && !runtimeChatHistory.length) {
@@ -1026,15 +1035,13 @@ class Agent_Agentflow implements INode {
                     memoryType,
                     pastChatHistory,
                     runtimeChatHistory,
-                    llmNodeInstance,
+                    llmWithoutToolsBind,
                     nodeData,
                     userMessage,
                     input,
                     abortController,
                     options,
-                    modelConfig,
-                    runtimeImageMessagesWithFileRef,
-                    pastImageMessagesWithFileRef
+                    modelConfig
                 })
             } else if (!runtimeChatHistory.length) {
                 /*
@@ -1045,9 +1052,7 @@ class Agent_Agentflow implements INode {
                 if (options.uploads) {
                     const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
                     if (imageContents) {
-                        const { imageMessageWithBase64, imageMessageWithFileRef } = imageContents
-                        messages.push(imageMessageWithBase64)
-                        runtimeImageMessagesWithFileRef.push(imageMessageWithFileRef)
+                        messages.push(imageContents.imageMessageWithBase64)
                     }
                 }
 
@@ -1063,7 +1068,12 @@ class Agent_Agentflow implements INode {
             // Initialize response and determine if streaming is possible
             let response: AIMessageChunk = new AIMessageChunk('')
             const isLastNode = options.isLastNode as boolean
-            const isStreamable = isLastNode && options.sseStreamer !== undefined && modelConfig?.streaming !== false && !isStructuredOutput
+            const streamingConfig = modelConfig?.streaming
+            const useDefault = streamingConfig == null || streamingConfig === ''
+            const effectiveStreaming = useDefault
+                ? newLLMNodeInstance.inputs?.find((i: INodeParams) => i.name === 'streaming')?.default ?? true
+                : streamingConfig
+            const isStreamable = isLastNode && options.sseStreamer !== undefined && effectiveStreaming !== false && !isStructuredOutput
 
             // Start analytics
             if (analyticHandlers && options.parentTraceIds) {
@@ -1078,14 +1088,16 @@ class Agent_Agentflow implements INode {
             let fileAnnotations: any[] = []
             let additionalTokens = 0
             let isWaitingForHumanInput = false
+            let reasonContent = ''
+            let thinkingDuration: number | undefined
 
             // Store the current messages length to track which messages are added during tool calls
             const messagesBeforeToolCalls = [...messages]
             let _toolCallMessages: BaseMessageLike[] = []
 
             /**
-             * Add image artifacts from previous assistant responses as user messages
-             * Images are converted from FILE-STORAGE::<image_path> to base 64 image_url format
+             * Add image artifacts from previous assistant responses as user messages.
+             * Only the inserted temporary messages contain base64 — other messages are untouched.
              */
             await addImageArtifactsToMessages(messages, options)
 
@@ -1128,6 +1140,12 @@ class Agent_Agentflow implements INode {
                 artifacts = result.artifacts
                 additionalTokens = result.totalTokens
                 isWaitingForHumanInput = result.isWaitingForHumanInput || false
+                if (result.accumulatedReasonContent !== undefined) {
+                    reasonContent = result.accumulatedReasonContent
+                }
+                if (result.accumulatedReasoningDuration !== undefined) {
+                    thinkingDuration = result.accumulatedReasoningDuration
+                }
 
                 // Calculate which messages were added during tool calls
                 _toolCallMessages = messages.slice(messagesBeforeToolCalls.length)
@@ -1154,11 +1172,20 @@ class Agent_Agentflow implements INode {
                         messages,
                         chatId,
                         abortController,
-                        isStructuredOutput
+                        isStructuredOutput,
+                        isLastNode
                     )
                 } else {
                     response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
                 }
+            }
+
+            // Capture reasoning and duration from first LLM response so they can be accumulated across tool-call turns
+            if (response.additional_kwargs?.reasoning_content) {
+                reasonContent = (response.additional_kwargs.reasoning_content as string) || ''
+            }
+            if (typeof response.additional_kwargs?.reasoning_duration === 'number') {
+                thinkingDuration = response.additional_kwargs.reasoning_duration
             }
 
             // Address built in tools (after artifacts are processed)
@@ -1178,7 +1205,9 @@ class Agent_Agentflow implements INode {
                     isStreamable,
                     isLastNode,
                     iterationContext,
-                    isStructuredOutput
+                    isStructuredOutput,
+                    accumulatedReasonContent: reasonContent,
+                    accumulatedReasoningDuration: thinkingDuration
                 })
 
                 response = result.response
@@ -1187,6 +1216,12 @@ class Agent_Agentflow implements INode {
                 artifacts = result.artifacts
                 additionalTokens = result.totalTokens
                 isWaitingForHumanInput = result.isWaitingForHumanInput || false
+                if (result.accumulatedReasonContent !== undefined) {
+                    reasonContent = result.accumulatedReasonContent
+                }
+                if (result.accumulatedReasoningDuration !== undefined) {
+                    thinkingDuration = result.accumulatedReasoningDuration
+                }
 
                 // Calculate which messages were added during tool calls
                 _toolCallMessages = messages.slice(messagesBeforeToolCalls.length)
@@ -1208,23 +1243,27 @@ class Agent_Agentflow implements INode {
             } else if (!humanInput && !isStreamable && isLastNode && sseStreamer && !isStructuredOutput) {
                 // Stream whole response back to UI if not streaming and no tool calls
                 // Skip this if structured output is enabled - it will be streamed after conversion
-                let finalResponse = ''
-                if (response.content && Array.isArray(response.content)) {
-                    finalResponse = response.content
-                        .map((item: any) => {
-                            if ((item.text && !item.type) || (item.type === 'text' && item.text)) {
-                                return item.text
-                            }
-                            return ''
-                        })
-                        .filter((text: string) => text)
-                        .join('\n')
-                } else if (response.content && typeof response.content === 'string') {
-                    finalResponse = response.content
-                } else {
-                    finalResponse = JSON.stringify(response, null, 2)
+
+                // Stream thinking content if available
+                if (response.contentBlocks?.length) {
+                    for (const block of response.contentBlocks) {
+                        if (block.type === 'reasoning' && (block as { reasoning?: string }).reasoning) {
+                            reasonContent += (block as { reasoning: string }).reasoning
+                        }
+                        if ((block as any).type === 'thinking' && block.thinking) {
+                            reasonContent += block.thinking
+                        }
+                    }
+
+                    sseStreamer.streamThinkingEvent(chatId, reasonContent)
+                    // Send end of thinking event with duration from token details if available
+                    const reasoningTokens = response.usage_metadata?.output_token_details?.reasoning || 0
+                    // Estimate duration based on reasoning tokens (rough estimate: ~50 tokens/sec)
+                    thinkingDuration = reasoningTokens > 0 ? Math.round(reasoningTokens / 50) : 2
+                    sseStreamer.streamThinkingEvent(chatId, '', thinkingDuration)
                 }
-                sseStreamer.streamTokenEvent(chatId, finalResponse)
+
+                sseStreamer.streamTokenEvent(chatId, extractResponseContent(response))
             }
 
             // Calculate execution time
@@ -1315,7 +1354,7 @@ class Agent_Agentflow implements INode {
                     artifacts: extractedArtifacts,
                     fileAnnotations: extractedFileAnnotations,
                     savedInlineImages
-                } = await extractArtifactsFromResponse(response.response_metadata, newNodeData, options)
+                } = await extractArtifactsFromResponse(response.response_metadata as IResponseMetadata, newNodeData, options)
                 if (extractedArtifacts.length > 0) {
                     artifacts = [...artifacts, ...extractedArtifacts]
 
@@ -1347,10 +1386,11 @@ class Agent_Agentflow implements INode {
 
             // If is structured output, then invoke LLM again with structured output at the very end after all tool calls
             if (isStructuredOutput) {
-                llmNodeInstance = configureStructuredOutput(llmNodeInstance, _agentStructuredOutput)
+                const structuredllmNodeInstance = configureStructuredOutput(llmWithoutToolsBind, _agentStructuredOutput)
                 const prompt = 'Convert the following response to the structured output format: ' + finalResponse
-                response = await llmNodeInstance.invoke(prompt, { signal: abortController?.signal })
+                response = await structuredllmNodeInstance.invoke(prompt, { signal: abortController?.signal })
 
+                // Prefix the response with ```json and suffix with ``` to render as a code block
                 if (typeof response === 'object') {
                     finalResponse = '```json\n' + JSON.stringify(response, null, 2) + '\n```'
                 } else {
@@ -1361,6 +1401,23 @@ class Agent_Agentflow implements INode {
                     sseStreamer.streamTokenEvent(chatId, finalResponse)
                 }
             }
+
+            // Add reasoning content
+            if (!reasonContent && response.additional_kwargs?.reasoning_content) {
+                reasonContent = response.additional_kwargs.reasoning_content as string
+            }
+            if (reasonContent && response.additional_kwargs?.reasoning_duration != null) {
+                thinkingDuration = response.additional_kwargs.reasoning_duration as number
+            }
+            const reasonContentObj =
+                reasonContent !== undefined && reasonContent !== '' ? { thinking: reasonContent, thinkingDuration } : undefined
+
+            const costMetadata = await this.calculateUsageCost(
+                model,
+                modelConfig?.modelName as string | undefined,
+                response.usage_metadata,
+                additionalTokens
+            )
 
             const output = this.prepareOutputObject(
                 response,
@@ -1375,12 +1432,14 @@ class Agent_Agentflow implements INode {
                 additionalTokens,
                 isWaitingForHumanInput,
                 fileAnnotations,
-                isStructuredOutput
+                isStructuredOutput,
+                reasonContentObj,
+                costMetadata
             )
 
             // End analytics tracking
             if (analyticHandlers && llmIds) {
-                await analyticHandlers.onLLMEnd(llmIds, finalResponse)
+                await analyticHandlers.onLLMEnd(llmIds, output, { model: modelName, provider: model })
             }
 
             // Send additional streaming events if needed
@@ -1394,26 +1453,31 @@ class Agent_Agentflow implements INode {
             }
 
             // Process template variables in state
-            newState = processTemplateVariables(newState, finalResponse)
+            const outputForStateProcessing =
+                isStructuredOutput && typeof response === 'object' ? JSON.stringify(response, null, 2) : finalResponse
+            newState = processTemplateVariables(newState, outputForStateProcessing)
 
             /**
-             * Remove the temporarily added image artifact messages before storing
+             * Remove temporary artifact image messages (they were only needed for the model invoke).
+             * Then revert all remaining tagged base64 image_url items back to stored-file format.
              * This is to avoid storing the actual base64 data into database
              */
             const messagesToStore = messages.filter((msg: any) => !msg._isTemporaryImageMessage)
-
-            // Replace the actual messages array with one that includes the file references for images instead of base64 data
-            const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(
-                messagesToStore,
-                runtimeImageMessagesWithFileRef,
-                pastImageMessagesWithFileRef
-            )
+            const normalizedMessagesToStore = normalizeMessagesForStorage(messagesToStore)
+            const messagesWithFileReferences = revertBase64ImagesToFileRefs(normalizedMessagesToStore)
 
             // Only add to runtime chat history if this is the first node
             const inputMessages = []
             if (!runtimeChatHistory.length) {
-                if (runtimeImageMessagesWithFileRef.length) {
-                    inputMessages.push(...runtimeImageMessagesWithFileRef)
+                // Include any image file reference messages from uploads in the chat history
+                const imageInputMessages = messagesWithFileReferences.filter(
+                    (msg: any) =>
+                        msg.role === 'user' &&
+                        Array.isArray(msg.content) &&
+                        msg.content.some((item: any) => item.type === 'stored-file' && item.mime?.startsWith('image/'))
+                )
+                if (imageInputMessages.length) {
+                    inputMessages.push(...imageInputMessages)
                 }
                 if (input && typeof input === 'string') {
                     if (!enableMemory) {
@@ -1491,7 +1555,12 @@ class Agent_Agentflow implements INode {
             return builtInUsedTools
         }
 
-        const { output, tools, groundingMetadata, urlContextMetadata } = response.response_metadata
+        const { output, tools, groundingMetadata, urlContextMetadata } = response.response_metadata as {
+            output?: any[]
+            tools?: any[]
+            groundingMetadata?: { webSearchQueries?: string[] }
+            urlContextMetadata?: { urlMetadata?: any[] }
+        }
 
         // Handle OpenAI built-in tools
         if (output && Array.isArray(output) && output.length > 0 && tools && Array.isArray(tools) && tools.length > 0) {
@@ -1584,8 +1653,9 @@ class Agent_Agentflow implements INode {
                 const item = response.content[i]
 
                 if (item.type === 'executableCode' && item.executableCode) {
-                    const language = item.executableCode.language || 'PYTHON'
-                    const code = item.executableCode.code || ''
+                    const executableCode = item.executableCode as { language?: string; code?: string }
+                    const language = executableCode.language || 'PYTHON'
+                    const code = executableCode.code || ''
                     let toolOutput = ''
 
                     // Check for duplicates
@@ -1604,8 +1674,9 @@ class Agent_Agentflow implements INode {
 
                     if (nextItem) {
                         if (nextItem.type === 'codeExecutionResult' && nextItem.codeExecutionResult) {
-                            const outcome = nextItem.codeExecutionResult.outcome
-                            const output = nextItem.codeExecutionResult.output || ''
+                            const codeExecutionResult = nextItem.codeExecutionResult as { outcome?: string; output?: string }
+                            const outcome = codeExecutionResult.outcome
+                            const output = codeExecutionResult.output || ''
                             toolOutput = outcome === 'OUTCOME_OK' ? output : `Error: ${output}`
                         } else if (nextItem.type === 'inlineData') {
                             toolOutput = 'Generated image data'
@@ -1635,33 +1706,28 @@ class Agent_Agentflow implements INode {
         memoryType,
         pastChatHistory,
         runtimeChatHistory,
-        llmNodeInstance,
+        llmWithoutToolsBind,
         nodeData,
         userMessage,
         input,
         abortController,
         options,
-        modelConfig,
-        runtimeImageMessagesWithFileRef,
-        pastImageMessagesWithFileRef
+        modelConfig
     }: {
         messages: BaseMessageLike[]
         memoryType: string
         pastChatHistory: BaseMessageLike[]
         runtimeChatHistory: BaseMessageLike[]
-        llmNodeInstance: BaseChatModel
+        llmWithoutToolsBind: BaseChatModel
         nodeData: INodeData
         userMessage: string
         input: string | Record<string, any>
         abortController: AbortController
         options: ICommonObject
         modelConfig: ICommonObject
-        runtimeImageMessagesWithFileRef: BaseMessageLike[]
-        pastImageMessagesWithFileRef: BaseMessageLike[]
     }): Promise<void> {
-        const { updatedPastMessages, transformedPastMessages } = await getPastChatHistoryImageMessages(pastChatHistory, options)
+        const { updatedPastMessages } = await getPastChatHistoryImageMessages(pastChatHistory, options)
         pastChatHistory = updatedPastMessages
-        pastImageMessagesWithFileRef.push(...transformedPastMessages)
 
         let pastMessages = [...pastChatHistory, ...runtimeChatHistory]
         if (!runtimeChatHistory.length && input && typeof input === 'string') {
@@ -1673,9 +1739,7 @@ class Agent_Agentflow implements INode {
             if (options.uploads) {
                 const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
                 if (imageContents) {
-                    const { imageMessageWithBase64, imageMessageWithFileRef } = imageContents
-                    pastMessages.push(imageMessageWithBase64)
-                    runtimeImageMessagesWithFileRef.push(imageMessageWithFileRef)
+                    pastMessages.push(imageContents.imageMessageWithBase64)
                 }
             }
             pastMessages.push({
@@ -1683,9 +1747,8 @@ class Agent_Agentflow implements INode {
                 content: input
             })
         }
-        const { updatedMessages, transformedMessages } = await processMessagesWithImages(pastMessages, options)
+        const { updatedMessages } = await processMessagesWithImages(pastMessages, options)
         pastMessages = updatedMessages
-        pastImageMessagesWithFileRef.push(...transformedMessages)
 
         if (pastMessages.length > 0) {
             if (memoryType === 'windowSize') {
@@ -1695,7 +1758,7 @@ class Agent_Agentflow implements INode {
                 messages.push(...windowedMessages)
             } else if (memoryType === 'conversationSummary') {
                 // Summary memory: Summarize all past messages
-                const summary = await llmNodeInstance.invoke(
+                const summary = await llmWithoutToolsBind.invoke(
                     [
                         {
                             role: 'user',
@@ -1707,10 +1770,16 @@ class Agent_Agentflow implements INode {
                     ],
                     { signal: abortController?.signal }
                 )
-                messages.push({ role: 'assistant', content: summary.content as string })
+                messages.push({ role: 'assistant', content: extractResponseContent(summary) })
+                if (!userMessage && input && typeof input === 'string') {
+                    messages.push({
+                        role: 'user',
+                        content: input
+                    })
+                }
             } else if (memoryType === 'conversationSummaryBuffer') {
                 // Summary buffer: Summarize messages that exceed token limit
-                await this.handleSummaryBuffer(messages, pastMessages, llmNodeInstance, nodeData, abortController)
+                await this.handleSummaryBuffer(messages, pastMessages, llmWithoutToolsBind, nodeData, abortController)
             } else {
                 // Default: Use all messages
                 messages.push(...pastMessages)
@@ -1732,7 +1801,7 @@ class Agent_Agentflow implements INode {
     private async handleSummaryBuffer(
         messages: BaseMessageLike[],
         pastMessages: BaseMessageLike[],
-        llmNodeInstance: BaseChatModel,
+        llmWithoutToolsBind: BaseChatModel,
         nodeData: INodeData,
         abortController: AbortController
     ): Promise<void> {
@@ -1740,7 +1809,7 @@ class Agent_Agentflow implements INode {
 
         // Convert past messages to a format suitable for token counting
         const messagesString = pastMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
-        const tokenCount = await llmNodeInstance.getNumTokens(messagesString)
+        const tokenCount = await llmWithoutToolsBind.getNumTokens(messagesString)
 
         if (tokenCount > maxTokenLimit) {
             // Calculate how many messages to summarize (messages that exceed the token limit)
@@ -1755,14 +1824,14 @@ class Agent_Agentflow implements INode {
                     messagesToSummarize.push(poppedMessage)
                     // Recalculate token count for remaining messages
                     const remainingMessagesString = remainingMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
-                    currBufferLength = await llmNodeInstance.getNumTokens(remainingMessagesString)
+                    currBufferLength = await llmWithoutToolsBind.getNumTokens(remainingMessagesString)
                 }
             }
 
             // Summarize the messages that were removed
             const messagesToSummarizeString = messagesToSummarize.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
 
-            const summary = await llmNodeInstance.invoke(
+            const summary = await llmWithoutToolsBind.invoke(
                 [
                     {
                         role: 'user',
@@ -1773,7 +1842,11 @@ class Agent_Agentflow implements INode {
             )
 
             // Add summary as a system message at the beginning, then add remaining messages
-            messages.push({ role: 'system', content: `Previous conversation summary: ${summary.content}` })
+            let summaryRole = 'system'
+            if (messages.some((msg) => typeof msg === 'object' && !Array.isArray(msg) && 'role' in msg && msg.role === 'system')) {
+                summaryRole = 'user' // some model doesn't allow multiple system messages
+            }
+            messages.push({ role: summaryRole, content: `Previous conversation summary: ${extractResponseContent(summary)}` })
             messages.push(...remainingMessages)
         } else {
             // If under token limit, use all messages
@@ -1790,14 +1863,42 @@ class Agent_Agentflow implements INode {
         messages: BaseMessageLike[],
         chatId: string,
         abortController: AbortController,
-        isStructuredOutput: boolean = false
+        isStructuredOutput: boolean = false,
+        isLastNode: boolean = false
     ): Promise<AIMessageChunk> {
         let response = new AIMessageChunk('')
+        let reasonContent = ''
+        let thinkingDuration: number | undefined
+        let thinkingStartTime: number | null = null
+        let wasThinking = false
+        let sentLastThinkingEvent = false
 
         try {
             for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
                 if (sseStreamer && !isStructuredOutput) {
                     let content = ''
+
+                    if (chunk.contentBlocks?.length) {
+                        for (const block of chunk.contentBlocks) {
+                            if (isLastNode) {
+                                // As soon as we see the first non-reasoning block, send last thinking event with duration
+                                if (block.type !== 'reasoning' && wasThinking && !sentLastThinkingEvent && thinkingStartTime != null) {
+                                    thinkingDuration = Math.round((Date.now() - thinkingStartTime) / 1000)
+                                    sseStreamer.streamThinkingEvent(chatId, '', thinkingDuration)
+                                    sentLastThinkingEvent = true
+                                }
+                                if (block.type === 'reasoning' && (block as { reasoning?: string }).reasoning) {
+                                    if (!thinkingStartTime) {
+                                        thinkingStartTime = Date.now()
+                                    }
+                                    wasThinking = true
+                                    const reasoningContent = (block as { reasoning: string }).reasoning
+                                    sseStreamer.streamThinkingEvent(chatId, reasoningContent)
+                                    reasonContent += reasoningContent
+                                }
+                            }
+                        }
+                    }
 
                     if (typeof chunk === 'string') {
                         content = chunk
@@ -1842,11 +1943,63 @@ class Agent_Agentflow implements INode {
                 (item: any) => item.type === 'inlineData' || item.type === 'executableCode' || item.type === 'codeExecutionResult'
             )
             if (!hasNonTextContent) {
-                const responseContents = response.content as MessageContentText[]
+                const responseContents = response.content as ContentBlock.Text[]
                 response.content = responseContents.map((item) => item.text).join('')
             }
         }
+
+        if (reasonContent.length > 0) {
+            response.additional_kwargs = {
+                ...response.additional_kwargs,
+                reasoning_content: reasonContent,
+                reasoning_duration: thinkingDuration
+            }
+        }
+
         return response
+    }
+
+    /**
+     * Calculates input/output and total cost from usage metadata using model pricing from models.json.
+     * Also returns the model's base (per-token) input and output costs.
+     */
+    private async calculateUsageCost(
+        provider: string | undefined,
+        modelName: string | undefined,
+        usageMetadata: Record<string, any> | undefined,
+        additionalTokens: number = 0
+    ): Promise<
+        | {
+              input_cost: number
+              output_cost: number
+              total_cost: number
+              base_input_cost: number
+              base_output_cost: number
+          }
+        | undefined
+    > {
+        if (!provider || !modelName) return undefined
+        const inputTokens = (usageMetadata?.input_tokens ?? 0) as number
+        const outputTokens = ((usageMetadata?.output_tokens ?? 0) as number) + additionalTokens
+        try {
+            const modelConfig = await getModelConfigByModelName(MODEL_TYPE.CHAT, provider, modelName)
+            if (!modelConfig) return undefined
+            const baseInputCost = Number(modelConfig.input_cost) || 0
+            const baseOutputCost = Number(modelConfig.output_cost) || 0
+            const inputCost = inputTokens * baseInputCost
+            const outputCost = outputTokens * baseOutputCost
+            const totalCost = inputCost + outputCost
+            if (inputCost === 0 && outputCost === 0) return undefined
+            return {
+                input_cost: inputCost,
+                output_cost: outputCost,
+                total_cost: totalCost,
+                base_input_cost: baseInputCost,
+                base_output_cost: baseOutputCost
+            }
+        } catch {
+            return undefined
+        }
     }
 
     /**
@@ -1865,7 +2018,15 @@ class Agent_Agentflow implements INode {
         additionalTokens: number = 0,
         isWaitingForHumanInput: boolean = false,
         fileAnnotations: any[] = [],
-        isStructuredOutput: boolean = false
+        isStructuredOutput: boolean = false,
+        reasonContent?: { thinking: string; thinkingDuration?: number },
+        costMetadata?: {
+            input_cost: number
+            output_cost: number
+            total_cost: number
+            base_input_cost: number
+            base_output_cost: number
+        }
     ): any {
         const output: any = {
             content: finalResponse,
@@ -1894,6 +2055,14 @@ class Agent_Agentflow implements INode {
                 total_tokens: additionalTokens,
                 tool_call_tokens: additionalTokens
             }
+        }
+
+        if (costMetadata && output.usageMetadata) {
+            output.usageMetadata.input_cost = costMetadata.input_cost
+            output.usageMetadata.output_cost = costMetadata.output_cost
+            output.usageMetadata.total_cost = costMetadata.total_cost
+            output.usageMetadata.base_input_cost = costMetadata.base_input_cost
+            output.usageMetadata.base_output_cost = costMetadata.base_output_cost
         }
 
         if (response.response_metadata) {
@@ -1932,6 +2101,10 @@ class Agent_Agentflow implements INode {
 
         if (fileAnnotations && fileAnnotations.length > 0) {
             output.fileAnnotations = fileAnnotations
+        }
+
+        if (reasonContent) {
+            output.reasonContent = reasonContent
         }
 
         return output
@@ -1975,7 +2148,9 @@ class Agent_Agentflow implements INode {
         isStreamable,
         isLastNode,
         iterationContext,
-        isStructuredOutput = false
+        isStructuredOutput = false,
+        accumulatedReasonContent: initialAccumulatedReasonContent,
+        accumulatedReasoningDuration: initialAccumulatedReasoningDuration
     }: {
         response: AIMessageChunk
         messages: BaseMessageLike[]
@@ -1990,6 +2165,8 @@ class Agent_Agentflow implements INode {
         isLastNode: boolean
         iterationContext: ICommonObject
         isStructuredOutput?: boolean
+        accumulatedReasonContent?: string
+        accumulatedReasoningDuration?: number
     }): Promise<{
         response: AIMessageChunk
         usedTools: IUsedTool[]
@@ -1997,6 +2174,8 @@ class Agent_Agentflow implements INode {
         artifacts: any[]
         totalTokens: number
         isWaitingForHumanInput?: boolean
+        accumulatedReasonContent?: string
+        accumulatedReasoningDuration?: number
     }> {
         // Track total tokens used throughout this process
         let totalTokens = response.usage_metadata?.total_tokens || 0
@@ -2004,9 +2183,20 @@ class Agent_Agentflow implements INode {
         let sourceDocuments: Array<any> = []
         let artifacts: any[] = []
         let isWaitingForHumanInput: boolean | undefined
+        // Use reasoning from caller (first turn); subsequent turns are added when we get newResponse
+        let accumulatedReasonContent = initialAccumulatedReasonContent ?? ''
+        let accumulatedReasoningDuration = initialAccumulatedReasoningDuration ?? 0
 
         if (!response.tool_calls || response.tool_calls.length === 0) {
-            return { response, usedTools: [], sourceDocuments: [], artifacts: [], totalTokens }
+            return {
+                response,
+                usedTools: [],
+                sourceDocuments: [],
+                artifacts: [],
+                totalTokens,
+                accumulatedReasonContent: accumulatedReasonContent || undefined,
+                accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
+            }
         }
 
         // Stream tool calls if available
@@ -2038,13 +2228,7 @@ class Agent_Agentflow implements INode {
         }
 
         // Add LLM response with tool calls to messages
-        messages.push({
-            id: response.id,
-            role: 'assistant',
-            content: response.content,
-            tool_calls: response.tool_calls,
-            usage_metadata: response.usage_metadata
-        })
+        messages.push(response)
 
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
@@ -2072,7 +2256,16 @@ class Agent_Agentflow implements INode {
                     if (!isStructuredOutput) {
                         sseStreamer?.streamTokenEvent(chatId, responseContent)
                     }
-                    return { response, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput: true }
+                    return {
+                        response,
+                        usedTools,
+                        sourceDocuments,
+                        artifacts,
+                        totalTokens,
+                        isWaitingForHumanInput: true,
+                        accumulatedReasonContent: accumulatedReasonContent || undefined,
+                        accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
+                    }
                 }
 
                 let toolIds: ICommonObject | undefined
@@ -2186,19 +2379,23 @@ class Agent_Agentflow implements INode {
                     usedTools,
                     sourceDocuments,
                     artifacts,
-                    totalTokens
+                    totalTokens,
+                    accumulatedReasonContent: accumulatedReasonContent || undefined,
+                    accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
                 }
             }
         }
 
         if (response.tool_calls.length === 0) {
-            const responseContent = typeof response.content === 'string' ? response.content : JSON.stringify(response.content, null, 2)
+            const responseContent = extractResponseContent(response)
             return {
                 response: new AIMessageChunk(responseContent),
                 usedTools,
                 sourceDocuments,
                 artifacts,
-                totalTokens
+                totalTokens,
+                accumulatedReasonContent: accumulatedReasonContent || undefined,
+                accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
             }
         }
 
@@ -2212,24 +2409,30 @@ class Agent_Agentflow implements INode {
                 messages,
                 chatId,
                 abortController,
-                isStructuredOutput
+                isStructuredOutput,
+                isLastNode
             )
         } else {
             newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer && !isStructuredOutput) {
-                let responseContent = JSON.stringify(newResponse, null, 2)
-                if (typeof newResponse.content === 'string') {
-                    responseContent = newResponse.content
-                }
-                sseStreamer.streamTokenEvent(chatId, responseContent)
+                sseStreamer.streamTokenEvent(chatId, extractResponseContent(newResponse))
             }
         }
 
         // Add tokens from this response
         if (newResponse.usage_metadata?.total_tokens) {
             totalTokens += newResponse.usage_metadata.total_tokens
+        }
+
+        // Accumulate this turn's reasoning content and duration
+        if (newResponse.additional_kwargs?.reasoning_content) {
+            const chunkReason = newResponse.additional_kwargs.reasoning_content as string
+            accumulatedReasonContent += (accumulatedReasonContent ? '\n\n' : '') + chunkReason
+        }
+        if (typeof newResponse.additional_kwargs?.reasoning_duration === 'number') {
+            accumulatedReasoningDuration += newResponse.additional_kwargs.reasoning_duration
         }
 
         // Check for recursive tool calls and handle them
@@ -2240,7 +2443,9 @@ class Agent_Agentflow implements INode {
                 sourceDocuments: recursiveSourceDocuments,
                 artifacts: recursiveArtifacts,
                 totalTokens: recursiveTokens,
-                isWaitingForHumanInput: recursiveIsWaitingForHumanInput
+                isWaitingForHumanInput: recursiveIsWaitingForHumanInput,
+                accumulatedReasonContent: recursiveAccumulatedReasonContent,
+                accumulatedReasoningDuration: recursiveAccumulatedReasoningDuration
             } = await this.handleToolCalls({
                 response: newResponse,
                 messages,
@@ -2254,7 +2459,9 @@ class Agent_Agentflow implements INode {
                 isStreamable,
                 isLastNode,
                 iterationContext,
-                isStructuredOutput
+                isStructuredOutput,
+                accumulatedReasonContent,
+                accumulatedReasoningDuration
             })
 
             // Merge results from recursive tool calls
@@ -2264,9 +2471,24 @@ class Agent_Agentflow implements INode {
             artifacts = [...artifacts, ...recursiveArtifacts]
             totalTokens += recursiveTokens
             isWaitingForHumanInput = recursiveIsWaitingForHumanInput
+            if (recursiveAccumulatedReasonContent !== undefined) {
+                accumulatedReasonContent = recursiveAccumulatedReasonContent
+            }
+            if (recursiveAccumulatedReasoningDuration !== undefined) {
+                accumulatedReasoningDuration = recursiveAccumulatedReasoningDuration
+            }
         }
 
-        return { response: newResponse, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput }
+        return {
+            response: newResponse,
+            usedTools,
+            sourceDocuments,
+            artifacts,
+            totalTokens,
+            isWaitingForHumanInput,
+            accumulatedReasonContent: accumulatedReasonContent || undefined,
+            accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
+        }
     }
 
     /**
@@ -2309,6 +2531,8 @@ class Agent_Agentflow implements INode {
         artifacts: any[]
         totalTokens: number
         isWaitingForHumanInput?: boolean
+        accumulatedReasonContent?: string
+        accumulatedReasoningDuration?: number
     }> {
         let llmNodeInstance = llmWithoutToolsBind
         const usedTools: IUsedTool[] = []
@@ -2318,7 +2542,15 @@ class Agent_Agentflow implements INode {
 
         const lastCheckpointMessages = humanInputAction?.data?.input?.messages ?? []
         if (!lastCheckpointMessages.length) {
-            return { response: new AIMessageChunk(''), usedTools: [], sourceDocuments: [], artifacts: [], totalTokens: 0 }
+            return {
+                response: new AIMessageChunk(''),
+                usedTools: [],
+                sourceDocuments: [],
+                artifacts: [],
+                totalTokens: 0,
+                accumulatedReasonContent: undefined,
+                accumulatedReasoningDuration: undefined
+            }
         }
 
         // Use the last message as the response
@@ -2332,7 +2564,20 @@ class Agent_Agentflow implements INode {
         let totalTokens = response.usage_metadata?.total_tokens || 0
 
         if (!response.tool_calls || response.tool_calls.length === 0) {
-            return { response, usedTools: [], sourceDocuments: [], artifacts: [], totalTokens }
+            const acc = (response.additional_kwargs?.reasoning_content as string) || undefined
+            const dur =
+                typeof response.additional_kwargs?.reasoning_duration === 'number'
+                    ? response.additional_kwargs.reasoning_duration
+                    : undefined
+            return {
+                response,
+                usedTools: [],
+                sourceDocuments: [],
+                artifacts: [],
+                totalTokens,
+                accumulatedReasonContent: acc,
+                accumulatedReasoningDuration: dur
+            }
         }
 
         // Stream tool calls if available
@@ -2364,13 +2609,7 @@ class Agent_Agentflow implements INode {
         }
 
         // Add LLM response with tool calls to messages
-        messages.push({
-            id: response.id,
-            role: 'assistant',
-            content: response.content,
-            tool_calls: response.tool_calls,
-            usage_metadata: response.usage_metadata
-        })
+        messages.push(response)
 
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
@@ -2508,12 +2747,19 @@ class Agent_Agentflow implements INode {
                     sseStreamer.streamTokenEvent(chatId, lastToolOutputString)
                 }
 
+                const acc = (response.additional_kwargs?.reasoning_content as string) || undefined
+                const dur =
+                    typeof response.additional_kwargs?.reasoning_duration === 'number'
+                        ? response.additional_kwargs.reasoning_duration
+                        : undefined
                 return {
                     response: new AIMessageChunk(lastToolOutputString),
                     usedTools,
                     sourceDocuments,
                     artifacts,
-                    totalTokens
+                    totalTokens,
+                    accumulatedReasonContent: acc,
+                    accumulatedReasoningDuration: dur
                 }
             }
         }
@@ -2541,18 +2787,15 @@ class Agent_Agentflow implements INode {
                 messages,
                 chatId,
                 abortController,
-                isStructuredOutput
+                isStructuredOutput,
+                isLastNode
             )
         } else {
             newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer && !isStructuredOutput) {
-                let responseContent = JSON.stringify(newResponse, null, 2)
-                if (typeof newResponse.content === 'string') {
-                    responseContent = newResponse.content
-                }
-                sseStreamer.streamTokenEvent(chatId, responseContent)
+                sseStreamer.streamTokenEvent(chatId, extractResponseContent(newResponse))
             }
         }
 
@@ -2560,6 +2803,16 @@ class Agent_Agentflow implements INode {
         if (newResponse.usage_metadata?.total_tokens) {
             totalTokens += newResponse.usage_metadata.total_tokens
         }
+
+        // Accumulate reasoning and duration from checkpoint response and this turn
+        let accumulatedReasonContent = (response.additional_kwargs?.reasoning_content as string) || ''
+        if (newResponse.additional_kwargs?.reasoning_content) {
+            accumulatedReasonContent +=
+                (accumulatedReasonContent ? '\n\n' : '') + (newResponse.additional_kwargs.reasoning_content as string)
+        }
+        let accumulatedReasoningDuration =
+            (typeof response.additional_kwargs?.reasoning_duration === 'number' ? response.additional_kwargs.reasoning_duration : 0) +
+            (typeof newResponse.additional_kwargs?.reasoning_duration === 'number' ? newResponse.additional_kwargs.reasoning_duration : 0)
 
         // Check for recursive tool calls and handle them
         if (newResponse.tool_calls && newResponse.tool_calls.length > 0) {
@@ -2569,7 +2822,9 @@ class Agent_Agentflow implements INode {
                 sourceDocuments: recursiveSourceDocuments,
                 artifacts: recursiveArtifacts,
                 totalTokens: recursiveTokens,
-                isWaitingForHumanInput: recursiveIsWaitingForHumanInput
+                isWaitingForHumanInput: recursiveIsWaitingForHumanInput,
+                accumulatedReasonContent: recursiveAccumulatedReasonContent,
+                accumulatedReasoningDuration: recursiveAccumulatedReasoningDuration
             } = await this.handleToolCalls({
                 response: newResponse,
                 messages,
@@ -2583,7 +2838,9 @@ class Agent_Agentflow implements INode {
                 isStreamable,
                 isLastNode,
                 iterationContext,
-                isStructuredOutput
+                isStructuredOutput,
+                accumulatedReasonContent,
+                accumulatedReasoningDuration
             })
 
             // Merge results from recursive tool calls
@@ -2593,9 +2850,24 @@ class Agent_Agentflow implements INode {
             artifacts = [...artifacts, ...recursiveArtifacts]
             totalTokens += recursiveTokens
             isWaitingForHumanInput = recursiveIsWaitingForHumanInput
+            if (recursiveAccumulatedReasonContent !== undefined) {
+                accumulatedReasonContent = recursiveAccumulatedReasonContent
+            }
+            if (recursiveAccumulatedReasoningDuration !== undefined) {
+                accumulatedReasoningDuration = recursiveAccumulatedReasoningDuration
+            }
         }
 
-        return { response: newResponse, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput }
+        return {
+            response: newResponse,
+            usedTools,
+            sourceDocuments,
+            artifacts,
+            totalTokens,
+            isWaitingForHumanInput,
+            accumulatedReasonContent: accumulatedReasonContent || undefined,
+            accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
+        }
     }
 
     /**
@@ -2614,8 +2886,8 @@ class Agent_Agentflow implements INode {
             const filePath = match[2]
 
             try {
-                // Extract filename from the file path
-                const fileName = filePath.split('/').pop() || filePath
+                // Extract and sanitize filename from the file path (LLM-generated, untrusted)
+                const fileName = sanitizeFileName(filePath)
 
                 // Replace sandbox link with proper download URL
                 const downloadUrl = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowId}&chatId=${chatId}&fileName=${fileName}&download=true`

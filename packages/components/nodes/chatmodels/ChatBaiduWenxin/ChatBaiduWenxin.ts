@@ -1,6 +1,7 @@
 import { BaseCache } from '@langchain/core/caches'
 import { ChatBaiduQianfan } from '@langchain/baidu-qianfan'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class ChatBaiduWenxin_ChatModels implements INode {
@@ -16,9 +17,9 @@ class ChatBaiduWenxin_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatBaiduWenxin'
+        this.label = 'Baidu Wenxin'
         this.name = 'chatBaiduWenxin'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatBaiduWenxin'
         this.icon = 'baiduwenxin.svg'
         this.category = 'Chat Models'
@@ -38,10 +39,20 @@ class ChatBaiduWenxin_ChatModels implements INode {
                 optional: true
             },
             {
-                label: 'Model',
+                label: 'Model Name',
                 name: 'modelName',
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'ernie-4.5-8k-preview'
+            },
+            {
+                label: 'Custom Model Name',
+                name: 'customModelName',
                 type: 'string',
-                placeholder: 'ERNIE-Bot-turbo'
+                placeholder: 'ernie-speed-128k',
+                description: 'Custom model name to use. If provided, it will override the selected model.',
+                additionalParams: true,
+                optional: true
             },
             {
                 label: 'Temperature',
@@ -57,15 +68,52 @@ class ChatBaiduWenxin_ChatModels implements INode {
                 type: 'boolean',
                 default: true,
                 optional: true
+            },
+            {
+                label: 'Top Probability',
+                name: 'topP',
+                type: 'number',
+                description: 'Nucleus sampling. The model considers tokens whose cumulative probability mass reaches this value.',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Penalty Score',
+                name: 'penaltyScore',
+                type: 'number',
+                description: 'Penalizes repeated tokens according to frequency. Baidu Qianfan accepts values from 1.0 to 2.0.',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'User ID',
+                name: 'userId',
+                type: 'string',
+                description: 'Optional unique identifier for the end user making the request.',
+                optional: true,
+                additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatBaiduWenxin')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const cache = nodeData.inputs?.cache as BaseCache
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
+        const customModelName = nodeData.inputs?.customModelName as string
         const streaming = nodeData.inputs?.streaming as boolean
+        const topP = nodeData.inputs?.topP as string
+        const penaltyScore = nodeData.inputs?.penaltyScore as string
+        const userId = nodeData.inputs?.userId as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const qianfanAccessKey = getCredentialParam('qianfanAccessKey', credentialData, nodeData)
@@ -75,9 +123,12 @@ class ChatBaiduWenxin_ChatModels implements INode {
             streaming: streaming ?? true,
             qianfanAccessKey,
             qianfanSecretKey,
-            modelName,
+            modelName: customModelName || modelName,
             temperature: temperature ? parseFloat(temperature) : undefined
         }
+        if (topP) obj.topP = parseFloat(topP)
+        if (penaltyScore) obj.penaltyScore = parseFloat(penaltyScore)
+        if (userId) obj.userId = userId
         if (cache) obj.cache = cache
 
         const model = new ChatBaiduQianfan(obj)

@@ -1,7 +1,7 @@
-import { z } from 'zod'
-import fetch from 'node-fetch'
+import { z } from 'zod/v3'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
 import { TOOL_ARGS_PREFIX, formatToolError } from '../../../src/agents'
+import { secureFetch } from '../../../src/httpSecurity'
 
 export const desc = `Use this when you want to access Jira API for managing issues, comments, and users`
 
@@ -11,6 +11,14 @@ export interface Headers {
 
 export interface Body {
     [key: string]: any
+}
+
+export interface JiraAuthConfig {
+    authType: 'basic' | 'bearer'
+    username?: string
+    accessToken?: string
+    bearerToken?: string
+    sslCertificate?: string
 }
 
 export interface RequestParameters {
@@ -25,6 +33,8 @@ export interface RequestParameters {
     accessToken?: string
     jiraHost?: string
     defaultParams?: any
+    apiVersion?: string
+    authConfig?: JiraAuthConfig
 }
 
 // Define schemas for different Jira operations
@@ -135,12 +145,16 @@ class BaseJiraTool extends DynamicStructuredTool {
     protected username: string = ''
     protected accessToken: string = ''
     protected jiraHost: string = ''
+    protected authConfig: JiraAuthConfig | undefined
+    protected apiVersion: string = '3'
 
     constructor(args: any) {
         super(args)
         this.username = args.username ?? ''
         this.accessToken = args.accessToken ?? ''
         this.jiraHost = args.jiraHost ?? ''
+        this.authConfig = args.authConfig
+        this.apiVersion = args.apiVersion ?? '3'
     }
 
     async makeJiraRequest({
@@ -154,21 +168,34 @@ class BaseJiraTool extends DynamicStructuredTool {
         body?: any
         params?: any
     }): Promise<string> {
-        const url = `${this.jiraHost}/rest/api/3/${endpoint}`
-        const auth = Buffer.from(`${this.username}:${this.accessToken}`).toString('base64')
+        // Use dynamic API version
+        const url = `${this.jiraHost}/rest/api/${this.apiVersion}/${endpoint}`
+
+        let authHeader: string
+        if (this.authConfig?.authType === 'bearer' && this.authConfig.bearerToken) {
+            authHeader = `Bearer ${this.authConfig.bearerToken}`
+        } else {
+            const username = this.authConfig?.username ?? this.username
+            const token = this.authConfig?.accessToken ?? this.accessToken
+            const auth = Buffer.from(`${username}:${token}`).toString('base64')
+            authHeader = `Basic ${auth}`
+        }
 
         const headers = {
-            Authorization: `Basic ${auth}`,
+            Authorization: authHeader,
             'Content-Type': 'application/json',
             Accept: 'application/json',
             ...this.headers
         }
 
-        const response = await fetch(url, {
+        const fetchOptions: any = {
             method,
             headers,
             body: body ? JSON.stringify(body) : undefined
-        })
+        }
+
+        const agentOptions = this.authConfig?.sslCertificate ? { ca: this.authConfig.sslCertificate } : undefined
+        const response = await secureFetch(url, fetchOptions, 5, agentOptions)
 
         if (!response.ok) {
             const errorText = await response.text()
@@ -198,7 +225,9 @@ class ListIssuesTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -244,7 +273,9 @@ class CreateIssueTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -324,7 +355,9 @@ class GetIssueTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -359,7 +392,9 @@ class UpdateIssueTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -427,7 +462,9 @@ class DeleteIssueTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -462,7 +499,9 @@ class AssignIssueTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -501,7 +540,9 @@ class TransitionIssueTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -543,7 +584,9 @@ class ListCommentsTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -583,7 +626,9 @@ class CreateCommentTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -640,7 +685,9 @@ class GetCommentTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -675,7 +722,9 @@ class UpdateCommentTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -728,7 +777,9 @@ class DeleteCommentTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -764,7 +815,9 @@ class SearchUsersTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -805,7 +858,9 @@ class GetUserTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -844,7 +899,9 @@ class CreateUserTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -888,7 +945,9 @@ class UpdateUserTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -931,7 +990,9 @@ class DeleteUserTool extends BaseJiraTool {
             username: args.username,
             accessToken: args.accessToken,
             jiraHost: args.jiraHost,
-            maxOutputLength: args.maxOutputLength
+            maxOutputLength: args.maxOutputLength,
+            authConfig: args.authConfig,
+            apiVersion: args.apiVersion
         })
         this.defaultParams = args.defaultParams || {}
     }
@@ -960,6 +1021,8 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
     const jiraHost = args?.jiraHost || ''
     const maxOutputLength = args?.maxOutputLength || Infinity
     const defaultParams = args?.defaultParams || {}
+    const apiVersion = args?.apiVersion || '3'
+    const authConfig = args?.authConfig
 
     // Issue tools
     if (actions.includes('listIssues')) {
@@ -969,7 +1032,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -981,7 +1046,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -993,7 +1060,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1005,7 +1074,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1017,7 +1088,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1029,7 +1102,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1041,7 +1116,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1054,7 +1131,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1066,7 +1145,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1078,7 +1159,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1090,7 +1173,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1102,7 +1187,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1115,7 +1202,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1127,7 +1216,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1139,7 +1230,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1151,7 +1244,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }
@@ -1163,7 +1258,9 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams
+                defaultParams,
+                apiVersion,
+                authConfig
             })
         )
     }

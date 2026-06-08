@@ -1,9 +1,9 @@
 import { Tool } from '@langchain/core/tools'
-import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
-import { MCPToolkit, validateMCPServerConfig } from '../core'
-import { getVars, prepareSandboxVars, parseJsonBody } from '../../../../src/utils'
-import { DataSource } from 'typeorm'
 import hash from 'object-hash'
+import { DataSource } from 'typeorm'
+import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
+import { getVars, parseJsonBody, prepareSandboxVars } from '../../../../src/utils'
+import { MCPToolkit, validateMCPServerConfig } from '../core'
 
 const mcpServerConfig = `{
     "command": "npx",
@@ -183,13 +183,8 @@ class Custom_MCP implements INode {
 
             // Compatible with stdio and SSE
             let toolkit: MCPToolkit
-            if (process.env.CUSTOM_MCP_PROTOCOL === 'sse') {
-                toolkit = new MCPToolkit(serverParams, 'sse')
-            } else if (serverParams?.command === undefined) {
-                toolkit = new MCPToolkit(serverParams, 'sse')
-            } else {
-                toolkit = new MCPToolkit(serverParams, 'stdio')
-            }
+            if (process.env.CUSTOM_MCP_PROTOCOL === 'stdio' && serverParams!.command) toolkit = new MCPToolkit(serverParams, 'stdio')
+            else toolkit = new MCPToolkit(serverParams, 'sse')
 
             await toolkit.initialize()
 

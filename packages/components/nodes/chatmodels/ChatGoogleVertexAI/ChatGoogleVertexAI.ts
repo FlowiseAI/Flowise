@@ -1,5 +1,6 @@
 import { BaseCache } from '@langchain/core/caches'
 import { ChatVertexAIInput, ChatVertexAI as LcChatVertexAI } from '@langchain/google-vertexai'
+import { GoogleGenerativeAIChatInput } from '@langchain/google-genai'
 import { buildGoogleCredentials } from '../../../src/google-utils'
 import {
     ICommonObject,
@@ -12,9 +13,7 @@ import {
 } from '../../../src/Interface'
 import { getModels, getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { getBaseClasses } from '../../../src/utils'
-
-const DEFAULT_IMAGE_MAX_TOKEN = 8192
-const DEFAULT_IMAGE_MODEL = 'gemini-1.5-flash-latest'
+import { supportsSamplingParams } from '../../../src/anthropicUtils'
 
 class ChatVertexAI extends LcChatVertexAI implements IVisionChatModal {
     configuredModel: string
@@ -34,20 +33,8 @@ class ChatVertexAI extends LcChatVertexAI implements IVisionChatModal {
         this.configuredMaxToken = fields?.maxOutputTokens ?? 2048
     }
 
-    revertToOriginalModel(): void {
-        this.modelName = this.configuredModel
-        this.maxOutputTokens = this.configuredMaxToken
-    }
-
     setMultiModalOption(multiModalOption: IMultiModalOption): void {
         this.multiModalOption = multiModalOption
-    }
-
-    setVisionModel(): void {
-        if (!this.modelName.startsWith('claude-3')) {
-            this.modelName = DEFAULT_IMAGE_MODEL
-            this.maxOutputTokens = this.configuredMaxToken ? this.configuredMaxToken : DEFAULT_IMAGE_MAX_TOKEN
-        }
     }
 }
 
@@ -64,7 +51,7 @@ class GoogleVertexAI_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatGoogleVertexAI'
+        this.label = 'Google VertexAI'
         this.name = 'chatGoogleVertexAI'
         this.version = 5.3
         this.type = 'ChatGoogleVertexAI'
@@ -120,6 +107,14 @@ class GoogleVertexAI_ChatModels implements INode {
                 optional: true
             },
             {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
@@ -128,13 +123,43 @@ class GoogleVertexAI_ChatModels implements INode {
                 default: false,
                 optional: true
             },
+            /** The thinkingLevel parameter, recommended for Gemini 3 models and onwards. */
             {
-                label: 'Streaming',
-                name: 'streaming',
-                type: 'boolean',
-                default: true,
+                label: 'Thinking Budget',
+                name: 'thinkingBudget',
+                type: 'number',
+                description: 'Guides the number of thinking tokens. -1 for dynamic, 0 to disable, or positive integer (Gemini 2.5 models).',
+                step: 1,
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    modelName: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite']
+                }
+            },
+            {
+                label: 'Thinking Level',
+                name: 'thinkingLevel',
+                type: 'options',
+                description: 'Adjust the amount of reasoning effort based on the complexity of the user request',
+                options: [
+                    {
+                        label: 'Low',
+                        name: 'LOW'
+                    },
+                    {
+                        label: 'Medium',
+                        name: 'MEDIUM'
+                    },
+                    {
+                        label: 'High',
+                        name: 'HIGH'
+                    }
+                ],
+                optional: true,
+                additionalParams: true,
+                show: {
+                    modelName: ['gemini-3.1-pro-preview', 'gemini-3.1-flash-lite-preview', 'gemini-3-flash-preview']
+                }
             },
             {
                 label: 'Max Output Tokens',
@@ -193,8 +218,9 @@ class GoogleVertexAI_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const topK = nodeData.inputs?.topK as string
         const streaming = nodeData.inputs?.streaming as boolean
-        const thinkingBudget = nodeData.inputs?.thinkingBudget as string
         const region = nodeData.inputs?.region as string
+        const thinkingBudget = nodeData.inputs?.thinkingBudget as string
+        const thinkingLevel = nodeData.inputs?.thinkingLevel as 'LOW' | 'MEDIUM' | 'HIGH'
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
@@ -204,21 +230,41 @@ class GoogleVertexAI_ChatModels implements INode {
             }
         }
 
-        const obj: ChatVertexAIInput = {
-            temperature: parseFloat(temperature),
-            modelName: customModelName || modelName,
+        const resolvedModelName = customModelName || modelName
+
+        // Newer Anthropic Claude models hosted on Vertex (Opus 4.7+) don't
+        // accept sampling parameters. Gemini and older Claude models are
+        // unaffected because their names won't match the patterns.
+        const samplingSupported = supportsSamplingParams(resolvedModelName)
+
+        const obj: ChatVertexAIInput & Partial<GoogleGenerativeAIChatInput> = {
+            modelName: resolvedModelName,
             streaming: streaming ?? true
+        }
+
+        if (samplingSupported) {
+            obj.temperature = parseFloat(temperature)
         }
 
         const authOptions = await buildGoogleCredentials(nodeData, options)
         if (authOptions && Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
+        if (samplingSupported && topP) obj.topP = parseFloat(topP)
         if (cache) obj.cache = cache
-        if (topK) obj.topK = parseFloat(topK)
-        if (thinkingBudget) obj.thinkingBudget = parseInt(thinkingBudget, 10)
+        if (samplingSupported && topK) obj.topK = parseFloat(topK)
         if (region) obj.location = region
+        if (thinkingLevel) {
+            obj.thinkingConfig = {
+                thinkingLevel: thinkingLevel,
+                includeThoughts: true
+            }
+        } else if (thinkingBudget) {
+            obj.thinkingConfig = {
+                thinkingBudget: parseInt(thinkingBudget, 10),
+                includeThoughts: true
+            }
+        }
 
         const model = new ChatVertexAI(nodeData.id, obj)
         model.setMultiModalOption(multiModalOption)

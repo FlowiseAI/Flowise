@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { CallbackManager, CallbackManagerForToolRun, Callbacks, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
 import { BaseDynamicToolInput, DynamicTool, StructuredTool, ToolInputParsingException } from '@langchain/core/tools'
 import { BaseRetriever } from '@langchain/core/retrievers'
@@ -197,12 +197,14 @@ class Retriever_Tools implements INode {
             if (retrieverToolMetadataFilter) {
                 const flowObj = flowConfig
 
-                const metadatafilter =
+                const metadataFilter =
                     typeof retrieverToolMetadataFilter === 'object' ? retrieverToolMetadataFilter : JSON.parse(retrieverToolMetadataFilter)
-                const newMetadataFilter = resolveFlowObjValue(metadatafilter, flowObj)
+                const newMetadataFilter = resolveFlowObjValue(metadataFilter, flowObj)
 
-                const vectorStore = (retriever as VectorStoreRetriever<any>).vectorStore
-                vectorStore.filter = newMetadataFilter
+                if (newMetadataFilter && typeof newMetadataFilter === 'object' && Object.keys(newMetadataFilter).length > 0) {
+                    const vectorStore = (retriever as VectorStoreRetriever<any>).vectorStore
+                    vectorStore.filter = newMetadataFilter
+                }
             }
             const docs = await retriever.invoke(input)
             const content = docs.map((doc) => doc.pageContent).join('\n\n')

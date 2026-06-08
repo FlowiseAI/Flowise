@@ -1,8 +1,9 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { NotionAPILoader, NotionAPILoaderOptions } from '@langchain/community/document_loaders/web/notionapi'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters, INodeOutputsValue } from '../../../src'
+import { applyCompactTableTransformer } from './notionTableFix'
 
 class NotionPage_DocumentLoaders implements INode {
     label: string
@@ -97,7 +98,7 @@ class NotionPage_DocumentLoaders implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const notionIntegrationToken = getCredentialParam('notionIntegrationToken', credentialData, nodeData)
 
-        const obj: NotionAPILoaderOptions = {
+        const obj: NotionAPILoaderOptions & { type: 'page' | 'database' } = {
             clientOptions: {
                 auth: notionIntegrationToken
             },
@@ -105,6 +106,7 @@ class NotionPage_DocumentLoaders implements INode {
             type: 'page'
         }
         const loader = new NotionAPILoader(obj)
+        applyCompactTableTransformer(loader)
 
         let docs: IDocument[] = []
         if (textSplitter) {

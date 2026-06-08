@@ -1,8 +1,9 @@
-import { OpenAIChatInput, ChatOpenAI } from '@langchain/openai'
+import { OpenAIChatInput, ChatOpenAI as LangchainChatOpenAI } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ChatOpenAI } from '../ChatOpenAI/FlowiseChatOpenAI'
 
 class ChatLitellm_ChatModels implements INode {
     label: string
@@ -17,14 +18,14 @@ class ChatLitellm_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatLitellm'
+        this.label = 'LiteLLM'
         this.name = 'chatLitellm'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatLitellm'
         this.icon = 'litellm.jpg'
         this.category = 'Chat Models'
         this.description = 'Connect to a Litellm server using OpenAI-compatible API'
-        this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(ChatOpenAI)]
+        this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(LangchainChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -68,6 +69,15 @@ class ChatLitellm_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                description:
+                    'Allow image input. Image uploads need a model marked supports_vision=true in LiteLLM. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                default: false,
+                optional: true
+            },
+            {
                 label: 'Max Tokens',
                 name: 'maxTokens',
                 type: 'number',
@@ -103,6 +113,7 @@ class ChatLitellm_ChatModels implements INode {
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
         const timeout = nodeData.inputs?.timeout as string
+        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('litellmApiKey', credentialData, nodeData)
@@ -129,7 +140,14 @@ class ChatLitellm_ChatModels implements INode {
             obj.apiKey = apiKey
         }
 
-        const model = new ChatOpenAI(obj)
+        const multiModalOption: IMultiModalOption = {
+            image: {
+                allowImageUploads: allowImageUploads ?? false
+            }
+        }
+
+        const model = new ChatOpenAI(nodeData.id, obj)
+        model.setMultiModalOption(multiModalOption)
 
         return model
     }

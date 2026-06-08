@@ -10,7 +10,8 @@ export const WHITELIST_URLS = [
     '/api/v1/public-chatbotConfig',
     '/api/v1/public-executions',
     '/api/v1/prediction/',
-    '/api/v1/vector/upsert/',
+    '/api/v1/webhook/',
+    '/api/v1/chatmessage/abort',
     '/api/v1/node-icon/',
     '/api/v1/components-credentials-icon/',
     '/api/v1/chatflows-streaming',
@@ -23,8 +24,6 @@ export const WHITELIST_URLS = [
     '/api/v1/ping',
     '/api/v1/version',
     '/api/v1/attachments',
-    '/api/v1/metrics',
-    '/api/v1/nvidia-nim',
     '/api/v1/auth/resolve',
     '/api/v1/auth/login',
     '/api/v1/auth/refreshToken',
@@ -35,12 +34,13 @@ export const WHITELIST_URLS = [
     '/api/v1/account/resend-verification',
     '/api/v1/account/forgot-password',
     '/api/v1/account/reset-password',
-    '/api/v1/account/basic-auth',
-    '/api/v1/loginmethod',
+    '/api/v1/account/confirm-email-change',
+    '/api/v1/loginmethod/default',
     '/api/v1/pricing',
     '/api/v1/user/test',
     '/api/v1/oauth2-credential/callback',
     '/api/v1/oauth2-credential/refresh',
+    '/api/v1/mcp/',
     '/api/v1/text-to-speech/generate',
     '/api/v1/text-to-speech/abort',
     AzureSSO.LOGIN_URI,
@@ -57,12 +57,16 @@ export const WHITELIST_URLS = [
     GithubSSO.CALLBACK_URI
 ]
 
+export const API_KEY_BLACKLIST_URLS = ['/api/v1/nvidia-nim', '/api/v1/account/delete', '/api/v1/files']
+
 export const enum GeneralErrorMessage {
+    FORBIDDEN = 'Forbidden',
     UNAUTHORIZED = 'Unauthorized',
     UNHANDLED_EDGE_CASE = 'Unhandled Edge Case',
     INVALID_PASSWORD = 'Invalid Password',
     NOT_ALLOWED_TO_DELETE_OWNER = 'Not Allowed To Delete Owner',
-    INTERNAL_SERVER_ERROR = 'Internal Server Error'
+    INTERNAL_SERVER_ERROR = 'Internal Server Error',
+    SMTP_NOT_CONFIGURED = 'Email (SMTP) is not configured on this server'
 }
 
 export const enum GeneralSuccessMessage {
@@ -103,6 +107,49 @@ export const INPUT_PARAMS_TYPE = [
     'file',
     'folder',
     'tabs'
+]
+
+export const ALLOWED_OAUTH2_TOKEN_FIELDS = [
+    'access_token',
+    'refresh_token',
+    'token_type',
+    'expires_in',
+    'scope',
+    'id_token',
+    'granted_scope'
+]
+
+export const DEFAULT_ALLOWED_OAUTH2_DOMAINS = [
+    'login.microsoftonline.com',
+    'oauth2.googleapis.com',
+    'accounts.google.com',
+    'github.com',
+    'login.salesforce.com',
+    'test.salesforce.com',
+    'oauth2.hubapi.com',
+    'api.hubapi.com',
+    'oauth.pipedrive.com',
+    'app.clickup.com',
+    'api.clickup.com',
+    'login.xero.com',
+    'identity.xero.com',
+    'oauth2.sky.blackbaud.com',
+    'app.asana.com',
+    'todoist.com',
+    'api.todoist.com',
+    'slack.com',
+    'oauth.pocketsmith.com',
+    'api.notion.com',
+    'api.dropboxapi.com',
+    'api.box.com',
+    'zoom.us',
+    'auth.atlassian.com',
+    'login.zoho.com',
+    'accounts.zoho.com',
+    'airtable.com',
+    'api.linear.app',
+    'discord.com',
+    'api.pipedream.com'
 ]
 
 export const LICENSE_QUOTAS = {

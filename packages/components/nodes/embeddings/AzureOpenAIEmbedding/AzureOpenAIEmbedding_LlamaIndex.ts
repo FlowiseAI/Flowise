@@ -21,6 +21,8 @@ class AzureOpenAIEmbedding_LlamaIndex_Embeddings implements INode {
     credential: INodeParams
     tags: string[]
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'Azure OpenAI Embeddings'
@@ -32,6 +34,8 @@ class AzureOpenAIEmbedding_LlamaIndex_Embeddings implements INode {
         this.description = 'Azure OpenAI API embeddings specific for LlamaIndex'
         this.baseClasses = [this.type, 'BaseEmbedding_LlamaIndex', ...getBaseClasses(OpenAIEmbedding)]
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

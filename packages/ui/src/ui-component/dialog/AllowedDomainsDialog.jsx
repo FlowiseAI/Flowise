@@ -13,7 +13,7 @@ import useNotifier from '@/utils/useNotifier'
 // Project imports
 import AllowedDomains from '@/ui-component/extended/AllowedDomains'
 
-const AllowedDomainsDialog = ({ show, dialogProps, onCancel }) => {
+const AllowedDomainsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
@@ -38,7 +38,7 @@ const AllowedDomainsDialog = ({ show, dialogProps, onCancel }) => {
                 {dialogProps.title || 'Allowed Domains'}
             </DialogTitle>
             <DialogContent>
-                <AllowedDomains dialogProps={dialogProps} />
+                <AllowedDomains dialogProps={dialogProps} onConfirm={onConfirm} />
             </DialogContent>
         </Dialog>
     ) : null

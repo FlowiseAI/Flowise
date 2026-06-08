@@ -2,6 +2,7 @@ import { Document } from '@langchain/core/documents'
 import {
     addArrayFilesToStorage,
     addSingleFileToStorage,
+    extractResponseContent,
     getFileFromStorage,
     getFileFromUpload,
     ICommonObject,
@@ -46,6 +47,7 @@ import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { validateFileMimeTypeAndExtensionMatch } from '../../utils/fileValidation'
 import { databaseEntities, getAppVersion, saveUpsertFlowData } from '../../utils'
 import { DOCUMENT_STORE_BASE_FOLDER, INPUT_PARAMS_TYPE, OMIT_QUEUE_JOB_DATA } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -187,6 +189,9 @@ const getDocumentStoreById = async (storeId: string, workspaceId: string) => {
         }
         return entity
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: documentStoreServices.getDocumentStoreById - ${getErrorMessage(error)}`
@@ -561,7 +566,12 @@ const _saveFileToStorage = async (
     }
 }
 
-const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComponentNodes, data: IDocumentStoreLoaderForPreview) => {
+const _splitIntoChunks = async (
+    appDataSource: DataSource,
+    componentNodes: IComponentNodes,
+    data: IDocumentStoreLoaderForPreview,
+    workspaceId?: string
+) => {
     try {
         let splitterInstance = null
         if (data.splitterId && data.splitterConfig && Object.keys(data.splitterConfig).length > 0) {
@@ -588,7 +598,8 @@ const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComp
             appDataSource,
             databaseEntities,
             logger,
-            processRaw: true
+            processRaw: true,
+            workspaceId
         }
         const docNodeInstance = new nodeModule.nodeClass()
         let docs: IDocument[] = await docNodeInstance.init(nodeData, '', options)
@@ -605,7 +616,8 @@ const _normalizeFilePaths = async (
     appDataSource: DataSource,
     data: IDocumentStoreLoaderForPreview,
     entity: DocumentStore | null,
-    orgId: string
+    orgId: string,
+    workspaceId: string
 ) => {
     const keys = Object.getOwnPropertyNames(data.loaderConfig)
     let rehydrated = false
@@ -620,8 +632,15 @@ const _normalizeFilePaths = async (
         let documentStoreEntity: DocumentStore | null = entity
         if (input.startsWith('FILE-STORAGE::')) {
             if (!documentStoreEntity) {
+                if (!workspaceId) {
+                    throw new InternalFlowiseError(
+                        StatusCodes.PRECONDITION_FAILED,
+                        'workspaceId is required to resolve document store for FILE-STORAGE paths'
+                    )
+                }
                 documentStoreEntity = await appDataSource.getRepository(DocumentStore).findOneBy({
-                    id: data.storeId
+                    id: data.storeId,
+                    workspaceId
                 })
                 if (!documentStoreEntity) {
                     throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${data.storeId} not found`)
@@ -693,6 +712,9 @@ const previewChunksMiddleware = async (
 
         return await previewChunks(executeData)
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: documentStoreServices.previewChunksMiddleware - ${getErrorMessage(error)}`
@@ -700,7 +722,7 @@ const previewChunksMiddleware = async (
     }
 }
 
-export const previewChunks = async ({ appDataSource, componentNodes, data, orgId }: IExecutePreviewLoader) => {
+export const previewChunks = async ({ appDataSource, componentNodes, data, orgId, workspaceId }: IExecutePreviewLoader) => {
     try {
         if (data.preview) {
             if (
@@ -712,9 +734,9 @@ export const previewChunks = async ({ appDataSource, componentNodes, data, orgId
             }
         }
         if (!data.rehydrated) {
-            await _normalizeFilePaths(appDataSource, data, null, orgId)
+            await _normalizeFilePaths(appDataSource, data, null, orgId, workspaceId)
         }
-        let docs = await _splitIntoChunks(appDataSource, componentNodes, data)
+        let docs = await _splitIntoChunks(appDataSource, componentNodes, data, workspaceId)
         const totalChunks = docs.length
         // if -1, return all chunks
         if (data.previewChunkCount === -1) data.previewChunkCount = totalChunks
@@ -725,6 +747,9 @@ export const previewChunks = async ({ appDataSource, componentNodes, data, orgId
 
         return { chunks: docs, totalChunks: totalChunks, previewChunkCount: data.previewChunkCount }
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: documentStoreServices.previewChunks - ${getErrorMessage(error)}`
@@ -923,7 +948,7 @@ const _saveChunksToStorage = async (
 
     try {
         //step 1: restore the full paths, if any
-        await _normalizeFilePaths(appDataSource, data, entity, orgId)
+        await _normalizeFilePaths(appDataSource, data, entity, orgId, workspaceId)
 
         //step 2: split the file into chunks
         const response = await previewChunks({
@@ -1769,6 +1794,7 @@ const upsertDocStore = async (
         const docStoreBody = typeof data.docStore === 'string' ? JSON.parse(data.docStore) : data.docStore
         const newDocumentStore = docStoreBody ?? { name: `Document Store ${Date.now().toString()}` }
         const docStore = DocumentStoreDTO.toEntity(newDocumentStore)
+        docStore.workspaceId = workspaceId // enforce trusted server-side value, never from user input
         const documentStore = appDataSource.getRepository(DocumentStore).create(docStore)
         const dbResponse = await appDataSource.getRepository(DocumentStore).save(documentStore)
         storeId = dbResponse.id
@@ -1820,6 +1846,9 @@ const upsertDocStore = async (
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
+            // Validate file extension, MIME type, and content to prevent security vulnerabilities
+            validateFileMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
 
             try {
                 checkStorage(orgId, subscriptionId, usageCacheManager)
@@ -2123,7 +2152,7 @@ const refreshDocStoreMiddleware = async (
     }
 }
 
-const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: ICommonObject): Promise<string> => {
+const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: ICommonObject): Promise<ICommonObject> => {
     try {
         const appServer = getRunningExpressApp()
 
@@ -2165,7 +2194,8 @@ const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: I
             const response = await llmNodeInstance.invoke(
                 DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR.replace('{context}', chunksPageContent)
             )
-            return response
+            const content = extractResponseContent(response)
+            return { content }
         }
 
         throw new InternalFlowiseError(

@@ -15,6 +15,8 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
     tags: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'ChatOpenAI'
@@ -26,6 +28,8 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
         this.description = 'Wrapper around OpenAI Chat LLM specific for LlamaIndex'
         this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(OpenAI)]
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom'
 import { cloneDeep } from 'lodash'
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Box, Typography, OutlinedInput, DialogActions, Button, Dialog, DialogContent, DialogTitle, LinearProgress } from '@mui/material'
@@ -14,7 +14,7 @@ import { flowContext } from '@/store/context/ReactFlowContext'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import { useTheme } from '@mui/material/styles'
 import assistantsApi from '@/api/assistants'
-import { baseURL } from '@/store/constant'
+import { baseURL, FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 import { initNode, showHideInputParams } from '@/utils/genericHelper'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 import useApi from '@/hooks/useApi'
@@ -58,9 +58,80 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
     const handleChatModelDataChange = ({ inputParam, newValue }) => {
         setSelectedChatModel((prevData) => {
             const updatedData = { ...prevData }
-            updatedData.inputs[inputParam.name] = newValue
+            if (inputParam.type === 'credential') {
+                updatedData.credential = newValue
+                updatedData.inputs = { ...updatedData.inputs, [FLOWISE_CREDENTIAL_ID]: newValue }
+            } else {
+                updatedData.inputs = { ...updatedData.inputs, [inputParam.name]: newValue }
+            }
             updatedData.inputParams = showHideInputParams(updatedData)
             return updatedData
+        })
+    }
+
+    /**
+     * Check if all mandatory fields are filled for the selected chat model.
+     *
+     * @param value
+     * @returns {boolean}
+     */
+    const isMissingRequiredValue = (value) => {
+        if (value === undefined || value === null) return true
+
+        // Empty / whitespace-only string should be treated as missing
+        if (typeof value === 'string') return value.trim() === ''
+
+        // Empty array should be treated as missing (common for multi-select inputs)
+        if (Array.isArray(value)) return value.length === 0
+
+        // IMPORTANT: boolean false and number 0 are valid values, so not missing
+        return false
+    }
+
+    /**
+     * Check Mandatory Fields
+     * @returns { isValid: boolean, missingFields: string[] }
+     */
+    const checkMandatoryFields = useCallback(() => {
+        if (!selectedChatModel || Object.keys(selectedChatModel).length === 0) {
+            return { isValid: false, missingFields: [] }
+        }
+
+        const inputParams = showHideInputParams(selectedChatModel).filter(
+            (inputParam) => !inputParam.hidden && inputParam.display !== false
+        )
+
+        const missingFields = []
+
+        for (const inputParam of inputParams) {
+            if (!inputParam.optional) {
+                if (inputParam.type === 'credential') {
+                    // Check for credential in both possible locations
+                    const credential = selectedChatModel.credential || selectedChatModel.inputs?.[FLOWISE_CREDENTIAL_ID]
+                    if (!credential) {
+                        missingFields.push(inputParam.label || 'Credential')
+                    }
+                } else if (isMissingRequiredValue(selectedChatModel.inputs?.[inputParam.name])) {
+                    missingFields.push(inputParam.label || inputParam.name)
+                }
+            }
+        }
+
+        return { isValid: missingFields.length === 0, missingFields }
+    }, [selectedChatModel])
+
+    const displayWarning = (message) => {
+        enqueueSnackbar({
+            message: message || 'Please fill in all mandatory fields.',
+            options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'warning',
+                action: (key) => (
+                    <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                        <IconX />
+                    </Button>
+                )
+            }
         })
     }
 
@@ -112,6 +183,17 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
 
     const onGenerate = async () => {
         if (!customAssistantInstruction.trim()) return
+
+        // Validate all mandatory fields before proceeding
+        const { isValid, missingFields } = checkMandatoryFields()
+        if (!isValid) {
+            const message =
+                missingFields.length > 0
+                    ? `Please fill in the following required fields: ${missingFields.join(', ')}`
+                    : 'Please fill in all mandatory fields for the selected model.'
+            displayWarning(message)
+            return
+        }
 
         try {
             setLoading(true)
@@ -346,7 +428,8 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                         loading ||
                                         !customAssistantInstruction.trim() ||
                                         !selectedChatModel ||
-                                        !Object.keys(selectedChatModel).length
+                                        !Object.keys(selectedChatModel).length ||
+                                        !checkMandatoryFields().isValid
                                     }
                                 >
                                     Generate

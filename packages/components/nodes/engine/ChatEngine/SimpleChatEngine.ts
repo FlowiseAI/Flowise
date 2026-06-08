@@ -24,6 +24,8 @@ class SimpleChatEngine_LlamaIndex implements INode {
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
     sessionId?: string
+    badge: string
+    deprecateMessage: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Simple Chat Engine'
@@ -35,6 +37,8 @@ class SimpleChatEngine_LlamaIndex implements INode {
         this.description = 'Simple engine to handle back and forth conversations'
         this.baseClasses = [this.type]
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.inputs = [
             {
                 label: 'Chat Model',

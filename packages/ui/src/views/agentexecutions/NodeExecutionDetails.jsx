@@ -25,7 +25,7 @@ import {
 } from '@mui/material'
 import { useTheme, darken } from '@mui/material/styles'
 import { useSnackbar } from 'notistack'
-import { IconCoins, IconClock, IconChevronDown, IconDownload, IconTool } from '@tabler/icons-react'
+import { IconCoins, IconCoin, IconClock, IconChevronDown, IconDownload, IconTool } from '@tabler/icons-react'
 import toolSVG from '@/assets/images/tool.svg'
 
 // Project imports
@@ -48,6 +48,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
     const [loadingMessage, setLoadingMessage] = useState('')
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
+    const [showAllTools, setShowAllTools] = useState(false)
     const customization = useSelector((state) => state.customization)
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
@@ -326,6 +327,24 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         sx={{ ml: 1, '& .MuiChip-icon': { mr: 0.2, ml: 1 } }}
                     />
                 )}
+                {data.output?.usageMetadata?.total_cost != null && Number(data.output.usageMetadata.total_cost) >= 0 && (
+                    <Chip
+                        icon={<IconCoin size={17} />}
+                        label={
+                            data.output.usageMetadata.total_cost >= 0.01
+                                ? `$${Number(data.output.usageMetadata.total_cost).toFixed(2)}`
+                                : `$${Number(data.output.usageMetadata.total_cost).toFixed(6)}`
+                        }
+                        variant='contained'
+                        size='small'
+                        sx={{
+                            ml: 1,
+                            backgroundColor: '#c49331',
+                            color: 'white',
+                            '& .MuiChip-icon': { color: 'white', mr: 0.2, ml: 1 }
+                        }}
+                    />
+                )}
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
                 <ToggleButtonGroup
@@ -369,7 +388,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                             <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
                                 Tools
                             </Typography>
-                            {data.output.availableTools.map((tool, index) => {
+                            {(showAllTools ? data.output.availableTools : data.output.availableTools.slice(0, 5)).map((tool, index) => {
                                 // Check if this tool is in the usedTools array
                                 const isToolUsed =
                                     data.output.usedTools &&
@@ -394,7 +413,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                         }}
                                     >
                                         <AccordionSummary
-                                            expandIcon={<IconChevronDown />}
+                                            expandIcon={<IconChevronDown color={customization.isDarkMode ? '#fff' : undefined} />}
                                             aria-controls={`tool-${index}-content`}
                                             id={`tool-${index}-header`}
                                         >
@@ -468,6 +487,15 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                     </Accordion>
                                 )
                             })}
+                            {data.output.availableTools.length > 5 && (
+                                <Button
+                                    size='small'
+                                    onClick={() => setShowAllTools((prev) => !prev)}
+                                    sx={{ mt: 0.5, textTransform: 'none' }}
+                                >
+                                    {showAllTools ? 'Show less' : `Show ${data.output.availableTools.length - 5} more`}
+                                </Button>
+                            )}
                         </Box>
                     )}
                     <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
@@ -887,8 +915,10 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                 )}
                             </Box>
                         ))
-                    ) : data?.input?.form || data?.input?.http || data?.input?.conditions ? (
-                        <JSONViewer data={data.input.form || data.input.http || data.input.conditions} />
+                    ) : data?.name === 'toolAgentflow' && data?.input ? (
+                        <JSONViewer data={data.input} />
+                    ) : data?.input?.form || data?.input?.http || data?.input?.webhook || data?.input?.conditions ? (
+                        <JSONViewer data={data.input.form || data.input.http || data.input.webhook || data.input.conditions} />
                     ) : data?.input?.code ? (
                         <Box
                             sx={{

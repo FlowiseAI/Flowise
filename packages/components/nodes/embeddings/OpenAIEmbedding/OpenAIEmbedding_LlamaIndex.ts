@@ -15,6 +15,8 @@ class OpenAIEmbedding_LlamaIndex_Embeddings implements INode {
     tags: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'OpenAI Embedding'
@@ -26,6 +28,8 @@ class OpenAIEmbedding_LlamaIndex_Embeddings implements INode {
         this.description = 'OpenAI Embedding specific for LlamaIndex'
         this.baseClasses = [this.type, 'BaseEmbedding_LlamaIndex', ...getBaseClasses(OpenAIEmbedding)]
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

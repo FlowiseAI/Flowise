@@ -1,22 +1,22 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Chip, Box, Stack, ToggleButton, ToggleButtonGroup, IconButton } from '@mui/material'
+import { Box, Chip, IconButton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
-import MainCard from '@/ui-component/cards/MainCard'
-import ItemCard from '@/ui-component/cards/ItemCard'
-import { gridSpacing } from '@/store/constant'
 import AgentsEmptySVG from '@/assets/images/agents_empty.svg'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import { FlowListTable } from '@/ui-component/table/FlowListTable'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import { gridSpacing } from '@/store/constant'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import ItemCard from '@/ui-component/cards/ItemCard'
+import MainCard from '@/ui-component/cards/MainCard'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
+import { FlowListTable } from '@/ui-component/table/FlowListTable'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -25,11 +25,11 @@ import chatflowsApi from '@/api/chatflows'
 import useApi from '@/hooks/useApi'
 
 // const
-import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
+import { AGENTFLOW_ICONS, baseURL } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
 
 // icons
-import { IconPlus, IconLayoutGrid, IconList, IconX, IconAlertTriangle } from '@tabler/icons-react'
+import { IconAlertTriangle, IconLayoutGrid, IconList, IconPlus, IconX } from '@tabler/icons-react'
 
 // ==============================|| AGENTS ||============================== //
 
@@ -41,22 +41,24 @@ const Agentflows = () => {
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
     const [icons, setIcons] = useState({})
+    const [scheduleStatuses, setScheduleStatuses] = useState({})
     const [search, setSearch] = useState('')
     const { error, setError } = useError()
 
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
-    const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
+    const [view, setView] = useState(localStorage.getItem('agentFlowDisplayStyle') || 'card')
     const [agentflowVersion, setAgentflowVersion] = useState(localStorage.getItem('agentFlowVersion') || 'v2')
     const [showDeprecationNotice, setShowDeprecationNotice] = useState(true)
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
+    const [pageLimit, setPageLimit] = useState(() => Number(localStorage.getItem('agentFlowPageSize') || DEFAULT_ITEMS_PER_PAGE))
     const [total, setTotal] = useState(0)
 
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
+        localStorage.setItem('agentFlowPageSize', pageLimit)
         refresh(page, pageLimit, agentflowVersion)
     }
 
@@ -70,7 +72,7 @@ const Agentflows = () => {
 
     const handleChange = (event, nextView) => {
         if (nextView === null) return
-        localStorage.setItem('flowDisplayStyle', nextView)
+        localStorage.setItem('agentFlowDisplayStyle', nextView)
         setView(nextView)
     }
 
@@ -138,30 +140,70 @@ const Agentflows = () => {
                 setTotal(getAllAgentflows.data?.total)
                 const images = {}
                 const icons = {}
+                const scheduleConfiguredIds = []
                 for (let i = 0; i < agentflows.length; i += 1) {
                     const flowDataStr = agentflows[i].flowData
                     const flowData = JSON.parse(flowDataStr)
                     const nodes = flowData.nodes || []
                     images[agentflows[i].id] = []
                     icons[agentflows[i].id] = []
+                    let isScheduleFlow = false
                     for (let j = 0; j < nodes.length; j += 1) {
-                        if (nodes[j].data.name === 'stickyNote' || nodes[j].data.name === 'stickyNoteAgentflow') continue
-                        const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodes[j].data.name)
+                        const node = nodes[j]
+                        if (node.data?.name === 'startAgentflow' && node.data?.inputs?.startInputType === 'scheduleInput') {
+                            isScheduleFlow = true
+                        }
+                        if (node.data.name === 'stickyNote' || node.data.name === 'stickyNoteAgentflow') continue
+                        const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === node.data.name)
                         if (foundIcon) {
                             icons[agentflows[i].id].push(foundIcon)
                         } else {
-                            const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
+                            const imageSrc = `${baseURL}/api/v1/node-icon/${node.data.name}`
                             if (!images[agentflows[i].id].some((img) => img.imageSrc === imageSrc)) {
                                 images[agentflows[i].id].push({
                                     imageSrc,
-                                    label: nodes[j].data.label
+                                    label: node.data.label
                                 })
                             }
                         }
                     }
+                    if (isScheduleFlow) scheduleConfiguredIds.push(agentflows[i].id)
                 }
                 setImages(images)
                 setIcons(icons)
+
+                const initialStatuses = {}
+                scheduleConfiguredIds.forEach((id) => {
+                    initialStatuses[id] = { isScheduled: true, enabled: false, loading: true }
+                })
+                setScheduleStatuses(initialStatuses)
+
+                if (scheduleConfiguredIds.length > 0) {
+                    Promise.all(
+                        scheduleConfiguredIds.map((id) =>
+                            chatflowsApi
+                                .getScheduleStatus(id)
+                                .then((res) => ({ id, data: res.data }))
+                                .catch(() => ({ id, error: true }))
+                        )
+                    ).then((results) => {
+                        setScheduleStatuses((prev) => {
+                            const next = { ...prev }
+                            results.forEach(({ id, data }) => {
+                                if (next[id]) {
+                                    next[id] = {
+                                        ...next[id],
+                                        enabled: data?.enabled === true,
+                                        nextRunAt: data?.record?.nextRunAt || null,
+                                        cronExpression: data?.record?.cronExpression || null,
+                                        loading: false
+                                    }
+                                }
+                            })
+                            return next
+                        })
+                    })
+                }
             } catch (e) {
                 console.error(e)
             }
@@ -311,6 +353,7 @@ const Agentflows = () => {
                                             data={data}
                                             images={images[data.id]}
                                             icons={icons[data.id]}
+                                            scheduleStatus={scheduleStatuses[data.id]}
                                         />
                                     ))}
                                 </Box>
@@ -321,6 +364,7 @@ const Agentflows = () => {
                                     data={getAllAgentflows.data?.data}
                                     images={images}
                                     icons={icons}
+                                    scheduleStatuses={scheduleStatuses}
                                     isLoading={isLoading}
                                     filterFunction={filterFlows}
                                     updateFlowsApi={getAllAgentflows}

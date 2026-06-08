@@ -1,18 +1,18 @@
-import { createPortal } from 'react-dom'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 import PropTypes from 'prop-types'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // Material
-import { Box, Typography, OutlinedInput, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, OutlinedInput, Tooltip, Typography } from '@mui/material'
 
 // Project imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // Icons
-import { IconX, IconUser } from '@tabler/icons-react'
+import { IconAlertTriangle, IconUser, IconX } from '@tabler/icons-react'
 
 // API
 import authApi from '@/api/auth'
@@ -34,7 +34,7 @@ const CreateEditRoleDialog = ({ show, dialogProps, onCancel, onConfirm, setError
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()
-    const { isEnterpriseLicensed } = useConfig()
+    const { isOpenSource, isEnterpriseLicensed, isCloud } = useConfig()
 
     // ==============================|| Snackbar ||============================== //
 
@@ -131,7 +131,7 @@ const CreateEditRoleDialog = ({ show, dialogProps, onCancel, onConfirm, setError
         if ((dialogProps.type === 'EDIT' || dialogProps.type === 'VIEW') && dialogProps.data) {
             setDialogData(dialogProps.data)
         }
-        getAllPermissionsApi.request()
+        getAllPermissionsApi.request('ROLE')
         return () => {
             setRoleName('')
             setRoleDescription('')
@@ -158,18 +158,20 @@ const CreateEditRoleDialog = ({ show, dialogProps, onCancel, onConfirm, setError
             setRoleName(dialogData.name)
             setRoleDescription(dialogData.description)
             const permissions = getAllPermissionsApi.data
-            // Filter out enterprise permissions if not licensed
-            if (!isEnterpriseLicensed) {
-                Object.keys(permissions).forEach((category) => {
-                    permissions[category] = permissions[category].filter((permission) => !permission.isEnterprise)
+            Object.keys(permissions).forEach((category) => {
+                permissions[category] = permissions[category].filter((permission) => {
+                    if (isOpenSource) return permission.isOpenSource
+                    if (isEnterpriseLicensed) return permission.isEnterprise
+                    if (isCloud) return permission.isCloud
+                    return false // fallback - show nothing if no platform is set
                 })
-                // Remove categories that have no permissions left
-                Object.keys(permissions).forEach((category) => {
-                    if (permissions[category].length === 0) {
-                        delete permissions[category]
-                    }
-                })
-            }
+            })
+            // Remove categories that have no permissions left
+            Object.keys(permissions).forEach((category) => {
+                if (permissions[category].length === 0) {
+                    delete permissions[category]
+                }
+            })
             setPermissions(permissions)
             if ((dialogProps.type === 'EDIT' || dialogProps.type === 'VIEW') && dialogProps.data) {
                 const dialogDataPermissions = JSON.parse(dialogData.permissions)
@@ -372,7 +374,7 @@ const CreateEditRoleDialog = ({ show, dialogProps, onCancel, onConfirm, setError
                                                     key={permission.key}
                                                     className={`permission-item ${index % 2 === 0 ? 'left-column' : 'right-column'}`}
                                                 >
-                                                    <label>
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                         <input
                                                             type='checkbox'
                                                             checked={selectedPermissions[category]?.[permission.key] || false}
@@ -383,6 +385,15 @@ const CreateEditRoleDialog = ({ show, dialogProps, onCancel, onConfirm, setError
                                                             onChange={() => handlePermissionChange(category, permission.key)}
                                                         />
                                                         {permission.value}
+                                                        {(permission.key === 'workspace:export' ||
+                                                            permission.key === 'workspace:import') && (
+                                                            <Tooltip
+                                                                title='Administrative privilege: Performs workspace-level actions with implicit access to all contained resources. Intended for backup/restore and migration operations. Restrict to authorized administrators only.'
+                                                                placement='right'
+                                                            >
+                                                                <IconAlertTriangle size={16} color='orange' style={{ flexShrink: 0 }} />
+                                                            </Tooltip>
+                                                        )}
                                                     </label>
                                                 </div>
                                             ))}

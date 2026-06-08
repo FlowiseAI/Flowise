@@ -13,6 +13,8 @@ class TreeSummarize_LlamaIndex implements INode {
     tags: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'TreeSummarize'
@@ -25,6 +27,8 @@ class TreeSummarize_LlamaIndex implements INode {
             'Given a set of text chunks and the query, recursively construct a tree and return the root node as the response. Good for summarization purposes.'
         this.baseClasses = [this.type, 'ResponseSynthesizer']
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.inputs = [
             {
                 label: 'Prompt',

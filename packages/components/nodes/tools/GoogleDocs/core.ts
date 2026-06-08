@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
 import { TOOL_ARGS_PREFIX, formatToolError } from '../../../src/agents'
@@ -284,7 +284,12 @@ class GetDocumentTool extends BaseGoogleDocsTool {
         const params = { ...arg, ...this.defaultParams }
 
         try {
-            const endpoint = `documents/${encodeURIComponent(params.documentId)}`
+            const queryParams = new URLSearchParams()
+            if (params.includeTabsContent) {
+                queryParams.set('includeTabsContent', 'true')
+            }
+            const endpoint =
+                `documents/${encodeURIComponent(params.documentId)}` + (queryParams.size > 0 ? `?${queryParams.toString()}` : '')
             const response = await this.makeGoogleDocsRequest({ endpoint, params })
             return response
         } catch (error) {
@@ -562,10 +567,14 @@ class GetTextContentTool extends BaseGoogleDocsTool {
         const params = { ...arg, ...this.defaultParams }
 
         try {
-            const endpoint = `documents/${encodeURIComponent(params.documentId)}`
+            const queryParams = new URLSearchParams()
+            if (params.includeTabsContent) {
+                queryParams.set('includeTabsContent', 'true')
+            }
+            const endpoint =
+                `documents/${encodeURIComponent(params.documentId)}` + (queryParams.size > 0 ? `?${queryParams.toString()}` : '')
             const response = await this.makeGoogleDocsRequest({ endpoint, params })
 
-            // Extract and return just the text content
             const docData = JSON.parse(response.split(TOOL_ARGS_PREFIX)[0])
             let textContent = ''
 
@@ -579,7 +588,20 @@ class GetTextContentTool extends BaseGoogleDocsTool {
                 }
             }
 
-            docData.body.content?.forEach(extractText)
+            const extractFromTabs = (tabs: any[]) => {
+                for (const tab of tabs) {
+                    tab.documentTab?.body?.content?.forEach(extractText)
+                    if (tab.childTabs?.length) {
+                        extractFromTabs(tab.childTabs)
+                    }
+                }
+            }
+
+            if (docData.tabs?.length) {
+                extractFromTabs(docData.tabs)
+            } else {
+                docData.body?.content?.forEach(extractText)
+            }
 
             return JSON.stringify({ textContent }) + TOOL_ARGS_PREFIX + JSON.stringify(params)
         } catch (error) {

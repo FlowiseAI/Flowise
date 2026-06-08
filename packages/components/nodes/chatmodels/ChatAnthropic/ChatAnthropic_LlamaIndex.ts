@@ -15,6 +15,8 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'ChatAnthropic'
@@ -26,6 +28,8 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
         this.description = 'Wrapper around ChatAnthropic LLM specific for LlamaIndex'
         this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(Anthropic)]
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

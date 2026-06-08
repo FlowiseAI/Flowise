@@ -13,6 +13,8 @@ class Refine_LlamaIndex implements INode {
     tags: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'Refine'
@@ -25,6 +27,8 @@ class Refine_LlamaIndex implements INode {
             'Create and refine an answer by sequentially going through each retrieved text chunk. This makes a separate LLM call per Node. Good for more detailed answers.'
         this.baseClasses = [this.type, 'ResponseSynthesizer']
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.inputs = [
             {
                 label: 'Refine Prompt',

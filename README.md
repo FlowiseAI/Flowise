@@ -36,7 +36,7 @@ English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.
 
 ## ⚡Quick Start
 
-Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
+Download and Install [NodeJS](https://nodejs.org/en/download) >= 20.0.0
 
 1. Install Flowise
     ```bash
@@ -198,7 +198,7 @@ Deploy Flowise self-hosted in your existing infrastructure, we support various [
 
         [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/configuration/deployment/render)
 
-    -   [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
+    -   [HuggingFace Spaces](https://docs.flowiseai.com/configuration/deployment/hugging-face)
 
         <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
 

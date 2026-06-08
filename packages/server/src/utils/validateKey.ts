@@ -40,9 +40,9 @@ export const validateFlowAPIKey = async (req: Request, chatflow: ChatFlow): Prom
 /**
  * Validate and Get API Key Information
  * @param {Request} req
- * @returns {Promise<{isValid: boolean, apiKey?: ApiKey, workspaceId?: string}>}
+ * @returns {Promise<{isValid: boolean, apiKey?: ApiKey}>}
  */
-export const validateAPIKey = async (req: Request): Promise<{ isValid: boolean; apiKey?: ApiKey; workspaceId?: string }> => {
+export const validateAPIKey = async (req: Request): Promise<{ isValid: boolean; apiKey?: ApiKey }> => {
     const authorizationHeader = (req.headers['Authorization'] as string) ?? (req.headers['authorization'] as string) ?? ''
     if (!authorizationHeader) return { isValid: false }
 
@@ -58,10 +58,10 @@ export const validateAPIKey = async (req: Request): Promise<{ isValid: boolean; 
 
         const apiSecret = apiKey.apiSecret
         if (!apiSecret || !compareKeys(apiSecret, suppliedKey)) {
-            return { isValid: false, apiKey, workspaceId: apiKey.workspaceId }
+            return { isValid: false, apiKey }
         }
 
-        return { isValid: true, apiKey, workspaceId: apiKey.workspaceId }
+        return { isValid: true, apiKey }
     } catch (error) {
         return { isValid: false }
     }

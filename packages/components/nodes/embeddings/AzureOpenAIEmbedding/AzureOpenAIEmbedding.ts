@@ -21,7 +21,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Azure OpenAI Embeddings'
+        this.label = 'Azure OpenAI Embedding'
         this.name = 'azureOpenAIEmbeddings'
         this.version = 2.0
         this.type = 'AzureOpenAIEmbeddings'
@@ -53,17 +53,19 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
                 additionalParams: true
             },
             {
-                label: 'BasePath',
+                label: 'Base Path',
                 name: 'basepath',
                 type: 'string',
                 optional: true,
+                description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/',
                 additionalParams: true
             },
             {
-                label: 'BaseOptions',
+                label: 'Base Options',
                 name: 'baseOptions',
                 type: 'json',
                 optional: true,
+                description: 'Default headers to include with every request to the API.',
                 additionalParams: true
             }
         ]

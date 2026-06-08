@@ -1,40 +1,62 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 
 // material-ui
-import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Box, Button, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
 import ErrorBoundary from '@/ErrorBoundary'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import { useError } from '@/store/context/ErrorContext'
+import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import DocumentStoreCard from '@/ui-component/cards/DocumentStoreCard'
 import MainCard from '@/ui-component/cards/MainCard'
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
-import DocumentStoreCard from '@/ui-component/cards/DocumentStoreCard'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import DeleteDocStoreDialog from '@/views/docstore/DeleteDocStoreDialog'
 
 // API
-import useApi from '@/hooks/useApi'
 import documentsApi from '@/api/documentstore'
+import { useAuth } from '@/hooks/useAuth'
+import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
+import { IconDotsVertical, IconEdit, IconLayoutGrid, IconList, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
 import doc_store_empty from '@/assets/images/doc_store_empty.svg'
 
 // const
 import { baseURL, gridSpacing } from '@/store/constant'
 import { DocumentStoreTable } from '@/ui-component/table/DocumentStoreTable'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+
+// utils
+import useNotifier from '@/utils/useNotifier'
 
 // ==============================|| DOCUMENTS ||============================== //
+const getDocStoreActionButtonSx = (theme) => ({
+    p: 0.5,
+    color: theme.palette.text.primary,
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.default : theme.palette.background.paper,
+    border: `1px solid ${theme.palette.divider}`,
+    '&:hover': {
+        backgroundColor: theme.palette.action.hover,
+        borderColor: theme.palette.text.secondary
+    }
+})
 
 const Documents = () => {
     const theme = useTheme()
-
+    const dispatch = useDispatch()
     const navigate = useNavigate()
+    const { hasPermission } = useAuth()
     const getAllDocumentStores = useApi(documentsApi.getAllDocumentStores)
     const { error } = useError()
+    useNotifier()
+
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
@@ -43,6 +65,15 @@ const Documents = () => {
     const [dialogProps, setDialogProps] = useState({})
     const [docStores, setDocStores] = useState([])
     const [view, setView] = useState(localStorage.getItem('docStoreDisplayStyle') || 'card')
+    const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null)
+    const [selectedDocumentStore, setSelectedDocumentStore] = useState(null)
+    const [showDeleteDocStoreDialog, setShowDeleteDocStoreDialog] = useState(false)
+    const [deleteDocStoreDialogProps, setDeleteDocStoreDialogProps] = useState({})
+
+    const canRenameDocumentStore = hasPermission('documentStores:create,documentStores:update')
+    const canDeleteDocumentStore = hasPermission('documentStores:delete')
+    const canManageDocumentStore = canRenameDocumentStore || canDeleteDocumentStore
+    const isActionMenuOpen = Boolean(actionMenuAnchorEl)
 
     const handleChange = (event, nextView) => {
         if (nextView === null) return
@@ -60,6 +91,25 @@ const Documents = () => {
         setSearch(event.target.value)
     }
 
+    const getDeleteErrorMessage = (error) => {
+        const responseData = error?.response?.data
+
+        if (typeof responseData === 'string' && responseData.trim()) {
+            return responseData
+        }
+
+        const responseMessage = responseData && typeof responseData === 'object' ? responseData.message || responseData.error : undefined
+        if (typeof responseMessage === 'string' && responseMessage.trim()) {
+            return responseMessage
+        }
+
+        if (typeof error?.message === 'string' && error.message.trim()) {
+            return error.message
+        }
+
+        return 'Unknown error'
+    }
+
     const goToDocumentStore = (id) => {
         navigate('/document-stores/' + id)
     }
@@ -75,9 +125,132 @@ const Documents = () => {
         setShowDialog(true)
     }
 
-    const onConfirm = () => {
+    const onConfirm = (docStoreId, updatedDocStoreData) => {
         setShowDialog(false)
+
+        // For rename from list/table, update locally to avoid full-table loading skeleton flash.
+        if (dialogProps?.type === 'EDIT' && docStoreId) {
+            setDocStores((prev) =>
+                prev.map((store) =>
+                    store.id === docStoreId
+                        ? {
+                              ...store,
+                              ...(updatedDocStoreData || {})
+                          }
+                        : store
+                )
+            )
+            return
+        }
+
         applyFilters(currentPage, pageLimit)
+    }
+
+    const handleActionMenuOpen = (event, documentStore) => {
+        event.preventDefault()
+        event.stopPropagation()
+        setSelectedDocumentStore(documentStore)
+        setActionMenuAnchorEl(event.currentTarget)
+    }
+
+    const handleActionMenuClose = () => {
+        setActionMenuAnchorEl(null)
+        setSelectedDocumentStore(null)
+    }
+
+    const renameDocumentStore = () => {
+        if (!selectedDocumentStore) return
+        const dialogProp = {
+            title: 'Rename Document Store',
+            type: 'EDIT',
+            cancelButtonName: 'Cancel',
+            confirmButtonName: 'Save',
+            data: {
+                id: selectedDocumentStore.id,
+                name: selectedDocumentStore.name,
+                description: selectedDocumentStore.description
+            }
+        }
+        handleActionMenuClose()
+        setDialogProps(dialogProp)
+        setShowDialog(true)
+    }
+
+    const deleteDocumentStore = () => {
+        if (!selectedDocumentStore) return
+        const documentStoreToDelete = selectedDocumentStore
+        handleActionMenuClose()
+
+        let description = `Delete store [${documentStoreToDelete.name}]? This will remove this document store from the list.`
+
+        if (
+            documentStoreToDelete.recordManagerConfig &&
+            documentStoreToDelete.vectorStoreConfig &&
+            Object.keys(documentStoreToDelete.recordManagerConfig).length > 0 &&
+            Object.keys(documentStoreToDelete.vectorStoreConfig).length > 0
+        ) {
+            description = `Delete store [${documentStoreToDelete.name}]? This will remove this document store from the list and remove the actual data from the vector store database.`
+        }
+
+        setDeleteDocStoreDialogProps({
+            title: 'Delete',
+            description,
+            vectorStoreConfig: documentStoreToDelete.vectorStoreConfig,
+            recordManagerConfig: documentStoreToDelete.recordManagerConfig,
+            type: 'STORE',
+            storeId: documentStoreToDelete.id
+        })
+        setShowDeleteDocStoreDialog(true)
+    }
+
+    const onDocStoreDelete = async (type) => {
+        setShowDeleteDocStoreDialog(false)
+        if (type !== 'STORE') return
+
+        const storeId = deleteDocStoreDialogProps?.storeId
+        if (!storeId) return
+
+        try {
+            const deleteResp = await documentsApi.deleteDocumentStore(storeId)
+            if (deleteResp.data) {
+                enqueueSnackbar({
+                    message: 'Document Store deleted.',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                // Update list instantly instead of full refetch/skeleton.
+                setDocStores((prev) => prev.filter((store) => store.id !== storeId))
+                setImages((prev) => {
+                    const nextImages = { ...prev }
+                    delete nextImages[storeId]
+                    return nextImages
+                })
+                setTotal((prev) => Math.max(0, prev - 1))
+            }
+        } catch (error) {
+            const errorMessage = getDeleteErrorMessage(error)
+
+            enqueueSnackbar({
+                message: `Failed to delete Document Store: ${errorMessage}`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
     }
 
     useEffect(() => {
@@ -88,11 +261,12 @@ const Documents = () => {
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
+    const [pageLimit, setPageLimit] = useState(() => Number(localStorage.getItem('docStorePageSize') || DEFAULT_ITEMS_PER_PAGE))
     const [total, setTotal] = useState(0)
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
+        localStorage.setItem('docStorePageSize', pageLimit)
         applyFilters(page, pageLimit)
     }
 
@@ -218,13 +392,39 @@ const Documents = () => {
                         <React.Fragment>
                             {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {docStores?.filter(filterDocStores).map((data, index) => (
-                                        <DocumentStoreCard
-                                            key={index}
-                                            images={images[data.id]}
-                                            data={data}
-                                            onClick={() => goToDocumentStore(data.id)}
-                                        />
+                                    {docStores?.filter(filterDocStores).map((data) => (
+                                        <Box key={data.id} sx={{ position: 'relative' }}>
+                                            <DocumentStoreCard
+                                                images={images[data.id]}
+                                                data={data}
+                                                hasActions={canManageDocumentStore}
+                                                onClick={() => goToDocumentStore(data.id)}
+                                            />
+                                            {canManageDocumentStore && (
+                                                <IconButton
+                                                    size='small'
+                                                    aria-label='Document store actions'
+                                                    sx={{
+                                                        position: 'absolute',
+                                                        top: 16,
+                                                        right: 10,
+                                                        zIndex: 2,
+                                                        width: 30,
+                                                        height: 30,
+                                                        ...getDocStoreActionButtonSx(theme),
+                                                        [theme.breakpoints.down('sm')]: {
+                                                            top: 8,
+                                                            right: 8,
+                                                            width: 28,
+                                                            height: 28
+                                                        }
+                                                    }}
+                                                    onClick={(event) => handleActionMenuOpen(event, data)}
+                                                >
+                                                    <IconDotsVertical size={18} />
+                                                </IconButton>
+                                            )}
+                                        </Box>
                                     ))}
                                 </Box>
                             ) : (
@@ -233,6 +433,9 @@ const Documents = () => {
                                     data={docStores?.filter(filterDocStores)}
                                     images={images}
                                     onRowClick={(row) => goToDocumentStore(row.id)}
+                                    showActions={canManageDocumentStore}
+                                    onActionMenuClick={handleActionMenuOpen}
+                                    actionButtonSx={getDocStoreActionButtonSx(theme)}
                                 />
                             )}
                             {/* Pagination and Page Size Controls */}
@@ -249,6 +452,38 @@ const Documents = () => {
                     onConfirm={onConfirm}
                 />
             )}
+            {showDeleteDocStoreDialog && (
+                <DeleteDocStoreDialog
+                    show={showDeleteDocStoreDialog}
+                    dialogProps={deleteDocStoreDialogProps}
+                    onCancel={() => setShowDeleteDocStoreDialog(false)}
+                    onDelete={onDocStoreDelete}
+                />
+            )}
+            <Menu
+                anchorEl={actionMenuAnchorEl}
+                open={isActionMenuOpen}
+                onClose={handleActionMenuClose}
+                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            >
+                {canRenameDocumentStore && (
+                    <MenuItem onClick={renameDocumentStore}>
+                        <ListItemIcon>
+                            <IconEdit size={16} />
+                        </ListItemIcon>
+                        <ListItemText>Rename</ListItemText>
+                    </MenuItem>
+                )}
+                {canDeleteDocumentStore && (
+                    <MenuItem onClick={deleteDocumentStore}>
+                        <ListItemIcon>
+                            <IconTrash size={16} />
+                        </ListItemIcon>
+                        <ListItemText>Delete</ListItemText>
+                    </MenuItem>
+                )}
+            </Menu>
         </MainCard>
     )
 }

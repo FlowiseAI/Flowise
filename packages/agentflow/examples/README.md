@@ -1,0 +1,182 @@
+# @flowiseai/agentflow Examples
+
+This folder demonstrates various usage patterns of the `@flowiseai/agentflow` package.
+
+## Setup
+
+1. First, build the agentflow package from the root:
+
+    ```bash
+    cd packages/agentflow
+    pnpm build
+    ```
+
+2. Install dependencies for this example:
+
+    ```bash
+    cd examples
+    pnpm install
+    ```
+
+3. Start the development server:
+
+    ```bash
+    pnpm dev
+    ```
+
+4. Open http://localhost:5174 in your browser
+
+## Configuration
+
+The examples app uses environment variables for configuration. To set up:
+
+1. Copy the `.env.example` file to `.env`:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+2. Edit `.env` to configure your Flowise API server:
+
+    ```bash
+    # Flowise API Base URL
+    VITE_INSTANCE_URL=http://localhost:3000
+
+    # API Key (required for authenticated endpoints)
+    VITE_API_TOKEN=your-api-key-here
+    ```
+
+3. **Get your API Key from Flowise:**
+
+    - Open your Flowise instance (http://localhost:3000)
+    - Go to **Settings** → **API Keys**
+    - Click **Create New Key**
+    - Copy the generated key and paste it in `.env`
+
+    ⚠️ **Important:** Use an **API Key**, not a user authentication token (JWT).
+
+4. Restart the dev server to apply changes:
+    ```bash
+    pnpm dev
+    ```
+
+**Environment Variables:**
+
+| Variable            | Required            | Description                                                                                                                                                                                                         |
+| ------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_INSTANCE_URL` | No                  | Flowise API server endpoint (default: `http://localhost:3000`)                                                                                                                                                      |
+| `VITE_API_TOKEN`    | Yes (authenticated) | Flowise API Key — get from Settings → API Keys                                                                                                                                                                      |
+| `VITE_FLOW_ID`      | No                  | Agentflow ID to load on startup. When set, the canvas loads the saved flow from the database and enables Test Run and Run Status polling without saving first. Copy the ID from the Flowise URL: `/agentflows/<id>` |
+
+**Note**: The `.env` file is gitignored and will not be committed to version control. Add your actual API key to `.env`, not `.env.example`.
+
+### Troubleshooting Authentication
+
+**Getting 401 Unauthorized errors?**
+
+Common causes:
+
+1. **Using wrong token type** ❌
+
+    - Don't use: User authentication JWT tokens (long tokens starting with `eyJhbGc...`)
+    - Use: API Keys (shorter tokens like `9CnKuLRHbEY...`)
+
+2. **Token not loaded**
+
+    - Restart dev server after editing `.env`: `pnpm dev`
+
+3. **Invalid API Key**
+
+    - Regenerate key in Flowise: Settings → API Keys → Create New Key
+    - Copy the new key to `.env`
+
+4. **CORS issues**
+    - Ensure Flowise allows requests from `http://localhost:5174`
+    - Check Flowise CORS configuration
+
+## Examples
+
+The app opens to the **E2E (Live Instance)** example when `VITE_FLOW_ID` is set, and falls back to **Basic Usage** otherwise.
+
+### Basic Usage (`BasicExample.tsx`)
+
+Minimal canvas integration — no database calls:
+
+-   Rendering the canvas with a hardcoded `initialFlow`
+-   Tracking flow changes via `onFlowChange`
+-   Local-only save via `onSave`
+-   Imperative `fitView` / `clear` via ref
+
+### E2E — Live Instance (`E2eExample.tsx`)
+
+Full integration with a running Flowise instance. Requires `VITE_FLOW_ID` for the best experience:
+
+-   Loads the saved flow from the database on startup (`VITE_FLOW_ID`)
+-   Editable flow title synced to the database on save
+-   Save to DB — prompts to create a new chatflow when no ID is configured
+-   Delete chatflow from the database
+-   Test Run via `POST /api/v1/internal-prediction` with markdown-rendered response (disabled when flow has validation errors)
+-   Run Status panel showing per-node execution results (manual refresh)
+
+> **API Token permissions required:** The `VITE_API_TOKEN` used for the E2E example must have **Create**, **Update**, and **Delete** permissions for Agentflows. A read-only key is not sufficient — save, rename, and delete operations will return 403.
+
+### Additional Examples
+
+| Example                 | File                            | Description                                                                              |
+| ----------------------- | ------------------------------- | ---------------------------------------------------------------------------------------- |
+| **Multi-Node Flow**     | `MultiNodeFlow.tsx`             | Complete translation agent flow with multiple connected nodes showing gradient edges     |
+| **Dark Mode**           | `DarkModeExample.tsx`           | Theme toggle demonstrating light/dark mode support                                       |
+| **Status Indicators**   | `StatusIndicatorsExample.tsx`   | Node execution states (running, finished, error, stopped) with animated loader           |
+| **Custom Node**         | `CustomNodeExample.tsx`         | Node with self-contained InputParam definitions and show/hide field visibility           |
+| **Custom UI**           | `CustomUIExample.tsx`           | Custom header and node palette using render props                                        |
+| **All Node Types**      | `AllNodeTypesExample.tsx`       | Visual catalog of all 15 available node types with colors and icons                      |
+| **Filtered Components** | `FilteredComponentsExample.tsx` | Restricting available nodes with preset configurations                                   |
+| **Validation Actions**  | `ValidationActionsExample.tsx`  | Validation button, error display, and custom `canvasActions` alongside built-in controls |
+
+### Feature Coverage
+
+| Feature                                        | Demonstrated In                |
+| ---------------------------------------------- | ------------------------------ |
+| Variable usage (`{{variable}}` syntax, picker) | Custom Node                    |
+| Async options (models, tools, credentials)     | Basic Usage (with running API) |
+| Flow execution status indicators               | Status Indicators              |
+| Field visibility (show/hide conditions)        | Custom Node                    |
+| State management (dirty tracking, callbacks)   | Basic Usage                    |
+| Dark/light mode theming                        | Dark Mode                      |
+| Custom header and palette via render props     | Custom UI                      |
+| Restricting node types with `components` prop  | Filtered Components            |
+| Validation actions and custom `canvasActions`  | Validation Actions             |
+
+## Switching Examples
+
+Use the dropdown selector at the top of the page to switch between examples. All examples are lazy-loaded for better performance.
+
+## Node Types Reference
+
+| Node Type                 | Color   | Description                |
+| ------------------------- | ------- | -------------------------- |
+| `startAgentflow`          | #7EE787 | Entry point for the flow   |
+| `llmAgentflow`            | #64B5F6 | Large Language Model node  |
+| `agentAgentflow`          | #4DD0E1 | AI Agent with tools        |
+| `conditionAgentflow`      | #FFB938 | Conditional branching      |
+| `conditionAgentAgentflow` | #ff8fab | Agent-based condition      |
+| `humanInputAgentflow`     | #6E6EFD | Human approval required    |
+| `loopAgentflow`           | #FFA07A | Loop iteration             |
+| `iterationAgentflow`      | #9C89B8 | Iteration container        |
+| `directReplyAgentflow`    | #4DDBBB | Send response to user      |
+| `customFunctionAgentflow` | #E4B7FF | Custom JavaScript function |
+| `toolAgentflow`           | #d4a373 | External tool integration  |
+| `retrieverAgentflow`      | #b8bedd | Vector store retrieval     |
+| `httpAgentflow`           | #FF7F7F | HTTP API request           |
+| `executeFlowAgentflow`    | #a3b18a | Execute another flow       |
+| `stickyNoteAgentflow`     | #fee440 | Documentation note         |
+
+## Requirements
+
+The examples work best with a running Flowise instance at `http://localhost:3000` for the node API. Without it:
+
+-   The canvas will render
+-   Initial flow data will display
+-   Node palette may be empty (nodes load from API)
+
+For standalone testing, examples include mock flow data.

@@ -15,14 +15,18 @@ on:
                 description: 'Node.js version to build this image with.'
                 type: choice
                 required: true
-                default: '20'
+                default: '24'
                 options:
-                    - '20'
+                    - '24'
             tag_version:
                 description: 'Tag version of the image to be pushed.'
                 type: string
                 required: true
                 default: 'latest'
+
+permissions:
+    contents: read # Required for checkout
+    id-token: write # Required for AWS OIDC
 
 jobs:
     docker:
@@ -32,33 +36,34 @@ jobs:
             - name: Set default values
               id: defaults
               run: |
-                  echo "node_version=${{ github.event.inputs.node_version || '20' }}" >> $GITHUB_OUTPUT
+                  echo "node_version=${{ github.event.inputs.node_version || '24' }}" >> $GITHUB_OUTPUT
                   echo "tag_version=${{ github.event.inputs.tag_version || 'latest' }}" >> $GITHUB_OUTPUT
 
             - name: Checkout
-              uses: actions/checkout@v4.1.1
+              uses: actions/checkout@v6.0.2
 
             - name: Set up QEMU
-              uses: docker/setup-qemu-action@v3.0.0
+              uses: docker/setup-qemu-action@v4.0.0
 
             - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3.0.0
+              uses: docker/setup-buildx-action@v4.0.0
 
-            - name: Configure AWS Credentials
-              uses: aws-actions/configure-aws-credentials@v3
+            - name: Configure AWS OIDC Credentials
+              uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
               with:
-                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ secrets.AWS_REGION }}
+                  role-to-assume: ${{ secrets.AWS_OIDC_IAM_ROLE }}
+                  mask-aws-account-id: true
+                  unset-current-credentials: true
 
             - name: Login to Amazon ECR
-              uses: aws-actions/amazon-ecr-login@v1
+              uses: aws-actions/amazon-ecr-login@v2
 
             # -------------------------
             # Build and push main image
             # -------------------------
             - name: Build and push main image
-              uses: docker/build-push-action@v5.3.0
+              uses: docker/build-push-action@v6.19.2
               with:
                   context: .
                   file: Dockerfile

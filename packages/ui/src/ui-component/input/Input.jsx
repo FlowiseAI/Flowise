@@ -1,18 +1,23 @@
 import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
-import { FormControl, OutlinedInput, InputBase, Popover } from '@mui/material'
+import { FormControl, OutlinedInput, InputBase, Popover, InputAdornment, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import { IconEye, IconEyeOff } from '@tabler/icons-react'
 import SelectVariable from '@/ui-component/json/SelectVariable'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 
-export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
+export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlur, disabled = false }) => {
     const theme = useTheme()
     const [myValue, setMyValue] = useState(value ?? '')
     const [anchorEl, setAnchorEl] = useState(null)
     const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false)
     const ref = useRef(null)
+    const inputElementRef = useRef(null)
+    const selectionRangeRef = useRef({ start: null, end: null })
 
     const openPopOver = Boolean(anchorEl)
+    const hasPasswordToggle = (inputParam?.type === 'password' || inputParam?.type === 'url') && !!inputParam?.enablePasswordToggle
 
     const handleClosePopOver = () => {
         setAnchorEl(null)
@@ -29,6 +34,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
             case 'string':
                 return 'text'
             case 'password':
+            case 'url':
                 return 'password'
             case 'number':
                 return 'number'
@@ -38,6 +44,27 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                 return 'text'
         }
     }
+
+    const handleTogglePasswordVisibility = () => {
+        const inputElement = inputElementRef.current
+        if (inputElement) {
+            selectionRangeRef.current = {
+                start: inputElement.selectionStart,
+                end: inputElement.selectionEnd
+            }
+        }
+        setIsPasswordVisible((prev) => !prev)
+    }
+
+    useEffect(() => {
+        if (!hasPasswordToggle) return
+        const { start, end } = selectionRangeRef.current
+        if (start === null || end === null || !inputElementRef.current) return
+        requestAnimationFrame(() => {
+            inputElementRef.current?.focus()
+            inputElementRef.current?.setSelectionRange(start, end)
+        })
+    }, [hasPasswordToggle, isPasswordVisible])
 
     useEffect(() => {
         if (!disabled && nodes && edges && nodeId && inputParam) {
@@ -70,6 +97,9 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                             setMyValue(e.target.value)
                             onChange(e.target.value)
                         }}
+                        onBlur={(e) => {
+                            if (onBlur) onBlur(e.target.value)
+                        }}
                         inputProps={{
                             step: inputParam.step ?? 1,
                             style: {
@@ -96,15 +126,19 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                         id={inputParam.name}
                         size='small'
                         disabled={disabled}
-                        type={getInputType(inputParam.type)}
+                        type={hasPasswordToggle ? (isPasswordVisible ? 'text' : 'password') : getInputType(inputParam.type)}
                         placeholder={inputParam.placeholder}
                         multiline={!!inputParam.rows}
                         rows={inputParam.rows ?? 1}
                         value={myValue}
                         name={inputParam.name}
+                        inputRef={inputElementRef}
                         onChange={(e) => {
                             setMyValue(e.target.value)
                             onChange(e.target.value)
+                        }}
+                        onBlur={(e) => {
+                            if (onBlur) onBlur(e.target.value)
                         }}
                         inputProps={{
                             step: inputParam.step ?? 1,
@@ -112,6 +146,20 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                                 height: inputParam.rows ? '90px' : 'inherit'
                             }
                         }}
+                        endAdornment={
+                            hasPasswordToggle ? (
+                                <InputAdornment position='end'>
+                                    <IconButton
+                                        edge='end'
+                                        onClick={handleTogglePasswordVisibility}
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        aria-label={isPasswordVisible ? 'Hide' : 'Show'}
+                                    >
+                                        {isPasswordVisible ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                                    </IconButton>
+                                </InputAdornment>
+                            ) : undefined
+                        }
                         sx={{
                             '& .MuiOutlinedInput-notchedOutline': {
                                 borderColor: theme.palette.grey[900] + 25
@@ -153,6 +201,7 @@ Input.propTypes = {
     inputParam: PropTypes.object,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     onChange: PropTypes.func,
+    onBlur: PropTypes.func,
     disabled: PropTypes.bool,
     nodes: PropTypes.array,
     edges: PropTypes.array,

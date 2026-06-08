@@ -2,7 +2,7 @@ import { VectorStore } from '@langchain/core/vectorstores'
 import { getCredentialData, getCredentialParam, ICommonObject, INodeData } from '../../../../src'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
-import { getDatabase, getHost, getPort, getSSL, getTableName } from '../utils'
+import { getDatabase, getHost, getPort, getSchemaName, getSSL, getTableName } from '../utils'
 
 export abstract class VectorStoreDriver {
     constructor(protected nodeData: INodeData, protected options: ICommonObject) {}
@@ -33,6 +33,18 @@ export abstract class VectorStoreDriver {
 
     getTableName() {
         return this.sanitizeTableName(getTableName(this.nodeData))
+    }
+
+    getSchemaName() {
+        const schemaName = getSchemaName(this.nodeData)
+        return schemaName ? this.sanitizeTableName(schemaName) : undefined
+    }
+
+    getTablePath() {
+        const schemaName = this.getSchemaName()
+        const tableName = this.getTableName()
+        if (!schemaName) return `"${tableName}"`
+        return `"${schemaName}"."${tableName}"`
     }
 
     getEmbeddings() {

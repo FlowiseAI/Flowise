@@ -15,5 +15,5 @@ jobs:
         env:
             PUPPETEER_SKIP_DOWNLOAD: true
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
             - run: docker build --no-cache -t flowise .

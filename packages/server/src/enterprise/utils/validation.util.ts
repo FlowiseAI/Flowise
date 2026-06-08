@@ -31,3 +31,26 @@ export function isInvalidPassword(password: unknown): boolean {
     const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/
     return !regexPassword.test(password)
 }
+
+/**
+ * Validates the password and throws an Error with a descriptive message if invalid.
+ * No-op when the password is valid.
+ * @throws Error with message "Invalid password: Must contain ..." or "Invalid password: Password is required."
+ */
+export function validatePasswordOrThrow(password: unknown): void {
+    if (!isInvalidPassword(password)) return
+
+    if (typeof password !== 'string') {
+        throw new Error('Invalid password: Password is required.')
+    }
+
+    const errors: string[] = []
+    if (!/(?=.*[a-z])/.test(password)) errors.push('at least one lowercase letter')
+    if (!/(?=.*[A-Z])/.test(password)) errors.push('at least one uppercase letter')
+    if (!/(?=.*\d)/.test(password)) errors.push('at least one number')
+    if (!/(?=.*[^a-zA-Z0-9])/.test(password)) errors.push('at least one special character')
+    if (password.length < 8) errors.push('minimum length of 8 characters')
+    if (password.length > 128) errors.push('less than or equal to 128 characters')
+
+    throw new Error(`Invalid password: Must contain ${errors.join(', ')}`)
+}

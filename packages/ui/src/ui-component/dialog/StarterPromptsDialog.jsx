@@ -13,7 +13,7 @@ import useNotifier from '@/utils/useNotifier'
 // Project imports
 import StarterPrompts from '@/ui-component/extended/StarterPrompts'
 
-const StarterPromptsDialog = ({ show, dialogProps, onCancel }) => {
+const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
@@ -38,7 +38,7 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel }) => {
                 {dialogProps.title || 'Conversation Starter Prompts'}
             </DialogTitle>
             <DialogContent>
-                <StarterPrompts dialogProps={dialogProps} />
+                <StarterPrompts dialogProps={dialogProps} onConfirm={onConfirm} />
             </DialogContent>
         </Dialog>
     ) : null

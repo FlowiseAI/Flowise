@@ -44,6 +44,8 @@ class AzureChatOpenAI_LlamaIndex_ChatModels implements INode {
     tags: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'AzureChatOpenAI'
@@ -55,6 +57,8 @@ class AzureChatOpenAI_LlamaIndex_ChatModels implements INode {
         this.description = 'Wrapper around Azure OpenAI Chat LLM specific for LlamaIndex'
         this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(OpenAI)]
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

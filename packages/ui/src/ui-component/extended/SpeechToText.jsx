@@ -239,7 +239,7 @@ const speechToTextProviders = {
     }
 }
 
-const SpeechToText = ({ dialogProps }) => {
+const SpeechToText = ({ dialogProps, onConfirm }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -271,6 +271,7 @@ const SpeechToText = ({ dialogProps }) => {
                     }
                 })
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
+                onConfirm?.()
             }
         } catch (error) {
             enqueueSnackbar({
@@ -477,20 +478,23 @@ const SpeechToText = ({ dialogProps }) => {
                     ))}
                 </>
             )}
-            <StyledButton
-                style={{ marginBottom: 10, marginTop: 10 }}
-                disabled={selectedProvider !== 'none' && !speechToText[selectedProvider]?.credentialId}
-                variant='contained'
-                onClick={onSave}
-            >
-                Save
-            </StyledButton>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
+                <StyledButton
+                    disabled={selectedProvider !== 'none' && !speechToText[selectedProvider]?.credentialId}
+                    variant='contained'
+                    onClick={onSave}
+                    sx={{ minWidth: 100 }}
+                >
+                    Save
+                </StyledButton>
+            </Box>
         </>
     )
 }
 
 SpeechToText.propTypes = {
-    dialogProps: PropTypes.object
+    dialogProps: PropTypes.object,
+    onConfirm: PropTypes.func
 }
 
 export default SpeechToText

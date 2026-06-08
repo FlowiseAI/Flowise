@@ -1,11 +1,11 @@
+import { StatusCodes } from 'http-status-codes'
+import { Between, In } from 'typeorm'
+import { InternalFlowiseError } from '../../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../../errors/utils'
+import { Platform } from '../../../Interface'
 import { getRunningExpressApp } from '../../../utils/getRunningExpressApp'
 import { LoginActivity } from '../../database/entities/EnterpriseEntities'
-import { InternalFlowiseError } from '../../../errors/internalFlowiseError'
-import { StatusCodes } from 'http-status-codes'
-import { getErrorMessage } from '../../../errors/utils'
-import { Between, In } from 'typeorm'
 import { LoginActivityCode } from '../../Interface.Enterprise'
-import { Platform } from '../../../Interface'
 
 const PAGE_SIZE = 10
 
@@ -89,21 +89,7 @@ const recordLoginActivity = async (username: string, activityCode: LoginActivity
     }
 }
 
-const deleteLoginActivity = async (body: any) => {
-    try {
-        const appServer = getRunningExpressApp()
-
-        await appServer.AppDataSource.getRepository(LoginActivity).delete({
-            id: In(body.selected)
-        })
-        return 'OK'
-    } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: authService.loginActivity - ${getErrorMessage(error)}`)
-    }
-}
-
 export default {
     recordLoginActivity,
-    deleteLoginActivity,
     fetchLoginActivity
 }

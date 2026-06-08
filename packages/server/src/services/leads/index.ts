@@ -25,8 +25,16 @@ const createLead = async (body: Partial<ILead>) => {
         const chatId = body.chatId ?? uuidv4()
 
         const newLead = new Lead()
-        Object.assign(newLead, body)
-        Object.assign(newLead, { chatId })
+        // Whitelist allowed fields to prevent mass assignment vulnerability
+        // Only copy explicitly allowed fields from request body
+        const allowedFields: (keyof ILead)[] = ['chatflowid', 'name', 'email', 'phone']
+        for (const field of allowedFields) {
+            if (body[field] !== undefined) {
+                newLead[field] = body[field] as any
+            }
+        }
+        // Set chatId explicitly (either from body or auto-generated)
+        newLead.chatId = chatId
 
         const appServer = getRunningExpressApp()
         const lead = appServer.AppDataSource.getRepository(Lead).create(newLead)

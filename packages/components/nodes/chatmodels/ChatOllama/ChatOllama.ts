@@ -1,8 +1,8 @@
 import { ChatOllamaInput } from '@langchain/ollama'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
 import { BaseCache } from '@langchain/core/caches'
-import { IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOllama } from './FlowiseChatOllama'
 
 class ChatOllama_ChatModels implements INode {
@@ -18,7 +18,7 @@ class ChatOllama_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatOllama'
+        this.label = 'Ollama'
         this.name = 'chatOllama'
         this.version = 5.0
         this.type = 'ChatOllama'
@@ -26,6 +26,13 @@ class ChatOllama_ChatModels implements INode {
         this.category = 'Chat Models'
         this.description = 'Chat completion using open-source LLM on Ollama'
         this.baseClasses = [this.type, ...getBaseClasses(ChatOllama)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['ollamaApi'],
+            optional: true
+        }
         this.inputs = [
             {
                 label: 'Cache',
@@ -56,6 +63,14 @@ class ChatOllama_ChatModels implements INode {
                 optional: true
             },
             {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
@@ -65,12 +80,12 @@ class ChatOllama_ChatModels implements INode {
                 optional: true
             },
             {
-                label: 'Streaming',
-                name: 'streaming',
+                label: 'Think',
+                name: 'think',
                 type: 'boolean',
-                default: true,
-                optional: true,
-                additionalParams: true
+                description: 'Whether the model supports reasoning. Only applicable for reasoning models',
+                default: false,
+                optional: true
             },
             {
                 label: 'JSON Mode',
@@ -214,7 +229,7 @@ class ChatOllama_ChatModels implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const baseUrl = nodeData.inputs?.baseUrl as string
         const modelName = nodeData.inputs?.modelName as string
@@ -233,6 +248,7 @@ class ChatOllama_ChatModels implements INode {
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const jsonMode = nodeData.inputs?.jsonMode as boolean
         const streaming = nodeData.inputs?.streaming as boolean
+        const think = nodeData.inputs?.think as boolean
 
         const cache = nodeData.inputs?.cache as BaseCache
 
@@ -258,10 +274,21 @@ class ChatOllama_ChatModels implements INode {
         if (cache) obj.cache = cache
         if (jsonMode) obj.format = 'json'
 
+        if (think === true) obj.think = true
+        else obj.think = false
+
         const multiModalOption: IMultiModalOption = {
             image: {
                 allowImageUploads: allowImageUploads ?? false
             }
+        }
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const ollamaApiKey = getCredentialParam('ollamaApiKey', credentialData, nodeData)
+        if (ollamaApiKey) {
+            obj.headers = new Headers({
+                Authorization: `Bearer ${ollamaApiKey}`
+            })
         }
 
         const model = new ChatOllama(nodeData.id, obj)

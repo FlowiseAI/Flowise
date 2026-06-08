@@ -16,7 +16,7 @@ class VoyageAIEmbedding_Embeddings implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'VoyageAI Embeddings'
+        this.label = 'VoyageAI Embedding'
         this.name = 'voyageAIEmbeddings'
         this.version = 2.0
         this.type = 'VoyageAIEmbeddings'

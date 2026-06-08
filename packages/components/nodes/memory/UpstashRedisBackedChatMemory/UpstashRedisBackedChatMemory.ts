@@ -1,5 +1,5 @@
 import { Redis } from '@upstash/redis'
-import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
+import { BufferMemory, BufferMemoryInput } from '@langchain/classic/memory'
 import { UpstashRedisChatMessageHistory } from '@langchain/community/stores/message/upstash_redis'
 import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, StoredMessage, BaseMessage } from '@langchain/core/messages'
 import { FlowiseMemory, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
@@ -145,7 +145,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         const rawStoredMessages: StoredMessage[] = await this.redisClient.lrange<StoredMessage>(id, 0, -1)
         const orderedMessages = rawStoredMessages.reverse()
         const previousMessages = orderedMessages.filter((x): x is StoredMessage => x.type !== undefined && x.data.content !== undefined)
-        const baseMessages = previousMessages.map(mapStoredMessageToChatMessage)
+        const baseMessages: BaseMessage[] = previousMessages.map(mapStoredMessageToChatMessage)
         if (prependMessages?.length) {
             baseMessages.unshift(...(await mapChatMessageToBaseMessage(prependMessages, this.orgId)))
         }

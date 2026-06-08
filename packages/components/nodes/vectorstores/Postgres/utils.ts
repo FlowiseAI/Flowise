@@ -23,3 +23,7 @@ export function getTableName(nodeData?: INodeData) {
 export function getContentColumnName(nodeData?: INodeData) {
     return defaultChain(nodeData?.inputs?.contentColumnName, process.env.POSTGRES_VECTORSTORE_CONTENT_COLUMN_NAME, 'pageContent')
 }
+
+export function getSchemaName(nodeData?: INodeData) {
+    return defaultChain(nodeData?.inputs?.schemaName, process.env.POSTGRES_VECTORSTORE_SCHEMA_NAME)
+}
