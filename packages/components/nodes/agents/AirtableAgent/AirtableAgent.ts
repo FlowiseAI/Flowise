@@ -6,7 +6,7 @@ import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer,
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
-import { validatePythonCodeForDataFrame } from '../../../src/pythonCodeValidator'
+import { runPythonWithASTCheck, PythonSecurityError } from '../../../src/pythonCodeValidator'
 import { checkInputs, Moderation } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
@@ -180,22 +180,14 @@ json.dumps(my_dict)`
             pythonCode = pythonCode.replace(/^```[a-z]+\n|\n```$/gm, '')
         }
 
-        // Then run the code using Pyodide (only after validating to prevent RCE)
+        // Then run the code using Pyodide (AST allowlist check + execution via runPythonWithASTCheck)
         let finalResult = ''
         if (pythonCode) {
-            const validation = validatePythonCodeForDataFrame(pythonCode)
-            if (!validation.valid) {
-                throw new Error(
-                    `Generated code was rejected for security reasons (${
-                        validation.reason ?? 'unsafe construct'
-                    }). Please rephrase your question to use only pandas DataFrame operations.`
-                )
-            }
             try {
-                const code = `import pandas as pd\nimport numpy as np\n${pythonCode}`
                 // TODO: get print console output
-                finalResult = await pyodide.runPythonAsync(code)
+                finalResult = await runPythonWithASTCheck(pyodide, pythonCode)
             } catch (error) {
+                if (error instanceof PythonSecurityError) throw error
                 throw new Error(`Sorry, I'm unable to find answer for question: "${input}" using following code: "${pythonCode}"`)
             }
         }

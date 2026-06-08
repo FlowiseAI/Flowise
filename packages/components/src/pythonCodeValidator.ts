@@ -1,19 +1,29 @@
 /**
- * Validates Python code before execution in Pyodide to prevent remote code
- * execution (RCE). Two entry points are provided:
+ * Python code validation before execution in Pyodide.
  *
- *  - validateCustomReadCSVFunction  strict allowlist-based check for the
- *    user-supplied "Custom Pandas Read_CSV Code" field. Only a single
- *    read_csv(...) call that reads from the pre-bound csv_data variable is
- *    permitted. Options must be keyword arguments with literal values.
+ * Two entry points are provided:
  *
- *  - validatePythonCodeForDataFrame  denylist-based check for LLM-generated
- *    DataFrame operation code.
+ *  - validateReadCSVInput   strict allowlist for the user-supplied
+ *    "Custom Pandas Read_CSV Code" field. Only a single read_csv(...)
+ *    call that reads from the pre-bound csv_data variable is permitted.
+ *    Options must be keyword arguments with literal values.
  *
- * Both checks must pass before code is handed to pyodide.runPythonAsync().
- * These validators are one defence-in-depth layer; Pyodide execution should
- * still run with restricted network and filesystem access.
+ *  - runPythonWithASTCheck  AST-based allowlist check for LLM-generated
+ *    DataFrame query code, followed by execution. Uses Python's own ast
+ *    module (via Pyodide) to parse the code and walk the AST, rejecting
+ *    anything outside the permitted set. Catches pandas/numpy alias
+ *    rebinding, dunder access, bare references to dangerous builtins (e.g.
+ *    "f = eval; f(...)"), dangerous numpy submodules (e.g. np.ctypeslib),
+ *    string-evaluating/deserializing/sink methods (query, eval, pipe,
+ *    to_pickle, read_pickle, to_sql, to_gbq, to_clipboard) and file-writing IO
+ *    methods (to_csv, to_json, ... when given a path) that regex-based checks
+ *    cannot detect.
+ *
+ * Network isolation must be active (markNetworkIsolated() called after
+ * the fetch patch in LoadPyodide) before runPythonWithASTCheck will run.
  */
+
+import type { PyodideInterface } from 'pyodide'
 
 export interface PythonCodeValidationResult {
     valid: boolean
@@ -21,82 +31,47 @@ export interface PythonCodeValidationResult {
 }
 
 /**
- * Normalize code the same way CPython does before tokenizing identifiers.
- *
- * Python 3 applies NFKC normalization to every identifier at parse time
- * (PEP 3131), so source such as `__cl\u{1D41A}ss__` is executed as `__class__`.
- * The ASCII-only regex denylist below never sees that normalized form, which
- * lets Unicode homoglyphs slip past every pattern. Normalizing here makes the
- * validator observe exactly what the interpreter will run, closing the bypass.
- *
- * CPython's lexer also performs explicit line joining: a backslash immediately
- * followed by a newline is silently removed before tokenization. This means
- * `eval\<newline>(...)` is parsed identically to `eval(...)`. Strip those
- * continuations here so the denylist sees the joined form.
+ * Normalizes code the same way CPython does before tokenizing identifiers,
+ * applying NFKC normalization (PEP 3131) and removing backslash-newline line
+ * continuations so the validator observes exactly what the interpreter runs.
+ * This closes Unicode homoglyph and line-continuation bypasses.
+ * @param code - Raw Python source to normalize
+ * @returns The NFKC-normalized source with line continuations removed
  */
 function normalizeForValidation(code: string): string {
     return code.normalize('NFKC').replace(/\\\n/g, '')
 }
 
 /**
- * Forbidden patterns that indicate unsafe Python code.
- * Uses word boundaries and context to minimize false positives (e.g. df.astype is allowed).
+ * Error thrown by runPythonWithASTCheck when the AST allowlist rejects code.
+ * Agents catch this separately from runtime errors so the security reason is
+ * surfaced to the caller rather than being replaced by a generic message.
  */
-const FORBIDDEN_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
-    // Imports (the executor pre-imports pandas and numpy; LLM code must not add any imports)
-    { pattern: /\bfrom\s+\S+\s+import\b/g, reason: 'import statement (from...import)' },
-    { pattern: /\bimport\b/g, reason: 'import statement (all imports forbidden; pandas and numpy are pre-imported by the executor)' },
-    // Dangerous builtins
-    { pattern: /\beval\s*\(/g, reason: 'eval()' },
-    { pattern: /\bexec\s*\(/g, reason: 'exec()' },
-    { pattern: /\bcompile\s*\(/g, reason: 'compile()' },
-    { pattern: /\b__import__\s*\(/g, reason: '__import__()' },
-    { pattern: /\bopen\s*\(/g, reason: 'open()' },
-    { pattern: /\bbreakpoint\s*\(/g, reason: 'breakpoint()' },
-    { pattern: /\binput\s*\(/g, reason: 'input()' },
-    { pattern: /\braw_input\s*\(/g, reason: 'raw_input()' },
-    { pattern: /\bglobals\s*\(/g, reason: 'globals()' },
-    { pattern: /\blocals\s*\(/g, reason: 'locals()' },
-    { pattern: /\bgetattr\s*\(/g, reason: 'getattr()' },
-    { pattern: /\bsetattr\s*\(/g, reason: 'setattr()' },
-    { pattern: /\bdelattr\s*\(/g, reason: 'delattr()' },
-    { pattern: /\breload\s*\(/g, reason: 'reload()' },
-    { pattern: /\bfile\s*\(/g, reason: 'file()' },
-    { pattern: /\bexecfile\s*\(/g, reason: 'execfile()' },
-    // Dangerous modules / attributes
-    { pattern: /\bos\./g, reason: 'os module' },
-    { pattern: /\bsubprocess\./g, reason: 'subprocess module' },
-    { pattern: /\bsys\./g, reason: 'sys module' },
-    { pattern: /\bsocket\./g, reason: 'socket module' },
-    { pattern: /\burllib\./g, reason: 'urllib module' },
-    { pattern: /\brequests\./g, reason: 'requests module' },
-    { pattern: /\.(?:os|subprocess|sys|socket|urllib|requests)\b/g, reason: 'dangerous module attribute access' },
-    { pattern: /\b(?:system|popen)\s*\(/g, reason: 'process execution function' },
-    { pattern: /\b__builtins__\b/g, reason: '__builtins__' },
-    { pattern: /\b__loader__\b/g, reason: '__loader__' },
-    { pattern: /\b__spec__\b/g, reason: '__spec__' },
-    { pattern: /\b__class__\b/g, reason: '__class__ (reflection)' },
-    { pattern: /\b__subclasses__\s*\(/g, reason: '__subclasses__()' },
-    { pattern: /\b__bases__\b/g, reason: '__bases__' },
-    { pattern: /\b__mro__\b/g, reason: '__mro__' },
-    { pattern: /\b__globals__\b/g, reason: '__globals__' },
-    { pattern: /\b__code__\b/g, reason: '__code__' },
-    { pattern: /\b__closure__\b/g, reason: '__closure__' },
-    { pattern: /\bvars\s*\(/g, reason: 'vars()' },
-    { pattern: /\bdir\s*\(/g, reason: 'dir()' },
-    { pattern: /\b__dict__\b/g, reason: '__dict__ (attribute reflection)' },
-    { pattern: /\b__module__\b/g, reason: '__module__ (module reflection)' },
-    { pattern: /\bchr\s*\(/g, reason: 'chr() (runtime string assembly)' },
-    { pattern: /\bord\s*\(/g, reason: 'ord() (runtime string assembly)' },
-    { pattern: /\b__getattribute__\b/g, reason: '__getattribute__ (attribute reflection bypass)' },
-    { pattern: /\b__getattr__\b/g, reason: '__getattr__ (attribute reflection bypass)' },
-    // Unsafe deserialization — read_pickle() executes arbitrary Python objects
-    { pattern: /\bread_pickle\b/g, reason: 'read_pickle (unsafe deserialization / RCE)' },
-    { pattern: /\bpickle\b/g, reason: 'pickle module (unsafe deserialization)' },
-    { pattern: /\bmarshal\b/g, reason: 'marshal module (unsafe deserialization)' },
-    // Class definitions — used to synthesise file-like objects that smuggle pickle payloads
-    { pattern: /\bclass\s+\w/g, reason: 'class definition' }
-]
+export class PythonSecurityError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'PythonSecurityError'
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Network isolation guard
+// ---------------------------------------------------------------------------
+
+let _networkIsolated = false
+
+/**
+ * Marks Pyodide network isolation as active. Called by LoadPyodide() after the
+ * fetch guard is installed; runPythonWithASTCheck() refuses to execute until
+ * this has been called, preventing accidental skipping of network isolation.
+ */
+export function markNetworkIsolated(): void {
+    _networkIsolated = true
+}
+
+// ---------------------------------------------------------------------------
+// Helpers for validateReadCSVInput
+// ---------------------------------------------------------------------------
 
 const READ_CSV_PREFIX = 'read_csv('
 const MAX_CUSTOM_READ_CSV_LENGTH = 1024
@@ -330,45 +305,29 @@ function validateReadCSVArguments(args: string): PythonCodeValidationResult {
     return { valid: true }
 }
 
-/**
- * Validates that the given Python code is safe to run in the pandas DataFrame context.
- * Call this before passing LLM-generated code to pyodide.runPythonAsync().
- */
-export function validatePythonCodeForDataFrame(code: string): PythonCodeValidationResult {
-    const normalizedCode = normalizeForValidation(code)
-
-    for (const { pattern, reason } of FORBIDDEN_PATTERNS) {
-        pattern.lastIndex = 0
-        if (pattern.test(normalizedCode)) {
-            return { valid: false, reason: `Forbidden construct: ${reason}` }
-        }
-    }
-
-    return { valid: true }
-}
+// ---------------------------------------------------------------------------
+// Public API — validateReadCSVInput
+// ---------------------------------------------------------------------------
 
 /**
- * Strict allowlist validator for the user-supplied "Custom Pandas Read_CSV Code"
- * field.  Only a single read_csv(...) call is permitted — no newlines, no
- * semicolons, and no additional statements.  The denylist is also applied as a
- * second layer of defence.
- *
- * Valid examples:  read_csv(csv_data)
- *                  read_csv(csv_data, sep=';', header=0)
+ * Strictly validates the user-supplied "Custom Pandas Read_CSV Code" field,
+ * permitting only a single read_csv(...) call that reads from csv_data with
+ * keyword-argument literal options (no newlines, semicolons, or extra
+ * statements). Valid examples: read_csv(csv_data) or read_csv(csv_data, sep=';').
+ * @param code - The custom read_csv code to validate
+ * @returns Validation result; valid is false with a reason when rejected
  */
-export function validateCustomReadCSVFunction(code: string): PythonCodeValidationResult {
+export function validateReadCSVInput(code: string): PythonCodeValidationResult {
     const trimmed = normalizeForValidation(code).trim()
 
     if (trimmed.length > MAX_CUSTOM_READ_CSV_LENGTH) {
         return { valid: false, reason: `Custom read_csv code must be ${MAX_CUSTOM_READ_CSV_LENGTH} characters or fewer` }
     }
 
-    // Allowlist: must be a single read_csv() call
     if (!trimmed.startsWith(READ_CSV_PREFIX)) {
         return { valid: false, reason: 'Custom read_csv code must start with read_csv(' }
     }
 
-    // No statement separators outside strings — prevents class definitions and multi-statement payloads
     if (containsStatementSeparatorOutsideString(trimmed)) {
         return {
             valid: false,
@@ -382,9 +341,272 @@ export function validateCustomReadCSVFunction(code: string): PythonCodeValidatio
     }
 
     const args = trimmed.slice(READ_CSV_PREFIX.length, closingParenIndex)
-    const argsValidation = validateReadCSVArguments(args)
-    if (!argsValidation.valid) return argsValidation
+    return validateReadCSVArguments(args)
+}
 
-    // Apply the denylist as a second layer
-    return validatePythonCodeForDataFrame(trimmed)
+// ---------------------------------------------------------------------------
+// Public API — buildASTCheckerCode / runPythonWithASTCheck
+// ---------------------------------------------------------------------------
+
+/**
+ * Default set of pd.* function/attribute names permitted in LLM-generated
+ * query code. These are safe operations that do not perform IO or network
+ * requests. Operators may extend this list via PYODIDE_ALLOWED_PD_FUNCTIONS.
+ */
+export const DEFAULT_ALLOWED_PD_ATTRS: ReadonlySet<string> = new Set([
+    'isna',
+    'notna',
+    'isnull',
+    'notnull',
+    'to_datetime',
+    'to_numeric',
+    'to_timedelta',
+    'NA',
+    'NaT',
+    'Series',
+    'DataFrame',
+    'Index',
+    'MultiIndex',
+    'Categorical',
+    'concat',
+    'merge',
+    'merge_asof',
+    'merge_ordered',
+    'get_dummies',
+    'factorize',
+    'cut',
+    'qcut',
+    'date_range',
+    'period_range',
+    'timedelta_range',
+    'json_normalize',
+    'melt',
+    'pivot_table',
+    'crosstab',
+    'set_option',
+    'get_option',
+    'reset_option',
+    'options'
+])
+
+/**
+ * Builds the Python AST-checker script that runs inside Pyodide. The script
+ * reads the target code from the Pyodide global `_user_code_to_check` (set by
+ * the caller) to avoid string-escaping concerns, raises ValueError on any
+ * policy violation, and deletes its internal names so they cannot leak into
+ * subsequent user code execution.
+ * @param extraAllowedPdFunctions - Additional pd.* names to allow alongside the defaults
+ * @returns The Python AST-checker script as a string
+ */
+export function buildASTCheckerCode(extraAllowedPdFunctions: string[]): string {
+    const validExtra = extraAllowedPdFunctions.filter((f) => /^[A-Za-z_][A-Za-z0-9_]*$/.test(f))
+    const allAllowed = [...DEFAULT_ALLOWED_PD_ATTRS, ...validExtra]
+    const allowedSetLiteral = allAllowed.map((f) => `'${f}'`).join(', ')
+
+    return `
+import ast as _ast
+
+_ALLOWED_PD_ATTRS = frozenset({${allowedSetLiteral}})
+
+_FORBIDDEN_CALL_NAMES = frozenset({
+    'eval', 'exec', 'compile', '__import__', 'open',
+    'breakpoint', 'input', 'raw_input', 'globals',
+    'locals', 'vars', 'dir', 'getattr', 'setattr',
+    'delattr', 'reload', 'execfile',
+})
+
+# Dangerous numpy submodules reachable via attribute chains (e.g. np.ctypeslib.load_library).
+_FORBIDDEN_NP_SUBMODULES = frozenset({'ctypeslib', 'f2py', 'distutils'})
+
+# Methods that evaluate strings, (de)serialize, invoke arbitrary callables, or
+# write to external sinks. Blocked on any receiver, regardless of arguments.
+_FORBIDDEN_METHODS = frozenset({
+    'query', 'eval', 'pipe',
+    'to_pickle', 'read_pickle',
+    'to_sql', 'to_gbq', 'to_clipboard',
+})
+
+# IO methods that return a string when no destination is given, but write to a
+# file/buffer when one is. Blocked only when a write target is supplied, so pure
+# serialization (e.g. df.to_json(), df.to_csv(index=False)) keeps working.
+_FILE_WRITE_METHODS = frozenset({
+    'to_csv', 'to_json', 'to_excel', 'to_html', 'to_xml',
+    'to_parquet', 'to_feather', 'to_hdf', 'to_stata', 'to_orc',
+    'to_latex', 'to_markdown', 'to_string',
+})
+
+# First-positional / keyword names that designate a file or buffer write target.
+_PATH_KEYWORDS = frozenset({'path_or_buf', 'buf', 'excel_writer', 'path', 'fname'})
+
+def _attr_root(node):
+    cur = node
+    while isinstance(cur, _ast.Attribute):
+        cur = cur.value
+    return cur
+
+def _has_write_target(node):
+    if node.args:
+        first = node.args[0]
+        if not (isinstance(first, _ast.Constant) and first.value is None):
+            return True
+    for _kw in node.keywords:
+        if _kw.arg in _PATH_KEYWORDS:
+            if not (isinstance(_kw.value, _ast.Constant) and _kw.value.value is None):
+                return True
+    return False
+
+class _AllowlistChecker(_ast.NodeVisitor):
+    def __init__(self):
+        self._pd_aliases = {'pd'}
+        self._np_aliases = {'np'}
+
+    def visit_Import(self, node):
+        raise ValueError("import statements are not permitted in query code")
+
+    def visit_ImportFrom(self, node):
+        raise ValueError("from...import statements are not permitted in query code")
+
+    def visit_Assign(self, node):
+        if isinstance(node.value, _ast.Name):
+            if node.value.id in self._pd_aliases:
+                for target in node.targets:
+                    if isinstance(target, _ast.Name):
+                        self._pd_aliases.add(target.id)
+            if node.value.id in self._np_aliases:
+                for target in node.targets:
+                    if isinstance(target, _ast.Name):
+                        self._np_aliases.add(target.id)
+        self.generic_visit(node)
+
+    def visit_Call(self, node):
+        if isinstance(node.func, _ast.Attribute):
+            _attr = node.func.attr
+            if _attr in _FORBIDDEN_METHODS:
+                raise ValueError(f".{_attr}() is not permitted in query code")
+            if _attr in _FILE_WRITE_METHODS and _has_write_target(node):
+                raise ValueError(f".{_attr}() writing to a file or buffer is not permitted")
+            if isinstance(node.func.value, _ast.Name):
+                if node.func.value.id in self._pd_aliases:
+                    if _attr not in _ALLOWED_PD_ATTRS:
+                        raise ValueError(
+                            f"pd.{_attr}() is not permitted. "
+                            f"Use df operations or allowed pd functions."
+                        )
+        if isinstance(node.func, _ast.Name):
+            if node.func.id in _FORBIDDEN_CALL_NAMES:
+                raise ValueError(f"{node.func.id}() is not permitted in query code")
+        self.generic_visit(node)
+
+    def visit_Name(self, node):
+        if node.id in _FORBIDDEN_CALL_NAMES:
+            raise ValueError(f"Reference to '{node.id}' is not permitted in query code")
+        if node.id.startswith('__') and node.id.endswith('__'):
+            raise ValueError(f"Reference to dunder name '{node.id}' is not permitted")
+        self.generic_visit(node)
+
+    def visit_Attribute(self, node):
+        if node.attr.startswith('__') and node.attr.endswith('__'):
+            raise ValueError(f"Access to dunder attribute '{node.attr}' is not permitted")
+        if node.attr in _FORBIDDEN_NP_SUBMODULES:
+            root = _attr_root(node)
+            if isinstance(root, _ast.Name) and root.id in self._np_aliases:
+                raise ValueError(f"np.{node.attr} is not permitted in query code")
+        self.generic_visit(node)
+
+_checker_instance = _AllowlistChecker()
+try:
+    _tree = _ast.parse(_user_code_to_check)
+    _checker_instance.visit(_tree)
+except SyntaxError as _e:
+    raise ValueError(f"Syntax error in generated code: {_e}")
+finally:
+    del _ast, _ALLOWED_PD_ATTRS, _FORBIDDEN_CALL_NAMES, _FORBIDDEN_NP_SUBMODULES, _FORBIDDEN_METHODS, _FILE_WRITE_METHODS, _PATH_KEYWORDS, _attr_root, _has_write_target, _AllowlistChecker, _checker_instance
+    try:
+        del _tree
+    except NameError:
+        pass
+    try:
+        del _user_code_to_check
+    except NameError:
+        pass
+`
+}
+
+/**
+ * Validates LLM-generated DataFrame query code with an AST allowlist (via
+ * Pyodide's ast module) and then executes it with pandas and numpy pre-imported.
+ * This is the single safe entry point for executing LLM-generated Python code.
+ * The code is passed to Pyodide via globals.set() rather than embedded as a
+ * string literal, so injection via crafted code strings is not possible.
+ * @param pyodide - The initialized Pyodide instance
+ * @param userCode - The LLM-generated Python code to validate and execute
+ * @returns The execution result normalized to a human-readable string
+ * @throws PythonSecurityError if the AST allowlist rejects the code
+ * @throws Error if Pyodide network isolation is not active
+ */
+export async function runPythonWithASTCheck(pyodide: PyodideInterface, userCode: string): Promise<string> {
+    if (!_networkIsolated) {
+        throw new Error(
+            '[Security] Pyodide network isolation is not active. ' + 'LoadPyodide() must be called before executing any Python code.'
+        )
+    }
+
+    const extraAllowedPdFunctions = (process.env.PYODIDE_ALLOWED_PD_FUNCTIONS ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+
+    const checkerCode = buildASTCheckerCode(extraAllowedPdFunctions)
+
+    pyodide.globals.set('_user_code_to_check', userCode)
+    try {
+        await pyodide.runPythonAsync(checkerCode)
+    } catch (err: any) {
+        const reason = err?.message ?? String(err)
+        throw new PythonSecurityError(
+            `Generated code was rejected for security reasons (${reason}). ` +
+                `Please rephrase your question to use only pandas DataFrame operations.`
+        )
+    } finally {
+        // The checker script's own finally block already deletes this global,
+        // so guard against a second delete which would raise a Python KeyError.
+        if (pyodide.globals.has('_user_code_to_check')) {
+            pyodide.globals.delete('_user_code_to_check')
+        }
+    }
+
+    const result = await pyodide.runPythonAsync(`import pandas as pd\nimport numpy as np\n${userCode}`)
+    return convertPyResultToString(result)
+}
+
+/**
+ * Converts the value returned by Pyodide into a readable string for the LLM.
+ * Pyodide auto-converts scalars (int/float/str/bool) to JS primitives, but
+ * returns collections (lists, pandas Series/DataFrame) as a PyProxy that does
+ * not stringify usefully on its own; this normalizes both cases and frees any
+ * PyProxy to avoid leaking Python memory.
+ * @param result - The raw value returned by pyodide.runPythonAsync()
+ * @returns A human-readable string representation, or '' for null/undefined
+ */
+function convertPyResultToString(result: any): string {
+    if (result === null || result === undefined) {
+        return ''
+    }
+    if (typeof result === 'string') {
+        return result
+    }
+    if (typeof result === 'number' || typeof result === 'boolean' || typeof result === 'bigint') {
+        return String(result)
+    }
+    try {
+        return result.toString()
+    } finally {
+        if (typeof result.destroy === 'function') {
+            try {
+                result.destroy()
+            } catch {
+                // proxy already destroyed or not destroyable — ignore
+            }
+        }
+    }
 }
