@@ -156,24 +156,24 @@ Flowise has 3 different modules in a single mono repository.
     <summary>Exit code 134 (JavaScript heap out of memory)</summary>  
     If you get this error when running the above `build` script, try increasing the Node.js heap size and run the script again:
 
-    ````bash
-        # macOS / Linux / Git Bash
-        export NODE_OPTIONS="--max-old-space-size=8192"
+    ```bash
+    # macOS / Linux / Git Bash
+    export NODE_OPTIONS="--max-old-space-size=8192"
 
-        # Windows PowerShell
-        $env:NODE_OPTIONS="--max-old-space-size=4096"
+    # Windows PowerShell
+    $env:NODE_OPTIONS="--max-old-space-size=4096"
 
-        # Windows CMD
-        set NODE_OPTIONS=--max-old-space-size=4096
-        ```
+    # Windows CMD
+    set NODE_OPTIONS=--max-old-space-size=4096
+    ```
 
-        Adjust the value depending on available system memory (for example: `4096` or `8192`).
+    Adjust the value depending on available system memory (for example: `4096` or `8192`).
 
     Then run:
 
     ```bash
     pnpm build
-    ````
+    ```
 
     </details>
 
