@@ -48,6 +48,11 @@ Flowise has 3 different modules in a single mono repository.
     ```bash
     npm i -g pnpm
     ```
+-   Use Node `24.x` for local development.
+    ```bash
+    nvm install 24
+    nvm use 24
+    ```
 
 #### Step by step
 
@@ -106,6 +111,7 @@ Flowise has 3 different modules in a single mono repository.
     ```
 
 -   If `which pnpm` points to a Homebrew installation while using `nvm`, you may have conflicting pnpm binaries in your PATH.
+    If you use both Homebrew and `nvm`, make sure the expected pnpm binary is first in your PATH.
 
 -   If you encounter `JavaScript heap out of memory` during build:
 
