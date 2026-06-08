@@ -44,7 +44,7 @@ Flowise has 3 different modules in a single mono repository.
 
 #### Prerequisite
 
--   Install [PNPM](https://pnpm.io/installation). The project is configured to use pnpm v10.
+-   Install [PNPM](https://pnpm.io/installation). The project is currently tested with pnpm `10.26.x`.
     ```bash
     npm i -g pnpm
     ```
@@ -73,6 +73,48 @@ Flowise has 3 different modules in a single mono repository.
     ```bash
     pnpm install
     ```
+
+#### Local environment troubleshooting (macOS)
+
+-   Verify installed versions and paths:
+
+    ```bash
+    node -v
+    pnpm -v
+    which pnpm
+    ```
+
+-   The repository is currently tested against pnpm `10.26.x`. Using pnpm `11.x` may result in engine mismatch errors.
+
+-   If `pnpm` is not found:
+
+    ```bash
+    corepack enable
+    corepack prepare pnpm@10.26.2 --activate
+    ```
+
+    Or install globally:
+
+    ```bash
+    npm install -g pnpm@10.26.2
+    ```
+
+-   If you recently switched pnpm versions or changed your PATH, refresh zsh’s command cache:
+
+    ```bash
+    hash -r
+    ```
+
+-   If `which pnpm` points to a Homebrew installation while using `nvm`, you may have conflicting pnpm binaries in your PATH.
+
+-   If you encounter `JavaScript heap out of memory` during build:
+
+    ```bash
+    export NODE_OPTIONS="--max-old-space-size=8192"
+    pnpm build
+    ```
+
+    Adjust the heap size depending on available system memory (for example: `4096` or `8192`).
 
 7. Build all the code:
 

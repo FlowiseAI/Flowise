@@ -90,12 +90,38 @@ Flowise has 3 different modules in a single mono repository.
 -   `components`: Third-party nodes integrations
 -   `api-documentation`: Auto-generated swagger-ui API docs from express
 
-### Prerequisite
+### Prerequisites
 
--   Install [PNPM](https://pnpm.io/installation)
-    ```bash
-    npm i -g pnpm
-    ```
+#### macOS Setup
+
+-   Node: v24.x (recommended)
+
+    -   Using nvm:
+        ```bash
+        nvm install 24
+        nvm use 24
+        ```
+    -   Verify:
+        ```bash
+        node -v
+        # Expected output: v24.x.x
+        ```
+
+-   pnpm: v10.26.x (recommended)
+    -   Recommended via `corepack`:
+        ```bash
+        corepack enable
+        corepack prepare pnpm@10.26.2 --activate
+        ```
+    -   Or via npm:
+        ```bash
+        npm install -g pnpm@10.26.2
+        ```
+    -   Verify:
+        ```bash
+        pnpm -v
+        # Expected output: 10.26.x
+        ```
 
 ### Setup
 
@@ -117,6 +143,9 @@ Flowise has 3 different modules in a single mono repository.
     pnpm install
     ```
 
+    > [!NOTE]
+    > The repository is currently tested against pnpm `10.26.x`. Using pnpm `11.x` may result in engine mismatch errors.
+
 4.  Build all the code:
 
     ```bash
@@ -127,22 +156,24 @@ Flowise has 3 different modules in a single mono repository.
     <summary>Exit code 134 (JavaScript heap out of memory)</summary>  
     If you get this error when running the above `build` script, try increasing the Node.js heap size and run the script again:
 
-    ```bash
-    # macOS / Linux / Git Bash
-    export NODE_OPTIONS="--max-old-space-size=4096"
+    ````bash
+        # macOS / Linux / Git Bash
+        export NODE_OPTIONS="--max-old-space-size=8192"
 
-    # Windows PowerShell
-    $env:NODE_OPTIONS="--max-old-space-size=4096"
+        # Windows PowerShell
+        $env:NODE_OPTIONS="--max-old-space-size=4096"
 
-    # Windows CMD
-    set NODE_OPTIONS=--max-old-space-size=4096
-    ```
+        # Windows CMD
+        set NODE_OPTIONS=--max-old-space-size=4096
+        ```
+
+        Adjust the value depending on available system memory (for example: `4096` or `8192`).
 
     Then run:
 
     ```bash
     pnpm build
-    ```
+    ````
 
     </details>
 
