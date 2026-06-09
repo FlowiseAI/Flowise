@@ -39,7 +39,7 @@ const isTimeoutError = (error: any): boolean => {
 
 const isRetryableError = (error: any): boolean => {
     const status = getErrorStatus(error)
-    if (status && [429, 500, 502, 503].includes(status)) return true
+    if (status && [408, 429, 500, 502, 503, 504].includes(status)) return true
     return isTimeoutError(error)
 }
 
