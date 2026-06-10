@@ -19,7 +19,7 @@ export function sanitizeDataSourceOptions(config: ICommonObject): ICommonObject 
     }
 
     for (const key of BLOCKED_DATASOURCE_KEYS) {
-        if (Object.prototype.hasOwnProperty.call(config, key)) {
+        if (key in config) {
             throw new Error(`Disallowed TypeORM DataSource option: ${key}`)
         }
     }
@@ -36,7 +36,7 @@ export function rejectReservedDataSourceKeys(config: ICommonObject): void {
     }
 
     for (const key of RESERVED_CONNECTION_KEYS) {
-        if (Object.prototype.hasOwnProperty.call(config, key)) {
+        if (key in config) {
             throw new Error(`Disallowed TypeORM DataSource option: ${key}`)
         }
     }

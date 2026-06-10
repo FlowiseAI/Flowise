@@ -39,6 +39,12 @@ describe('sanitizeDataSourceOptions', () => {
                 })
             ).toThrow('Disallowed TypeORM DataSource option:')
         })
+
+        it.each(['entities', 'subscribers', 'migrations', 'extra'] as const)('throws when %s is inherited via prototype chain', (key) => {
+            const proto = { [key]: ['/tmp/evil.js'] }
+            const config = Object.create(proto)
+            expect(() => sanitizeDataSourceOptions(config)).toThrow(`Disallowed TypeORM DataSource option: ${key}`)
+        })
     })
 
     describe('reserved connection keys', () => {

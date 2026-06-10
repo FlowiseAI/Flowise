@@ -267,12 +267,8 @@ export const validateVectorStorePath = (userProvidedPath: string | undefined): s
     // Check if resolved path is within allowed directories
     const allowedDirs = getAllowedVectorStoreBaseDirs()
     const isWithinAllowedDir = allowedDirs.some((allowedDir) => {
-        // Normalize both paths for comparison
-        const normalizedResolved = path.normalize(resolvedPath)
-        const normalizedAllowed = path.normalize(allowedDir)
-
-        // Check if resolved path starts with allowed directory
-        // Add path separator to avoid partial matches (e.g., /home/user/.flowise vs /home/user/.flowise2)
+        const normalizedResolved = normalizePlatformPath(resolvedPath)
+        const normalizedAllowed = normalizePlatformPath(allowedDir)
         return normalizedResolved === normalizedAllowed || normalizedResolved.startsWith(normalizedAllowed + path.sep)
     })
 
@@ -293,10 +289,15 @@ const getAllowedSQLiteBaseDirs = (): string[] => {
     return dirs
 }
 
+const normalizePlatformPath = (p: string): string => {
+    const n = path.normalize(p)
+    return process.platform === 'win32' ? n.toLowerCase() : n
+}
+
 const isPathWithinAllowedSQLiteDirs = (resolvedPath: string, allowedDirs: string[]): boolean => {
-    const normalizedResolved = path.normalize(resolvedPath)
+    const normalizedResolved = normalizePlatformPath(resolvedPath)
     return allowedDirs.some((allowedDir) => {
-        const normalizedAllowed = path.normalize(allowedDir)
+        const normalizedAllowed = normalizePlatformPath(allowedDir)
         return normalizedResolved === normalizedAllowed || normalizedResolved.startsWith(normalizedAllowed + path.sep)
     })
 }

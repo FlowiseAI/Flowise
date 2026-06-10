@@ -7,6 +7,7 @@ import {
 } from './validator'
 import path from 'path'
 import { getUserHome } from './utils'
+import * as utils from './utils'
 
 describe('isPathTraversal', () => {
     describe('returns true for dangerous patterns', () => {
@@ -636,6 +637,31 @@ describe('validateSQLitePath', () => {
         it('should resolve relative path within .flowise when no absolute path given', () => {
             const result = validateSQLitePath('test.db')
             expect(result).toBe(path.join(defaultFlowiseDir, 'test.db'))
+        })
+    })
+
+    describe('Windows case-insensitive path comparison', () => {
+        // Simulate Windows: getUserHome() returns mixed-case path, user supplies lowercase version.
+        // path.normalize() on Unix preserves casing, so this exercises the toLowerCase branch.
+        beforeEach(() => {
+            Object.defineProperty(process, 'platform', { value: 'win32', configurable: true })
+            jest.spyOn(utils, 'getUserHome').mockReturnValue('/Users/TestUser')
+        })
+
+        afterEach(() => {
+            Object.defineProperty(process, 'platform', { value: 'darwin', configurable: true })
+            jest.restoreAllMocks()
+        })
+
+        it('should accept a valid path whose casing differs from the allowed directory', () => {
+            // allowedDir = /Users/TestUser/.flowise (mixed case from getUserHome mock)
+            // user input  = /users/testuser/.flowise/mydb.sqlite (all lowercase)
+            const result = validateSQLitePath('/users/testuser/.flowise/mydb.sqlite')
+            expect(result).toBe('/users/testuser/.flowise/mydb.sqlite')
+        })
+
+        it('should still reject a path outside .flowise even after case normalisation', () => {
+            expect(() => validateSQLitePath('/users/testuser/documents/mydb.sqlite')).toThrow(/Invalid SQLite path:/)
         })
     })
 })
