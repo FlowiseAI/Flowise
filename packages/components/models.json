@@ -1719,7 +1719,7 @@
                 {
                     "label": "c4ai-aya-vision-32b",
                     "name": "c4ai-aya-vision-32b",
-                    "description": "Aya Vision 32B – multimodal (text + image), multilingual across 23 languages",
+                    "description": "Aya Vision 32B – multilingual across 23 languages (image input not yet wired in ChatCohere node)",
                     "input_cost": 0.0000005,
                     "output_cost": 0.0000015
                 }
