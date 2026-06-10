@@ -708,9 +708,6 @@ importers:
       puppeteer:
         specifier: ^20.7.1
         version: 20.9.0(bufferutil@4.0.8)(encoding@0.1.13)(typescript@5.5.2)(utf-8-validate@6.0.4)
-      pyodide:
-        specifier: '>=0.21.0-alpha.2'
-        version: 0.25.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       redis:
         specifier: ^4.6.7
         version: 4.6.13
@@ -33710,7 +33707,8 @@ snapshots:
       bare-events: 2.6.0
     optional: true
 
-  base-64@1.0.0: {}
+  base-64@1.0.0:
+    optional: true
 
   base16@1.0.0: {}
 
@@ -43328,6 +43326,7 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    optional: true
 
   q@1.5.1: {}
 
