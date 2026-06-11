@@ -37,11 +37,12 @@ export async function rRequest(
         headers: buildHeaders(opts.apiKey, extraHeaders),
         body: body ? JSON.stringify(body) : undefined
     })
+    const text = await res.text()
     let data: any
     try {
-        data = await res.json()
+        data = JSON.parse(text)
     } catch {
-        data = { raw: await res.text() }
+        data = { raw: text }
     }
     if (res.status === 401 || res.status === 403) {
         throw new Error('Resemble authentication failed — check your API key.')
@@ -57,14 +58,23 @@ export function rItem(data: any): any {
     return data && typeof data === 'object' && data.item && typeof data.item === 'object' ? data.item : data || {}
 }
 
-export async function rPoll(opts: ResembleOptions, path: string, maxWaitSeconds = 120): Promise<any> {
-    const deadline = Date.now() + Math.max(1, maxWaitSeconds) * 1000
+function statusDone(d: any): boolean {
+    return TERMINAL.has((rItem(d).status || '').toString().toLowerCase())
+}
+
+export async function rPoll(
+    opts: ResembleOptions,
+    path: string,
+    maxWaitSeconds = 120,
+    isDone: (d: any) => boolean = statusDone
+): Promise<any> {
+    const wait = Math.max(1, maxWaitSeconds)
+    const deadline = Date.now() + wait * 1000
     let delay = 2000
     let last = await rRequest(opts, 'GET', path)
     while (true) {
-        const status = (rItem(last).status || '').toString().toLowerCase()
-        if (!status || TERMINAL.has(status)) return last
-        if (Date.now() >= deadline) return last
+        if (isDone(last)) return last
+        if (Date.now() >= deadline) throw new Error(`Resemble job did not complete within ${wait}s (GET ${path})`)
         await new Promise((r) => setTimeout(r, delay))
         delay = Math.min(10000, delay + 1000)
         last = await rRequest(opts, 'GET', path)
@@ -110,11 +120,7 @@ export async function intelligence(opts: ResembleOptions, args: any): Promise<an
     const it = rItem(result)
     const status = (it.status || '').toString().toLowerCase()
     if (it.uuid && status && !TERMINAL.has(status)) {
-        try {
-            return rSanitize(await rPoll(opts, `/intelligence/${it.uuid}`, args.max_wait_seconds || 120))
-        } catch {
-            /* poll path may vary; fall through */
-        }
+        return rSanitize(await rPoll(opts, `/intelligences/${it.uuid}`, args.max_wait_seconds || 120))
     }
     return rSanitize(result)
 }
@@ -130,11 +136,11 @@ export async function watermarkApply(opts: ResembleOptions, args: any): Promise<
     let result = await rRequest(opts, 'POST', '/watermark/apply', body, { Prefer: 'wait' })
     const it = rItem(result)
     if (!(it.watermarked_media || it.url) && it.uuid) {
-        try {
-            result = await rPoll(opts, `/watermark/apply/${it.uuid}/result`, args.max_wait_seconds || 120)
-        } catch {
-            /* fall through */
-        }
+        // The apply result has no `status` field — done means the media URL is present.
+        result = await rPoll(opts, `/watermark/apply/${it.uuid}/result`, args.max_wait_seconds || 120, (d) => {
+            const r = rItem(d)
+            return !!(r.watermarked_media || r.url)
+        })
     }
     return rSanitize(result)
 }
