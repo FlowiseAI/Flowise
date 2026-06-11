@@ -1,138 +1,163 @@
 # Jungle Grid
 
-The Jungle Grid tool node lets Flowise agents estimate, submit, monitor, cancel, and retrieve outputs for asynchronous Jungle Grid workloads.
+The Jungle Grid Tool node lets Flowise agents prepare, estimate, submit, monitor, cancel, and retrieve outputs for asynchronous AI workloads on Jungle Grid.
 
-Jungle Grid is live production infrastructure. Submitting jobs may start managed compute and spend credits. Estimate first whenever a user needs cost, capacity, or routing information before execution.
-
-## Links
-
--   Website: https://junglegrid.dev
--   Docs: https://junglegrid.dev/docs
--   API docs: https://junglegrid.dev/docs/api
--   MCP docs: https://junglegrid.dev/docs/mcp
--   MCP server: https://github.com/Jungle-Grid/mcp-server
--   Discord: https://discord.com/invite/kpJqxXFFCs
+Submitting a job may start managed compute and spend Jungle Grid credits. Estimate first when cost, routing, or capacity matters.
 
 ## Credentials
 
 Create a `Jungle Grid API` credential in Flowise:
 
--   `Jungle Grid API Key`: a scoped Jungle Grid API key from the Jungle Grid portal.
--   `Jungle Grid API Base URL`: defaults to `https://api.junglegrid.dev`. Override only for staging, local development, or private deployments.
+-   `Jungle Grid API Key`: a scoped API key from the Jungle Grid portal.
+-   `Jungle Grid API Base URL`: defaults to `https://api.junglegrid.dev`; it can be changed for an approved staging or self-hosted deployment.
 
-Keep the API key in Flowise credentials or a server-side environment variable used to create that credential. Do not place Jungle Grid API keys in prompts, command arguments, exported flows, source code, logs, browser code, or public repositories.
+Requests use bearer authentication and the configured base URL. Keep API keys, upload tokens, and temporary signed URLs out of prompts, logs, exported flows, and source control.
 
-Recommended API key scopes:
+Relevant scopes include:
 
--   `jobs:estimate` for estimates.
--   `jobs:submit` or `jobs:write` for submit and cancel.
--   `jobs:read` for list, status, runtime, logs, and artifacts.
--   `logs:read` for stored job logs.
+-   `jobs:estimate`, `jobs:read`, or `jobs:write` for estimates.
+-   `jobs:submit` or `jobs:write` for submissions, input upload slots, and cancellation.
+-   `jobs:read` or `jobs:write` for job inputs, status, events, runtime, and artifacts.
+-   `logs:read`, `jobs:read`, or `jobs:write` for logs.
 
 ## Actions
 
--   `Estimate Job`: calls `POST /v1/jobs/estimate`. This is read-only and does not start compute.
--   `Submit Job`: calls `POST /v1/jobs`. This starts asynchronous remote work and can spend credits.
--   `List Jobs`: calls `GET /v1/jobs` with `limit`, `cursor`, and `status` filters.
--   `Get Job`: calls `GET /v1/jobs/{job_id}` for status and job details.
--   `Get Job Runtime`: calls `GET /v1/jobs/{job_id}/runtime` for runtime tails, exit code, timeout, and diagnostics where available.
--   `Get Job Logs`: calls `GET /v1/jobs/{job_id}/logs` with `tail`, `limit`, `cursor`, and `stream` filters.
--   `Cancel Job`: calls `POST /v1/jobs/{job_id}/cancel`. Use only for non-terminal jobs.
--   `List Artifacts`: calls `GET /v1/jobs/{job_id}/artifacts`.
--   `Get Artifact`: calls `POST /v1/jobs/{job_id}/artifacts/{artifact_id}/download` to create temporary download information.
+-   **Estimate Job**: estimates routing, screening, capacity, cost, and submission eligibility. It does not submit a workload.
+-   **Submit Job**: starts an asynchronous workload and may spend credits.
+-   **Create Job Input Upload**: creates a managed upload slot for an input or script. It does not upload file bytes.
+-   **List Job Inputs**: lists uploaded inputs and scripts, readiness, and mount paths.
+-   **List Jobs**: lists recent jobs with optional status filtering and cursor pagination.
+-   **Get Job**: returns the current status snapshot, phase timing, scheduling delay, routing, failure, billing, and artifact readiness where available.
+-   **Get Job Events**: returns ordered platform lifecycle progress for scheduling, capacity lookup, provisioning, input preparation, and startup.
+-   **Get Job Runtime**: returns separate runtime diagnostics, output tails, exit code, timeout state, and field availability.
+-   **Get Job Logs**: polls paginated persisted logs. It is not a true streaming connection.
+-   **Cancel Job**: may stop active execution and prevent further outputs.
+-   **List Artifacts**: lists managed output files for a job.
+-   **Get Artifact**: returns temporary download information for an artifact ID.
 
-Live log streaming uses `GET /v1/jobs/{job_id}/logs/live` as Server-Sent Events. Flowise tools execute synchronously, so this integration exposes polling through `Get Job` and `Get Job Logs` instead of holding a long-lived stream.
+Lifecycle events are platform progress. Logs are workload and runtime output. Runtime details are separate diagnostics. Artifacts are managed output files.
 
-## Usage Pattern
+## Production Workflow
 
 ```text
 Estimate Job
-  -> review estimate/capacity/cost fields
-  -> Submit Job after user approval
-  -> store job_id
-  -> Get Job / Get Job Runtime / Get Job Logs
-  -> wait for completed, failed, rejected, or cancelled
+  -> Create Job Input Upload when files are needed
+  -> upload bytes to upload_url with the returned method and headers
+  -> call complete_url with the required token and upload metadata
+  -> Submit Job with input_files or script_files
+  -> Get Job or Get Job Events
+  -> Get Job Logs
   -> List Artifacts
   -> Get Artifact
 ```
 
-`Submit Job` returns a `job_id` immediately. It does not wait for completion. Poll until Jungle Grid reports a terminal status before assuming outputs are final.
+An estimate does not reserve capacity or guarantee an immediate start. `Submit Job` returns a `job_id` before execution finishes.
 
-## Example Workloads
+## Commands
 
-Inference estimate:
+The preferred command form is an array:
 
 ```json
 {
-    "name": "flowise-inference-estimate",
-    "image": "python:3.11",
+    "command": ["python", "/workspace/scripts/transcribe.py", "/workspace/inputs/audio.ogg"]
+}
+```
+
+The legacy command-plus-args form remains supported:
+
+```json
+{
+    "command": "python",
+    "args": ["-c", "print('hello')"]
+}
+```
+
+Command arrays must contain only non-empty strings. `workload_type` supports `inference`, `training`, `fine_tuning`, and `batch`. The compatibility value `fine-tuning` is also accepted, and `fine_tuning` is converted to the REST API value.
+
+`env` is accepted as an alias for `environment`. Environment values must be strings. `routing_mode` is accepted as an alias for `optimize_for`.
+
+## Uploaded Inputs
+
+Create an upload slot with:
+
+```json
+{
+    "filename": "audio.ogg",
+    "content_type": "audio/ogg",
+    "kind": "input"
+}
+```
+
+Use `kind: "script"` for files mounted under `/workspace/scripts`. Input files are mounted under `/workspace/inputs`.
+
+The response can include `input_id`, `filename`, `method`, `upload_url`, required headers, `token`, `expires_at`, and `complete_url`. Slot creation is not upload completion:
+
+1. Upload the bytes to `upload_url` with the returned HTTP method and headers.
+2. Call `complete_url` as required by the API response.
+3. Confirm the input is ready with **List Job Inputs**.
+4. Pass the `input_id` to **Submit Job**.
+
+The structured tool does not accept local file paths or base64 file bodies. Flowise does not currently provide an agent-safe binary parameter convention for this Tool node that can complete the upload without exposing host paths or adding unrelated infrastructure.
+
+String IDs and object references are accepted:
+
+```json
+{
+    "input_files": ["inp_audio123"],
+    "script_files": [{ "input_id": "inp_script123" }]
+}
+```
+
+Both forms are sent to the API as `{ "input_id": "..." }` objects.
+
+## File-Backed Example
+
+```json
+{
+    "name": "audio-transcription",
     "workload_type": "inference",
-    "model_size_gb": 1,
-    "optimize_for": "balanced"
+    "image": "python:3.11-slim",
+    "command": ["python", "/workspace/scripts/transcribe.py", "/workspace/inputs/audio.ogg", "/workspace/artifacts/transcript.txt"],
+    "script_files": [
+        {
+            "input_id": "inp_script123"
+        }
+    ],
+    "input_files": [
+        {
+            "input_id": "inp_audio123"
+        }
+    ],
+    "expected_artifacts": ["/workspace/artifacts/transcript.txt"]
 }
 ```
 
-Low-cost batch submit:
+The current API supports one uploaded script reference. Expected artifacts should use paths under `/workspace/artifacts`.
 
-```json
-{
-    "name": "flowise-batch-smoke",
-    "image": "python:3.11",
-    "workload_type": "batch",
-    "model_size_gb": 1,
-    "optimize_for": "cost",
-    "command": "python",
-    "args": ["-c", "print(42)"]
-}
-```
+## Monitoring
 
-Agent-triggered artifact job:
+**Get Job** returns the current state. Fields can include `status`, `phase`, `execution_phase`, `status_message`, `phase_started_at`, `phase_last_updated_at`, `wait_duration_seconds`, `delayed_start`, `delay_reason`, scheduling details, estimated and actual job cost, artifact readiness, and failure information.
 
-```json
-{
-    "name": "flowise-artifact-job",
-    "image": "python:3.11",
-    "workload_type": "batch",
-    "model_size_gb": 1,
-    "command": "python",
-    "args": [
-        "-c",
-        "import json, os; os.makedirs('/workspace/artifacts', exist_ok=True); json.dump({'status':'ok'}, open('/workspace/artifacts/output.json','w'))"
-    ]
-}
-```
+**Get Job Events** returns ordered lifecycle activity that may exist before workload logs. Use it while a job is queued, scheduling, provisioning, or preparing inputs/runtime.
 
-Job monitoring:
+**Get Job Runtime** is separate from status, events, and logs. Runtime information can be unavailable while a job is waiting or starting; this is not itself a failure.
 
-```json
-{
-    "job_id": "job_..."
-}
-```
+**Get Job Logs** supports `limit`, `cursor`, `tail`, and `stream` (`stdout`, `stderr`, or `all`). Responses can include `next_cursor`, `has_more`, categories, a failure highlight, and a usage hint. Empty logs do not mean a job is stuck or failed. Polling this action is not true streaming.
 
-Logs retrieval:
+## Cancellation And Artifacts
 
-```json
-{
-    "job_id": "job_...",
-    "tail": 100,
-    "stream": "all"
-}
-```
+Cancellation is explicit and is never called by another action. It can stop pending or active execution.
 
-Artifact retrieval:
+Managed workloads write regular output files under `/workspace/artifacts`. **List Artifacts** returns artifact IDs and readiness metadata. **Get Artifact** requires an artifact ID and returns short-lived download information; it does not permanently copy the file into Flowise.
 
-```json
-{
-    "job_id": "job_...",
-    "artifact_id": "art_..."
-}
-```
+## Errors And Security
 
-## Field Notes
+The node validates workload types, command arrays, environment values, input references, artifact IDs, and upload kinds before requests. It handles API authentication and authorization failures, rate limits, non-JSON errors, upstream failures, and timeouts without returning Axios configuration or authorization headers.
 
--   `workload_type` supports `inference`, `training`, `fine_tuning` / `fine-tuning`, and `batch`. The integration sends `fine-tuning` to the REST API.
--   `routing_mode` is accepted as an agent-friendly alias for `optimize_for`.
--   `env` is accepted as an alias for `environment`; values must be strings.
--   `callback_url`, `callback_auth_token`, and `callback_metadata` follow the documented per-job callback fields. Treat callback tokens as secrets.
--   Managed jobs can upload regular files written under `/workspace/artifacts`. Direct input file upload is not part of the documented public job-submit contract; pass file references through your image, command, environment, or storage system where appropriate.
+Sensitive keys are recursively redacted in tool errors, including values nested in arrays. Bearer tokens, API keys, callback tokens, and temporary signed upload/download URLs are not written to debug logs by this integration. Successful upload-slot and artifact responses still return their temporary URLs because clients need them to complete the requested workflow; treat those values as secrets.
+
+All requests use Flowise `secureAxiosRequest`, so the configured API base URL remains subject to Flowise HTTP security and SSRF protections.
+
+## Testing
+
+The Jest tests mock every external API request. They do not require a Jungle Grid API key and do not submit live or billable workloads.
