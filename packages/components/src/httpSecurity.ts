@@ -336,11 +336,7 @@ function createPinnedAgent(target: ResolvedTarget, options?: { ca?: string | str
     const Agent = target.protocol === 'https' ? https.Agent : http.Agent
 
     return new Agent({
-        lookup: (_host, opts, cb) => {
-            if (typeof opts === 'object' && opts?.all) {
-                cb(null, [{ address: target.ip, family: target.family }])
-                return
-            }
+        lookup: (_host, _opts, cb) => {
             cb(null, target.ip, target.family)
         },
         ...options

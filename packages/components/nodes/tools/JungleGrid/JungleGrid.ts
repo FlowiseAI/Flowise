@@ -5,11 +5,14 @@ import type { ICommonObject, INode, INodeData, INodeParams } from '../../../src/
 const ALL_ACTIONS: { label: string; name: JungleGridAction }[] = [
     { label: 'Estimate Job', name: 'estimateJob' },
     { label: 'Submit Job', name: 'submitJob' },
+    { label: 'Create Job Input Upload', name: 'uploadJobInput' },
+    { label: 'List Job Inputs', name: 'listJobInputs' },
     { label: 'List Jobs', name: 'listJobs' },
     { label: 'Get Job', name: 'getJob' },
+    { label: 'Get Job Events', name: 'getJobEvents' },
     { label: 'Get Job Runtime', name: 'getJobRuntime' },
-    { label: 'Cancel Job', name: 'cancelJob' },
     { label: 'Get Job Logs', name: 'getJobLogs' },
+    { label: 'Cancel Job', name: 'cancelJob' },
     { label: 'List Artifacts', name: 'listArtifacts' },
     { label: 'Get Artifact', name: 'getArtifact' }
 ]
@@ -34,7 +37,7 @@ class JungleGrid_Tools implements INode {
         this.type = 'JungleGrid'
         this.icon = 'junglegrid.svg'
         this.category = 'Tools'
-        this.description = 'Estimate, submit, monitor, cancel, and retrieve artifacts for asynchronous Jungle Grid workloads'
+        this.description = 'Prepare, estimate, submit, monitor, cancel, and retrieve outputs for asynchronous Jungle Grid workloads'
         this.documentation = 'https://junglegrid.dev/docs/api'
         this.baseClasses = [this.type, 'Tool']
         this.credential = {
@@ -49,7 +52,16 @@ class JungleGrid_Tools implements INode {
                 name: 'actions',
                 type: 'multiOptions',
                 options: ALL_ACTIONS,
-                default: ['estimateJob', 'submitJob', 'getJob', 'getJobRuntime', 'getJobLogs', 'listArtifacts', 'getArtifact'],
+                default: [
+                    'estimateJob',
+                    'submitJob',
+                    'getJob',
+                    'getJobEvents',
+                    'getJobRuntime',
+                    'getJobLogs',
+                    'listArtifacts',
+                    'getArtifact'
+                ],
                 description: 'Choose which Jungle Grid tools to expose to the agent.'
             }
         ]
