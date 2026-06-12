@@ -1,7 +1,7 @@
 import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 const DEFAULT_BASE_URL = 'https://api.inceptionlabs.ai/v1'
@@ -134,13 +134,13 @@ class ChatInception_ChatModels implements INode {
         const inceptionApiKey = getCredentialParam('inceptionApiKey', credentialData, nodeData)
 
         const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
             model: modelName,
             apiKey: inceptionApiKey,
             openAIApiKey: inceptionApiKey,
             streaming: streaming ?? true
         }
 
+        if (temperature != null && temperature !== '') obj.temperature = parseFloat(temperature)
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
@@ -152,7 +152,7 @@ class ChatInception_ChatModels implements INode {
 
         if (baseOptions) {
             try {
-                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : parseJsonBody(baseOptions)
             } catch (exception) {
                 throw new Error("Invalid JSON in the ChatInception's BaseOptions: " + exception)
             }
