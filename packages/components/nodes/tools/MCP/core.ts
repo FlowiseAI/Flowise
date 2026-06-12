@@ -187,39 +187,95 @@ const applyDescription = <T extends ZodTypeAny>(schema: T, description?: string)
     return description ? (schema.describe(description) as T) : schema
 }
 
-const applyRequired = (schema: ZodTypeAny, required: boolean): ZodTypeAny => {
+const applyRequiredAndDefault = (schema: ZodTypeAny, required: boolean, defaultValue: unknown): ZodTypeAny => {
+    if (defaultValue !== undefined) {
+        return schema.default(defaultValue)
+    }
+
     return required ? schema : schema.optional()
 }
 
-const jsonSchemaPropertyToZod = (schema: any, propertyName: string, required: boolean): ZodTypeAny => {
-    if (!schema || typeof schema !== 'object') {
-        return applyRequired(z.any(), required)
+const createUnionSchema = (variants: ZodTypeAny[], propertyName: string): ZodTypeAny => {
+    if (variants.length === 0) {
+        throw new Error(`No schema variants defined for property: ${propertyName}`)
     }
 
-    const description = schema.description ?? schema.title ?? propertyName
+    if (variants.length === 1) {
+        return variants[0]
+    }
+
+    return z.union(variants as [ZodTypeAny, ZodTypeAny, ...ZodTypeAny[]])
+}
+
+const isJsonLiteral = (value: unknown): value is string | number | boolean | null => {
+    return value === null || ['string', 'number', 'boolean'].includes(typeof value)
+}
+
+const getSchemaType = (schema: any, propertyName: string): string | string[] => {
+    if (schema.type === undefined) {
+        if (schema.properties && typeof schema.properties === 'object' && !Array.isArray(schema.properties)) {
+            return 'object'
+        }
+        if (schema.items !== undefined) {
+            return 'array'
+        }
+
+        throw new Error(`Schema type could not be inferred for property: ${propertyName}`)
+    }
+
+    if (Array.isArray(schema.type)) {
+        if (schema.type.length === 0 || !schema.type.every((type: unknown) => typeof type === 'string')) {
+            throw new Error(`Invalid schema type for property: ${propertyName}`)
+        }
+
+        return schema.type
+    }
+
+    if (typeof schema.type !== 'string') {
+        throw new Error(`Invalid schema type for property: ${propertyName}`)
+    }
+
+    return schema.type
+}
+
+const buildJsonSchemaPropertyZod = (schema: any, propertyName: string): ZodTypeAny => {
+    if (!schema || typeof schema !== 'object' || Array.isArray(schema)) {
+        throw new Error(`Invalid schema definition for property: ${propertyName}`)
+    }
 
     if (Array.isArray(schema.enum) && schema.enum.length > 0) {
-        const enumValues = schema.enum.filter((value: unknown): value is string => typeof value === 'string')
-        if (enumValues.length > 0) {
-            return applyDescription(applyRequired(z.enum(enumValues as [string, ...string[]]), required), description)
+        const allStrings = schema.enum.every((value: unknown) => typeof value === 'string')
+        if (allStrings) {
+            return z.enum(schema.enum as [string, ...string[]])
         }
+
+        if (!schema.enum.every(isJsonLiteral)) {
+            throw new Error(`Unsupported enum value for property: ${propertyName}`)
+        }
+
+        return createUnionSchema(
+            schema.enum.map((value: string | number | boolean | null) => z.literal(value)),
+            propertyName
+        )
     }
 
     if (Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf)) {
-        const variants = (schema.oneOf ?? schema.anyOf)
-            .map((subSchema: any) => jsonSchemaPropertyToZod(subSchema, propertyName, true))
-            .filter(Boolean)
+        return createUnionSchema(
+            (schema.oneOf ?? schema.anyOf).map((subSchema: any) => buildJsonSchemaPropertyZod(subSchema, propertyName)),
+            propertyName
+        )
+    }
 
-        if (variants.length === 1) {
-            return applyDescription(applyRequired(variants[0], required), description)
-        }
-        if (variants.length > 1) {
-            return applyDescription(applyRequired(z.union(variants as [ZodTypeAny, ZodTypeAny, ...ZodTypeAny[]]), required), description)
-        }
+    const type = getSchemaType(schema, propertyName)
+    if (Array.isArray(type)) {
+        return createUnionSchema(
+            type.map((schemaType) => buildJsonSchemaPropertyZod({ ...schema, type: schemaType }, propertyName)),
+            propertyName
+        )
     }
 
     let zodSchema: ZodTypeAny
-    switch (schema.type) {
+    switch (type) {
         case 'string':
             zodSchema = z.string()
             break
@@ -233,7 +289,7 @@ const jsonSchemaPropertyToZod = (schema: any, propertyName: string, required: bo
             zodSchema = z.boolean()
             break
         case 'array':
-            zodSchema = z.array(jsonSchemaPropertyToZod(schema.items, propertyName, true))
+            zodSchema = z.array(schema.items === undefined ? z.any() : buildJsonSchemaPropertyZod(schema.items, propertyName))
             break
         case 'object':
             zodSchema = mcpInputSchemaToZodObject(schema)
@@ -242,10 +298,17 @@ const jsonSchemaPropertyToZod = (schema: any, propertyName: string, required: bo
             zodSchema = z.null()
             break
         default:
-            zodSchema = z.any()
+            throw new Error(`Unsupported schema type: ${type} for property: ${propertyName}`)
     }
 
-    return applyDescription(applyRequired(zodSchema, required), description)
+    return zodSchema
+}
+
+const jsonSchemaPropertyToZod = (schema: any, propertyName: string, required: boolean): ZodTypeAny => {
+    const zodSchema = buildJsonSchemaPropertyZod(schema, propertyName)
+    const description = schema.description ?? schema.title ?? propertyName
+
+    return applyDescription(applyRequiredAndDefault(zodSchema, required, schema.default), description)
 }
 
 export const mcpInputSchemaToZodObject = (inputSchema: any): any => {
@@ -253,9 +316,22 @@ export const mcpInputSchemaToZodObject = (inputSchema: any): any => {
         return inputSchema
     }
 
+    if (!inputSchema || typeof inputSchema !== 'object' || Array.isArray(inputSchema)) {
+        throw new Error('Invalid MCP input schema')
+    }
+
+    const type = inputSchema.type ?? 'object'
+    if (type !== 'object') {
+        throw new Error(`Unsupported MCP input schema type: ${type}`)
+    }
+
     const properties = inputSchema?.properties
-    if (!properties || typeof properties !== 'object' || Array.isArray(properties)) {
+    if (properties === undefined) {
         return z.object({})
+    }
+
+    if (typeof properties !== 'object' || Array.isArray(properties)) {
+        throw new Error('Invalid MCP input schema properties')
     }
 
     const requiredProperties = new Set(Array.isArray(inputSchema.required) ? inputSchema.required : [])

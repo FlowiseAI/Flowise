@@ -72,6 +72,119 @@ describe('MCP Security Validations', () => {
             expect(schema.shape.filters.shape.tags.description).toBe('Tags to match.')
         })
 
+        it('should preserve non-string enum values', () => {
+            const schema = mcpInputSchemaToZodObject({
+                type: 'object',
+                properties: {
+                    priority: {
+                        enum: [1, 2, 'urgent', true, null],
+                        description: 'Priority marker.'
+                    }
+                },
+                required: ['priority']
+            })
+
+            expect(schema.safeParse({ priority: 1 }).success).toBe(true)
+            expect(schema.safeParse({ priority: true }).success).toBe(true)
+            expect(schema.safeParse({ priority: null }).success).toBe(true)
+            expect(schema.safeParse({ priority: 'urgent' }).success).toBe(true)
+            expect(schema.safeParse({ priority: 'low' }).success).toBe(false)
+            expect(schema.shape.priority.description).toBe('Priority marker.')
+        })
+
+        it('should support array-based JSON schema types', () => {
+            const schema = mcpInputSchemaToZodObject({
+                type: 'object',
+                properties: {
+                    query: {
+                        type: ['string', 'null'],
+                        description: 'Optional query text.'
+                    }
+                },
+                required: ['query']
+            })
+
+            expect(schema.safeParse({ query: 'docs' }).success).toBe(true)
+            expect(schema.safeParse({ query: null }).success).toBe(true)
+            expect(schema.safeParse({ query: 123 }).success).toBe(false)
+            expect(schema.safeParse({}).success).toBe(false)
+            expect(schema.shape.query.description).toBe('Optional query text.')
+        })
+
+        it('should infer object and array schemas from structural fields', () => {
+            const schema = mcpInputSchemaToZodObject({
+                type: 'object',
+                properties: {
+                    filters: {
+                        description: 'Search filters.',
+                        properties: {
+                            tags: {
+                                description: 'Tags to match.',
+                                items: {
+                                    type: 'string'
+                                }
+                            }
+                        },
+                        required: ['tags']
+                    }
+                },
+                required: ['filters']
+            })
+
+            expect(schema.safeParse({ filters: { tags: ['docs', 'api'] } }).success).toBe(true)
+            expect(schema.safeParse({ filters: { tags: 'docs' } }).success).toBe(false)
+            expect(schema.safeParse({ filters: {} }).success).toBe(false)
+            expect(schema.shape.filters.description).toBe('Search filters.')
+            expect(schema.shape.filters.shape.tags.description).toBe('Tags to match.')
+        })
+
+        it('should preserve default values', () => {
+            const schema = mcpInputSchemaToZodObject({
+                type: 'object',
+                properties: {
+                    limit: {
+                        type: 'integer',
+                        default: 10,
+                        description: 'Maximum number of results.'
+                    }
+                }
+            })
+
+            const result = schema.safeParse({})
+
+            expect(result.success).toBe(true)
+            expect(result.data.limit).toBe(10)
+            expect(schema.safeParse({ limit: 5 }).success).toBe(true)
+            expect(schema.safeParse({ limit: 1.5 }).success).toBe(false)
+            expect(schema.shape.limit.description).toBe('Maximum number of results.')
+        })
+
+        it('should throw for invalid or unsupported JSON schemas', () => {
+            expect(() => {
+                mcpInputSchemaToZodObject(null)
+            }).toThrow('Invalid MCP input schema')
+
+            expect(() => {
+                mcpInputSchemaToZodObject({
+                    type: 'object',
+                    properties: {
+                        bad: null
+                    }
+                })
+            }).toThrow('Invalid schema definition for property: bad')
+
+            expect(() => {
+                mcpInputSchemaToZodObject({
+                    type: 'object',
+                    properties: {
+                        bad: {
+                            type: 'symbol'
+                        }
+                    }
+                })
+            }).toThrow('Unsupported schema type: symbol for property: bad')
+        })
+
         it('should create LangChain MCP tools with the original MCP description and converted schema', async () => {
             const mcpTool = await MCPTool({
                 toolkit: {} as any,
