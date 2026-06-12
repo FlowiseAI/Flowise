@@ -4,6 +4,7 @@ import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
 import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
+import { z, type ZodTypeAny } from 'zod'
 import { checkDenyList, secureFetch } from '../../../src/httpSecurity'
 
 export class MCPToolkit extends BaseToolkit {
@@ -173,9 +174,97 @@ export async function MCPTool({
         {
             name: name,
             description: description,
-            schema: argsSchema
+            schema: mcpInputSchemaToZodObject(argsSchema)
         }
     )
+}
+
+const isZodSchema = (schema: unknown): schema is ZodTypeAny => {
+    return typeof schema === 'object' && schema !== null && typeof (schema as ZodTypeAny).safeParse === 'function'
+}
+
+const applyDescription = <T extends ZodTypeAny>(schema: T, description?: string): T => {
+    return description ? (schema.describe(description) as T) : schema
+}
+
+const applyRequired = (schema: ZodTypeAny, required: boolean): ZodTypeAny => {
+    return required ? schema : schema.optional()
+}
+
+const jsonSchemaPropertyToZod = (schema: any, propertyName: string, required: boolean): ZodTypeAny => {
+    if (!schema || typeof schema !== 'object') {
+        return applyRequired(z.any(), required)
+    }
+
+    const description = schema.description ?? schema.title ?? propertyName
+
+    if (Array.isArray(schema.enum) && schema.enum.length > 0) {
+        const enumValues = schema.enum.filter((value: unknown): value is string => typeof value === 'string')
+        if (enumValues.length > 0) {
+            return applyDescription(applyRequired(z.enum(enumValues as [string, ...string[]]), required), description)
+        }
+    }
+
+    if (Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf)) {
+        const variants = (schema.oneOf ?? schema.anyOf)
+            .map((subSchema: any) => jsonSchemaPropertyToZod(subSchema, propertyName, true))
+            .filter(Boolean)
+
+        if (variants.length === 1) {
+            return applyDescription(applyRequired(variants[0], required), description)
+        }
+        if (variants.length > 1) {
+            return applyDescription(applyRequired(z.union(variants as [ZodTypeAny, ZodTypeAny, ...ZodTypeAny[]]), required), description)
+        }
+    }
+
+    let zodSchema: ZodTypeAny
+    switch (schema.type) {
+        case 'string':
+            zodSchema = z.string()
+            break
+        case 'number':
+            zodSchema = z.number()
+            break
+        case 'integer':
+            zodSchema = z.number().int()
+            break
+        case 'boolean':
+            zodSchema = z.boolean()
+            break
+        case 'array':
+            zodSchema = z.array(jsonSchemaPropertyToZod(schema.items, propertyName, true))
+            break
+        case 'object':
+            zodSchema = mcpInputSchemaToZodObject(schema)
+            break
+        case 'null':
+            zodSchema = z.null()
+            break
+        default:
+            zodSchema = z.any()
+    }
+
+    return applyDescription(applyRequired(zodSchema, required), description)
+}
+
+export const mcpInputSchemaToZodObject = (inputSchema: any): any => {
+    if (isZodSchema(inputSchema)) {
+        return inputSchema
+    }
+
+    const properties = inputSchema?.properties
+    if (!properties || typeof properties !== 'object' || Array.isArray(properties)) {
+        return z.object({})
+    }
+
+    const requiredProperties = new Set(Array.isArray(inputSchema.required) ? inputSchema.required : [])
+    const zodShape: Record<string, ZodTypeAny> = {}
+    for (const [propertyName, propertySchema] of Object.entries(properties)) {
+        zodShape[propertyName] = jsonSchemaPropertyToZod(propertySchema, propertyName, requiredProperties.has(propertyName))
+    }
+
+    return z.object(zodShape)
 }
 
 export const validateArgsForLocalFileAccess = (args: string[]): void => {

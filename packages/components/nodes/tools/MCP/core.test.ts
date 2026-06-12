@@ -3,10 +3,98 @@ import {
     validateCommandInjection,
     validateArgsForLocalFileAccess,
     validateEnvironmentVariables,
+    MCPTool,
+    mcpInputSchemaToZodObject,
     validateMCPServerConfig
 } from './core'
 
 describe('MCP Security Validations', () => {
+    describe('mcpInputSchemaToZodObject', () => {
+        it('should preserve MCP input schema descriptions and required fields', () => {
+            const schema = mcpInputSchemaToZodObject({
+                type: 'object',
+                properties: {
+                    location: {
+                        type: 'string',
+                        description: 'The city and country to get weather for.'
+                    },
+                    days: {
+                        type: 'integer',
+                        description: 'Number of forecast days.'
+                    },
+                    unit: {
+                        type: 'string',
+                        enum: ['celsius', 'fahrenheit'],
+                        description: 'Temperature unit.'
+                    }
+                },
+                required: ['location']
+            })
+
+            expect(schema.safeParse({}).success).toBe(false)
+            expect(schema.safeParse({ location: 'Dhaka, Bangladesh', unit: 'kelvin' }).success).toBe(false)
+            expect(schema.safeParse({ location: 'Dhaka, Bangladesh', days: 3, unit: 'celsius' }).success).toBe(true)
+
+            const shape = schema.shape
+            expect(shape.location.description).toBe('The city and country to get weather for.')
+            expect(shape.days.description).toBe('Number of forecast days.')
+            expect(shape.unit.description).toBe('Temperature unit.')
+            expect(shape.location.safeParse(undefined).success).toBe(false)
+            expect(shape.days.safeParse(undefined).success).toBe(true)
+        })
+
+        it('should preserve nested object and array parameter schemas', () => {
+            const schema = mcpInputSchemaToZodObject({
+                type: 'object',
+                properties: {
+                    filters: {
+                        type: 'object',
+                        description: 'Search filters.',
+                        properties: {
+                            tags: {
+                                type: 'array',
+                                description: 'Tags to match.',
+                                items: {
+                                    type: 'string',
+                                    description: 'A tag value.'
+                                }
+                            }
+                        },
+                        required: ['tags']
+                    }
+                },
+                required: ['filters']
+            })
+
+            expect(schema.safeParse({ filters: { tags: ['docs', 'api'] } }).success).toBe(true)
+            expect(schema.safeParse({ filters: {} }).success).toBe(false)
+            expect(schema.shape.filters.description).toBe('Search filters.')
+            expect(schema.shape.filters.shape.tags.description).toBe('Tags to match.')
+        })
+
+        it('should create LangChain MCP tools with the original MCP description and converted schema', async () => {
+            const mcpTool = await MCPTool({
+                toolkit: {} as any,
+                name: 'buscar_previsao_tempo',
+                description: 'Retorna a previsão do tempo para os próximos dias.',
+                argsSchema: {
+                    type: 'object',
+                    properties: {
+                        local: {
+                            type: 'string',
+                            description: 'Local para consultar a previsão.'
+                        }
+                    },
+                    required: ['local']
+                }
+            })
+
+            expect(mcpTool.description).toBe('Retorna a previsão do tempo para os próximos dias.')
+            expect((mcpTool.schema as any).shape.local.description).toBe('Local para consultar a previsão.')
+            expect((mcpTool.schema as any).safeParse({}).success).toBe(false)
+        })
+    })
+
     describe('validateCommandFlags', () => {
         describe('npx command', () => {
             it('should block -c flag', () => {
