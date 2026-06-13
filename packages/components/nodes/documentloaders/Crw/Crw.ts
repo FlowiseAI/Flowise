@@ -487,15 +487,15 @@ class CrwApp {
                     case 'completed':
                         isJobCompleted = true
                         return statusData
-                    case 'scraping':
                     case 'failed':
-                        if (statusData.status === 'failed') {
-                            throw new Error('Crawl job failed')
-                        }
+                    case 'error':
+                        throw new Error('Crawl job failed')
+                    case 'cancelled':
+                        throw new Error('Crawl job was cancelled')
+                    default:
+                        // Non-terminal statuses (e.g. 'scraping', 'pending', 'active') — keep polling
                         await new Promise((resolve) => setTimeout(resolve, Math.max(checkInterval, 2) * 1000))
                         break
-                    default:
-                        throw new Error(`Unknown crawl status: ${statusData.status}`)
                 }
             } else {
                 this.handleError(statusResponse, 'check crawl status')
@@ -514,15 +514,16 @@ class CrwApp {
                     case 'completed':
                         isJobCompleted = true
                         return statusData
-                    case 'processing':
                     case 'failed':
-                        if (statusData.status === 'failed') {
-                            throw new Error('Extract job failed')
-                        }
+                        throw new Error('Extract job failed')
+                    case 'cancelled':
+                        throw new Error('Extract job was cancelled')
+                    case 'pending':
+                    case 'processing':
+                    default:
+                        // Non-terminal statuses — keep polling
                         await new Promise((resolve) => setTimeout(resolve, Math.max(checkInterval, 2) * 1000))
                         break
-                    default:
-                        throw new Error(`Unknown extract status: ${statusData.status}`)
                 }
             } else {
                 this.handleError(statusResponse, 'check extract status')
@@ -622,7 +623,10 @@ export class CrwLoader extends BaseDocumentLoader {
             if (!this.url) {
                 throw new Error('fastCRW: URL is required for extract mode')
             }
-            this.params!.urls = [this.url]
+            this.params = {
+                ...this.params,
+                urls: [this.url]
+            }
             const response = await app.extract(this.params as any as ExtractRequest)
             if (!response.success) {
                 throw new Error(`fastCRW: Failed to extract URL.`)
