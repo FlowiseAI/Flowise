@@ -30,8 +30,17 @@ const isValidUrl = (urlString: string) => {
 }
 
 const getModelListRequestTimeout = (): number => {
-    const timeout = Number(process.env.MODEL_LIST_REQUEST_TIMEOUT_MS)
-    return Number.isFinite(timeout) && timeout > 0 ? timeout : 3000
+    const timeoutStr = process.env.MODEL_LIST_REQUEST_TIMEOUT_MS
+    if (timeoutStr == null) {
+        return 3000
+    }
+
+    const timeout = parseInt(timeoutStr, 10)
+    if (!Number.isInteger(timeout) || timeout <= 0 || String(timeout) !== timeoutStr.trim()) {
+        throw new Error(`Invalid MODEL_LIST_REQUEST_TIMEOUT_MS value: ${timeoutStr}`)
+    }
+
+    return timeout
 }
 
 /**
