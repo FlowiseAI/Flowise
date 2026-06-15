@@ -11,7 +11,7 @@ class ResembleApi implements INodeCredential {
         this.label = 'Resemble API'
         this.name = 'resembleApi'
         this.version = 1.0
-        this.description = 'Resemble AI Detect + Intelligence API key (dashboard → Account → API).'
+        this.description = 'Resemble AI Detect, Signal, and Intelligence API key (dashboard → Account → API).'
         this.inputs = [
             {
                 label: 'Resemble API Key',

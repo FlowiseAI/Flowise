@@ -1,8 +1,8 @@
 import { z } from 'zod/v3'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { detect, intelligence, watermarkApply, watermarkDetect, type ResembleOptions } from './client'
+import { detect, intelligence, signal, watermarkApply, watermarkDetect, type ResembleOptions } from './client'
 
-/** Build the set of Resemble Detect + Intelligence tools for an agent. */
+/** Build the set of Resemble trust and intelligence tools for an agent. */
 export function buildResembleTools(opts: ResembleOptions): DynamicStructuredTool[] {
     const out = (data: any) => JSON.stringify(data)
 
@@ -37,6 +37,16 @@ export function buildResembleTools(opts: ResembleOptions): DynamicStructuredTool
         func: async (args) => out(await intelligence(opts, args))
     })
 
+    const signalTool = new DynamicStructuredTool({
+        name: 'resemble_signal',
+        description:
+            'Score caller-provided text for fraud and scam intent with Resemble Signal. Use before reset-code, credential, wire-transfer, urgent-payment, or account-change requests.',
+        schema: z.object({
+            text: z.string().min(1).describe('Caller-provided text or transcript excerpt to score.')
+        }),
+        func: async (args) => out(await signal(opts, args))
+    })
+
     const watermarkDetectTool = new DynamicStructuredTool({
         name: 'resemble_watermark_detect',
         description: 'Check whether media at a public HTTPS URL contains a Resemble watermark.',
@@ -56,5 +66,5 @@ export function buildResembleTools(opts: ResembleOptions): DynamicStructuredTool
         func: async (args) => out(await watermarkApply(opts, args))
     })
 
-    return [detectTool, intelligenceTool, watermarkDetectTool, watermarkApplyTool]
+    return [detectTool, signalTool, intelligenceTool, watermarkDetectTool, watermarkApplyTool]
 }

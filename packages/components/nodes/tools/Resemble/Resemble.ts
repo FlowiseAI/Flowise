@@ -15,14 +15,14 @@ class Resemble_Tools implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Resemble Detect + Intelligence'
+        this.label = 'Resemble Detect + Signal'
         this.name = 'resembleDetectIntelligence'
         this.version = 1.0
         this.type = 'Resemble'
         this.icon = 'resemble.svg'
         this.category = 'Tools'
         this.description =
-            'Resemble AI deepfake detection, media intelligence, and watermarking. Exposes detect, intelligence, and watermark tools to an agent.'
+            'Resemble AI deepfake detection, fraud-intent scoring, media intelligence, and watermarking. Exposes detect, signal, intelligence, and watermark tools to an agent.'
         this.baseClasses = ['Tool']
         this.credential = {
             label: 'Connect Credential',

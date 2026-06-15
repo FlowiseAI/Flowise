@@ -1,5 +1,5 @@
 /**
- * Pure HTTP client for the Resemble Detect + Intelligence API.
+ * Pure HTTP client for the Resemble Detect, Signal, and Intelligence API.
  * Zero external dependencies (uses global fetch) so it can be live-tested
  * standalone with `bun`. `core.ts` wraps these into LangChain tools.
  *
@@ -72,13 +72,13 @@ export async function rPoll(
     const deadline = Date.now() + wait * 1000
     let delay = 2000
     let last = await rRequest(opts, 'GET', path)
-    while (true) {
+    while (Date.now() < deadline) {
         if (isDone(last)) return last
-        if (Date.now() >= deadline) throw new Error(`Resemble job did not complete within ${wait}s (GET ${path})`)
         await new Promise((r) => setTimeout(r, delay))
         delay = Math.min(10000, delay + 1000)
         last = await rRequest(opts, 'GET', path)
     }
+    throw new Error(`Resemble job did not complete within ${wait}s (GET ${path})`)
 }
 
 export function rSanitize(d: any, n = 200): any {
@@ -123,6 +123,10 @@ export async function intelligence(opts: ResembleOptions, args: any): Promise<an
         return rSanitize(await rPoll(opts, `/intelligences/${it.uuid}`, args.max_wait_seconds || 120))
     }
     return rSanitize(result)
+}
+
+export async function signal(opts: ResembleOptions, args: any): Promise<any> {
+    return rSanitize(await rRequest(opts, 'POST', '/signal', { text: args.text }))
 }
 
 export async function watermarkDetect(opts: ResembleOptions, args: any): Promise<any> {
