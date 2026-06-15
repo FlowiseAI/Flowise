@@ -22,7 +22,7 @@ import { IconMinus, IconPlus, IconSearch, IconX } from '@tabler/icons-react'
 
 import { MainCard } from '@/atoms'
 import { tokens } from '@/core/theme/tokens'
-import type { NodeData } from '@/core/types'
+import type { NodeDataSchema } from '@/core/types'
 import { useApiContext } from '@/infrastructure/store'
 
 import { NodeListItem } from './NodeListItem'
@@ -30,15 +30,13 @@ import { debounce, groupNodesByCategory, searchNodes } from './search'
 import { StyledFab } from './StyledFab'
 import { useDrawerMaxHeight } from './useDrawerMaxHeight'
 
-const Z_INDEX_DRAWER = 1000
-
 export interface AddNodesDrawerProps {
     /** Available nodes to display */
-    nodes: NodeData[]
+    nodes: NodeDataSchema[]
     /** Callback when a node drag starts */
-    onDragStart?: (event: React.DragEvent, node: NodeData) => void
+    onDragStart?: (event: React.DragEvent, node: NodeDataSchema) => void
     /** Callback when a node is clicked (alternative to drag) */
-    onNodeClick?: (node: NodeData) => void
+    onNodeClick?: (node: NodeDataSchema) => void
 }
 
 /**
@@ -49,7 +47,7 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
     const { apiBaseUrl } = useApiContext()
 
     const [searchValue, setSearchValue] = useState('')
-    const [filteredNodes, setFilteredNodes] = useState<Record<string, NodeData[]>>({})
+    const [filteredNodes, setFilteredNodes] = useState<Record<string, NodeDataSchema[]>>({})
     const [open, setOpen] = useState(false)
     const [categoryExpanded, setCategoryExpanded] = useState<Record<string, boolean>>({})
 
@@ -59,7 +57,7 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
     const drawerMaxHeight = useDrawerMaxHeight(open, paperRef)
 
     // Group nodes by category
-    const groupNodes = useCallback((nodeList: NodeData[], expandAll = false) => {
+    const groupNodes = useCallback((nodeList: NodeDataSchema[], expandAll = false) => {
         const grouped = groupNodesByCategory(nodeList)
         setFilteredNodes(grouped)
 
@@ -118,11 +116,11 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
         }))
     }
 
-    const handleDragStart = (event: React.DragEvent, node: NodeData) => {
+    const handleDragStart = (event: React.DragEvent, node: NodeDataSchema) => {
         onDragStart?.(event, node)
     }
 
-    const handleNodeClick = (node: NodeData) => {
+    const handleNodeClick = (node: NodeDataSchema) => {
         onNodeClick?.(node)
     }
 
@@ -154,7 +152,7 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
                     position: 'absolute',
                     left: 20,
                     top: 20,
-                    zIndex: Z_INDEX_DRAWER
+                    zIndex: tokens.zIndex.canvasButton
                 }}
             >
                 {open ? <IconMinus /> : <IconPlus />}
@@ -177,7 +175,7 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
                         }
                     ]
                 }}
-                sx={{ zIndex: Z_INDEX_DRAWER }}
+                sx={{ zIndex: tokens.zIndex.canvasPanel }}
             >
                 {({ TransitionProps }) => (
                     <Fade {...TransitionProps} timeout={200}>
@@ -221,7 +219,7 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
                                                             cursor: 'pointer',
                                                             color: theme.palette.grey[500],
                                                             '&:hover': {
-                                                                color: theme.palette.grey[900]
+                                                                color: theme.palette.text.primary
                                                             }
                                                         }}
                                                         onClick={handleClearSearch}

@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import { QueryRunner } from 'typeorm'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { emitEvent, TelemetryEventCategory, TelemetryEventResult } from '../../utils/telemetry'
 import { Organization } from '../database/entities/organization.entity'
 import { User } from '../database/entities/user.entity'
 import { AccountDTO, AccountService } from '../services/account.service'
@@ -27,16 +31,6 @@ export class AccountController {
         }
     }
 
-    public async login(req: Request, res: Response, next: NextFunction) {
-        try {
-            const accountService = new AccountService()
-            const data = await accountService.login(req.body)
-            return res.status(StatusCodes.CREATED).json(data)
-        } catch (error) {
-            next(error)
-        }
-    }
-
     public async verify(req: Request, res: Response, next: NextFunction) {
         try {
             const accountService = new AccountService()
@@ -52,6 +46,16 @@ export class AccountController {
             const accountService = new AccountService()
             const data = await accountService.resendVerificationEmail(req.body)
             return res.status(StatusCodes.CREATED).json(data)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    public async confirmEmailChange(req: Request, res: Response, next: NextFunction) {
+        try {
+            const accountService = new AccountService()
+            const data = await accountService.confirmEmailChange(req.body)
+            return res.status(StatusCodes.OK).json(data)
         } catch (error) {
             next(error)
         }
@@ -116,24 +120,42 @@ export class AccountController {
         }
     }
 
-    public async getBasicAuth(req: Request, res: Response) {
-        if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
-            return res.status(StatusCodes.OK).json({
-                isUsernamePasswordSet: true
-            })
-        } else {
-            return res.status(StatusCodes.OK).json({
-                isUsernamePasswordSet: false
-            })
-        }
-    }
+    public async delete(req: Request, res: Response, next: NextFunction) {
+        let queryRunner: QueryRunner | undefined
+        try {
+            const { confirmationText } = req.body
+            if (confirmationText !== 'permanently delete') {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Confirmation text must match "permanently delete"')
+            }
 
-    public async checkBasicAuth(req: Request, res: Response) {
-        const { username, password } = req.body
-        if (username === process.env.FLOWISE_USERNAME && password === process.env.FLOWISE_PASSWORD) {
-            return res.json({ message: 'Authentication successful' })
-        } else {
-            return res.json({ message: 'Authentication failed' })
+            queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
+            await queryRunner.connect()
+            if (!req.user || !req.ip) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
+            const accountService = new AccountService()
+            await accountService.delete(queryRunner, req.user, req.ip)
+
+            return res.status(StatusCodes.OK).json({ message: 'Account deleted' })
+        } catch (error) {
+            if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
+
+            await emitEvent({
+                category: TelemetryEventCategory.AUDIT,
+                eventType: 'account-deleted',
+                actionType: 'delete',
+                userId: req.user?.id ?? 'unknown',
+                orgId: req.user?.activeOrganizationId ?? 'unknown',
+                resourceId: req.user?.id ?? 'unknown',
+                ipAddress: req.ip,
+                result: TelemetryEventResult.FAILED,
+                metadata: {
+                    failureReason: error instanceof InternalFlowiseError ? error.message : 'internal_error'
+                }
+            })
+
+            next(error)
+        } finally {
+            if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
         }
     }
 }

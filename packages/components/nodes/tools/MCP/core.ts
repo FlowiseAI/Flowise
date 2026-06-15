@@ -1,10 +1,9 @@
-import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
-import { z, type ZodTypeAny } from 'zod/v3'
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
+import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
 import { checkDenyList, secureFetch } from '../../../src/httpSecurity'
 
 export class MCPToolkit extends BaseToolkit {
@@ -14,10 +13,10 @@ export class MCPToolkit extends BaseToolkit {
     transport: StdioClientTransport | SSEClientTransport | StreamableHTTPClientTransport | null = null
     client: Client | null = null
     serverParams: StdioServerParameters | any
-    transportType: 'stdio' | 'sse'
+    transportType: 'stdio' | 'sse' | 'http'
     /** Per-invocation HTTP headers injected at tools/call time; overrides static toolkit headers for the same names. */
     getToolCallHeaders?: () => Promise<Record<string, string>>
-    constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse') {
+    constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse' | 'http') {
         super()
         this.serverParams = serverParams
         this.transportType = transportType
@@ -73,6 +72,7 @@ export class MCPToolkit extends BaseToolkit {
                 }
                 await client.connect(transport)
             } catch (error) {
+                console.error('Error connecting to MCP server', error)
                 if (headers) {
                     transport = new SSEClientTransport(baseUrl, {
                         requestInit: {
@@ -124,11 +124,12 @@ export class MCPToolkit extends BaseToolkit {
             if (this.client === null) {
                 throw new Error('Client is not initialized')
             }
+            const argsSchema = tool.inputSchema ?? { type: 'object', properties: {} }
             return await MCPTool({
                 toolkit: this,
                 name: tool.name,
                 description: tool.description || tool.name,
-                argsSchema: createSchemaModel(tool.inputSchema)
+                argsSchema
             })
         })
         const res = await Promise.allSettled(toolsPromises)
@@ -175,24 +176,6 @@ export async function MCPTool({
             schema: argsSchema
         }
     )
-}
-
-function createSchemaModel(
-    inputSchema: {
-        type: 'object'
-        properties?: Record<string, unknown>
-    } & { [k: string]: unknown }
-): z.ZodObject<Record<string, ZodTypeAny>> {
-    if (inputSchema.type !== 'object' || !inputSchema.properties) {
-        throw new Error('Invalid schema type or missing properties')
-    }
-
-    const schemaProperties = Object.entries(inputSchema.properties).reduce((acc, [key]) => {
-        acc[key] = z.any()
-        return acc
-    }, {} as Record<string, ZodTypeAny>)
-
-    return z.object(schemaProperties)
 }
 
 export const validateArgsForLocalFileAccess = (args: string[]): void => {
@@ -266,12 +249,21 @@ export const validateCommandInjection = (args: string[]): void => {
     }
 }
 
+/**
+ * Validates user-supplied env vars against the operator-controlled allow-list in
+ * `CUSTOM_MCP_ALLOWED_ENV_VARS` (comma-separated names). Empty = none allowed.
+ */
 export const validateEnvironmentVariables = (env: Record<string, any>): void => {
-    const dangerousEnvVars = ['PATH', 'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH', 'NODE_OPTIONS']
+    const allowedEnvVars = new Set(
+        (process.env.CUSTOM_MCP_ALLOWED_ENV_VARS ?? '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+    )
 
     for (const [key, value] of Object.entries(env)) {
-        if (dangerousEnvVars.includes(key)) {
-            throw new Error(`Environment variable '${key}' modification is not allowed`)
+        if (!allowedEnvVars.has(key)) {
+            throw new Error(`Environment variable '${key}' is not allowed. Permitted: ${[...allowedEnvVars].join(', ') || '(none)'}`)
         }
 
         if (typeof value === 'string' && value.includes('\0')) {

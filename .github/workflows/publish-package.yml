@@ -1,0 +1,186 @@
+# Manual-bump publish pipeline shared by per-package caller workflows
+# (publish-agentflow.yml, publish-observe.yml).
+#
+# Transitional: this is expected to be replaced by a single release.yml
+# driven by changesets once the changesets migration lands.
+
+name: Publish package (reusable)
+on:
+    workflow_call:
+        inputs:
+            package_name:
+                description: 'NPM package name (e.g. @flowiseai/agentflow)'
+                required: true
+                type: string
+            package_path:
+                description: 'Path to the package directory (e.g. packages/agentflow)'
+                required: true
+                type: string
+            slug:
+                description: 'Short name used for the version-bump branch (e.g. agentflow)'
+                required: true
+                type: string
+            bump:
+                description: 'Version bump type'
+                required: true
+                type: string
+            custom_version:
+                description: 'Custom version (only used when bump is "custom")'
+                required: false
+                type: string
+                default: ''
+            tag:
+                description: 'npm dist-tag'
+                required: true
+                type: string
+        secrets:
+            NPM_TOKEN:
+                required: true
+
+jobs:
+    dry-run:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        outputs:
+            version: ${{ steps.resolve-version.outputs.version }}
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: pnpm/action-setup@v6
+              with:
+                  version: 10.26.0
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: '20.20.2'
+                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Validate custom version
+              if: inputs.bump == 'custom'
+              run: |
+                  if [ -z "$CUSTOM_VERSION" ]; then
+                    echo "::error::custom_version is required when bump is 'custom'"
+                    exit 1
+                  fi
+                  npx semver "$CUSTOM_VERSION" || (echo "::error::Invalid semver: $CUSTOM_VERSION" && exit 1)
+              env:
+                  CUSTOM_VERSION: ${{ inputs.custom_version }}
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+              env:
+                  PUPPETEER_SKIP_DOWNLOAD: 'true'
+
+            - name: Set version
+              run: |
+                  CURRENT=$(npm pkg get version --prefix "$PACKAGE_PATH" | tr -d '"')
+                  if [ "$BUMP" = "custom" ]; then
+                    NEW_VERSION="$CUSTOM_VERSION"
+                  else
+                    NEW_VERSION=$(npx semver "$CURRENT" -i "$BUMP" --preid dev)
+                  fi
+                  npm pkg set version="$NEW_VERSION" --prefix "$PACKAGE_PATH"
+                  echo "Version set to $NEW_VERSION"
+              env:
+                  BUMP: ${{ inputs.bump }}
+                  CUSTOM_VERSION: ${{ inputs.custom_version }}
+                  PACKAGE_PATH: ${{ inputs.package_path }}
+
+            - name: Resolve version
+              id: resolve-version
+              run: |
+                  VERSION=$(npm pkg get version --prefix "$PACKAGE_PATH" | tr -d '"')
+                  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+                  {
+                      echo "## Package: \`${{ inputs.package_name }}\`"
+                      echo "## Version to publish: \`$VERSION\`"
+                      echo "## Tag: \`${{ inputs.tag }}\`"
+                  } >> "$GITHUB_STEP_SUMMARY"
+              env:
+                  PACKAGE_PATH: ${{ inputs.package_path }}
+
+            - name: Package contents
+              run: pnpm --filter "$PACKAGE_NAME" pack --dry-run
+              env:
+                  PACKAGE_NAME: ${{ inputs.package_name }}
+
+            - name: Dry run publish
+              run: pnpm --filter "$PACKAGE_NAME" publish --no-git-checks --dry-run --tag "$TAG"
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  PACKAGE_NAME: ${{ inputs.package_name }}
+                  TAG: ${{ inputs.tag }}
+
+    publish:
+        needs: dry-run
+        runs-on: ubuntu-latest
+        environment: npm-publish
+        permissions:
+            contents: write
+            pull-requests: write
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: pnpm/action-setup@v6
+              with:
+                  version: 10.26.0
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: '20.20.2'
+                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+              env:
+                  PUPPETEER_SKIP_DOWNLOAD: 'true'
+
+            - name: Set version
+              run: |
+                  CURRENT=$(npm pkg get version --prefix "$PACKAGE_PATH" | tr -d '"')
+                  if [ "$BUMP" = "custom" ]; then
+                    NEW_VERSION="$CUSTOM_VERSION"
+                  else
+                    NEW_VERSION=$(npx semver "$CURRENT" -i "$BUMP" --preid dev)
+                  fi
+                  npm pkg set version="$NEW_VERSION" --prefix "$PACKAGE_PATH"
+                  echo "Version set to $NEW_VERSION"
+              env:
+                  BUMP: ${{ inputs.bump }}
+                  CUSTOM_VERSION: ${{ inputs.custom_version }}
+                  PACKAGE_PATH: ${{ inputs.package_path }}
+
+            - name: Log version
+              run: |
+                  echo "Publishing ${{ inputs.package_name }} version: ${{ needs.dry-run.outputs.version }}"
+                  echo "Tag: ${{ inputs.tag }}"
+
+            - name: Publish
+              run: pnpm --filter "$PACKAGE_NAME" publish --no-git-checks --tag "$TAG"
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  PACKAGE_NAME: ${{ inputs.package_name }}
+                  TAG: ${{ inputs.tag }}
+
+            - name: Create version bump PR
+              run: |
+                  VERSION="${{ needs.dry-run.outputs.version }}"
+                  BRANCH="chore/bump-${SLUG}-${VERSION}"
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git checkout -b "$BRANCH"
+                  git add "${PACKAGE_PATH}/package.json"
+                  git commit -m "chore: bump ${PACKAGE_NAME} to ${VERSION}"
+                  git push -u origin "$BRANCH"
+                  gh pr create \
+                    --title "chore: bump ${PACKAGE_NAME} to ${VERSION}" \
+                    --body "Automated version bump after publishing \`${PACKAGE_NAME}@${VERSION}\` to npm with tag \`${TAG}\`." \
+                    --base main \
+                    --head "$BRANCH"
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  PACKAGE_NAME: ${{ inputs.package_name }}
+                  PACKAGE_PATH: ${{ inputs.package_path }}
+                  SLUG: ${{ inputs.slug }}
+                  TAG: ${{ inputs.tag }}

@@ -1,8 +1,8 @@
-import path from 'node:path'
 import fs from 'fs'
 import multer from 'multer'
-import DailyRotateFile from 'winston-daily-rotate-file'
+import path from 'node:path'
 import { transports } from 'winston'
+import DailyRotateFile from 'winston-daily-rotate-file'
 import { BaseStorageProvider } from './BaseStorageProvider'
 import { FileInfo, StorageResult, StorageSizeResult } from './IStorageProvider'
 
@@ -350,7 +350,7 @@ export class LocalStorageProvider extends BaseStorageProvider {
         return process.env.HOME || process.env.USERPROFILE || process.env.HOMEPATH || ''
     }
 
-    getLoggerTransports(logType: 'server' | 'error' | 'requests', config?: any): any[] {
+    getLoggerTransports(logType: 'server' | 'error' | 'requests' | 'audit', config?: any): any[] {
         const logDir = config?.logging?.dir || path.join(this.getUserHome(), '.flowise', 'logs')
 
         if (!fs.existsSync(logDir)) {
@@ -371,6 +371,15 @@ export class LocalStorageProvider extends BaseStorageProvider {
                 new transports.File({
                     filename: path.join(logDir, config?.logging?.express?.filename ?? 'server-requests.log.jsonl'),
                     level: config?.logging?.express?.level ?? 'debug'
+                })
+            ]
+        } else if (logType === 'audit') {
+            return [
+                new DailyRotateFile({
+                    filename: path.join(logDir, 'audit-%DATE%.log.jsonl'),
+                    datePattern: 'YYYY-MM-DD-HH',
+                    maxSize: '20m',
+                    level: 'info'
                 })
             ]
         }

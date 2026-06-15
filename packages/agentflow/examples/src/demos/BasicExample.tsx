@@ -1,20 +1,21 @@
 /**
  * Basic Example
  *
- * Demonstrates basic @flowiseai/agentflow usage with imperative methods,
- * onFlowChange tracking, and save flow functionality.
+ * Demonstrates minimal @flowiseai/agentflow usage:
+ * - Rendering the canvas with an initial flow
+ * - Tracking flow changes via onFlowChange
+ * - Handling save via onSave
+ * - Imperative fitView / clear via ref
  */
 
 import { useCallback, useRef, useState } from 'react'
 
-import type { AgentFlowInstance, FlowData, ValidationResult } from '@flowiseai/agentflow'
+import type { AgentFlowInstance, FlowData } from '@flowiseai/agentflow'
 import { Agentflow } from '@flowiseai/agentflow'
-import { InternalAxiosRequestConfig } from 'axios'
 
 import { apiBaseUrl, token } from '../config'
 import { FlowStatePanel } from '../FlowStatePanel'
 
-// Example flow data
 const initialFlow: FlowData = {
     nodes: [
         {
@@ -25,8 +26,10 @@ const initialFlow: FlowData = {
                 id: 'startAgentflow_0',
                 name: 'startAgentflow',
                 label: 'Start',
+                version: 1.3,
                 color: '#7EE787',
                 hideInput: true,
+                inputs: { startInputType: 'chatInput' },
                 outputAnchors: [{ id: 'startAgentflow_0-output-0', name: 'start', label: 'Start', type: 'start' }]
             }
         },
@@ -38,6 +41,7 @@ const initialFlow: FlowData = {
                 id: 'agentAgentflow_0',
                 name: 'agentAgentflow',
                 label: 'Agent',
+                version: 1,
                 color: '#4DD0E1',
                 outputAnchors: [{ id: 'agentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -59,7 +63,6 @@ const initialFlow: FlowData = {
 
 export function BasicExample() {
     const agentflowRef = useRef<AgentFlowInstance>(null)
-    const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
     const [currentFlow, setCurrentFlow] = useState<FlowData | null>(null)
     const [savedFlow, setSavedFlow] = useState<FlowData | null>(null)
     const [changeCount, setChangeCount] = useState(0)
@@ -75,40 +78,12 @@ export function BasicExample() {
         console.log('onSave:', flow)
     }, [])
 
-    const handleValidate = () => {
-        if (agentflowRef.current) {
-            const result = agentflowRef.current.validate()
-            setValidationResult(result)
-            console.log('Validation result:', result)
-        }
-    }
-
-    const handleFitView = () => {
-        if (agentflowRef.current) {
-            agentflowRef.current.fitView()
-        }
-    }
-
-    const handleGetFlow = () => {
-        if (agentflowRef.current) {
-            const flow = agentflowRef.current.getFlow()
-            console.log('Current flow:', flow)
-            alert('Flow data logged to console!')
-        }
-    }
-
-    const handleClear = () => {
-        if (agentflowRef.current) {
-            agentflowRef.current.clear()
-        }
-    }
-
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             {/* Toolbar */}
             <div
                 style={{
-                    padding: '10px 16px',
+                    padding: '8px 16px',
                     borderBottom: '1px solid #e0e0e0',
                     display: 'flex',
                     alignItems: 'center',
@@ -116,18 +91,11 @@ export function BasicExample() {
                     background: '#fafafa'
                 }}
             >
-                <button onClick={handleValidate}>Validate</button>
-                <button onClick={handleFitView}>Fit View</button>
-                <button onClick={handleGetFlow}>Get Flow</button>
-                <button onClick={handleClear}>Clear</button>
-                {validationResult && (
-                    <span style={{ marginLeft: '20px', color: validationResult.valid ? 'green' : 'red' }}>
-                        {validationResult.valid ? '✓ Valid' : `✗ ${validationResult.errors.length} error(s)`}
-                    </span>
-                )}
+                <button onClick={() => agentflowRef.current?.fitView()}>Fit View</button>
+                <button onClick={() => agentflowRef.current?.clear()}>Clear</button>
             </div>
 
-            {/* Canvas + Flow State Panel */}
+            {/* Canvas + state panel */}
             <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
                 <div style={{ flex: 1 }}>
                     <Agentflow
@@ -137,14 +105,6 @@ export function BasicExample() {
                         initialFlow={initialFlow}
                         onFlowChange={handleFlowChange}
                         onSave={handleSave}
-                        showDefaultHeader={true}
-                        requestInterceptor={(config: InternalAxiosRequestConfig) => {
-                            // pass cookies if no token is provided
-                            if (!token) {
-                                config.withCredentials = true
-                            }
-                            return config
-                        }}
                     />
                 </div>
                 <FlowStatePanel currentFlow={currentFlow} savedFlow={savedFlow} changeCount={changeCount} />
@@ -158,7 +118,5 @@ export const BasicExampleProps = {
     token: '{from environment variables}',
     initialFlow: 'FlowData',
     onFlowChange: '(flow: FlowData) => void',
-    onSave: '(flow: FlowData) => void',
-    showDefaultHeader: true,
-    requestInterceptor: '(config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig'
+    onSave: '(flow: FlowData) => void'
 }

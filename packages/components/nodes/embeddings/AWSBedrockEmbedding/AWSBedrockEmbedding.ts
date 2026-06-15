@@ -20,7 +20,7 @@ class AWSBedrockEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'AWS Bedrock Embedding'
         this.name = 'AWSBedrockEmbeddings'
-        this.version = 5.0
+        this.version = 5.1
         this.type = 'AWSBedrockEmbeddings'
         this.icon = 'aws.svg'
         this.category = 'Embeddings'
@@ -53,6 +53,14 @@ class AWSBedrockEmbedding_Embeddings implements INode {
                 name: 'customModel',
                 description: 'If provided, will override model selected from Model Name option',
                 type: 'string',
+                optional: true
+            },
+            {
+                label: 'Custom Endpoint Host',
+                name: 'endpointHost',
+                type: 'string',
+                description:
+                    'Custom endpoint host to use for the model. Provide the hostname without scheme. If provided, will override the default endpoint host.',
                 optional: true
             },
             {
@@ -120,13 +128,16 @@ class AWSBedrockEmbedding_Embeddings implements INode {
         const iModel = nodeData.inputs?.model as string
         const customModel = nodeData.inputs?.customModel as string
         const inputType = nodeData.inputs?.inputType as string
+        const endpointHost = (nodeData.inputs?.endpointHost as string)?.trim()
+        const effectiveModel = customModel || iModel
+        if (!effectiveModel) throw new Error('Model ID is required')
 
-        if (iModel.startsWith('cohere') && !inputType) {
+        if (effectiveModel.startsWith('cohere') && !inputType) {
             throw new Error('Input Type must be selected for Cohere models.')
         }
 
         const obj: BedrockEmbeddingsParams = {
-            model: customModel ? customModel : iModel,
+            model: effectiveModel,
             region: iRegion
         }
 
@@ -141,29 +152,41 @@ class AWSBedrockEmbedding_Embeddings implements INode {
             obj.credentials = credentialConfig.credentials
         }
 
-        const client = new BedrockRuntimeClient({
+        const clientConfig: Record<string, any> = {
             region: obj.region,
             credentials: obj.credentials
-        })
+        }
+        if (endpointHost) {
+            // Accept the same host-only contract as the AWS Chat Bedrock node, but tolerate a full URL
+            // so users who paste `https://...` are not broken. AWS SDK v3's BedrockRuntimeClient
+            // requires a full URL (scheme + host) on the `endpoint` option.
+            clientConfig.endpoint = /^https?:\/\//i.test(endpointHost) ? endpointHost : `https://${endpointHost}`
+        }
+        const client = new BedrockRuntimeClient(clientConfig)
+
+        // Share the configured client with BedrockEmbeddings so any code path that doesn't go
+        // through our overridden embedQuery / embedDocuments still uses the custom endpoint
+        // (and credentials/region) we configured above.
+        obj.client = client
 
         const model = new BedrockEmbeddings(obj)
 
         model.embedQuery = async (document: string): Promise<number[]> => {
-            if (iModel.startsWith('cohere')) {
-                const embeddings = await embedTextCohere([document], client, iModel, inputType)
+            if (effectiveModel.startsWith('cohere')) {
+                const embeddings = await embedTextCohere([document], client, effectiveModel, inputType)
                 return embeddings[0]
             } else {
-                return await embedTextTitan(document, client, iModel)
+                return await embedTextTitan(document, client, effectiveModel)
             }
         }
 
         model.embedDocuments = async (documents: string[]): Promise<number[][]> => {
-            if (iModel.startsWith('cohere')) {
-                return await embedTextCohere(documents, client, iModel, inputType)
+            if (effectiveModel.startsWith('cohere')) {
+                return await embedTextCohere(documents, client, effectiveModel, inputType)
             } else {
                 const batchSize = nodeData.inputs?.batchSize as number
                 const maxRetries = nodeData.inputs?.maxRetries as number
-                return processInBatches(documents, batchSize, maxRetries, (document) => embedTextTitan(document, client, iModel))
+                return processInBatches(documents, batchSize, maxRetries, (document) => embedTextTitan(document, client, effectiveModel))
             }
         }
         return model

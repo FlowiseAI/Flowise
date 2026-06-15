@@ -99,6 +99,9 @@ const WorkspaceSwitcher = () => {
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget)
+
+        // Refresh workspace list when dropdown opens
+        getWorkspacesByOrganizationIdUserIdApi.request(user.activeOrganizationId, user.id)
     }
 
     const handleClose = () => {

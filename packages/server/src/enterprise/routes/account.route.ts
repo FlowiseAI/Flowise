@@ -1,6 +1,6 @@
 import express from 'express'
-import { AccountController } from '../controllers/account.controller'
 import { IdentityManager } from '../../IdentityManager'
+import { AccountController } from '../controllers/account.controller'
 import { checkAnyPermission } from '../rbac/PermissionCheck'
 
 const router = express.Router()
@@ -16,11 +16,11 @@ router.post(
     accountController.invite
 )
 
-router.post('/login', accountController.login)
-
 router.post('/logout', accountController.logout)
 
 router.post('/verify', accountController.verify)
+
+router.post('/confirm-email-change', accountController.confirmEmailChange)
 
 router.post('/resend-verification', accountController.resendVerificationEmail)
 
@@ -30,8 +30,6 @@ router.post('/reset-password', accountController.resetPassword)
 
 router.post('/billing', accountController.createStripeCustomerPortalSession)
 
-router.get('/basic-auth', accountController.getBasicAuth)
-
-router.post('/basic-auth', accountController.checkBasicAuth)
+router.delete('/delete', accountController.delete)
 
 export default router

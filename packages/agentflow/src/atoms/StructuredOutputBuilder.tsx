@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { Box, Button, Chip, IconButton, MenuItem, Select, TextField, Typography } from '@mui/material'
-import { alpha, useTheme } from '@mui/material/styles'
+import { useTheme } from '@mui/material/styles'
 import { IconArrowsMaximize, IconPlus, IconTrash } from '@tabler/icons-react'
 
 import { ExpandTextDialog } from '@/atoms'
@@ -46,8 +46,8 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
     const theme = useTheme()
 
     const entries = useMemo(
-        () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as StructuredOutputEntry[]) : []),
-        [data.inputValues, inputParam.name]
+        () => (Array.isArray(data.inputs?.[inputParam.name]) ? (data.inputs[inputParam.name] as StructuredOutputEntry[]) : []),
+        [data.inputs, inputParam.name]
     )
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(entries.length, 'output')
@@ -103,7 +103,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                         mt: 2,
                         mb: 1,
                         border: 1,
-                        borderColor: alpha(theme.palette.grey[900], 0.25),
+                        borderColor: theme.palette.divider,
                         borderRadius: 2,
                         position: 'relative'
                     }}
@@ -245,17 +245,19 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
             ))}
 
             {/* Add button */}
-            <Button
-                fullWidth
-                size='small'
-                variant='outlined'
-                disabled={isAddDisabled}
-                sx={{ borderRadius: '16px', mt: 2 }}
-                startIcon={<IconPlus />}
-                onClick={handleAddEntry}
-            >
-                Add {inputParam.label}
-            </Button>
+            <Box sx={{ px: 2, pb: 2 }}>
+                <Button
+                    fullWidth
+                    size='small'
+                    variant='outlined'
+                    disabled={isAddDisabled}
+                    sx={{ borderRadius: '16px', mt: 1 }}
+                    startIcon={<IconPlus />}
+                    onClick={handleAddEntry}
+                >
+                    Add {inputParam.label}
+                </Button>
+            </Box>
 
             {/* Expand dialog for JSON Schema */}
             {expandOpen && (

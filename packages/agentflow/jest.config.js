@@ -20,6 +20,7 @@ const baseConfig = {
         // so we redirect to lightweight CJS stubs under src/__mocks__/.
         '^@tiptap/(.+)$': '<rootDir>/src/__mocks__/@tiptap/$1.ts',
         '^lowlight$': '<rootDir>/src/__mocks__/lowlight.ts',
+        '^tippy\\.js$': '<rootDir>/src/__mocks__/tippy.js.ts',
         // Bypass React.lazy wrappers — resolve Foo.lazy → Foo so tests render synchronously
         '(.*)\\.lazy$': '$1'
     }
@@ -48,6 +49,7 @@ module.exports = {
         './src/atoms/ExpandTextDialog.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/atoms/MessagesInput.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/atoms/ScenariosInput.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
+        './src/atoms/StateKeyValueInput.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
         // Tier 3 UI atom — only the onChange/disabled/sync logic is tested, not styled internals
         './src/atoms/RichTextEditor.tsx': { branches: 30, functions: 50, lines: 50, statements: 50 },
         './src/core/': { branches: 80, functions: 80, lines: 80, statements: 80 },

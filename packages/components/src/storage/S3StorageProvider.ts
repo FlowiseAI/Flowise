@@ -7,11 +7,11 @@ import {
     S3Client,
     S3ClientConfig
 } from '@aws-sdk/client-s3'
-import { Readable } from 'node:stream'
 import multer from 'multer'
 import multerS3 from 'multer-s3'
-import { transports } from 'winston'
+import { Readable } from 'node:stream'
 import { v4 as uuidv4 } from 'uuid'
+import { transports } from 'winston'
 import { BaseStorageProvider } from './BaseStorageProvider'
 import { FileInfo, StorageResult, StorageSizeResult } from './IStorageProvider'
 
@@ -507,7 +507,7 @@ export class S3StorageProvider extends BaseStorageProvider {
         })
     }
 
-    getLoggerTransports(logType: 'server' | 'error' | 'requests'): any[] {
+    getLoggerTransports(logType: 'server' | 'error' | 'requests' | 'audit'): any[] {
         if (logType === 'server') {
             const s3ServerStream = new S3StreamLogger({
                 bucket: this.bucket,
@@ -532,7 +532,17 @@ export class S3StorageProvider extends BaseStorageProvider {
                 config: this.s3Config
             })
             return [new transports.Stream({ stream: s3ServerReqStream })]
+        } else if (logType === 'audit') {
+            const instance = process.env.HOSTNAME || process.env.POD_NAME || String(process.pid)
+            const s3AuditStream = new S3StreamLogger({
+                bucket: this.bucket,
+                folder: 'logs/audit',
+                name_format: `audit-%Y-%m-%d-%H-%M-%S-%L-${instance}.log.jsonl`,
+                config: this.s3Config
+            })
+            return [new transports.Stream({ stream: s3AuditStream })]
         }
+
         return []
     }
 }

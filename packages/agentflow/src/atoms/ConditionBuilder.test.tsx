@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import type { InputParam, NodeData } from '@/core/types'
 
 import { ConditionBuilder } from './ConditionBuilder'
+import type { VariableItem } from './VariablePicker'
 
 // --- Mocks ---
 const mockOnDataChange = jest.fn()
@@ -10,13 +11,15 @@ const mockOnDataChange = jest.fn()
 jest.mock('./NodeInputHandler', () => ({
     NodeInputHandler: ({
         inputParam,
-        onDataChange
+        onDataChange,
+        variableItems
     }: {
         inputParam: InputParam
         data: NodeData
         onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+        variableItems?: unknown[]
     }) => (
-        <div data-testid={`input-handler-${inputParam.name}`}>
+        <div data-testid={`input-handler-${inputParam.name}`} data-has-variables={variableItems !== undefined ? 'true' : 'false'}>
             <label>{inputParam.label}</label>
             <input data-testid={`input-${inputParam.name}`} onChange={(e) => onDataChange({ inputParam, newValue: e.target.value })} />
         </div>
@@ -56,7 +59,7 @@ const mockNodeData: NodeData = {
     id: 'conditionAgentflow_0',
     name: 'conditionAgentflow',
     label: 'Condition',
-    inputValues: {}
+    inputs: {}
 } as NodeData
 
 describe('ConditionBuilder', () => {
@@ -67,7 +70,7 @@ describe('ConditionBuilder', () => {
     it('should render condition items with "Condition N" labels', () => {
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [
                     { type: 'string', value1: '', operation: 'equal', value2: '' },
                     { type: 'number', value1: '', operation: 'larger', value2: '' }
@@ -108,7 +111,7 @@ describe('ConditionBuilder', () => {
     it('should delete a condition item', () => {
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [
                     { type: 'string', value1: 'a', operation: 'equal', value2: 'b' },
                     { type: 'number', value1: '1', operation: 'larger', value2: '0' }
@@ -130,7 +133,7 @@ describe('ConditionBuilder', () => {
     it('should handle nested field changes within a condition', () => {
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [{ type: 'string', value1: 'hello', operation: 'equal', value2: 'world' }]
             }
         } as NodeData
@@ -146,10 +149,29 @@ describe('ConditionBuilder', () => {
         })
     })
 
+    it('should clear value1 and value2 when operation changes', () => {
+        const data: NodeData = {
+            ...mockNodeData,
+            inputs: {
+                conditions: [{ type: 'string', value1: 'hello', operation: 'equal', value2: 'world' }]
+            }
+        } as NodeData
+
+        render(<ConditionBuilder inputParam={conditionInputParam} data={data} onDataChange={mockOnDataChange} />)
+
+        const operationInput = screen.getByTestId('input-operation')
+        fireEvent.change(operationInput, { target: { value: 'contains' } })
+
+        expect(mockOnDataChange).toHaveBeenCalledWith({
+            inputParam: conditionInputParam,
+            newValue: [{ type: 'string', value1: '', operation: 'contains', value2: '' }]
+        })
+    })
+
     it('should disable buttons when disabled prop is true', () => {
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }]
             }
         } as NodeData
@@ -164,7 +186,7 @@ describe('ConditionBuilder', () => {
         const inputParamWithMin: InputParam = { ...conditionInputParam, minItems: 1 }
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }]
             }
         } as NodeData
@@ -177,7 +199,7 @@ describe('ConditionBuilder', () => {
     it('should use itemParameters for field visibility when provided', () => {
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [{ type: 'string', value1: '', operation: 'isEmpty', value2: '' }]
             }
         } as NodeData
@@ -207,10 +229,39 @@ describe('ConditionBuilder', () => {
         expect(screen.queryByTestId('input-handler-value2')).not.toBeInTheDocument()
     })
 
+    it('should forward variableItems to NodeInputHandler only for params with acceptVariable', () => {
+        const inputParamWithAcceptVariable: InputParam = {
+            ...conditionInputParam,
+            array: [
+                { id: 'type', name: 'type', label: 'Type', type: 'options', default: 'string' } as InputParam,
+                { id: 'value1', name: 'value1', label: 'Value 1', type: 'string', default: '', acceptVariable: true } as InputParam,
+                { id: 'value2', name: 'value2', label: 'Value 2', type: 'string', default: '', acceptVariable: true } as InputParam
+            ]
+        }
+        const data: NodeData = {
+            ...mockNodeData,
+            inputs: { conditions: [{ type: 'string', value1: '', value2: '' }] }
+        } as NodeData
+        const variableItems: VariableItem[] = [{ label: 'question', value: '{{question}}', category: 'Chat Context' }]
+
+        render(
+            <ConditionBuilder
+                inputParam={inputParamWithAcceptVariable}
+                data={data}
+                onDataChange={mockOnDataChange}
+                variableItems={variableItems}
+            />
+        )
+
+        expect(screen.getByTestId('input-handler-type')).toHaveAttribute('data-has-variables', 'false')
+        expect(screen.getByTestId('input-handler-value1')).toHaveAttribute('data-has-variables', 'true')
+        expect(screen.getByTestId('input-handler-value2')).toHaveAttribute('data-has-variables', 'true')
+    })
+
     it('should render fields for each condition item', () => {
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [
                     { type: 'string', value1: '', operation: 'equal', value2: '' },
                     { type: 'number', value1: '', operation: 'larger', value2: '' }

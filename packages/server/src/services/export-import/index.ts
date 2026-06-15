@@ -949,6 +949,12 @@ const getChatType = (chatType?: ChatType): string => {
             return 'UI'
         case ChatType.EXTERNAL:
             return 'API/Embed'
+        case ChatType.MCP:
+            return 'MCP'
+        case ChatType.SCHEDULED:
+            return 'Scheduled'
+        case ChatType.WEBHOOK:
+            return 'Webhook'
     }
 }
 
