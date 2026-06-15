@@ -14,6 +14,19 @@ const SpeechToTextType = {
     GROQ_WHISPER: 'groqWhisper'
 }
 
+export const buildAzureSpeechToTextUrl = (serviceRegion: string, apiVersion: string, baseUrl?: string) => {
+    const trimmedBaseUrl = baseUrl?.trim()
+    const base = trimmedBaseUrl
+        ? trimmedBaseUrl.replace(/\/+$/, '')
+        : `https://${serviceRegion}.cognitiveservices.azure.com/speechtotext/transcriptions:transcribe`
+
+    if (/[?&]api-version=/.test(base)) {
+        return base
+    }
+
+    return `${base}${base.includes('?') ? '&' : '?'}api-version=${encodeURIComponent(apiVersion)}`
+}
+
 export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
     if (speechToTextConfig) {
         const credentialId = speechToTextConfig.credentialId as string
@@ -76,8 +89,12 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
             }
             case SpeechToTextType.AZURE_COGNITIVE: {
                 try {
-                    const baseUrl = `https://${credentialData.serviceRegion}.cognitiveservices.azure.com/speechtotext/transcriptions:transcribe`
                     const apiVersion = credentialData.apiVersion || '2024-05-15-preview'
+                    const azureSpeechToTextUrl = buildAzureSpeechToTextUrl(
+                        credentialData.serviceRegion,
+                        apiVersion,
+                        speechToTextConfig?.baseUrl
+                    )
 
                     const formData = new FormData()
                     const audioBlob = new Blob([new Uint8Array(audio_file)], { type: upload.type })
@@ -93,7 +110,7 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                     }
                     formData.append('definition', JSON.stringify(definition))
 
-                    const response = await axios.post(`${baseUrl}?api-version=${apiVersion}`, formData, {
+                    const response = await axios.post(azureSpeechToTextUrl, formData, {
                         headers: {
                             'Ocp-Apim-Subscription-Key': credentialData.azureSubscriptionKey,
                             Accept: 'application/json'

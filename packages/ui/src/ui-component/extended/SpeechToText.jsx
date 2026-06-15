@@ -166,6 +166,15 @@ const speechToTextProviders = {
                 optional: true
             },
             {
+                label: 'Base URL',
+                name: 'baseUrl',
+                type: 'string',
+                description:
+                    'Optional custom Azure Speech endpoint URL. Leave blank to use the default regional endpoint.',
+                placeholder: 'https://{region}.cognitiveservices.azure.com/speechtotext/transcriptions:transcribe',
+                optional: true
+            },
+            {
                 label: 'Profanity Filter Mode',
                 name: 'profanityFilterMode',
                 type: 'options',
