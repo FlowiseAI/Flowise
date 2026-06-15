@@ -18,7 +18,7 @@ describe('promptsListService.createPromptsList', () => {
         const result = await promptsListService.createPromptsList({ tags: 'chat' })
 
         expect(mockedAxios.get).toHaveBeenCalledWith(
-            'https://api.hub.langchain.com/repos/?limit=100&tags=chathas_commits=true&sort_field=num_likes&sort_direction=desc&is_archived=false',
+            'https://api.hub.langchain.com/repos/?limit=100&tags=chat&has_commits=true&sort_field=num_likes&sort_direction=desc&is_archived=false',
             { timeout: 10000 }
         )
         expect(result).toEqual({ status: 'OK', repos })
