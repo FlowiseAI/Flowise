@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF2D2D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E60000;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="highlightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B6B;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#FF2D2D;stop-opacity:0" />
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="96" fill="white" stroke="#F0F0F0" stroke-width="1"/>
+  <!-- Lobster body - C shape -->
+  <path d="M120 40 C85 35, 50 55, 42 90 C34 125, 50 155, 80 165 L90 150 C68 142, 55 120, 60 95 C65 70, 82 55, 110 55 Z" fill="url(#bodyGrad)"/>
+  <!-- Body segments -->
+  <path d="M62 108 C70 106, 85 105, 95 108" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M58 125 C68 122, 82 121, 90 124" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M60 142 C68 139, 78 138, 86 140" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Highlight stripe -->
+  <path d="M55 95 C52 110, 52 130, 60 148" stroke="url(#highlightGrad)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Top claw -->
+  <path d="M120 40 C135 35, 155 38, 162 52 C170 68, 158 78, 145 72 C135 67, 130 55, 120 48 Z" fill="url(#bodyGrad)"/>
+  <path d="M140 50 C148 52, 155 58, 153 65" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M138 55 C144 58, 148 63, 146 68" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Bottom claw -->
+  <path d="M80 165 C90 175, 110 182, 125 175 C140 168, 142 152, 130 148 C120 145, 108 152, 95 158 Z" fill="url(#bodyGrad)"/>
+  <path d="M105 162 C115 160, 125 158, 130 155" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M100 167 C110 165, 120 162, 124 159" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Antennae -->
+  <path d="M115 48 C108 32, 95 22, 82 18" stroke="url(#bodyGrad)" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M118 45 C112 30, 108 20, 110 10" stroke="url(#bodyGrad)" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Eye -->
+  <circle cx="105" cy="52" r="4" fill="white"/>
+  <circle cx="105" cy="52" r="2" fill="#1a1a1a"/>
+</svg>
