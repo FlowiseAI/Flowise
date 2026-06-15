@@ -1,4 +1,6 @@
 import { Tool } from '@langchain/core/tools'
+import { secureFetch } from '../../../src/httpSecurity'
+import { parseJsonBody } from '../../../src/utils'
 
 /**
  * AgentLine API operations.
@@ -119,6 +121,29 @@ const OPERATIONS: Record<string, OperationDef> = {
     }
 }
 
+/** Default request timeout in milliseconds (30 seconds) */
+const REQUEST_TIMEOUT_MS = 30_000
+
+/**
+ * Validates that a base URL uses an allowed scheme (http or https).
+ * Rejects file://, ftp://, and other schemes to prevent SSRF.
+ */
+function validateBaseUrl(baseUrl: string): void {
+    try {
+        const parsed = new URL(baseUrl)
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+            throw new Error(
+                `Invalid AgentLine base URL scheme: "${parsed.protocol}". Only https: and http: are allowed.`
+            )
+        }
+    } catch (error: any) {
+        if (error.message.includes('Invalid AgentLine')) {
+            throw error
+        }
+        throw new Error(`Invalid AgentLine base URL: "${baseUrl}". Must be a valid http(s) URL.`)
+    }
+}
+
 /**
  * AgentLine Tool — a LangChain-compatible tool that calls the AgentLine REST API.
  *
@@ -136,8 +161,11 @@ export class AgentLineTool extends Tool {
 
     constructor(config: AgentLineToolConfig) {
         super()
+        const cleanedBaseUrl = config.baseUrl.replace(/\/+$/, '') // strip trailing slash
+        validateBaseUrl(cleanedBaseUrl)
+
         this.apiKey = config.apiKey
-        this.baseUrl = config.baseUrl.replace(/\/+$/, '') // strip trailing slash
+        this.baseUrl = cleanedBaseUrl
         this.operation = config.operation
 
         const op = OPERATIONS[config.operation]
@@ -157,11 +185,12 @@ export class AgentLineTool extends Tool {
             return JSON.stringify({ error: `Unknown operation: ${this.operation}` })
         }
 
+        // Parse input using Flowise's robust JSON parser (handles trailing commas, single quotes, etc.)
         let params: Record<string, any> = {}
         try {
             const trimmed = (input || '').trim()
             if (trimmed && trimmed !== '{}') {
-                params = JSON.parse(trimmed)
+                params = parseJsonBody(trimmed)
             }
         } catch {
             // If input isn't valid JSON, treat it as a raw string (some LLMs pass plain text)
@@ -173,15 +202,18 @@ export class AgentLineTool extends Tool {
         // Resolve path parameters like {id}
         let path = op.path
         if (path.includes('{id}')) {
-            const id = params.id || params.agent_id || params.call_id
+            const idKey = params.id ? 'id' : params.agent_id ? 'agent_id' : params.call_id ? 'call_id' : null
+            const id = idKey ? params[idKey] : null
             if (!id) {
                 return JSON.stringify({
                     error: 'Missing required parameter: id. Please provide the resource ID.'
                 })
             }
             path = path.replace('{id}', encodeURIComponent(String(id)))
-            // Remove id from body params since it's in the URL
-            delete params.id
+            // Remove the resolved ID key from body params since it's in the URL
+            if (idKey) {
+                delete params[idKey]
+            }
         }
 
         const url = `${this.baseUrl}${path}`
@@ -199,8 +231,16 @@ export class AgentLineTool extends Tool {
             fetchOptions.body = JSON.stringify(params)
         }
 
+        // Create an AbortController for request timeout
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+        fetchOptions.signal = controller.signal as any
+
         try {
-            const response = await fetch(url, fetchOptions)
+            // Use Flowise's secureFetch to prevent SSRF attacks
+            const response = await secureFetch(url, fetchOptions as any)
+            clearTimeout(timeoutId)
+
             const responseText = await response.text()
 
             if (!response.ok) {
@@ -224,21 +264,15 @@ export class AgentLineTool extends Tool {
                 return responseText
             }
         } catch (error: any) {
+            clearTimeout(timeoutId)
+            if (error.name === 'AbortError') {
+                return JSON.stringify({
+                    error: `AgentLine API request timed out after ${REQUEST_TIMEOUT_MS / 1000} seconds.`
+                })
+            }
             return JSON.stringify({
                 error: `Failed to call AgentLine API: ${error.message || String(error)}`
             })
         }
     }
-}
-
-/**
- * Returns the list of available operation names and their descriptions.
- * Used by the node definition to populate the dropdown.
- */
-export function getOperationOptions(): Array<{ label: string; name: string; description?: string }> {
-    return Object.entries(OPERATIONS).map(([name, op]) => ({
-        label: op.description.split(' on ')[0].split(' from ')[0], // Short label
-        name,
-        description: op.description
-    }))
 }
