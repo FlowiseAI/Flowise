@@ -493,6 +493,23 @@ class LLM_Agentflow implements INode {
             } else {
                 response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
 
+                // With structured output, withStructuredOutput({ includeRaw: true }) returns { raw, parsed }.
+                // Normalize back to the parsed value (preserving existing behavior) and re-attach the
+                // underlying AIMessage's usage_metadata so token usage / cost is still surfaced downstream.
+                if (
+                    isStructuredOutput &&
+                    response &&
+                    typeof response === 'object' &&
+                    'parsed' in response &&
+                    'raw' in response
+                ) {
+                    const rawMessage = (response as any).raw
+                    response = (response as any).parsed ?? rawMessage
+                    if (rawMessage?.usage_metadata && response && typeof response === 'object') {
+                        ;(response as any).usage_metadata = rawMessage.usage_metadata
+                    }
+                }
+
                 // Stream whole response back to UI if this is the last node
                 if (isLastNode && options.sseStreamer) {
                     const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer

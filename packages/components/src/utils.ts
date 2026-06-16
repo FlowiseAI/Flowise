@@ -2163,8 +2163,12 @@ export const configureStructuredOutput = (llmNodeInstance: BaseChatModel, struct
         const structuredOutputSchema = z.object(zodObj)
 
         // @ts-ignore
+        // includeRaw returns { raw, parsed } so callers can recover the underlying AIMessage's
+        // usage_metadata (token usage / cost). Without it, structured output discards the AIMessage and
+        // usage/cost can never be reported. The LLM Agentflow node re-attaches it after invoke().
         return llmNodeInstance.withStructuredOutput(structuredOutputSchema, {
-            method: 'functionCalling'
+            method: 'functionCalling',
+            includeRaw: true
         })
     } catch (exception) {
         console.error(exception)
