@@ -177,7 +177,7 @@ You can view the Flowise Docs [here](https://docs.flowiseai.com/)
 ### TrustedRouter
 
 TrustedRouter can be used with Flowise through the existing custom OpenAI
-chat model nodes. Set the API base URL to `https://api.trustedrouter.com/v1`,
+chat model nodes. Set the Base Path to `https://api.trustedrouter.com/v1`,
 use your TrustedRouter API key, and choose a model such as
 `trustedrouter/auto`, `trustedrouter/zdr`, or `trustedrouter/e2e`.
 TrustedRouter is an open-source and verifiable attested router with zero prompt
