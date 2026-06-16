@@ -494,8 +494,10 @@ class LLM_Agentflow implements INode {
                 response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
 
                 // With structured output, withStructuredOutput({ includeRaw: true }) returns { raw, parsed }.
-                // Normalize back to the parsed value (preserving existing behavior) and re-attach the
-                // underlying AIMessage's usage_metadata so token usage / cost is still surfaced downstream.
+                // Continue with the parsed structured object (as before), but re-attach the raw AIMessage's
+                // usage_metadata and response_metadata so token usage/cost tracking and downstream metadata
+                // features keep working. Do NOT fall back to the raw message as the response value — the
+                // structured-field copy below would then pollute the output with internal LangChain props.
                 if (
                     isStructuredOutput &&
                     response &&
@@ -504,9 +506,16 @@ class LLM_Agentflow implements INode {
                     'raw' in response
                 ) {
                     const rawMessage = (response as any).raw
-                    response = (response as any).parsed ?? rawMessage
-                    if (rawMessage?.usage_metadata && response && typeof response === 'object') {
+                    if ((response as any).parsed == null) {
+                        // structured parsing failed — surface the error (matches prior throw-on-parse-failure)
+                        throw (response as any).parsing_error ?? new Error('Structured output parsing failed')
+                    }
+                    response = (response as any).parsed
+                    if (rawMessage?.usage_metadata) {
                         ;(response as any).usage_metadata = rawMessage.usage_metadata
+                    }
+                    if (rawMessage?.response_metadata) {
+                        ;(response as any).response_metadata = rawMessage.response_metadata
                     }
                 }
 
