@@ -1,4 +1,4 @@
-import { isPathTraversal, isUnsafeFilePath, validateMimeTypeAndExtensionMatch, validateVectorStorePath } from './validator'
+import { isPathTraversal, isUnsafeFilePath, isValidURL, validateMimeTypeAndExtensionMatch, validateVectorStorePath } from './validator'
 import path from 'path'
 import { getUserHome } from './utils'
 
@@ -463,6 +463,64 @@ describe('validateVectorStorePath', () => {
         it('should return default path when undefined', () => {
             const userHome = getUserHome()
             expect(validateVectorStorePath(undefined)).toBe(path.join(userHome, '.flowise', 'vectorstore'))
+        })
+    })
+})
+
+describe('isValidURL', () => {
+    describe('accepts valid http/https URLs', () => {
+        it.each([
+            ['bare http host', 'http://localhost:3000'],
+            ['https with path', 'https://flowise.example.com/api'],
+            ['http with port and path', 'http://192.168.1.1:3000/api/v1'],
+            ['https with query string', 'https://example.com/search?q=hello']
+        ])('should accept %s', (_desc, url) => {
+            expect(isValidURL(url)).toBe(true)
+        })
+    })
+
+    describe('rejects non-http(s) protocols', () => {
+        it.each([
+            ['file protocol', 'file:///etc/passwd'],
+            ['javascript protocol', 'javascript:alert(1)'],
+            ['ftp protocol', 'ftp://example.com'],
+            ['data URI', 'data:text/html,<script>alert(1)</script>']
+        ])('should reject %s', (_desc, url) => {
+            expect(isValidURL(url)).toBe(false)
+        })
+    })
+
+    describe('rejects URLs with hash fragments (CVE-2022-24785 bypass entry point)', () => {
+        it.each([
+            ['plain hash', 'http://localhost:3000/#section'],
+            ['hash with injection payload', 'https://evil.com/#";\nrequire("child_process").exec("id");//'],
+            ['hash with quote escape', 'http://localhost:3000/#";malicious;//']
+        ])('should reject %s', (_desc, url) => {
+            expect(isValidURL(url)).toBe(false)
+        })
+    })
+
+    describe('rejects URLs containing JS string-breaking characters', () => {
+        it.each([
+            ['double quote', 'http://localhost:3000/path"suffix'],
+            ['single quote', "http://localhost:3000/path'suffix"],
+            ['backtick', 'http://localhost:3000/path`suffix'],
+            ['backslash', 'http://localhost:3000/path\\suffix'],
+            ['newline', 'http://localhost:3000/path\nsuffix'],
+            ['carriage return', 'http://localhost:3000/path\rsuffix'],
+            ['tab', 'http://localhost:3000/path\tsuffix']
+        ])('should reject URL with %s', (_desc, url) => {
+            expect(isValidURL(url)).toBe(false)
+        })
+    })
+
+    describe('rejects malformed or empty inputs', () => {
+        it.each([
+            ['empty string', ''],
+            ['not a URL', 'not-a-url'],
+            ['relative path', '/api/v1/prediction/abc']
+        ])('should reject %s', (_desc, url) => {
+            expect(isValidURL(url)).toBe(false)
         })
     })
 })
