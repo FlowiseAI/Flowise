@@ -511,23 +511,27 @@ class LLM_Agentflow implements INode {
                         throw (response as any).parsing_error ?? new Error('Structured output parsing failed')
                     }
                     response = (response as any).parsed
-                    // Attach as NON-enumerable so the structured-field copy / content serialization below isn't
-                    // polluted, while prepareOutputObject can still read response.usage_metadata / .response_metadata.
-                    if (rawMessage?.usage_metadata) {
-                        Object.defineProperty(response, 'usage_metadata', {
-                            value: rawMessage.usage_metadata,
-                            enumerable: false,
-                            writable: true,
-                            configurable: true
-                        })
-                    }
-                    if (rawMessage?.response_metadata) {
-                        Object.defineProperty(response, 'response_metadata', {
-                            value: rawMessage.response_metadata,
-                            enumerable: false,
-                            writable: true,
-                            configurable: true
-                        })
+                    // Guard: a structured schema could resolve to a primitive — Object.defineProperty would
+                    // throw on a non-object. Attach as NON-enumerable so the structured-field copy / content
+                    // serialization below isn't polluted, while prepareOutputObject can still read
+                    // response.usage_metadata / .response_metadata.
+                    if (response && typeof response === 'object') {
+                        if (rawMessage?.usage_metadata) {
+                            Object.defineProperty(response, 'usage_metadata', {
+                                value: rawMessage.usage_metadata,
+                                enumerable: false,
+                                writable: true,
+                                configurable: true
+                            })
+                        }
+                        if (rawMessage?.response_metadata) {
+                            Object.defineProperty(response, 'response_metadata', {
+                                value: rawMessage.response_metadata,
+                                enumerable: false,
+                                writable: true,
+                                configurable: true
+                            })
+                        }
                     }
                 }
 
