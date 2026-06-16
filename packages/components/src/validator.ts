@@ -14,13 +14,17 @@ export const isValidUUID = (uuid: string): boolean => {
 }
 
 /**
- * Validates if a string is a valid URL
- * @param {string} url The string to validate
- * @returns {boolean} True if valid URL, false otherwise
+ * Validates if a string is a valid URL safe for interpolation into JS code.
+ * Rejects hash fragments (the exploit entry point), non-http(s) protocols,
+ * and characters that can break out of JS string literals — double quotes,
+ * single quotes, backticks (template literals), backslashes, and newlines.
  */
 export const isValidURL = (url: string): boolean => {
     try {
-        new URL(url)
+        const parsed = new URL(url)
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false
+        if (parsed.hash) return false
+        if (/["'`\\\n\r\t]/.test(url)) return false
         return true
     } catch {
         return false
