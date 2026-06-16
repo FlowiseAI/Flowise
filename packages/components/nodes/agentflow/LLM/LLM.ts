@@ -454,7 +454,7 @@ class LLM_Agentflow implements INode {
             // Configure structured output if specified
             const isStructuredOutput = _llmStructuredOutput && Array.isArray(_llmStructuredOutput) && _llmStructuredOutput.length > 0
             if (isStructuredOutput) {
-                llmNodeInstance = configureStructuredOutput(llmNodeInstance, _llmStructuredOutput)
+                llmNodeInstance = configureStructuredOutput(llmNodeInstance, _llmStructuredOutput, true)
             }
 
             // Initialize response and determine if streaming is possible
@@ -515,7 +515,7 @@ class LLM_Agentflow implements INode {
                     // throw on a non-object. Attach as NON-enumerable so the structured-field copy / content
                     // serialization below isn't polluted, while prepareOutputObject can still read
                     // response.usage_metadata / .response_metadata.
-                    if (response && typeof response === 'object') {
+                    if (response && typeof response === 'object' && Object.isExtensible(response)) {
                         if (rawMessage?.usage_metadata) {
                             Object.defineProperty(response, 'usage_metadata', {
                                 value: rawMessage.usage_metadata,
