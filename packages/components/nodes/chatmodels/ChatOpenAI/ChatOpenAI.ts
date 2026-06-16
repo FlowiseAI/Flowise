@@ -303,9 +303,10 @@ class ChatOpenAI_ChatModels implements INode {
             }
         }
 
-        if (modelKwargs) {
+        const trimmedModelKwargs = typeof modelKwargs === 'string' ? modelKwargs.trim() : modelKwargs
+        if (trimmedModelKwargs) {
             try {
-                const parsed = typeof modelKwargs === 'object' ? modelKwargs : JSON.parse(modelKwargs)
+                const parsed = typeof trimmedModelKwargs === 'object' ? trimmedModelKwargs : JSON.parse(trimmedModelKwargs)
                 if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
                     throw new Error('Model Kwargs must be a JSON object')
                 }
