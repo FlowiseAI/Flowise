@@ -4,6 +4,8 @@ import { ListKeyOptions, RecordManagerInterface, UpdateOptions } from '@langchai
 import { DataSource } from 'typeorm'
 import { getHost, getSSL } from '../../vectorstores/Postgres/utils'
 import { getDatabase, getPort, getTableName } from './utils'
+import { mergeDataSourceOptions, sanitizeDataSourceOptions } from '../../../src/sanitizeDataSourceOptions'
+import { sanitizeRecordManagerNamespace, sanitizeRecordManagerTableName } from '../../../src/recordManagerSecurity'
 
 const serverCredentialsExists = !!process.env.POSTGRES_RECORDMANAGER_USER && !!process.env.POSTGRES_RECORDMANAGER_PASSWORD
 
@@ -63,6 +65,8 @@ class PostgresRecordManager_RecordManager implements INode {
                 label: 'Additional Connection Configuration',
                 name: 'additionalConfig',
                 type: 'json',
+                description:
+                    'Optional TypeORM connection options (e.g. ssl, connectTimeout). entities, subscribers, migrations, and extra are not allowed.',
                 additionalParams: true,
                 optional: true
             },
@@ -134,10 +138,10 @@ class PostgresRecordManager_RecordManager implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const user = getCredentialParam('user', credentialData, nodeData, process.env.POSTGRES_RECORDMANAGER_USER)
         const password = getCredentialParam('password', credentialData, nodeData, process.env.POSTGRES_RECORDMANAGER_PASSWORD)
-        const tableName = getTableName(nodeData)
+        const tableName = sanitizeRecordManagerTableName(getTableName(nodeData))
         const additionalConfig = nodeData.inputs?.additionalConfig as string
         const _namespace = nodeData.inputs?.namespace as string
-        const namespace = _namespace ? _namespace : options.chatflowid
+        const namespace = _namespace ? sanitizeRecordManagerNamespace(_namespace) : options.chatflowid
         const cleanup = nodeData.inputs?.cleanup as string
         const _sourceIdKey = nodeData.inputs?.sourceIdKey as string
         const sourceIdKey = _sourceIdKey ? _sourceIdKey : 'source'
@@ -149,18 +153,21 @@ class PostgresRecordManager_RecordManager implements INode {
             } catch (exception) {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
+            additionalConfiguration = sanitizeDataSourceOptions(additionalConfiguration)
         }
 
-        const postgresConnectionOptions = {
-            ...additionalConfiguration,
-            type: 'postgres',
-            host: getHost(nodeData),
-            port: getPort(nodeData),
-            ssl: getSSL(nodeData),
-            username: user,
-            password: password,
-            database: getDatabase(nodeData)
-        }
+        const postgresConnectionOptions = mergeDataSourceOptions(
+            {
+                type: 'postgres',
+                host: getHost(nodeData),
+                port: getPort(nodeData),
+                ssl: getSSL(nodeData),
+                username: user,
+                password: password,
+                database: getDatabase(nodeData)
+            },
+            additionalConfiguration
+        )
 
         const args = {
             postgresConnectionOptions: postgresConnectionOptions,
@@ -195,15 +202,7 @@ class PostgresRecordManager implements RecordManagerInterface {
     }
 
     sanitizeTableName(tableName: string): string {
-        // Trim and normalize case, turn whitespace into underscores
-        tableName = tableName.trim().toLowerCase().replace(/\s+/g, '_')
-
-        // Validate using a regex (alphanumeric and underscores only)
-        if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
-            throw new Error('Invalid table name')
-        }
-
-        return tableName
+        return sanitizeRecordManagerTableName(tableName)
     }
 
     private async getDataSource(): Promise<DataSource> {
