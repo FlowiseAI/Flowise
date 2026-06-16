@@ -207,6 +207,15 @@ class ChatOpenAI_ChatModels implements INode {
                 optional: true,
                 description: 'Default headers to include with every request to the API.',
                 additionalParams: true
+            },
+            {
+                label: 'Model Kwargs',
+                name: 'modelKwargs',
+                type: 'json',
+                optional: true,
+                description:
+                    'Additional parameters merged into the request body sent to the model API — e.g. provider-specific options not exposed as dedicated fields (such as prompt-caching directives). Use with caution.',
+                additionalParams: true
             }
         ]
     }
@@ -231,6 +240,7 @@ class ChatOpenAI_ChatModels implements INode {
         const strictToolCalling = nodeData.inputs?.strictToolCalling as boolean
         const basePath = nodeData.inputs?.basepath as string
         const baseOptions = nodeData.inputs?.baseOptions
+        const modelKwargs = nodeData.inputs?.modelKwargs
         const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.ReasoningEffort | null
         const reasoningSummary = nodeData.inputs?.reasoningSummary as 'auto' | 'concise' | 'detailed' | null
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
@@ -290,6 +300,14 @@ class ChatOpenAI_ChatModels implements INode {
             obj.configuration = {
                 baseURL: basePath,
                 defaultHeaders: parsedBaseOptions
+            }
+        }
+
+        if (modelKwargs) {
+            try {
+                obj.modelKwargs = typeof modelKwargs === 'object' ? modelKwargs : JSON.parse(modelKwargs)
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatOpenAI's Model Kwargs: " + exception)
             }
         }
 
