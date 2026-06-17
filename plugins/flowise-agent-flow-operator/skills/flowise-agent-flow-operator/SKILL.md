@@ -3,7 +3,7 @@ name: flowise-agent-flow-operator
 description: Design, inspect, and regression-test Flowise agent flows. Use this skill when an agent is asked to plan, build, review, or verify Flowise workflows and needs plugin-specific acceptance criteria.
 ---
 
-# Flowise Agent Plugin
+# Flowise Agent Flow Operator
 
 This skill turns a broad agent request into a Flowise-specific workflow with explicit verification evidence. It is intentionally operational: it should produce a plan, the expected artifacts, and plugin eval metadata that another maintainer can review.
 

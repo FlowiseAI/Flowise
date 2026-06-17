@@ -1,4 +1,4 @@
-# Flowise Agent Plugin
+# Flowise Agent Flow Operator
 
 This plugin packages a focused agent workflow for Flowise maintainers and users. It is designed to be useful in Codex, Claude Code, Claude Cowork, Copilot-style coworkers, and other `SKILL.md`-compatible harnesses.
 
