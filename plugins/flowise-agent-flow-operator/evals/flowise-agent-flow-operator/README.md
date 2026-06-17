@@ -10,3 +10,5 @@ Each JSONL row contains:
 - `expected.must_include`: concepts the plugin output should cover.
 - `expected.must_not_include`: sensitive data classes the plugin must avoid.
 - `metadata.safe_events`: metadata-only events that can be tracked if a team uses Telvine or another plugin telemetry sink.
+- `metadata.component`: the plugin component or skill under test.
+- `metadata.harnesses`: agent harnesses the plugin is intended to support.

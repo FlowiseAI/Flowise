@@ -45,7 +45,7 @@ Only emit metadata about plugin behavior, such as component name, outcome, durat
 
 ## Optional Telvine Measurement
 
-Teams that publish this plugin through Telvine can measure adoption and eval outcomes without changing Flowise runtime code:
+Teams that publish this plugin through Telvine can measure adoption and eval outcomes without changing Flowise runtime code. The CLI package is published as `telvine` on npm: https://www.npmjs.com/package/telvine
 
 ```bash
 npm i -g telvine
@@ -53,3 +53,7 @@ telvine login
 telvine publish ./plugins/flowise-agent-flow-operator
 telvine plugins metrics
 ```
+
+## Manifest Path Note
+
+The plugin manifests use `skills: ./skills/` because the supported plugin manifest contract resolves that path from the plugin root, not from the hidden manifest directory.
