@@ -220,13 +220,13 @@ export function MessagesInput({ inputParam, data, disabled = false, variableItem
             ))}
 
             {/* Add button */}
-            <Box sx={{ px: 2 }}>
+            <Box sx={{ px: 2, pb: 2 }}>
                 <Button
                     fullWidth
                     size='small'
                     variant='outlined'
                     disabled={isAddDisabled}
-                    sx={{ borderRadius: '16px', mt: 2 }}
+                    sx={{ borderRadius: '16px', mt: 1 }}
                     startIcon={<IconPlus />}
                     onClick={handleAddMessage}
                 >

@@ -16,7 +16,6 @@ import { Resource } from '@opentelemetry/resources'
 import { SimpleSpanProcessor, Tracer } from '@opentelemetry/sdk-trace-base'
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node'
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions'
-
 import { BaseCallbackHandler, NewTokenIndices, HandleLLMNewTokenCallbackFields } from '@langchain/core/callbacks/base'
 import * as CallbackManagerModule from '@langchain/core/callbacks/manager'
 import { LangChainTracer, LangChainTracerFields } from '@langchain/core/tracers/tracer_langchain'
@@ -26,6 +25,7 @@ import { AgentAction } from '@langchain/core/agents'
 import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
 
 import { getCredentialData, getCredentialParam, getEnvironmentVariable } from './utils'
+import { applyEnvTracingProviders, tracingEnvEnabled } from './tracingEnv'
 import { EvaluationRunTracer } from '../evaluation/EvaluationRunTracer'
 import { EvaluationRunTracerLlama } from '../evaluation/EvaluationRunTracerLlama'
 import { ICommonObject, IDatabaseEntity, INodeData, IServerSideEventStreamer } from './Interface'
@@ -515,16 +515,17 @@ class ExtendedLunaryHandler extends LunaryHandler {
 
 export const additionalCallbacks = async (nodeData: INodeData, options: ICommonObject) => {
     try {
-        if (!options.analytic) return []
+        if (!options.analytic && !tracingEnvEnabled()) return []
 
-        const analytic = JSON.parse(options.analytic)
+        const initial = options.analytic ? JSON.parse(options.analytic) : {}
+        const { analytic, envCredentials } = applyEnvTracingProviders(initial)
         const callbacks: any = []
 
         for (const provider in analytic) {
             const providerStatus = analytic[provider].status as boolean
             if (providerStatus) {
-                const credentialId = analytic[provider].credentialId as string
-                const credentialData = await getCredentialData(credentialId ?? '', options)
+                const credentialData =
+                    envCredentials[provider] ?? (await getCredentialData((analytic[provider].credentialId as string) ?? '', options))
                 if (provider === 'langSmith') {
                     const langSmithProject = analytic[provider].projectName as string
 
@@ -774,21 +775,29 @@ export class AnalyticHandler {
         if (this.initialized) return
 
         try {
-            if (!this.options.analytic) return
+            const hasAnalyticsConfig = Boolean(this.options.analytic)
+            if (!hasAnalyticsConfig && !tracingEnvEnabled()) return
 
-            const analytic = JSON.parse(this.options.analytic)
+            const initial = hasAnalyticsConfig ? JSON.parse(this.options.analytic) : {}
+            const { analytic, envCredentials } = applyEnvTracingProviders(initial)
             for (const provider in analytic) {
                 const providerStatus = analytic[provider].status as boolean
                 if (providerStatus) {
-                    const credentialId = analytic[provider].credentialId as string
-                    const credentialData = await getCredentialData(credentialId ?? '', this.options)
+                    const credentialData =
+                        envCredentials[provider] ??
+                        (await getCredentialData((analytic[provider].credentialId as string) ?? '', this.options))
                     await this.initializeProvider(provider, analytic[provider], credentialData)
                 }
             }
+
             this.initialized = true
         } catch (e) {
             throw new Error(e)
         }
+    }
+
+    hasActiveProviders(): boolean {
+        return Object.keys(this.handlers).length > 0
     }
 
     // Add getter for handlers (useful for debugging)
@@ -807,7 +816,10 @@ export class AnalyticHandler {
                 apiKey: langSmithApiKey
             })
 
-            this.handlers['langSmith'] = { client, langSmithProject }
+            this.handlers['langSmith'] = {
+                client,
+                langSmithProject
+            }
         } else if (provider === 'langFuse') {
             const release = providerConfig.release as string
             const langFuseSecretKey = getCredentialParam('langFuseSecretKey', credentialData, this.nodeData)
@@ -927,7 +939,13 @@ export class AnalyticHandler {
                 }
                 const parentRun = new RunTree(parentRunConfig)
                 await parentRun.postRun()
-                this.handlers['langSmith'].chainRun = { [parentRun.id]: parentRun }
+                // Merge rather than replace: AnalyticHandler is a per-chatId singleton, so recursive
+                // executeAgentFlow calls (e.g. iterationAgentflow) re-enter onChainStart on the same
+                // instance. Replacing would drop the outer call's parent entry and orphan its trace.
+                this.handlers['langSmith'].chainRun = {
+                    ...this.handlers['langSmith'].chainRun,
+                    [parentRun.id]: parentRun
+                }
                 returnIds['langSmith'].chainRun = parentRun.id
             } else {
                 const parentRun: RunTree | undefined = this.handlers['langSmith'].chainRun[parentIds['langSmith'].chainRun]
@@ -940,7 +958,10 @@ export class AnalyticHandler {
                         }
                     })
                     await childChainRun.postRun()
-                    this.handlers['langSmith'].chainRun = { [childChainRun.id]: childChainRun }
+                    this.handlers['langSmith'].chainRun = {
+                        ...this.handlers['langSmith'].chainRun,
+                        [childChainRun.id]: childChainRun
+                    }
                     returnIds['langSmith'].chainRun = childChainRun.id
                 }
             }

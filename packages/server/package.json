@@ -58,7 +58,7 @@
         "email": "henryheng@flowiseai.com"
     },
     "engines": {
-        "node": ">=18.15.0 <19.0.0 || ^20"
+        "node": "^24"
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
@@ -127,6 +127,7 @@
         "multer-s3": "^3.0.1",
         "mysql2": "^3.11.3",
         "nanoid": "3",
+        "node-cron": "^4.2.1",
         "nodemailer": "^7.0.7",
         "openai": "6.19.0",
         "passport": "^0.7.0",

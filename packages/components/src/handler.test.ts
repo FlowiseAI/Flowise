@@ -1,11 +1,48 @@
 import { OTLPTraceExporter as ProtoOTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
-import { getPhoenixTracer } from './handler'
+import { getPhoenixTracer, AnalyticHandler } from './handler'
+import { resetTracingEnvCache } from './tracingEnv'
 
 jest.mock('@opentelemetry/exporter-trace-otlp-proto', () => {
     return {
         OTLPTraceExporter: jest.fn().mockImplementation((args) => {
             return { args }
         })
+    }
+})
+
+// Track every RunTree constructed so tests can assert per-instance lifecycle calls.
+// Prefixed with `mock` so Jest allows referencing it from inside the mock factory.
+const mockRunTreeInstances: Array<{
+    id: string
+    config: any
+    postRun: jest.Mock
+    patchRun: jest.Mock
+    end: jest.Mock
+    createChild: jest.Mock
+}> = []
+
+jest.mock('langsmith', () => {
+    let counter = 0
+    class MockRunTree {
+        id: string
+        config: any
+        postRun: jest.Mock
+        patchRun: jest.Mock
+        end: jest.Mock
+        createChild: jest.Mock
+        constructor(config: any) {
+            this.config = config
+            this.id = `run-${++counter}`
+            this.postRun = jest.fn().mockResolvedValue(undefined)
+            this.patchRun = jest.fn().mockResolvedValue(undefined)
+            this.end = jest.fn().mockResolvedValue(undefined)
+            this.createChild = jest.fn().mockImplementation(async (childCfg: any) => new MockRunTree(childCfg))
+            mockRunTreeInstances.push(this as any)
+        }
+    }
+    return {
+        Client: jest.fn().mockImplementation(() => ({})),
+        RunTree: MockRunTree
     }
 })
 
@@ -329,5 +366,71 @@ describe('onLLMEnd Usage Metadata Extraction Logic', () => {
                 total_tokens: undefined
             })
         })
+    })
+})
+
+/**
+ * Regression coverage for the chainRun map clobbering bug.
+ *
+ * AnalyticHandler is a per-chatId singleton, so recursive executeAgentFlow calls (e.g. an
+ * iterationAgentflow sub-flow) re-enter `onChainStart` on the same instance. The previous
+ * implementation replaced `this.handlers['langSmith'].chainRun` wholesale on every call, which
+ * dropped the outer call's parent RunTree. When control returned to the outer flow, its
+ * `onChainEnd` lookup missed and the outer run was never `patchRun`-ed — leaving an open run in
+ * LangSmith and breaking context propagation for any subsequent nodes.
+ */
+describe('AnalyticHandler chainRun map on recursive onChainStart', () => {
+    const LANGSMITH_KEYS = ['LANGSMITH_TRACING', 'LANGSMITH_API_KEY', 'LANGSMITH_ENDPOINT', 'LANGSMITH_PROJECT'] as const
+    let envSnapshot: Partial<Record<(typeof LANGSMITH_KEYS)[number], string | undefined>>
+
+    beforeEach(() => {
+        envSnapshot = {}
+        for (const k of LANGSMITH_KEYS) envSnapshot[k] = process.env[k]
+        for (const k of LANGSMITH_KEYS) delete process.env[k]
+        process.env.LANGSMITH_TRACING = 'true'
+        process.env.LANGSMITH_API_KEY = 'test-key'
+        resetTracingEnvCache()
+        mockRunTreeInstances.length = 0
+    })
+
+    afterEach(() => {
+        for (const k of LANGSMITH_KEYS) delete process.env[k]
+        for (const k of LANGSMITH_KEYS) {
+            const v = envSnapshot[k]
+            if (v !== undefined) process.env[k] = v
+        }
+        resetTracingEnvCache()
+        AnalyticHandler.resetInstance('recursive-chain-test')
+    })
+
+    it('preserves the outer parent RunTree when a nested onChainStart runs on the same instance', async () => {
+        const chatId = 'recursive-chain-test'
+        const handler = AnalyticHandler.getInstance({ inputs: {} } as any, { chatId })
+        await handler.init()
+
+        // Outer flow's onChainStart — simulates the first executeAgentFlow call.
+        const outerIds = await handler.onChainStart('OuterFlow', 'outer input')
+        expect(outerIds.langSmith.chainRun).toBeDefined()
+
+        // Recursive executeAgentFlow (iterationAgentflow) re-enters on the same singleton.
+        // No parentIds passed, matching the real call site in buildAgentflow.ts.
+        const innerIds = await handler.onChainStart('InnerFlow', 'inner input')
+        expect(innerIds.langSmith.chainRun).toBeDefined()
+        expect(innerIds.langSmith.chainRun).not.toBe(outerIds.langSmith.chainRun)
+
+        // Inner flow completes first.
+        await handler.onChainEnd(innerIds, 'inner output')
+
+        // Outer flow must still be able to end its own run.
+        await handler.onChainEnd(outerIds, 'outer output', true)
+
+        // Both the outer and inner RunTree instances should have been patched exactly once —
+        // before the fix, the outer's patchRun was skipped because the map entry was overwritten.
+        expect(mockRunTreeInstances).toHaveLength(2)
+        const [outerRun, innerRun] = mockRunTreeInstances
+        expect(outerRun.patchRun).toHaveBeenCalledTimes(1)
+        expect(innerRun.patchRun).toHaveBeenCalledTimes(1)
+        expect(outerRun.end).toHaveBeenCalledWith({ outputs: { output: 'outer output' } })
+        expect(innerRun.end).toHaveBeenCalledWith({ outputs: { output: 'inner output' } })
     })
 })

@@ -1,4 +1,5 @@
 import express from 'express'
+import agentflowv2GeneratorRouter from './agentflowv2-generator'
 import apikeyRouter from './apikey'
 import assistantsRouter from './assistants'
 import attachmentsRouter from './attachments'
@@ -9,14 +10,15 @@ import chatflowsUploadsRouter from './chatflows-uploads'
 import componentsCredentialsRouter from './components-credentials'
 import componentsCredentialsIconRouter from './components-credentials-icon'
 import credentialsRouter from './credentials'
+import customMcpServersRouter from './custom-mcp-servers'
 import datasetRouter from './dataset'
 import documentStoreRouter from './documentstore'
 import evaluationsRouter from './evaluations'
 import evaluatorsRouter from './evaluator'
+import executionsRouter from './executions'
 import exportImportRouter from './export-import'
 import feedbackRouter from './feedback'
 import fetchLinksRouter from './fetch-links'
-import filesRouter from './files'
 import flowConfigRouter from './flow-config'
 import getUploadFileRouter from './get-upload-file'
 import internalChatmessagesRouter from './internal-chat-messages'
@@ -25,12 +27,14 @@ import leadsRouter from './leads'
 import loadPromptRouter from './load-prompts'
 import logsRouter from './log'
 import marketplacesRouter from './marketplaces'
-import customMcpServersRouter from './custom-mcp-servers'
+import mcpEndpointRouter from './mcp-endpoint'
+import mcpServerRouter from './mcp-server'
 import nodeConfigRouter from './node-configs'
 import nodeCustomFunctionRouter from './node-custom-functions'
 import nodeIconRouter from './node-icons'
 import nodeLoadMethodRouter from './node-load-methods'
 import nodesRouter from './nodes'
+import nvidiaNimRouter from './nvidia-nim'
 import oauth2Router from './oauth2'
 import openaiAssistantsRouter from './openai-assistants'
 import openaiAssistantsFileRouter from './openai-assistants-files'
@@ -38,37 +42,34 @@ import openaiAssistantsVectorStoreRouter from './openai-assistants-vector-store'
 import openaiRealtimeRouter from './openai-realtime'
 import pingRouter from './ping'
 import predictionRouter from './predictions'
+import pricingRouter from './pricing'
 import promptListsRouter from './prompts-lists'
 import publicChatbotRouter from './public-chatbots'
 import publicChatflowsRouter from './public-chatflows'
 import publicExecutionsRouter from './public-executions'
 import settingsRouter from './settings'
 import statsRouter from './stats'
+import textToSpeechRouter from './text-to-speech'
 import toolsRouter from './tools'
 import upsertHistoryRouter from './upsert-history'
+import validationRouter from './validation'
 import variablesRouter from './variables'
 import vectorRouter from './vectors'
 import verifyRouter from './verify'
 import versionRouter from './versions'
-import pricingRouter from './pricing'
-import nvidiaNimRouter from './nvidia-nim'
-import executionsRouter from './executions'
-import validationRouter from './validation'
-import agentflowv2GeneratorRouter from './agentflowv2-generator'
-import textToSpeechRouter from './text-to-speech'
-import mcpServerRouter from './mcp-server'
-import mcpEndpointRouter from './mcp-endpoint'
+import webhookRouter from './webhook'
+import webhookListenerRouter from './webhook-listener'
 
-import authRouter from '../enterprise/routes/auth'
+import accountRouter from '../enterprise/routes/account.route'
 import auditRouter from '../enterprise/routes/audit'
-import userRouter from '../enterprise/routes/user.route'
+import authRouter from '../enterprise/routes/auth'
+import loginMethodRouter from '../enterprise/routes/login-method.route'
+import organizationUserRoute from '../enterprise/routes/organization-user.route'
 import organizationRouter from '../enterprise/routes/organization.route'
 import roleRouter from '../enterprise/routes/role.route'
-import organizationUserRoute from '../enterprise/routes/organization-user.route'
-import workspaceRouter from '../enterprise/routes/workspace.route'
+import userRouter from '../enterprise/routes/user.route'
 import workspaceUserRouter from '../enterprise/routes/workspace-user.route'
-import accountRouter from '../enterprise/routes/account.route'
-import loginMethodRouter from '../enterprise/routes/login-method.route'
+import workspaceRouter from '../enterprise/routes/workspace.route'
 import { IdentityManager } from '../IdentityManager'
 
 const router = express.Router()
@@ -118,6 +119,8 @@ router.use('/tools', toolsRouter)
 router.use('/variables', variablesRouter)
 router.use('/vector', vectorRouter)
 router.use('/verify', verifyRouter)
+router.use('/webhook', webhookRouter)
+router.use('/webhook-listener', webhookListenerRouter)
 router.use('/version', versionRouter)
 router.use('/upsert-history', upsertHistoryRouter)
 router.use('/settings', settingsRouter)
@@ -142,6 +145,6 @@ router.use('/workspaceuser', workspaceUserRouter)
 router.use('/account', accountRouter)
 router.use('/loginmethod', loginMethodRouter)
 router.use('/logs', IdentityManager.checkFeatureByPlan('feat:logs'), logsRouter)
-router.use('/files', IdentityManager.checkFeatureByPlan('feat:files'), filesRouter)
+// router.use('/files', IdentityManager.checkFeatureByPlan('feat:files'), filesRouter)
 
 export default router

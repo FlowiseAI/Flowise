@@ -31,7 +31,9 @@ export enum ChatType {
     INTERNAL = 'INTERNAL',
     EXTERNAL = 'EXTERNAL',
     EVALUATION = 'EVALUATION',
-    MCP = 'MCP'
+    MCP = 'MCP',
+    SCHEDULED = 'SCHEDULED',
+    WEBHOOK = 'WEBHOOK'
 }
 
 export enum ChatMessageRatingType {
@@ -73,6 +75,8 @@ export interface IChatFlow {
     type?: ChatflowType
     mcpServerConfig?: string
     workspaceId: string
+    webhookSecret?: string | null
+    webhookSecretConfigured?: boolean
 }
 
 export interface IChatMessage {
@@ -181,6 +185,43 @@ export interface IExecution {
     updatedDate: Date
     stoppedDate: Date
     workspaceId: string
+}
+
+export type ScheduleInputMode = 'text' | 'form' | 'none'
+
+export type StartInputType = 'chatInput' | 'formInput' | 'webhookTrigger' | 'scheduleInput'
+
+export interface IScheduleRecord {
+    id: string
+    triggerType: string
+    targetId: string
+    nodeId?: string
+    cronExpression: string
+    timezone: string
+    enabled: boolean
+    scheduleInputMode: ScheduleInputMode
+    defaultInput?: string
+    defaultForm?: string
+    lastRunAt?: Date
+    nextRunAt?: Date
+    endDate?: Date
+    workspaceId: string
+    createdDate: Date
+    updatedDate: Date
+}
+
+export interface IScheduleTriggerLog {
+    id: string
+    scheduleRecordId: string
+    triggerType: string
+    targetId: string
+    executionId?: string
+    status: string
+    error?: string
+    elapsedTimeMs?: number
+    scheduledAt: Date
+    workspaceId: string
+    createdDate: Date
 }
 
 export enum CustomMcpServerStatus {
@@ -335,6 +376,7 @@ export interface IncomingAgentflowInput extends Omit<IncomingInput, 'question'> 
     question?: string
     form?: Record<string, any>
     humanInput?: IHumanInput
+    webhook?: Record<string, any>
 }
 
 export interface IActiveChatflows {

@@ -35,15 +35,12 @@
             "import": "./dist/index.js",
             "require": "./dist/index.umd.js",
             "types": "./dist/index.d.ts"
-        },
-        "./observe.css": "./dist/observe.css"
+        }
     },
     "files": [
         "dist"
     ],
-    "sideEffects": [
-        "dist/**/*.css"
-    ],
+    "sideEffects": false,
     "scripts": {
         "build": "tsc && vite build",
         "clean": "rimraf dist",
@@ -68,13 +65,14 @@
         "react-dom": "^18.2.0"
     },
     "dependencies": {
+        "@mui/x-tree-view": "^7.25.0",
         "@tabler/icons-react": "^3.7.0",
         "axios": "1.15.0",
         "date-fns": "^3.6.0",
         "flowise-react-json-view": "^1.21.7",
         "lodash": "^4.17.21",
         "react-markdown": "^9.0.1",
-        "rehype-raw": "^7.0.0",
+        "react-syntax-highlighter": "15.5.0",
         "remark-gfm": "^4.0.0"
     },
     "devDependencies": {
@@ -85,6 +83,7 @@
         "@types/lodash": "^4.14.195",
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
+        "@types/react-syntax-highlighter": "15.5.13",
         "@typescript-eslint/eslint-plugin": "^8.18.2",
         "@typescript-eslint/parser": "^8.18.2",
         "@vitejs/plugin-react": "^4.2.0",

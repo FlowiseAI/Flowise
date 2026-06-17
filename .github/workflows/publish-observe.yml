@@ -1,0 +1,44 @@
+name: Publish @flowiseai/observe
+on:
+    workflow_dispatch:
+        inputs:
+            bump:
+                description: 'Version bump type'
+                required: true
+                type: choice
+                default: 'prerelease'
+                options:
+                    - prerelease
+                    - patch
+                    - minor
+                    - major
+                    - custom
+            custom_version:
+                description: 'Custom version (only used when bump is "custom", e.g. 1.0.0-beta.1)'
+                required: false
+                type: string
+            tag:
+                description: 'npm dist-tag (dev = internal, next = pre-release, latest = stable)'
+                required: false
+                type: choice
+                default: 'dev'
+                options:
+                    - dev
+                    - next
+                    - latest
+
+jobs:
+    publish:
+        permissions:
+            contents: write
+            pull-requests: write
+        uses: ./.github/workflows/publish-package.yml
+        with:
+            package_name: '@flowiseai/observe'
+            package_path: 'packages/observe'
+            slug: 'observe'
+            bump: ${{ inputs.bump }}
+            custom_version: ${{ inputs.custom_version }}
+            tag: ${{ inputs.tag }}
+        secrets:
+            NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

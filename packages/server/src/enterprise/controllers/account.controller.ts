@@ -31,16 +31,6 @@ export class AccountController {
         }
     }
 
-    public async login(req: Request, res: Response, next: NextFunction) {
-        try {
-            const accountService = new AccountService()
-            const data = await accountService.login(req.body)
-            return res.status(StatusCodes.CREATED).json(data)
-        } catch (error) {
-            next(error)
-        }
-    }
-
     public async verify(req: Request, res: Response, next: NextFunction) {
         try {
             const accountService = new AccountService()

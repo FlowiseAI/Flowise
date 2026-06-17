@@ -24,8 +24,11 @@ export function createObserveTheme(isDarkMode: boolean): Theme {
             }
         },
         typography: {
+            fontFamily: `'Inter', 'Roboto', 'Arial', sans-serif`,
+            // Match legacy Berry theme weights so section headers (h5) read as
+            // medium-weight subheadings rather than aggressive 600-weight bold.
             h4: { fontSize: '1rem', fontWeight: 600 },
-            h5: { fontSize: '0.875rem', fontWeight: 600 },
+            h5: { fontSize: '0.875rem', fontWeight: 500 },
             h6: { fontSize: '0.75rem', fontWeight: 500 },
             subtitle1: { fontSize: '0.875rem', fontWeight: 500 },
             body1: { fontSize: '0.875rem', fontWeight: 400 },

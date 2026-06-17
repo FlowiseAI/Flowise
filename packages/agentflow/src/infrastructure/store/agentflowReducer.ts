@@ -20,7 +20,9 @@ export const initialState: AgentflowState = {
     isDirty: false,
     reactFlowInstance: null,
     editingNodeId: null,
-    editDialogProps: null
+    editDialogProps: null,
+    executionState: null,
+    componentNodes: []
 }
 
 export function agentflowReducer(state: AgentflowState, action: AgentflowAction): AgentflowState {
@@ -49,6 +51,35 @@ export function agentflowReducer(state: AgentflowState, action: AgentflowAction)
             }
         case 'RESET':
             return initialState
+        case 'START_EXECUTION':
+            return {
+                ...state,
+                executionState: {
+                    executionId: action.payload,
+                    status: 'INPROGRESS',
+                    nodeStates: {}
+                }
+            }
+        case 'SET_NODE_EXECUTION_STATUS':
+            return {
+                ...state,
+                executionState: {
+                    executionId: state.executionState?.executionId ?? null,
+                    status: state.executionState?.status ?? 'INPROGRESS',
+                    nodeStates: {
+                        ...state.executionState?.nodeStates,
+                        [action.nodeId]: {
+                            nodeId: action.nodeId,
+                            status: action.status,
+                            error: action.error
+                        }
+                    }
+                }
+            }
+        case 'CLEAR_EXECUTION_STATE':
+            return { ...state, executionState: null }
+        case 'SET_COMPONENT_NODES':
+            return { ...state, componentNodes: action.payload }
         default:
             return state
     }

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import sanitizeHtml from 'sanitize-html'
 import { extractChatflowId, isPublicChatflowRequest, isTTSGenerateRequest, validateChatflowDomain } from './domainValidation'
+import logger from './logger'
 
 export function sanitizeMiddleware(req: Request, res: Response, next: NextFunction): void {
     // decoding is necessary as the url is encoded by the browser
@@ -29,6 +30,32 @@ export function getAllowCredentials(): boolean {
     return process.env.CORS_ALLOW_CREDENTIALS === 'true'
 }
 
+export function getAllowedAuthCorsOrigins(): string[] {
+    const appUrl = process.env.APP_URL?.trim()
+    if (!appUrl) return []
+    try {
+        return [new URL(appUrl).origin.toLowerCase()]
+    } catch {
+        return []
+    }
+}
+
+// Endpoints that issue or refresh session tokens — must not accept wildcard origins
+const SESSION_ENDPOINTS = [
+    '/api/v1/auth/login',
+    '/api/v1/auth/refreshtoken',
+    '/api/v1/account/register',
+    '/api/v1/azure/callback',
+    '/api/v1/google/callback',
+    '/api/v1/auth0/callback',
+    '/api/v1/github/callback'
+]
+
+function isSessionEndpoint(url: string): boolean {
+    const path = url.split('?')[0].toLowerCase()
+    return SESSION_ENDPOINTS.some((ep) => path === ep || path.startsWith(ep + '/'))
+}
+
 function parseAllowedOrigins(allowedOrigins: string): string[] {
     if (!allowedOrigins) {
         return []
@@ -42,12 +69,26 @@ function parseAllowedOrigins(allowedOrigins: string): string[] {
         .filter((origin) => origin.length > 0)
 }
 
+export function validateCorsConfig(): void {
+    if (getAllowedCorsOrigins() === '*' && getAllowCredentials()) {
+        logger.warn(
+            '[CORS] Unsafe configuration detected: CORS_ORIGINS=* cannot be combined with ' +
+                'CORS_ALLOW_CREDENTIALS=true. Access-Control-Allow-Credentials has been forced to false. ' +
+                'To allow credentialed cross-origin requests, set CORS_ORIGINS to an explicit comma-separated ' +
+                'list of trusted origins instead of *.'
+        )
+    }
+}
+
 export function getCorsOptions(): any {
     return (req: any, callback: (err: Error | null, options?: any) => void) => {
+        const allowedOrigins = getAllowedCorsOrigins()
+        const requestedCredentials = getAllowCredentials()
+        const credentials = allowedOrigins === '*' ? false : requestedCredentials
+
         const corsOptions = {
-            credentials: getAllowCredentials(),
+            credentials,
             origin: async (origin: string | undefined, originCallback: (err: Error | null, allow?: boolean) => void) => {
-                const allowedOrigins = getAllowedCorsOrigins()
                 const isPublicChatflowReq = isPublicChatflowRequest(req.url)
                 const isTTSReq = isTTSGenerateRequest(req.url)
                 const allowedList = parseAllowedOrigins(allowedOrigins)
@@ -55,6 +96,15 @@ export function getCorsOptions(): any {
 
                 // Always allow no-Origin requests (same-origin, server-to-server)
                 if (!originLc) return originCallback(null, true)
+
+                // Block null origins (sandboxed iframes, data: URIs, file:// pages)
+                if (originLc === 'null') return originCallback(null, false)
+
+                // Session-issuing endpoints: ignore global wildcard, use APP_URL origin or explicit CORS_ORIGINS list
+                if (isSessionEndpoint(req.url)) {
+                    const authList = getAllowedAuthCorsOrigins()
+                    return originCallback(null, authList.includes(originLc) || allowedList.includes(originLc))
+                }
 
                 // Global allow: '*' or exact match
                 const globallyAllowed = allowedOrigins === '*' || allowedList.includes(originLc)
