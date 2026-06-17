@@ -28,7 +28,6 @@ const CHATFLOW_FIELDS_TO_PRESERVE = [
     'apiConfig',
     'analytic',
     'isPublic',
-    'apikeyid',
     'mcpServerConfig'
 ]
 
