@@ -3,6 +3,20 @@ import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from 
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 
+/**
+ * Decodes a base64-encoded embedding string into a number[].
+ * OpenAI's base64 encoding uses little-endian IEEE 754 float32 (4 bytes per float).
+ *
+ * This is needed because LangChain's OpenAIEmbeddings does not decode base64 responses —
+ * it passes the raw base64 string through as the embedding value, which causes downstream
+ * vector stores (e.g. Chroma) to crash with "TypeError: e.every is not a function".
+ */
+function decodeBase64Embedding(base64String: string): number[] {
+    const binaryBuffer = Buffer.from(base64String, 'base64')
+    const float32Array = new Float32Array(binaryBuffer.buffer, binaryBuffer.byteOffset, binaryBuffer.byteLength / 4)
+    return Array.from(float32Array)
+}
+
 class OpenAIEmbedding_Embeddings implements INode {
     label: string
     name: string
@@ -154,6 +168,24 @@ class OpenAIEmbedding_Embeddings implements INode {
         }
 
         const model = new OpenAIEmbeddings(obj)
+
+        // If encoding format is base64, wrap the embedding methods to decode base64 responses
+        // into proper number[] arrays. LangChain's OpenAIEmbeddings does not handle this —
+        // it passes raw base64 strings through, causing vector stores to crash.
+        if (encodingFormat === 'base64') {
+            const originalEmbedDocuments = model.embedDocuments.bind(model)
+            model.embedDocuments = async (texts: string[]): Promise<number[][]> => {
+                const results = await originalEmbedDocuments(texts)
+                return results.map((embedding: any) => (typeof embedding === 'string' ? decodeBase64Embedding(embedding) : embedding))
+            }
+
+            const originalEmbedQuery = model.embedQuery.bind(model)
+            model.embedQuery = async (text: string): Promise<number[]> => {
+                const result = await originalEmbedQuery(text)
+                return typeof result === 'string' ? decodeBase64Embedding(result as any) : result
+            }
+        }
+
         return model
     }
 }
