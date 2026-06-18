@@ -100,6 +100,14 @@ export function useAvailableVariables(nodeId: string): VariableItem[] {
                 icon: agentflowIcon?.icon,
                 iconColor: agentflowIcon?.color
             })
+            items.push({
+                label: `${displayName}.output.artifacts`,
+                description: `Artifacts from ${node.data.label ?? node.data.name}`,
+                category: 'Node Outputs',
+                value: `{{${node.id}.output.artifacts}}`,
+                icon: agentflowIcon?.icon,
+                iconColor: agentflowIcon?.color
+            })
         }
 
         // ── Flow state variables from all nodes ─────────────────────────
