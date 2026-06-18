@@ -1,7 +1,8 @@
 import { BaseCache } from '@langchain/core/caches'
 import { ChatXAIInput } from '@langchain/xai'
-import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { ChatXAI } from './FlowiseChatXAI'
 
 class ChatXAI_ChatModels implements INode {
@@ -19,7 +20,7 @@ class ChatXAI_ChatModels implements INode {
     constructor() {
         this.label = 'xAI Grok'
         this.name = 'chatXAI'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'ChatXAI'
         this.icon = 'xai.png'
         this.category = 'Chat Models'
@@ -39,10 +40,12 @@ class ChatXAI_ChatModels implements INode {
                 optional: true
             },
             {
-                label: 'Model',
+                label: 'Model Name',
                 name: 'modelName',
-                type: 'string',
-                placeholder: 'grok-beta'
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'grok-3-mini',
+                freeSolo: true
             },
             {
                 label: 'Temperature',
@@ -76,16 +79,14 @@ class ChatXAI_ChatModels implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
-            },
-            {
-                label: 'Max Tokens',
-                name: 'maxTokens',
-                type: 'number',
-                step: 1,
-                optional: true,
-                additionalParams: true
             }
         ]
+    }
+
+    loadMethods = {
+        async listModels(_: INodeData, __?: ICommonObject): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatXAI')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
