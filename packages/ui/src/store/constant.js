@@ -14,7 +14,8 @@ import {
     IconNote,
     IconWorld,
     IconRelationOneToManyFilled,
-    IconVectorBezier2
+    IconVectorBezier2,
+    IconCoin
 } from '@tabler/icons-react'
 
 export const gridSpacing = 3
@@ -101,6 +102,11 @@ export const AGENTFLOW_ICONS = [
     {
         name: 'httpAgentflow',
         icon: IconWorld,
+        color: '#FF7F7F'
+    },
+    {
+        name: 'x402PaidApiAgentflow',
+        icon: IconCoin,
         color: '#FF7F7F'
     },
     {
