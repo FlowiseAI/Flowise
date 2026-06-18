@@ -6,6 +6,7 @@ import { ChatFlow } from '../../database/entities/ChatFlow'
 import { INodeParams } from 'flowise-components'
 import { resolveScheduleCron } from '../schedule'
 import { IComponentNodes, IReactFlowEdge, IReactFlowNode, IReactFlowObject } from '../../Interface'
+import { getExecutableFlowData, isNodeDisabled } from '../../utils'
 
 export interface IValidationResult {
     id: string
@@ -24,17 +25,21 @@ export const validateFlowData = (
     componentNodes: IComponentNodes
 ): IValidationResult[] => {
     const validationResults: IValidationResult[] = []
+    const executableFlowData = getExecutableFlowData(nodes, edges)
+    const activeNodes = executableFlowData.nodes
+    const activeEdges = executableFlowData.edges
 
     // Create a map of connected nodes
     const connectedNodes = new Set<string>()
-    edges.forEach((edge: IReactFlowEdge) => {
+    activeEdges.forEach((edge: IReactFlowEdge) => {
         connectedNodes.add(edge.source)
         connectedNodes.add(edge.target)
     })
 
     // Validate each node
-    for (const node of nodes) {
+    for (const node of activeNodes) {
         if (node.data.name === 'stickyNoteAgentflow') continue
+        if (isNodeDisabled(node)) continue
 
         const nodeIssues: string[] = []
 
@@ -257,15 +262,15 @@ export const validateFlowData = (
     }
 
     // Check for hanging edges
-    for (const edge of edges) {
-        const sourceExists = nodes.some((node: IReactFlowNode) => node.id === edge.source)
-        const targetExists = nodes.some((node: IReactFlowNode) => node.id === edge.target)
+    for (const edge of activeEdges) {
+        const sourceExists = activeNodes.some((node: IReactFlowNode) => node.id === edge.source)
+        const targetExists = activeNodes.some((node: IReactFlowNode) => node.id === edge.target)
 
         if (!sourceExists || !targetExists) {
             // Find the existing node that is connected to this hanging edge
             if (!sourceExists && targetExists) {
                 // Target exists but source doesn't - add issue to target node
-                const targetNode = nodes.find((node: IReactFlowNode) => node.id === edge.target)!
+                const targetNode = activeNodes.find((node: IReactFlowNode) => node.id === edge.target)!
                 const targetNodeResult = validationResults.find((result) => result.id === edge.target)
 
                 if (targetNodeResult) {
@@ -282,7 +287,7 @@ export const validateFlowData = (
                 }
             } else if (sourceExists && !targetExists) {
                 // Source exists but target doesn't - add issue to source node
-                const sourceNode = nodes.find((node: IReactFlowNode) => node.id === edge.source)!
+                const sourceNode = activeNodes.find((node: IReactFlowNode) => node.id === edge.source)!
                 const sourceNodeResult = validationResults.find((result) => result.id === edge.source)
 
                 if (sourceNodeResult) {

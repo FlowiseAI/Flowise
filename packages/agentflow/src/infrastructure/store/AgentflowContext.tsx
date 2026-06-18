@@ -18,7 +18,7 @@ import type {
     NodeData,
     NodeDataSchema
 } from '@/core/types'
-import { getDefinedStateKeys, getUniqueNodeId, isNodeOutdated, upgradeNodeData } from '@/core/utils'
+import { getDefinedStateKeys, getUniqueNodeId, isNodeOutdated, recalculateDisabledNodes, upgradeNodeData } from '@/core/utils'
 
 import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
 
@@ -70,6 +70,7 @@ export interface AgentflowContextValue {
     // Node operations
     deleteNode: (nodeId: string) => void
     duplicateNode: (nodeId: string, distance?: number) => void
+    toggleNodeDisabled: (nodeId: string) => void
     updateNodeData: (nodeId: string, data: Partial<FlowNode['data']>, edges?: FlowEdge[]) => void
 
     // Edge operations
@@ -198,14 +199,15 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             }
             collectDescendants(nodeId)
 
-            const newNodes = state.nodes.filter((node) => !toDelete.has(node.id))
-            const newEdges = state.edges.filter((edge) => !toDelete.has(edge.source) && !toDelete.has(edge.target))
-            syncStateUpdate({ nodes: newNodes, edges: newEdges })
+            const remainingNodes = state.nodes.filter((node) => !toDelete.has(node.id))
+            const remainingEdges = state.edges.filter((edge) => !toDelete.has(edge.source) && !toDelete.has(edge.target))
+            const recalculatedNodes = recalculateDisabledNodes(remainingNodes, remainingEdges)
+            syncStateUpdate({ nodes: recalculatedNodes, edges: remainingEdges })
 
             // Notify parent of flow change so the deletion is persisted
             if (onFlowChangeRef.current) {
                 const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
-                onFlowChangeRef.current({ nodes: newNodes, edges: newEdges, viewport })
+                onFlowChangeRef.current({ nodes: recalculatedNodes, edges: remainingEdges, viewport })
             }
         },
         [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
@@ -294,16 +296,47 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
     )
 
+    const toggleNodeDisabled = useCallback(
+        (nodeId: string) => {
+            const targetNode = state.nodes.find((node) => node.id === nodeId)
+            const shouldDisable = !(targetNode?.data?.disabled === true || String(targetNode?.data?.disabled) === 'true')
+
+            const nextNodes = state.nodes.map((node) => {
+                if (node.id === nodeId) {
+                    const { disabledBy, ...nextData } = node.data
+                    return {
+                        ...node,
+                        data: {
+                            ...nextData,
+                            disabled: shouldDisable
+                        }
+                    }
+                }
+                return node
+            })
+
+            const recalculatedNodes = recalculateDisabledNodes(nextNodes, state.edges)
+            syncStateUpdate({ nodes: recalculatedNodes })
+
+            if (onFlowChangeRef.current) {
+                const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
+                onFlowChangeRef.current({ nodes: recalculatedNodes, edges: state.edges, viewport })
+            }
+        },
+        [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
+    )
+
     // Edge operations
     const deleteEdge = useCallback(
         (edgeId: string) => {
             const newEdges = state.edges.filter((edge) => edge.id !== edgeId)
-            syncStateUpdate({ edges: newEdges })
+            const recalculatedNodes = recalculateDisabledNodes(state.nodes, newEdges)
+            syncStateUpdate({ nodes: recalculatedNodes, edges: newEdges })
 
             // Notify parent of flow change so the deletion is persisted
             if (onFlowChangeRef.current) {
                 const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
-                onFlowChangeRef.current({ nodes: state.nodes, edges: newEdges, viewport })
+                onFlowChangeRef.current({ nodes: recalculatedNodes, edges: newEdges, viewport })
             }
         },
         [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
@@ -415,6 +448,7 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         setReactFlowInstance,
         deleteNode,
         duplicateNode,
+        toggleNodeDisabled,
         updateNodeData,
         deleteEdge,
         openEditDialog,
