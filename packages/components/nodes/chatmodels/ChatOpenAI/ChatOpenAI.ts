@@ -5,6 +5,18 @@ import { getBaseClasses, getCredentialData, getCredentialParam, isReasoningModel
 import { ChatOpenAI } from './FlowiseChatOpenAI'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { OpenAI as OpenAIClient } from 'openai'
+import { ProxyAgent } from 'undici'
+
+const proxyAgents = new Map<string, ProxyAgent>()
+
+const getProxyAgent = (proxyUrl: string): ProxyAgent => {
+    let proxyAgent = proxyAgents.get(proxyUrl)
+    if (!proxyAgent) {
+        proxyAgent = new ProxyAgent(proxyUrl)
+        proxyAgents.set(proxyUrl, proxyAgent)
+    }
+    return proxyAgent
+}
 
 class ChatOpenAI_ChatModels implements INode {
     label: string
@@ -201,6 +213,14 @@ class ChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Proxy Url',
+                name: 'proxyUrl',
+                type: 'string',
+                optional: true,
+                description: 'Proxy URL to use for OpenAI API requests, e.g., "http://proxy.example.com:3128"',
+                additionalParams: true
+            },
+            {
                 label: 'Base Options',
                 name: 'baseOptions',
                 type: 'json',
@@ -230,6 +250,7 @@ class ChatOpenAI_ChatModels implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
         const strictToolCalling = nodeData.inputs?.strictToolCalling as boolean
         const basePath = nodeData.inputs?.basepath as string
+        const proxyUrl = nodeData.inputs?.proxyUrl as string
         const baseOptions = nodeData.inputs?.baseOptions
         const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.ReasoningEffort | null
         const reasoningSummary = nodeData.inputs?.reasoningSummary as 'auto' | 'concise' | 'detailed' | null
@@ -286,10 +307,17 @@ class ChatOpenAI_ChatModels implements INode {
             }
         }
 
-        if (basePath || parsedBaseOptions) {
+        if (basePath || parsedBaseOptions || proxyUrl) {
             obj.configuration = {
                 baseURL: basePath,
-                defaultHeaders: parsedBaseOptions
+                defaultHeaders: parsedBaseOptions,
+                ...(proxyUrl
+                    ? {
+                          fetchOptions: {
+                              dispatcher: getProxyAgent(proxyUrl)
+                          }
+                      }
+                    : {})
             }
         }
 
