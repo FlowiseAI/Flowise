@@ -9,7 +9,8 @@ import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../
  */
 function decodeBase64Embedding(base64String: string): number[] {
     const binaryBuffer = Buffer.from(base64String, 'base64')
-    const float32Array = new Float32Array(binaryBuffer.buffer, binaryBuffer.byteOffset, binaryBuffer.byteLength / 4)
+    const arrayBuffer = binaryBuffer.buffer.slice(binaryBuffer.byteOffset, binaryBuffer.byteOffset + binaryBuffer.byteLength)
+    const float32Array = new Float32Array(arrayBuffer)
     return Array.from(float32Array)
 }
 
