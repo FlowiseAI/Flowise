@@ -1454,6 +1454,10 @@ const executeNode = async ({
 
         // Stop going through the current route if the node is a agent node waiting for human input before using the tool
         if (reactFlowNode.data.name === 'agentAgentflow' && results?.output?.isWaitingForHumanInput) {
+            // Extract the pending tool call args so the reviewer can inspect and optionally edit them
+            const pendingToolCalls = results?.output?.pendingToolCalls as Array<{ name: string; args: Record<string, unknown> }> | undefined
+            const pendingArgsJson = pendingToolCalls?.length ? JSON.stringify(pendingToolCalls[0].args, null, 2) : ''
+
             const humanInputAction = {
                 id: uuidv4(),
                 mapping: {
@@ -1461,6 +1465,21 @@ const executeNode = async ({
                     reject: 'Reject'
                 },
                 elements: [
+                    /**
+                     * Governance: the reviewer can type a plain-text instruction here.
+                     * If left empty, the tool executes with its original args (approve as-is).
+                     * If a string is provided, the agent loop discards the pending tool call
+                     * and re-invokes the LLM with the instruction as a new user message,
+                     * restarting reasoning from that point.
+                     */
+                    {
+                        type: 'agentflowv2-text-input',
+                        label: 'Instructions (optional) — leave empty to approve as-is, or type a new instruction to redirect the agent',
+                        name: 'modifiedArgs',
+                        placeholder: `Pending tool call:\n${pendingArgsJson}\n\nType an instruction to redirect the agent, or leave empty to proceed.`,
+                        default: '',
+                        optional: true
+                    },
                     { type: 'agentflowv2-approve-button', label: 'Proceed' },
                     { type: 'agentflowv2-reject-button', label: 'Reject' }
                 ],
