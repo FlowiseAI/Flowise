@@ -26,6 +26,10 @@ import { formatLogToString } from '@langchain/classic/agents/format_scratchpad/l
 import { IUsedTool } from './Interface'
 import { getErrorMessage } from './error'
 
+import { checkPolicy } from './governance/policyChecker'
+import { waitForHumanApproval } from './governance/hitl'
+import { writeAuditLog } from './governance/auditLogger'
+
 export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
 export const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
 export const TOOL_ARGS_PREFIX = '\n\n----FLOWISE_TOOL_ARGS----\n\n'
@@ -429,14 +433,66 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                     const tool = action.tool === '_Exception' ? new ExceptionTool() : toolsByName[action.tool?.toLowerCase()]
                     let observation
                     try {
-                        /* Here we need to override Tool call method to include sessionId, chatId, input as parameter
-                         * Tool Call Parameters:
-                         * - arg: z.output<T>
-                         * - configArg?: RunnableConfig | Callbacks
-                         * - tags?: string[]
-                         * - flowConfig?: { sessionId?: string, chatId?: string, input?: string }
-                         */
                         if (tool) {
+                            // ─── GOVERNANCE HOOK START ───────────────────────────────
+                            if (action.tool !== '_Exception') {
+                                const cleanToolName = action.tool.split('{')[0].trim()
+                                const policy = checkPolicy(cleanToolName, action.toolInput)
+
+                                if (policy.decision === 'deny') {
+                                    observation = `Action blocked by policy: ${policy.reason}. Try a different approach.`
+                                    writeAuditLog({
+                                        timestamp: new Date().toISOString(),
+                                        toolName: cleanToolName,
+                                        toolInput: action.toolInput,
+                                        policyDecision: 'deny',
+                                        policyReason: policy.reason,
+                                        matchedRule: policy.matchedRule?.toolName ?? null,
+                                        observation: observation,
+                                        sessionId: this.sessionId,
+                                        chatId: this.chatId
+                                    })
+                                }
+
+                                if (policy.decision === 'escalate') {
+                                    const humanDecision = await waitForHumanApproval(action.tool, action.toolInput, policy.reason)
+                                    if (!humanDecision.approved) {
+                                        observation = `Human rejected action: ${action.tool}. Reason: ${policy.reason}. Try a different approach.`
+                                        writeAuditLog({
+                                            timestamp: new Date().toISOString(),
+                                            toolName: cleanToolName,
+                                            toolInput: action.toolInput,
+                                            policyDecision: 'escalate',
+                                            policyReason: policy.reason,
+                                            matchedRule: policy.matchedRule?.toolName ?? null,
+                                            humanDecision: 'rejected',
+                                            humanWho: humanDecision.who,
+                                            observation: observation,
+                                            sessionId: this.sessionId,
+                                            chatId: this.chatId
+                                        })
+                                    }
+                                    // Human approved — log and fall through to tool.call()
+                                    writeAuditLog({
+                                        timestamp: new Date().toISOString(),
+                                        toolName: cleanToolName,
+                                        toolInput: action.toolInput,
+                                        policyDecision: 'escalate',
+                                        policyReason: policy.reason,
+                                        matchedRule: policy.matchedRule?.toolName ?? null,
+                                        humanDecision: 'approved',
+                                        humanWho: humanDecision.who,
+                                        sessionId: this.sessionId,
+                                        chatId: this.chatId
+                                    })
+                                }
+
+                                if (policy.decision === 'allow') {
+                                    // Will log after tool.call() so we capture observation
+                                }
+                            }
+                            // ─── GOVERNANCE HOOK END ─────────────────────────────────
+
                             observation = await (tool as any).call(
                                 this.isXML && typeof action.toolInput === 'string' ? { input: action.toolInput } : action.toolInput,
                                 runManager?.getChild(),
@@ -448,30 +504,25 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                                     state: inputs
                                 }
                             )
-                            let toolOutput = observation
-                            if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
-                                toolOutput = toolOutput.split(SOURCE_DOCUMENTS_PREFIX)[0]
-                            }
-                            if (typeof toolOutput === 'string' && toolOutput.includes(ARTIFACTS_PREFIX)) {
-                                toolOutput = toolOutput.split(ARTIFACTS_PREFIX)[0]
-                            }
-                            let toolInput
-                            if (typeof toolOutput === 'string' && toolOutput.includes(TOOL_ARGS_PREFIX)) {
-                                const splitArray = toolOutput.split(TOOL_ARGS_PREFIX)
-                                toolOutput = splitArray[0]
-                                try {
-                                    toolInput = JSON.parse(splitArray[1])
-                                } catch (e) {
-                                    console.error('Error parsing tool input from tool')
+
+                            // Log allow case AFTER tool.call() so observation is captured
+                            if (action.tool !== '_Exception') {
+                                const cleanToolName = action.tool.split('{')[0].trim()
+                                const policy = checkPolicy(cleanToolName, action.toolInput)
+                                if (policy.decision === 'allow') {
+                                    writeAuditLog({
+                                        timestamp: new Date().toISOString(),
+                                        toolName: cleanToolName,
+                                        toolInput: action.toolInput,
+                                        policyDecision: 'allow',
+                                        policyReason: policy.reason,
+                                        matchedRule: policy.matchedRule?.toolName ?? null,
+                                        observation: typeof observation === 'string' ? observation : JSON.stringify(observation),
+                                        sessionId: this.sessionId,
+                                        chatId: this.chatId
+                                    })
                                 }
                             }
-                            usedTools.push({
-                                tool: tool.name,
-                                toolInput: toolInput ?? (action.toolInput as any),
-                                toolOutput
-                            })
-                        } else {
-                            observation = `${action.tool} is not a valid tool, try another one.`
                         }
                     } catch (e) {
                         if (e instanceof ToolInputParsingException) {
@@ -767,7 +818,7 @@ const renderTextDescription = (tools: StructuredToolInterface[]): string => {
     return tools.map((tool) => `${tool.name}: ${tool.description}`).join('\n')
 }
 
-export const createReactAgent = async ({ llm, tools, prompt }: CreateReactAgentParams) => {
+export const createReactAgent = async ({ llm, tools, prompt }: CreateReactAgentParams): Promise<Runnable> => {
     const missingVariables = ['tools', 'tool_names', 'agent_scratchpad'].filter((v) => !prompt.inputVariables.includes(v))
     if (missingVariables.length > 0) {
         throw new Error(`Provided prompt is missing required input variables: ${JSON.stringify(missingVariables)}`)
