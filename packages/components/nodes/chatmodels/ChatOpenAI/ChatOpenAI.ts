@@ -255,7 +255,12 @@ class ChatOpenAI_ChatModels implements INode {
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
+        if (timeout) {
+            obj.timeout = parseInt(timeout, 10)
+            // If a timeout is explicitly set, prevent LangChain from silently retrying
+            // the request after it aborts, which causes duplicate zombie processes.
+            obj.maxRetries = 0
+        }
         if (cache) obj.cache = cache
         if (stopSequence) {
             const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
