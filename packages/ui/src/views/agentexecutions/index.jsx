@@ -32,17 +32,18 @@ import { Available } from '@/ui-component/rbac/available'
 // API
 import executionsApi from '@/api/executions'
 import useApi from '@/hooks/useApi'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 // icons
 import execution_empty from '@/assets/images/executions_empty.svg'
-import { IconTrash } from '@tabler/icons-react'
+import { IconTrash, IconX } from '@tabler/icons-react'
 
 // const
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 import { ExecutionsListTable } from '@/ui-component/table/ExecutionsListTable'
 import { omit } from 'lodash'
 import { ExecutionDetails } from './ExecutionDetails'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // ==============================|| AGENT EXECUTIONS ||============================== //
 
@@ -54,6 +55,9 @@ const AgentExecutions = () => {
     const getAllExecutions = useApi(executionsApi.getAllExecutions)
     const deleteExecutionsApi = useApi(executionsApi.deleteExecutions)
     const getExecutionByIdApi = useApi(executionsApi.getExecutionById)
+    const abortExecutionApi = useApi(executionsApi.abortExecution)
+
+    const dispatch = useDispatch()
 
     const [error, setError] = useState(null)
     const [isLoading, setLoading] = useState(true)
@@ -172,6 +176,10 @@ const AgentExecutions = () => {
         setOpenDeleteDialog(false)
     }
 
+    const handleAbortExecution = (executionId) => {
+        abortExecutionApi.request(executionId)
+    }
+
     useEffect(() => {
         getAllExecutions.request({ page: 1, limit: DEFAULT_ITEMS_PER_PAGE })
 
@@ -211,6 +219,33 @@ const AgentExecutions = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [deleteExecutionsApi.data])
+
+    useEffect(() => {
+        if (abortExecutionApi.data) {
+            // Show success toast
+            dispatch(
+                enqueueSnackbarAction({
+                    message: 'Execution aborted successfully',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => dispatch(closeSnackbarAction(key))}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            )
+            // Refresh the executions list
+            getAllExecutions.request({
+                page: currentPage,
+                limit: pageLimit
+            })
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [abortExecutionApi.data])
 
     useEffect(() => {
         if (getExecutionByIdApi.data) {
@@ -384,6 +419,7 @@ const AgentExecutions = () => {
                                 data={executions}
                                 isLoading={isLoading}
                                 onSelectionChange={handleExecutionSelectionChange}
+                                onAbortExecution={handleAbortExecution}
                                 onExecutionRowClick={(execution) => {
                                     setOpenDrawer(true)
                                     const executionDetails =
@@ -416,6 +452,7 @@ const AgentExecutions = () => {
                                     getAllExecutions.request()
                                     getExecutionByIdApi.request(executionId)
                                 }}
+                                onAbortExecution={handleAbortExecution}
                             />
                         </>
                     )}
