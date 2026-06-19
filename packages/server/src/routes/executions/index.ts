@@ -7,6 +7,9 @@ const router = express.Router()
 router.get('/', checkAnyPermission('executions:view'), executionController.getAllExecutions)
 router.get(['/', '/:id'], checkAnyPermission('executions:view'), executionController.getExecutionById)
 
+// ABORT
+router.post('/:id/abort', checkAnyPermission('executions:update'), executionController.abortExecution)
+
 // PUT
 router.put(['/', '/:id'], checkAnyPermission('executions:update'), executionController.updateExecution)
 
