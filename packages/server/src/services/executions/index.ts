@@ -4,7 +4,7 @@ import { ChatMessage } from '../../database/entities/ChatMessage'
 import { Execution } from '../../database/entities/Execution'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { ExecutionState, IAgentflowExecutedData } from '../../Interface'
+import { ExecutionState, IAgentflowExecutedData, MODE } from '../../Interface'
 import { _removeCredentialId } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
@@ -163,10 +163,72 @@ const deleteExecutions = async (executionIds: string[], workspaceId?: string): P
     }
 }
 
+/**
+ * Abort a running execution by triggering its AbortController and updating the state to STOPPED
+ * @param executionId The execution ID to abort
+ * @param workspaceId Optional workspace ID for access control
+ * @returns Object with success status
+ */
+const abortExecution = async (executionId: string, workspaceId?: string): Promise<{ success: boolean }> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const executionRepository = appServer.AppDataSource.getRepository(Execution)
+
+        const query: any = { id: executionId }
+        if (workspaceId) query.workspaceId = workspaceId
+
+        const execution = await executionRepository.findOneBy(query)
+        if (!execution) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Execution ${executionId} not found`)
+        }
+
+        if (execution.state !== 'INPROGRESS') {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                `Execution ${executionId} is not in progress (current state: ${execution.state})`
+            )
+        }
+
+        // Abort the running process using the same key format as buildChatflow/PredictionQueue: chatflowId_chatId
+        const abortControllerId = `${execution.agentflowId}_${execution.sessionId}`
+
+        if (process.env.MODE === MODE.QUEUE) {
+            // In queue mode, publish an abort event for the worker to process
+            await appServer.queueManager.getPredictionQueueEventsProducer().publishEvent({
+                eventName: 'abort',
+                id: abortControllerId
+            })
+        } else {
+            // In main mode, abort directly from the pool
+            appServer.abortControllerPool.abort(abortControllerId)
+        }
+
+        // Update execution state to STOPPED
+        const updateData = new Execution()
+        Object.assign(updateData, {
+            state: 'STOPPED' as ExecutionState,
+            stoppedDate: new Date()
+        })
+        executionRepository.merge(execution, updateData)
+        await executionRepository.save(execution)
+
+        return { success: true }
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: executionsService.abortExecution - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     getExecutionById,
     getAllExecutions,
     deleteExecutions,
     getPublicExecutionById,
-    updateExecution
+    updateExecution,
+    abortExecution
 }
