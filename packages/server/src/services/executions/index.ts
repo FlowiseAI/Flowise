@@ -204,12 +204,8 @@ const abortExecution = async (executionId: string, workspaceId?: string): Promis
         }
 
         // Update execution state to STOPPED
-        const updateData = new Execution()
-        Object.assign(updateData, {
-            state: 'STOPPED' as ExecutionState,
-            stoppedDate: new Date()
-        })
-        executionRepository.merge(execution, updateData)
+        execution.state = 'STOPPED' as ExecutionState
+        execution.stoppedDate = new Date()
         await executionRepository.save(execution)
 
         return { success: true }
