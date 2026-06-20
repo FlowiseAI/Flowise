@@ -7,7 +7,8 @@ import { databaseEntities } from '../../utils'
 
 export enum TextToSpeechProvider {
     OPENAI = 'openai',
-    ELEVEN_LABS = 'elevenlabs'
+    ELEVEN_LABS = 'elevenlabs',
+    AMAZON_POLLY = 'amazonPolly'
 }
 
 export interface TTSRequest {
