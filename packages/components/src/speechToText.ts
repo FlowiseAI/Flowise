@@ -176,6 +176,7 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                         webm: 'webm',
                         mp3: 'mp3',
                         mp4: 'mp4',
+                        m4a: 'm4a',
                         wav: 'wav',
                         flac: 'flac',
                         ogg: 'ogg',
