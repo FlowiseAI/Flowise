@@ -40,13 +40,13 @@ jobs:
                   echo "tag_version=${{ github.event.inputs.tag_version || 'latest' }}" >> $GITHUB_OUTPUT
 
             - name: Checkout
-              uses: actions/checkout@v6.0.2
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
             - name: Set up QEMU
-              uses: docker/setup-qemu-action@v4.0.0
+              uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
 
             - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v4.0.0
+              uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
             - name: Configure AWS OIDC Credentials
               uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
@@ -57,13 +57,13 @@ jobs:
                   unset-current-credentials: true
 
             - name: Login to Amazon ECR
-              uses: aws-actions/amazon-ecr-login@v2
+              uses: aws-actions/amazon-ecr-login@d539f0932e70871a027e9d5a9d8fc38589180a64 # v2.1.6
 
             # -------------------------
             # Build and push main image
             # -------------------------
             - name: Build and push main image
-              uses: docker/build-push-action@v6.19.2
+              uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
               with:
                   context: .
                   file: Dockerfile
