@@ -233,7 +233,7 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                         // IN_PROGRESS or QUEUED — continue polling
                     }
 
-                    // Clean up: delete temporary S3 file
+                    // Clean up: delete temporary S3 file and Transcribe job
                     try {
                         await s3Client.send(
                             new DeleteObjectCommand({
@@ -243,6 +243,16 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                         )
                     } catch {
                         // Non-fatal: log but don't fail if cleanup fails
+                    }
+
+                    try {
+                        await transcribeClient.send(
+                            new DeleteTranscriptionJobCommand({
+                                TranscriptionJobName: jobName
+                            })
+                        )
+                    } catch {
+                        // Non-fatal
                     }
 
                     if (transcriptText) {
@@ -257,13 +267,16 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                                 Key: s3Key
                             })
                         )
-                        if (jobName) {
-                            await transcribeClient.send(
-                                new DeleteTranscriptionJobCommand({
-                                    TranscriptionJobName: jobName
-                                })
-                            )
-                        }
+                    } catch {
+                        // Non-fatal cleanup error
+                    }
+
+                    try {
+                        await transcribeClient.send(
+                            new DeleteTranscriptionJobCommand({
+                                TranscriptionJobName: jobName
+                            })
+                        )
                     } catch {
                         // Non-fatal cleanup error
                     }
