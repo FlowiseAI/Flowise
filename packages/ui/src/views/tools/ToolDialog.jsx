@@ -1,15 +1,15 @@
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
-import { cloneDeep } from 'lodash'
+import { v4 as uuidv4 } from 'uuid'
 
 import { Box, Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Grid } from '@/ui-component/grid/Grid'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
-import { GridActionsCellItem } from '@mui/x-data-grid'
+import { GridActionsCellItem, useGridApiRef } from '@mui/x-data-grid'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
@@ -31,7 +31,7 @@ import useApi from '@/hooks/useApi'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
-import { generateRandomGradient, formatDataGridRows } from '@/utils/genericHelper'
+import { generateRandomGradient } from '@/utils/genericHelper'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const exampleAPIFunc = `/*
@@ -58,6 +58,27 @@ try {
     console.error(error);
     return '';
 }`
+
+/**
+ * Convert stored schema rows into DataGrid-compatible rows with stable unique IDs.
+ * Each row gets a UUID so MUI DataGrid reconciliation works correctly across edits.
+ * Also normalizes type to default to 'string' if empty/missing.
+ */
+const formatSchemaRows = (rows) => {
+    try {
+        const parsedRows = typeof rows === 'string' ? JSON.parse(rows) : rows
+        if (!Array.isArray(parsedRows)) return []
+        return parsedRows.map((sch) => ({
+            property: sch.property || '',
+            type: sch.type || 'string',
+            description: sch.description || '',
+            required: sch.required || false,
+            id: uuidv4()
+        }))
+    } catch (e) {
+        return []
+    }
+}
 
 const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
@@ -88,6 +109,18 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
 
     const [showPasteJSONDialog, setShowPasteJSONDialog] = useState(false)
 
+    // Ref that always mirrors the latest toolSchema state.
+    // Needed because MUI DataGrid's processRowUpdate → onRowUpdate uses setTimeout,
+    // so React state may not yet reflect the latest edit when Save is clicked.
+    const toolSchemaRef = useRef(toolSchema)
+    useEffect(() => {
+        toolSchemaRef.current = toolSchema
+    }, [toolSchema])
+
+    // MUI DataGrid apiRef — used to force-commit any cell that is still in edit mode
+    // before saving, so the pending value is flushed into state.
+    const gridApiRef = useGridApiRef()
+
     const deleteItem = useCallback(
         (id) => () => {
             setTimeout(() => {
@@ -99,29 +132,19 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
 
     const addNewRow = () => {
         setTimeout(() => {
-            setToolSchema((prevRows) => {
-                let allRows = [...cloneDeep(prevRows)]
-                const lastRowId = allRows.length ? allRows[allRows.length - 1].id + 1 : 1
-                allRows.push({
-                    id: lastRowId,
-                    property: '',
-                    description: '',
-                    type: '',
-                    required: false
-                })
-                return allRows
-            })
+            setToolSchema((prevRows) => [...prevRows, { id: uuidv4(), property: '', description: '', type: 'string', required: false }])
         })
     }
 
-    const onSaveAsTemplate = () => {
+    const onSaveAsTemplate = async () => {
+        await commitPendingEdits()
         setExportAsTemplateDialogProps({
             title: 'Export As Template',
             tool: {
                 name: toolName,
                 description: toolDesc,
                 iconSrc: toolIcon,
-                schema: toolSchema,
+                schema: serializeSchema(),
                 func: toolFunc
             }
         })
@@ -131,14 +154,77 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     const onRowUpdate = (newRow) => {
         setTimeout(() => {
             setToolSchema((prevRows) => {
-                let allRows = [...cloneDeep(prevRows)]
-                const indexToUpdate = allRows.findIndex((row) => row.id === newRow.id)
-                if (indexToUpdate >= 0) {
-                    allRows[indexToUpdate] = { ...newRow }
-                }
+                const allRows = prevRows.map((row) => {
+                    if (row.id !== newRow.id) return row
+                    return {
+                        ...newRow,
+                        property: (newRow.property || '').trim(),
+                        type: newRow.type || 'string'
+                    }
+                })
+                // Eagerly sync ref so commitPendingEdits() → serializeSchema() sees latest value.
+                toolSchemaRef.current = allRows
                 return allRows
             })
         })
+    }
+
+    /**
+     * Force-commit any MUI DataGrid cell still in edit mode, then wait for
+     * onRowUpdate's deferred setTimeout(setToolSchema) to flush into toolSchemaRef.
+     */
+    const commitPendingEdits = async () => {
+        try {
+            const editRowsModel = gridApiRef.current?.state?.editRows
+            if (editRowsModel) {
+                for (const rowId of Object.keys(editRowsModel)) {
+                    for (const field of Object.keys(editRowsModel[rowId])) {
+                        try {
+                            gridApiRef.current.stopCellEditMode({ id: rowId, field })
+                        } catch (_) {
+                            // Cell may not actually be in edit mode; ignore
+                        }
+                    }
+                }
+            }
+        } catch (_) {
+            // apiRef may not be initialized (e.g. no rows); ignore
+        }
+
+        // Always wait: blur from clicking Save may have already queued a setTimeout
+        // that hasn't fired yet. Drain microtasks, then wait one macrotask tick.
+        await Promise.resolve()
+        await new Promise((resolve) => setTimeout(resolve, 0))
+    }
+
+    /** Serialize schema for storage. Strips internal `id`, reads from ref for freshness. */
+    const serializeSchema = () => {
+        const schema = toolSchemaRef.current
+        const cleaned = schema.map(({ id, ...rest }) => ({
+            property: (rest.property || '').trim(),
+            type: rest.type || 'string',
+            description: rest.description || '',
+            required: rest.required || false
+        }))
+        return JSON.stringify(cleaned)
+    }
+
+    /** Validate schema before save. Reads from ref for freshness. */
+    const getSchemaValidationError = () => {
+        const schema = toolSchemaRef.current
+        for (let i = 0; i < schema.length; i++) {
+            const row = schema[i]
+            if (!(row.property || '').trim()) {
+                return `Input Schema row ${i + 1} has an empty property name.`
+            }
+        }
+        // Check for duplicate property names
+        const names = schema.map((row) => (row.property || '').trim()).filter(Boolean)
+        const duplicates = names.filter((name, idx) => names.indexOf(name) !== idx)
+        if (duplicates.length > 0) {
+            return `Duplicate property name "${duplicates[0]}" in Input Schema.`
+        }
+        return ''
     }
 
     const columns = useMemo(
@@ -177,7 +263,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolId(getSpecificToolApi.data.id)
             setToolName(getSpecificToolApi.data.name)
             setToolDesc(getSpecificToolApi.data.description)
-            setToolSchema(formatDataGridRows(getSpecificToolApi.data.schema))
+            setToolSchema(formatSchemaRows(getSpecificToolApi.data.schema))
             if (getSpecificToolApi.data.func) setToolFunc(getSpecificToolApi.data.func)
             else setToolFunc('')
         }
@@ -197,7 +283,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
             setToolIcon(dialogProps.data.iconSrc)
-            setToolSchema(formatDataGridRows(dialogProps.data.schema))
+            setToolSchema(formatSchemaRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
         } else if (dialogProps.type === 'EDIT' && dialogProps.toolId) {
@@ -208,7 +294,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
             setToolIcon(dialogProps.data.iconSrc)
-            setToolSchema(formatDataGridRows(dialogProps.data.schema))
+            setToolSchema(formatSchemaRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
         } else if (dialogProps.type === 'TEMPLATE' && dialogProps.data) {
@@ -216,7 +302,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
             setToolIcon(dialogProps.data.iconSrc)
-            setToolSchema(formatDataGridRows(dialogProps.data.schema))
+            setToolSchema(formatSchemaRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
         } else if (dialogProps.type === 'ADD') {
@@ -278,11 +364,29 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
 
     const addNewTool = async () => {
         try {
+            await commitPendingEdits()
+            const schemaError = getSchemaValidationError()
+            if (schemaError) {
+                enqueueSnackbar({
+                    message: schemaError,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                return
+            }
             const obj = {
                 name: toolName,
                 description: toolDesc,
                 color: generateRandomGradient(),
-                schema: JSON.stringify(toolSchema),
+                schema: serializeSchema(),
                 func: toolFunc,
                 iconSrc: toolIcon
             }
@@ -324,10 +428,28 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
 
     const saveTool = async () => {
         try {
+            await commitPendingEdits()
+            const schemaError = getSchemaValidationError()
+            if (schemaError) {
+                enqueueSnackbar({
+                    message: schemaError,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                return
+            }
             const saveResp = await toolsApi.updateTool(toolId, {
                 name: toolName,
                 description: toolDesc,
-                schema: JSON.stringify(toolSchema),
+                schema: serializeSchema(),
                 func: toolFunc,
                 iconSrc: toolIcon
             })
@@ -533,7 +655,13 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                                 </Stack>
                             )}
                         </Stack>
-                        <Grid columns={columns} rows={toolSchema} disabled={dialogProps.type === 'TEMPLATE'} onRowUpdate={onRowUpdate} />
+                        <Grid
+                            columns={columns}
+                            rows={toolSchema}
+                            disabled={dialogProps.type === 'TEMPLATE'}
+                            onRowUpdate={onRowUpdate}
+                            apiRef={gridApiRef}
+                        />
                     </Box>
                     <Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
