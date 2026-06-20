@@ -2,12 +2,14 @@ import { ICommonObject } from './Interface'
 import { getCredentialData } from './utils'
 import OpenAI from 'openai'
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
+import { PollyClient, SynthesizeSpeechCommand, Engine, VoiceId } from '@aws-sdk/client-polly'
 import { Readable } from 'node:stream'
 import type { ReadableStream } from 'node:stream/web'
 
 const TextToSpeechType = {
     OPENAI_TTS: 'openai',
-    ELEVEN_LABS_TTS: 'elevenlabs'
+    ELEVEN_LABS_TTS: 'elevenlabs',
+    AMAZON_POLLY_TTS: 'amazonPolly'
 }
 
 export const convertTextToSpeechStream = async (
@@ -96,6 +98,52 @@ export const convertTextToSpeechStream = async (
                             }
 
                             await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 40, abortController, () => {
+                                streamDestroyed = true
+                            })
+                            break
+                        }
+
+                        case TextToSpeechType.AMAZON_POLLY_TTS: {
+                            onStart('mp3')
+
+                            const region = textToSpeechConfig.region || 'us-east-1'
+                            const pollyClientConfig: Record<string, any> = { region }
+
+                            if (credentialData.awsKey && credentialData.awsSecret) {
+                                pollyClientConfig.credentials = {
+                                    accessKeyId: credentialData.awsKey,
+                                    secretAccessKey: credentialData.awsSecret,
+                                    ...(credentialData.awsSession && { sessionToken: credentialData.awsSession })
+                                }
+                            }
+
+                            const pollyClient = new PollyClient(pollyClientConfig)
+
+                            const voiceId = (textToSpeechConfig.voice || 'Joanna') as VoiceId
+                            const engine = (textToSpeechConfig.engine || 'neural') as Engine
+
+                            const command = new SynthesizeSpeechCommand({
+                                Text: text,
+                                OutputFormat: 'mp3',
+                                VoiceId: voiceId,
+                                Engine: engine
+                            })
+
+                            const pollyResponse = await pollyClient.send(command, {
+                                abortSignal: abortController.signal
+                            })
+
+                            if (!pollyResponse.AudioStream) {
+                                throw new Error('Amazon Polly returned no audio stream')
+                            }
+
+                            // AudioStream from Polly is a Readable in Node.js
+                            const pollyStream = pollyResponse.AudioStream as unknown as Readable
+                            const stream = Readable.isReadable(pollyStream)
+                                ? pollyStream
+                                : Readable.fromWeb(pollyStream as unknown as ReadableStream)
+
+                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 20, abortController, () => {
                                 streamDestroyed = true
                             })
                             break
@@ -233,6 +281,31 @@ export const getVoices = async (provider: string, credentialId: string, options:
                 category: voice.category
             }))
         }
+
+        case TextToSpeechType.AMAZON_POLLY_TTS:
+            return [
+                { id: 'Joanna', name: 'Joanna (Female, US English)' },
+                { id: 'Matthew', name: 'Matthew (Male, US English)' },
+                { id: 'Ruth', name: 'Ruth (Female, US English)' },
+                { id: 'Stephen', name: 'Stephen (Male, US English)' },
+                { id: 'Ivy', name: 'Ivy (Female Child, US English)' },
+                { id: 'Kevin', name: 'Kevin (Male Child, US English)' },
+                { id: 'Kendra', name: 'Kendra (Female, US English)' },
+                { id: 'Kimberly', name: 'Kimberly (Female, US English)' },
+                { id: 'Salli', name: 'Salli (Female, US English)' },
+                { id: 'Joey', name: 'Joey (Male, US English)' },
+                { id: 'Justin', name: 'Justin (Male Child, US English)' },
+                { id: 'Gregory', name: 'Gregory (Male, US English)' },
+                { id: 'Danielle', name: 'Danielle (Female, US English)' },
+                { id: 'Amy', name: 'Amy (Female, British English)' },
+                { id: 'Brian', name: 'Brian (Male, British English)' },
+                { id: 'Emma', name: 'Emma (Female, British English)' },
+                { id: 'Lupe', name: 'Lupe (Female, US Spanish)' },
+                { id: 'Pedro', name: 'Pedro (Male, US Spanish)' },
+                { id: 'Léa', name: 'Léa (Female, French)' },
+                { id: 'Vicki', name: 'Vicki (Female, German)' },
+                { id: 'Daniel', name: 'Daniel (Male, German)' }
+            ]
 
         default:
             throw new Error(`Unsupported TTS provider: ${provider}`)
