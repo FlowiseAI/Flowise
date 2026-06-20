@@ -139,9 +139,8 @@ export const convertTextToSpeechStream = async (
 
                             // AudioStream from Polly is a Readable in Node.js
                             const pollyStream = pollyResponse.AudioStream as unknown as Readable
-                            const stream = Readable.isReadable(pollyStream)
-                                ? pollyStream
-                                : Readable.fromWeb(pollyStream as unknown as ReadableStream)
+                            const stream =
+                                pollyStream instanceof Readable ? pollyStream : Readable.fromWeb(pollyStream as unknown as ReadableStream)
 
                             await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 20, abortController, () => {
                                 streamDestroyed = true
