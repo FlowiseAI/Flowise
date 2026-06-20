@@ -273,15 +273,15 @@ export const generateFollowUpPrompts = async (
             }
             case FollowUpPromptProvider.OLLAMA: {
                 return executeWithRetry(
-                    async (signal) => {
+                    async () => {
                         const ollamaClient = new Ollama({
                             host: providerConfig.baseUrl || 'http://127.0.0.1:11434'
                         })
 
                         // Ollama client does not accept AbortSignal directly in this SDK call.
-                        // Wrap the chat promise in a race so the caller-provided signal can
-                        // abort the request and trigger our retry/timeout behavior.
-                        const chatPromise = ollamaClient.chat({
+                        // However, executeWithRetry already handles the timeout and abort logic
+                        // via Promise.race at the outer level, making this wrapper redundant.
+                        const response = await ollamaClient.chat({
                             model: providerConfig.modelName,
                             messages: [
                                 {
@@ -310,26 +310,8 @@ export const generateFollowUpPrompts = async (
                             }
                         })
 
-                        let abortHandler: (() => void) | undefined
-                        const abortPromise = new Promise<never>((_, reject) => {
-                            abortHandler = () => {
-                                const timeoutError = new Error('Follow-up prompt request timed out')
-                                timeoutError.name = 'TimeoutError'
-                                reject(timeoutError)
-                            }
-                            signal.addEventListener('abort', abortHandler, { once: true })
-                        })
-
-                        try {
-                            const response = await Promise.race([chatPromise, abortPromise])
-                            const result = FollowUpPromptType.parse(JSON.parse((response as any).message.content))
-                            if (!result.questions) {
-                                throw new Error('Follow-up prompt response missing questions')
-                            }
-                            return { questions: result.questions }
-                        } finally {
-                            if (abortHandler) signal.removeEventListener('abort', abortHandler)
-                        }
+                        const result = FollowUpPromptType.parse(JSON.parse((response as any).message.content))
+                        return { questions: result.questions }
                     },
                     {
                         provider: FollowUpPromptProvider.OLLAMA,
