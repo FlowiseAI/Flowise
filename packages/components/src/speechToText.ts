@@ -11,7 +11,8 @@ import {
     StartTranscriptionJobCommand,
     GetTranscriptionJobCommand,
     TranscriptionJobStatus,
-    MediaFormat
+    MediaFormat,
+    DeleteTranscriptionJobCommand
 } from '@aws-sdk/client-transcribe'
 
 const SpeechToTextType = {
@@ -156,8 +157,9 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                 const transcribeClient = new TranscribeClient(awsClientConfig)
 
                 // Generate unique file name and upload to S3
-                const fileExtension = upload.name.split('.').pop() || 'webm'
-                const s3Key = `flowise-stt-temp/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`
+                const fileExtension = ((upload.name || '').split('.').pop() || 'webm').toLowerCase()
+                const s3Key = 'flowise-stt-temp/' + Date.now() + '-' + Math.random().toString(36).substring(2) + '.' + fileExtension
+                const jobName = 'flowise-' + Date.now() + '-' + Math.random().toString(36).substring(2)
 
                 try {
                     await s3Client.send(
@@ -182,7 +184,6 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                     const mediaFormat = (mediaFormatMap[fileExtension] || 'webm') as MediaFormat
 
                     // Start transcription job
-                    const jobName = `flowise-${Date.now()}-${Math.random().toString(36).substring(2)}`
                     await transcribeClient.send(
                         new StartTranscriptionJobCommand({
                             TranscriptionJobName: jobName,
@@ -256,6 +257,13 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                                 Key: s3Key
                             })
                         )
+                        if (jobName) {
+                            await transcribeClient.send(
+                                new DeleteTranscriptionJobCommand({
+                                    TranscriptionJobName: jobName
+                                })
+                            )
+                        }
                     } catch {
                         // Non-fatal cleanup error
                     }
