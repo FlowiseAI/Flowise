@@ -61,4 +61,34 @@ describe('VoyageAIRerank', () => {
         expect(result.map((doc) => doc.pageContent)).toEqual(['bravo'])
         expect(result[0].metadata.relevance_score).toBe(0.91)
     })
+
+    it('falls back to original documents when Voyage API returns an invalid result shape', async () => {
+        const reranker = new VoyageAIRerank('test-key', 'rerank-lite-1', 2)
+        const documents = [new Document({ pageContent: 'alpha', metadata: {} }), new Document({ pageContent: 'bravo', metadata: {} })]
+
+        ;(axios.post as jest.Mock).mockResolvedValue({
+            data: {}
+        })
+
+        await expect(reranker.compressDocuments(documents, 'letters')).resolves.toBe(documents)
+    })
+
+    it('skips rerank results that point outside the provided documents', async () => {
+        const reranker = new VoyageAIRerank('test-key', 'rerank-lite-1', 2)
+        const documents = [new Document({ pageContent: 'alpha', metadata: {} }), new Document({ pageContent: 'bravo', metadata: {} })]
+
+        ;(axios.post as jest.Mock).mockResolvedValue({
+            data: {
+                data: [
+                    { index: 3, relevance_score: 0.99 },
+                    { index: 1, relevance_score: 0.88 }
+                ]
+            }
+        })
+
+        const result = await reranker.compressDocuments(documents, 'letters')
+
+        expect(result.map((doc) => doc.pageContent)).toEqual(['bravo'])
+        expect(result[0].metadata.relevance_score).toBe(0.88)
+    })
 })

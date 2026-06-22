@@ -39,12 +39,18 @@ export class VoyageAIRerank extends BaseDocumentCompressor {
         }
         try {
             const returnedDocs = await axios.post(this.VOYAGEAI_RERANK_API_URL, data, config)
-            const rerankResults = returnedDocs.data.data ?? returnedDocs.data.results
+            const rerankResults = returnedDocs.data?.data ?? returnedDocs.data?.results
+            if (!Array.isArray(rerankResults)) {
+                throw new Error('Invalid response format from Voyage API: rerank results must be an array')
+            }
+
             const finalResults: Document<Record<string, any>>[] = []
             rerankResults.forEach((result: any) => {
                 const doc = documents[result.index]
-                doc.metadata.relevance_score = result.relevance_score
-                finalResults.push(doc)
+                if (doc) {
+                    doc.metadata.relevance_score = result.relevance_score
+                    finalResults.push(doc)
+                }
             })
             return finalResults.slice(0, this.k)
         } catch (error) {
