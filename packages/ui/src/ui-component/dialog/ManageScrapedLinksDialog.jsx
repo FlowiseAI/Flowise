@@ -14,6 +14,7 @@ import {
     IconButton,
     OutlinedInput,
     Stack,
+    Tooltip,
     Typography
 } from '@mui/material'
 import { IconEraser, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
@@ -99,6 +100,20 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
         setLoading(false)
     }
 
+    const handleParseLinks = () => {
+        const urlPattern = /^https?:\/\/\S+$/
+        const links = url
+            .split(/[\r\n\t; ]+/)
+            .map((link) => link.trim())
+            .filter((link) => urlPattern.test(link))
+
+        const uniqueLinks = [...new Set(links)]
+        if (uniqueLinks.length > 0) {
+            setUrl(uniqueLinks[0])
+            setSelectedLinks(uniqueLinks)
+        }
+    }
+
     const handleChangeLink = (index, event) => {
         const { value } = event.target
         const links = [...selectedLinks]
@@ -129,12 +144,12 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
             onClose={onCancel}
             open={show}
             fullWidth
-            maxWidth='sm'
+            maxWidth='md'
             aria-labelledby='manage-scraped-links-dialog-title'
             aria-describedby='manage-scraped-links-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='manage-scraped-links-dialog-title'>
-                {dialogProps.title || `Manage Scraped Links - ${url}`}
+                {dialogProps.title || `Manage Links - ${url.substring(0, 50)}${url.length > 50 ? '...' : ''}`}
             </DialogTitle>
             <DialogContent>
                 <Box sx={{ mb: 4 }}>
@@ -151,6 +166,17 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                                 }}
                             />
                         </FormControl>
+                        <Tooltip title={'Parse a list of links from the input text. Links can be separated by new line, tab or semicolon.'}>
+                            <Button
+                                disabled={!url}
+                                sx={{ borderRadius: '12px', mt: 1, display: 'flex', flexShrink: 0 }}
+                                size='small'
+                                variant='contained'
+                                onClick={handleParseLinks}
+                            >
+                                Parse Input
+                            </Button>
+                        </Tooltip>
                         <Button
                             disabled={!url}
                             sx={{ borderRadius: '12px', mt: 1, display: 'flex', flexShrink: 0 }}
@@ -163,7 +189,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                     </Stack>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                    <Typography sx={{ fontWeight: 500 }}>Scraped Links</Typography>
+                    <Typography sx={{ fontWeight: 500 }}>Links ({selectedLinks.length})</Typography>
                     <Box sx={{ width: 'auto', flexGrow: 1 }}>
                         <IconButton
                             sx={{ height: 30, width: 30, marginLeft: '8px' }}
@@ -229,7 +255,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                         </PerfectScrollbar>
                     ) : (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Typography sx={{ my: 2 }}>Links scraped from the URL will appear here</Typography>
+                            <Typography sx={{ my: 2 }}>Links parsed/scraped from the URL will appear here</Typography>
                         </div>
                     )}
                 </>
