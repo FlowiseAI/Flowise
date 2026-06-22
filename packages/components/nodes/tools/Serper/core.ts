@@ -121,9 +121,12 @@ export class SerperTool extends Tool {
         }
 
         const json: any = await res.json()
+        if (json == null) {
+            throw new Error('Invalid response from Serper API')
+        }
 
         if (json.text) return json.text
-        if (json.metadata?.title) return `${json.metadata.title}\n\n${JSON.stringify(json)}`
+        if (json.metadata?.title) return json.metadata.title + '\n\n' + JSON.stringify(json)
         return JSON.stringify(json)
     }
 
