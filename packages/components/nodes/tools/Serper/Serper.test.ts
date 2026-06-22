@@ -1,6 +1,7 @@
-// Mock fetch globally before any imports
-const mockFetch = jest.fn()
-global.fetch = mockFetch as any
+// Mock node-fetch before any imports
+jest.mock('node-fetch', () => jest.fn())
+import fetch from 'node-fetch'
+const mockFetch = fetch as jest.MockedFunction<typeof fetch>
 
 // Mock Flowise utility functions
 jest.mock('../../../src/utils', () => ({

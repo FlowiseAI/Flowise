@@ -1,3 +1,4 @@
+import fetch from 'node-fetch'
 import { Tool } from '@langchain/core/tools'
 
 export const SERPER_ENDPOINTS = ['search', 'news', 'images', 'videos', 'places', 'maps', 'shopping', 'scholar', 'patents', 'autocomplete', 'scrape'] as const
