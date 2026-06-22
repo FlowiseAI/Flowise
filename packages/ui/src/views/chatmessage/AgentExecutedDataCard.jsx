@@ -370,20 +370,16 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
 
         // Identify iteration nodes and their children
         const iterationGroups = new Map() // parent uniqueNodeId -> Map of iterationIndex -> nodes
+        const lastSeenIndices = new Map()
 
         // Group iteration child nodes by their parent and iteration index
         nodes.forEach((node, index) => {
+            lastSeenIndices.set(node.nodeId, index)
             if (node.data?.parentNodeId && node.data?.iterationIndex !== undefined) {
                 const parentId = node.data.parentNodeId
                 const iterationIndex = node.data.iterationIndex
-                let parentUniqueNodeId = null
-
-                for (let i = index; i >= 0; i--) {
-                    if (nodes[i].nodeId === parentId) {
-                        parentUniqueNodeId = `${nodes[i].nodeId}_${i}`
-                        break
-                    }
-                }
+                const parentIndex = lastSeenIndices.get(parentId)
+                const parentUniqueNodeId = parentIndex !== undefined ? `${parentId}_${parentIndex}` : null
 
                 if (!parentUniqueNodeId) return
 
