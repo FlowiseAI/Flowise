@@ -81,13 +81,14 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
     // active menu item on page load
     useEffect(() => {
         if (navType === 'MENU') {
-            const currentIndex = location.pathname
-                .split('/')
-                .findIndex((id) => id === item.id)
-            if (currentIndex > -1) {
+            const pathParts = location.pathname.split('/')
+            const currentIndex = pathParts.findIndex((id) => id === item.id)
+            const isAlreadyOpen = customization.isOpen.includes(item.id)
+
+            if (currentIndex > -1 && !isAlreadyOpen) {
                 dispatch({ type: MENU_OPEN, id: item.id })
             }
-            if (!location.pathname.split('/')[1] && item.id === 'chatflows') {
+            if (!pathParts[1] && item.id === 'chatflows' && !isAlreadyOpen) {
                 dispatch({ type: MENU_OPEN, id: item.id })
             }
         }
