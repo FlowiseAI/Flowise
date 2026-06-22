@@ -201,11 +201,13 @@ class KeenableSearchTool extends Tool {
             return 'No good results found.'
         }
 
-        return results
-            .slice(0, this.maxResults)
-            .filter((r) => r && r.url)
-            .map((r) => JSON.stringify({ title: r.title || '', link: r.url, snippet: r.description || '' }))
-            .toString()
+        // Return a valid JSON array (not a comma-joined list of JSON strings).
+        return JSON.stringify(
+            results
+                .slice(0, this.maxResults)
+                .filter((r) => r && r.url)
+                .map((r) => ({ title: r.title || '', link: r.url, snippet: r.description || '' }))
+        )
     }
 }
 
