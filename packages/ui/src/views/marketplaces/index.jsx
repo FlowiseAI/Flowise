@@ -131,9 +131,15 @@ const Marketplace = () => {
     }
 
     const getSelectStyles = (borderColor, isDarkMode) => ({
+        width: '100%',
         '& .MuiOutlinedInput-notchedOutline': {
             borderRadius: 2,
             borderColor: borderColor
+        },
+        '& .MuiSelect-select': {
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
         },
         '& .MuiSvgIcon-root': {
             color: isDarkMode ? '#fff' : 'inherit'
@@ -481,7 +487,7 @@ const Marketplace = () => {
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'end',
-                                            minWidth: 120
+                                            width: 160
                                         }}
                                     >
                                         <InputLabel size='small' id='filter-badge-label'>
@@ -517,7 +523,7 @@ const Marketplace = () => {
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'end',
-                                            minWidth: 120
+                                            width: 160
                                         }}
                                     >
                                         <InputLabel size='small' id='type-badge-label'>
@@ -553,7 +559,7 @@ const Marketplace = () => {
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'end',
-                                            minWidth: 120
+                                            width: 160
                                         }}
                                     >
                                         <InputLabel size='small' id='type-fw-label'>
