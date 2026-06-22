@@ -131,6 +131,9 @@ export class SerperTool extends Tool {
     }
 
     private _parseSearchResponse(json: any): string {
+        if (json == null) {
+            throw new Error('Invalid search response data')
+        }
         const endpoint = this.config.endpoint
 
         if (json.suggestions && Array.isArray(json.suggestions)) {
