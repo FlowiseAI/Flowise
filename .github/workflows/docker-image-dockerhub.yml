@@ -117,7 +117,7 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                   path: ${{ runner.temp }}/digests
-                  pattern: digests-${{ env.IMAGE_SLUG }}-*
+                  pattern: digests-${{ env.IMAGE_SLUG }}-linux-*
                   merge-multiple: true
 
             - name: Set up Docker Buildx
