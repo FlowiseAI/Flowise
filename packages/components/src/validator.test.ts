@@ -734,12 +734,16 @@ describe('getSafeFilePath', () => {
             ['simple filename', 'report.pdf'],
             ['nested key', 'documents/2024/report.pdf'],
             ['internal dot-dot that stays inside', 'a/b/../c.txt'],
-            ['leading ./', './notes.txt']
+            ['leading ./', './notes.txt'],
+            ['name starting with dot-dot (not traversal)', '..foo.txt'],
+            ['triple dot name', '...'],
+            ['dot-dot prefixed dir', '..hidden/file.txt'],
+            ['encoded space in legitimate key', 'my%20report.pdf']
         ])('should resolve %s within base', (_desc, key) => {
             const resolved = getSafeFilePath(base, key)
             const relative = path.relative(base, resolved)
             expect(path.isAbsolute(resolved)).toBe(true)
-            expect(relative.startsWith('..')).toBe(false)
+            expect(relative === '..' || relative.startsWith('..' + path.sep)).toBe(false)
             expect(path.isAbsolute(relative)).toBe(false)
         })
     })
@@ -749,10 +753,23 @@ describe('getSafeFilePath', () => {
             ['parent traversal', '../escape.txt'],
             ['deep traversal', '../../../../tmp/flowise-poc.txt'],
             ['traversal mid-path', 'a/../../escape.txt'],
+            ['bare dot-dot', '..'],
             ['absolute unix path', '/etc/cron.d/evil'],
-            ['key resolving to base itself', '.']
+            ['key resolving to base itself', '.'],
+            ['url-encoded traversal', '%2e%2e%2fescape.txt'],
+            ['url-encoded traversal mixed', '%2e%2e/escape.txt'],
+            ['partially-encoded slash traversal', '..%2f..%2fescape.txt']
         ])('should reject %s', (_desc, key) => {
             expect(() => getSafeFilePath(base, key)).toThrow(/path traversal attempt detected/)
+        })
+    })
+
+    describe('throws on null bytes', () => {
+        it.each([
+            ['literal null byte', 'evil\0.txt'],
+            ['encoded null byte', 'evil%00.txt']
+        ])('should reject %s', (_desc, key) => {
+            expect(() => getSafeFilePath(base, key)).toThrow(/null byte detected/)
         })
     })
 

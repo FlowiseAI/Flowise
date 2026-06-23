@@ -406,15 +406,26 @@ export const getSafeFilePath = (baseDir: string, key: string): string => {
         throw new Error('Invalid file path: key is required and must be a string')
     }
 
+    let decodedKey = key
+    try {
+        decodedKey = decodeURIComponent(key)
+    } catch {
+        // malformed percent-encoding — keep the raw key; resolve/relative handle it safely
+    }
+
+    if (decodedKey.includes('\0')) {
+        throw new Error(`Invalid file path: null byte detected in "${key}"`)
+    }
+
     const resolvedBase = path.resolve(baseDir)
-    const resolvedPath = path.resolve(resolvedBase, key)
+    const resolvedPath = path.resolve(resolvedBase, decodedKey)
 
     if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
         return resolvedPath
     }
 
     const relative = path.relative(resolvedBase, resolvedPath)
-    if (relative === '' || relative.startsWith('..') || path.isAbsolute(relative)) {
+    if (relative === '' || relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) {
         throw new Error(`Invalid file path: path traversal attempt detected in "${key}"`)
     }
 
