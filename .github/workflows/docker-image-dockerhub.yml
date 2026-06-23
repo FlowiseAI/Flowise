@@ -17,6 +17,9 @@ on:
                 required: true
                 default: 'latest'
 
+permissions:
+    contents: read
+
 jobs:
     prepare:
         runs-on: ubuntu-latest
