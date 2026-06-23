@@ -537,6 +537,9 @@ importers:
       '@upstash/vector':
         specifier: 1.1.5
         version: 1.1.5
+      '@youdotcom-oss/langchain':
+        specifier: 1.1.0
+        version: 1.1.0(langchain@1.2.18(@langchain/core@1.1.20(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.54.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.27.0(@opentelemetry/api@1.9.0))(openai@6.19.0(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@4.3.6)))(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.54.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.27.0(@opentelemetry/api@1.9.0))(openai@6.19.0(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@4.3.6))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(zod-to-json-schema@3.25.1(zod@4.3.6)))
       '@zilliz/milvus2-sdk-node':
         specifier: ^2.2.24
         version: 2.3.5
@@ -9753,6 +9756,17 @@ packages:
 
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
+
+  '@youdotcom-oss/api@0.4.0':
+    resolution: {integrity: sha512-sewYEJ9z7zTqmMvNXOrqyne1ch+dgFkHMqRi8BEiRreVKn8aYIvz6Vf4OgDjx7GAy/KbVZvqbd4/YGGdpIm51g==}
+    engines: {bun: '>= 1.2.21', node: '>=18'}
+    hasBin: true
+
+  '@youdotcom-oss/langchain@1.1.0':
+    resolution: {integrity: sha512-WXxYxfphLxk0S38VEUhDK+luyaK1Bi0U66Yxdacis4u3rYc98QYf7pO2ZT6odz/SxFDaz1uI9Tsmg1Y0PFMzqw==}
+    engines: {bun: '>= 1.2.21', node: '>=18'}
+    peerDependencies:
+      langchain: '>=1.0.0'
 
   '@zilliz/milvus2-sdk-node@2.3.5':
     resolution: {integrity: sha512-bWbQnhvu+7jZXoqI+qySycwph3vloy0LDV54TBY4wRmu6HhMlqIqyIiI8sQNeSJFs8M1jHg1PlmhE/dvckA1bA==}
@@ -32887,6 +32901,15 @@ snapshots:
   '@xtuc/ieee754@1.2.0': {}
 
   '@xtuc/long@4.2.2': {}
+
+  '@youdotcom-oss/api@0.4.0':
+    dependencies:
+      zod: 4.3.6
+
+  '@youdotcom-oss/langchain@1.1.0(langchain@1.2.18(@langchain/core@1.1.20(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.54.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.27.0(@opentelemetry/api@1.9.0))(openai@6.19.0(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@4.3.6)))(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.54.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.27.0(@opentelemetry/api@1.9.0))(openai@6.19.0(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@4.3.6))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(zod-to-json-schema@3.25.1(zod@4.3.6)))':
+    dependencies:
+      '@youdotcom-oss/api': 0.4.0
+      langchain: 1.2.18(@langchain/core@1.1.20(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.54.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.27.0(@opentelemetry/api@1.9.0))(openai@6.19.0(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@4.3.6)))(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.54.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.27.0(@opentelemetry/api@1.9.0))(openai@6.19.0(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@4.3.6))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(zod-to-json-schema@3.25.1(zod@4.3.6))
 
   '@zilliz/milvus2-sdk-node@2.3.5':
     dependencies:
