@@ -1,4 +1,5 @@
 import {
+    getSafeFilePath,
     isPathTraversal,
     isUnsafeFilePath,
     isValidURL,
@@ -721,6 +722,60 @@ describe('isValidURL', () => {
             ['relative path', '/api/v1/prediction/abc']
         ])('should reject %s', (_desc, url) => {
             expect(isValidURL(url)).toBe(false)
+        })
+    })
+})
+
+describe('getSafeFilePath', () => {
+    const base = path.resolve('/tmp/s3fileloader-abc123')
+
+    describe('returns a contained absolute path for safe keys', () => {
+        it.each([
+            ['simple filename', 'report.pdf'],
+            ['nested key', 'documents/2024/report.pdf'],
+            ['internal dot-dot that stays inside', 'a/b/../c.txt'],
+            ['leading ./', './notes.txt']
+        ])('should resolve %s within base', (_desc, key) => {
+            const resolved = getSafeFilePath(base, key)
+            const relative = path.relative(base, resolved)
+            expect(path.isAbsolute(resolved)).toBe(true)
+            expect(relative.startsWith('..')).toBe(false)
+            expect(path.isAbsolute(relative)).toBe(false)
+        })
+    })
+
+    describe('throws on path traversal / absolute keys', () => {
+        it.each([
+            ['parent traversal', '../escape.txt'],
+            ['deep traversal', '../../../../tmp/flowise-poc.txt'],
+            ['traversal mid-path', 'a/../../escape.txt'],
+            ['absolute unix path', '/etc/cron.d/evil'],
+            ['key resolving to base itself', '.']
+        ])('should reject %s', (_desc, key) => {
+            expect(() => getSafeFilePath(base, key)).toThrow(/path traversal attempt detected/)
+        })
+    })
+
+    describe('throws on missing/invalid keys', () => {
+        it.each([
+            ['empty string', ''],
+            ['undefined', undefined],
+            ['null', null]
+        ])('should reject %s', (_desc, key) => {
+            expect(() => getSafeFilePath(base, key as any)).toThrow(/key is required/)
+        })
+    })
+
+    describe('PATH_TRAVERSAL_SAFETY=false bypasses the containment check', () => {
+        beforeEach(() => {
+            process.env.PATH_TRAVERSAL_SAFETY = 'false'
+        })
+        afterEach(() => {
+            delete process.env.PATH_TRAVERSAL_SAFETY
+        })
+
+        it('returns the resolved (escaping) path without throwing', () => {
+            expect(() => getSafeFilePath(base, '../escape.txt')).not.toThrow()
         })
     })
 })
