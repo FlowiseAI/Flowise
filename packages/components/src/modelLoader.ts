@@ -3,6 +3,8 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { INodeOptionsValue } from './Interface'
 
+const MODEL_LIST_FETCH_TIMEOUT_MS = 5000
+
 export enum MODEL_TYPE {
     CHAT = 'chat',
     LLM = 'llm',
@@ -38,7 +40,7 @@ const getRawModelFile = async () => {
         process.env.MODEL_LIST_CONFIG_JSON ?? 'https://raw.githubusercontent.com/FlowiseAI/Flowise/main/packages/components/models.json'
     try {
         if (isValidUrl(modelFile)) {
-            const resp = await axios.get(modelFile)
+            const resp = await axios.get(modelFile, { timeout: MODEL_LIST_FETCH_TIMEOUT_MS })
             if (resp.status === 200 && resp.data) {
                 return resp.data
             } else {
