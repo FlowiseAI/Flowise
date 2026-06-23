@@ -3,7 +3,8 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { INodeOptionsValue } from './Interface'
 
-const MODEL_LIST_FETCH_TIMEOUT_MS = 5000
+const DEFAULT_MODEL_LIST_FETCH_TIMEOUT_MS = 5000
+let rawModelFileCache: { modelFile: string; data: any } | undefined
 
 export enum MODEL_TYPE {
     CHAT = 'chat',
@@ -31,6 +32,11 @@ const isValidUrl = (urlString: string) => {
     return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
+const getModelListFetchTimeoutMs = () => {
+    const timeout = Number(process.env.MODEL_LIST_FETCH_TIMEOUT_MS)
+    return Number.isFinite(timeout) && timeout > 0 ? timeout : DEFAULT_MODEL_LIST_FETCH_TIMEOUT_MS
+}
+
 /**
  * Load the raw model file from either a URL or a local file
  * If any of the loading fails, fallback to the default models.json file on disk
@@ -38,28 +44,38 @@ const isValidUrl = (urlString: string) => {
 const getRawModelFile = async () => {
     const modelFile =
         process.env.MODEL_LIST_CONFIG_JSON ?? 'https://raw.githubusercontent.com/FlowiseAI/Flowise/main/packages/components/models.json'
+    if (rawModelFileCache?.modelFile === modelFile) {
+        return rawModelFileCache.data
+    }
+
+    let rawModelFile
     try {
         if (isValidUrl(modelFile)) {
-            const resp = await axios.get(modelFile, { timeout: MODEL_LIST_FETCH_TIMEOUT_MS })
+            const resp = await axios.get(modelFile, { timeout: getModelListFetchTimeoutMs() })
             if (resp.status === 200 && resp.data) {
-                return resp.data
+                rawModelFile = resp.data
             } else {
                 throw new Error('Error fetching model list')
             }
         } else if (fs.existsSync(modelFile)) {
             const models = await fs.promises.readFile(modelFile, 'utf8')
             if (models) {
-                return JSON.parse(models)
+                rawModelFile = JSON.parse(models)
             }
         }
-        throw new Error('Model file does not exist or is empty')
+        if (!rawModelFile) {
+            throw new Error('Model file does not exist or is empty')
+        }
     } catch (e) {
         const models = await fs.promises.readFile(getModelsJSONPath(), 'utf8')
         if (models) {
-            return JSON.parse(models)
+            rawModelFile = JSON.parse(models)
+        } else {
+            rawModelFile = {}
         }
-        return {}
     }
+    rawModelFileCache = { modelFile, data: rawModelFile }
+    return rawModelFile
 }
 
 const getModelConfig = async (category: MODEL_TYPE, name: string) => {
