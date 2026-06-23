@@ -9,6 +9,7 @@ on:
                 required: true
                 default: '24'
                 options:
+                    - '20'
                     - '24'
             tag_version:
                 description: 'Tag version of the image to be pushed.'
