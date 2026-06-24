@@ -28,6 +28,10 @@ const IMAGE_MODELS = [
 ] as const
 
 async function submitAndPoll(apiKey: string, endpoint: string, payload: object): Promise<string> {
+    if (!apiKey) {
+        throw new Error('MuAPI API key is not configured. Please set it in the credential.')
+    }
+
     const submitResp = await fetch(`${BASE_URL}/${endpoint}`, {
         method: 'POST',
         headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' },
@@ -37,7 +41,11 @@ async function submitAndPoll(apiKey: string, endpoint: string, payload: object):
         const err = await submitResp.text()
         throw new Error(`MuAPI submit error (${submitResp.status}): ${err}`)
     }
-    const { request_id } = await submitResp.json()
+    const submitData = await submitResp.json()
+    const request_id: string | undefined = submitData?.request_id
+    if (!request_id) {
+        throw new Error(`MuAPI did not return a request_id. Response: ${JSON.stringify(submitData)}`)
+    }
 
     const deadline = Date.now() + 300_000
     while (Date.now() < deadline) {
@@ -47,6 +55,7 @@ async function submitAndPoll(apiKey: string, endpoint: string, payload: object):
         })
         if (!pollResp.ok) throw new Error(`MuAPI poll error (${pollResp.status})`)
         const data = await pollResp.json()
+        if (!data) throw new Error('MuAPI poll returned an empty response')
         if (data.status === 'completed') {
             const outputs: string[] = data.outputs ?? []
             if (!outputs.length) throw new Error('Generation completed but returned no outputs')
@@ -118,6 +127,10 @@ class MuAPIImage_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('muApiKey', credentialData, nodeData)
+
+        if (!apiKey) {
+            throw new Error('MuAPI API key is missing. Please configure it in the credential settings.')
+        }
 
         const model = (nodeData.inputs?.model as string) ?? 'flux-schnell'
         const toolName = (nodeData.inputs?.toolName as string) ?? 'generate_image'
