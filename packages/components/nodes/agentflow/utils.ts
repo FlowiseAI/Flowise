@@ -56,7 +56,57 @@ const ARTIFACT_TYPES: Record<string, string> = {
     pdf: 'text'
 }
 
+const DEFAULT_TOKEN_COUNT_TIMEOUT_MS = 1500
+
+type TokenCountingModel = {
+    getNumTokens(text: string): Promise<number>
+}
+
 // ─── Shared helpers (used across multiple functions) ─────────────────────────
+
+const isTruthyEnv = (value?: string): boolean => ['1', 'true', 'yes'].includes((value || '').toLowerCase())
+
+const getTokenCountTimeoutMs = (): number => {
+    const timeout = Number(process.env.TIKTOKEN_TIMEOUT)
+    return Number.isFinite(timeout) && timeout > 0 ? timeout : DEFAULT_TOKEN_COUNT_TIMEOUT_MS
+}
+
+const getNumTokensWithTimeout = async (llm: TokenCountingModel, text: string, timeoutMs: number): Promise<number> => {
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error(`Token counting timed out after ${timeoutMs}ms`)), timeoutMs)
+
+        llm.getNumTokens(text).then(
+            (count) => {
+                clearTimeout(timeout)
+                resolve(count)
+            },
+            (error) => {
+                clearTimeout(timeout)
+                reject(error)
+            }
+        )
+    })
+}
+
+export const getApproximateTokenCount = (text: string): number => Math.ceil((text || '').length / 4)
+
+export const createTokenCounter = (llm: TokenCountingModel): ((text: string) => Promise<number>) => {
+    let useApproximateCount = isTruthyEnv(process.env.DISABLE_TIKTOKEN) || isTruthyEnv(process.env.USE_APPROXIMATE_TOKENS)
+
+    return async (text: string): Promise<number> => {
+        if (useApproximateCount) {
+            return getApproximateTokenCount(text)
+        }
+
+        try {
+            return await getNumTokensWithTimeout(llm, text, getTokenCountTimeoutMs())
+        } catch (error) {
+            useApproximateCount = true
+            console.warn('Failed to calculate number of tokens, falling back to approximate count', error)
+            return getApproximateTokenCount(text)
+        }
+    }
+}
 
 /** Reads a file from storage and returns a base64 data-URL string. */
 const storedFileToBase64 = async (fileName: string, mime: string, options: ICommonObject): Promise<string> => {

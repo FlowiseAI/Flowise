@@ -1,4 +1,11 @@
-import { revertBase64ImagesToFileRefs, processMessagesWithImages, addImageArtifactsToMessages, getUniqueImageMessages } from './utils'
+import {
+    revertBase64ImagesToFileRefs,
+    processMessagesWithImages,
+    addImageArtifactsToMessages,
+    getUniqueImageMessages,
+    createTokenCounter,
+    getApproximateTokenCount
+} from './utils'
 import { sanitizeFileName } from '../../src/validator'
 import { IChatMessage, IMultimodalContentItem } from './Interface.Agentflow'
 import { IFileUpload } from '../../src/Interface'
@@ -655,5 +662,63 @@ describe('path traversal prevention in image processing', () => {
         const fileRef = (messages[1] as IChatMessage).additional_kwargs?._imageFileRefs?.[0]
         expect(fileRef?.fileName).toBe('passwd')
         expect(fileRef?.fileName).not.toContain('..')
+    })
+})
+
+describe('createTokenCounter', () => {
+    const originalEnv = process.env
+    let warnSpy: jest.SpyInstance
+
+    beforeEach(() => {
+        jest.resetModules()
+        process.env = { ...originalEnv }
+        delete process.env.DISABLE_TIKTOKEN
+        delete process.env.USE_APPROXIMATE_TOKENS
+        delete process.env.TIKTOKEN_TIMEOUT
+        warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    })
+
+    afterEach(() => {
+        warnSpy.mockRestore()
+        process.env = originalEnv
+    })
+
+    it('uses the model token counter when it resolves before timeout', async () => {
+        const llm = { getNumTokens: jest.fn().mockResolvedValue(42) }
+        const countTokens = createTokenCounter(llm)
+
+        await expect(countTokens('hello world')).resolves.toBe(42)
+        expect(llm.getNumTokens).toHaveBeenCalledWith('hello world')
+        expect(warnSpy).not.toHaveBeenCalled()
+    })
+
+    it('can use approximate token counts without calling the model counter', async () => {
+        process.env.DISABLE_TIKTOKEN = 'true'
+        const llm = { getNumTokens: jest.fn().mockResolvedValue(42) }
+        const countTokens = createTokenCounter(llm)
+
+        await expect(countTokens('12345678')).resolves.toBe(2)
+        expect(llm.getNumTokens).not.toHaveBeenCalled()
+    })
+
+    it('falls back to approximate counts after a tokenizer error', async () => {
+        const llm = { getNumTokens: jest.fn().mockRejectedValue(new Error('fetch failed')) }
+        const countTokens = createTokenCounter(llm)
+
+        await expect(countTokens('12345678')).resolves.toBe(2)
+        await expect(countTokens('123456789012')).resolves.toBe(3)
+        expect(llm.getNumTokens).toHaveBeenCalledTimes(1)
+        expect(warnSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('falls back to approximate counts after token counting times out', async () => {
+        process.env.TIKTOKEN_TIMEOUT = '1'
+        const llm = { getNumTokens: jest.fn(() => new Promise<number>(() => undefined)) }
+        const countTokens = createTokenCounter(llm)
+
+        await expect(countTokens('123456789')).resolves.toBe(getApproximateTokenCount('123456789'))
+        await expect(countTokens('1234')).resolves.toBe(1)
+        expect(llm.getNumTokens).toHaveBeenCalledTimes(1)
+        expect(warnSpy).toHaveBeenCalledTimes(1)
     })
 })
