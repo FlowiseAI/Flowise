@@ -156,6 +156,7 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId: string): 
         let Variable: Variable[] | { data: Variable[]; total: number } =
             exportInput.variable === true ? await variableService.getAllVariables(activeWorkspaceId) : []
         Variable = 'data' in Variable ? Variable.data : Variable
+        Variable = (Variable as Variable[]).map((v) => ({ ...v, value: '' }))
 
         return {
             FileDefaultName,
