@@ -29,9 +29,11 @@ permissions:
     id-token: write # Required for AWS OIDC
 
 jobs:
-    docker:
+    prepare:
         runs-on: ubuntu-latest
-        environment: ${{ github.event.inputs.environment }}
+        outputs:
+            node_version: ${{ steps.defaults.outputs.node_version }}
+            tag_version: ${{ steps.defaults.outputs.tag_version }}
         steps:
             - name: Set default values
               id: defaults
@@ -39,11 +41,26 @@ jobs:
                   echo "node_version=${{ github.event.inputs.node_version || '24' }}" >> $GITHUB_OUTPUT
                   echo "tag_version=${{ github.event.inputs.tag_version || 'latest' }}" >> $GITHUB_OUTPUT
 
+    build:
+        needs: prepare
+        runs-on: ${{ matrix.runner }}
+        environment: ${{ github.event.inputs.environment }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - platform: linux/amd64
+                      runner: ubuntu-latest
+                    - platform: linux/arm64
+                      runner: ubuntu-24.04-arm
+        steps:
+            - name: Prepare env
+              run: |
+                  platform=${{ matrix.platform }}
+                  echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+
             - name: Checkout
               uses: actions/checkout@v6.0.2
-
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v4.0.0
 
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v4.0.0
@@ -57,22 +74,68 @@ jobs:
                   unset-current-credentials: true
 
             - name: Login to Amazon ECR
+              id: login-ecr
               uses: aws-actions/amazon-ecr-login@v2
 
-            # -------------------------
-            # Build and push main image
-            # -------------------------
-            - name: Build and push main image
+            - name: Build and push by digest
+              id: build
               uses: docker/build-push-action@v6.19.2
               with:
                   context: .
                   file: Dockerfile
+                  platforms: ${{ matrix.platform }}
                   build-args: |
-                      NODE_VERSION=${{ steps.defaults.outputs.node_version }}
-                  platforms: linux/amd64,linux/arm64
-                  push: true
-                  tags: |
-                      ${{ format('{0}.dkr.ecr.{1}.amazonaws.com/flowise:{2}', 
-                          secrets.AWS_ACCOUNT_ID, 
-                          secrets.AWS_REGION, 
-                          steps.defaults.outputs.tag_version) }}
+                      NODE_VERSION=${{ needs.prepare.outputs.node_version }}
+                  outputs: type=image,name=${{ steps.login-ecr.outputs.registry }}/flowise,push-by-digest=true,name-canonical=true,push=true
+
+            - name: Export digest
+              run: |
+                  mkdir -p ${{ runner.temp }}/digests
+                  digest="${{ steps.build.outputs.digest }}"
+                  touch "${{ runner.temp }}/digests/${digest#sha256:}"
+
+            - name: Upload digest
+              uses: actions/upload-artifact@v4
+              with:
+                  name: digests-${{ env.PLATFORM_PAIR }}
+                  path: ${{ runner.temp }}/digests/*
+                  if-no-files-found: error
+                  retention-days: 1
+
+    merge:
+        needs: [prepare, build]
+        runs-on: ubuntu-latest
+        environment: ${{ github.event.inputs.environment }}
+        steps:
+            - name: Download digests
+              uses: actions/download-artifact@v4
+              with:
+                  path: ${{ runner.temp }}/digests
+                  pattern: digests-*
+                  merge-multiple: true
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v4.0.0
+
+            - name: Configure AWS OIDC Credentials
+              uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
+              with:
+                  aws-region: ${{ secrets.AWS_REGION }}
+                  role-to-assume: ${{ secrets.AWS_OIDC_IAM_ROLE }}
+                  mask-aws-account-id: true
+                  unset-current-credentials: true
+
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v2
+
+            - name: Create manifest list and push
+              working-directory: ${{ runner.temp }}/digests
+              run: |
+                  docker buildx imagetools create \
+                      -t ${{ steps.login-ecr.outputs.registry }}/flowise:${{ needs.prepare.outputs.tag_version }} \
+                      $(printf '${{ steps.login-ecr.outputs.registry }}/flowise@sha256:%s ' *)
+
+            - name: Inspect image
+              run: |
+                  docker buildx imagetools inspect ${{ steps.login-ecr.outputs.registry }}/flowise:${{ needs.prepare.outputs.tag_version }}
