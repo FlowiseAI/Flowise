@@ -6,7 +6,8 @@ import { INodeOptionsValue } from './Interface'
 export enum MODEL_TYPE {
     CHAT = 'chat',
     LLM = 'llm',
-    EMBEDDING = 'embedding'
+    EMBEDDING = 'embedding',
+    RERANKER = 'reranker'
 }
 
 const getModelsJSONPath = (): string => {
