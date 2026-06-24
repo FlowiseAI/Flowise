@@ -605,7 +605,7 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         endpoint: langWatchEndpoint
                     })
 
-                    const trace = langwatch.getTrace()
+                    const trace = langwatch.trace()
 
                     if (nodeData?.inputs?.analytics?.langWatch) {
                         trace.update({
@@ -1022,7 +1022,7 @@ export class AnalyticHandler {
 
             if (!parentIds || !Object.keys(parentIds).length) {
                 const langwatch: LangWatch = this.handlers['langWatch'].client
-                langwatchTrace = langwatch.getTrace({
+                langwatchTrace = langwatch.trace({
                     name,
                     metadata: { tags: ['openai-assistant'], threadId: this.options.chatId },
                     ...this.nodeData?.inputs?.analytics?.langWatch

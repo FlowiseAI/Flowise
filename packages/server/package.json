@@ -65,7 +65,7 @@
         "@aws-sdk/client-secrets-manager": "^3.1014.0",
         "@bull-board/api": "^6.11.0",
         "@bull-board/express": "^6.11.0",
-        "@modelcontextprotocol/sdk": "^1.10.1",
+        "@modelcontextprotocol/sdk": "1.29.0",
         "@google-cloud/logging-winston": "^6.0.0",
         "@keyv/redis": "^4.2.0",
         "@oclif/core": "4.0.7",
