@@ -10,6 +10,7 @@ import { test } from 'linkifyjs'
 import { omit } from 'lodash'
 import { handleEscapeCharacters, INodeOutputsValue, webCrawl, xmlScrape } from '../../../src'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 class Playwright_DocumentLoaders implements INode {
     label: string
@@ -189,6 +190,7 @@ class Playwright_DocumentLoaders implements INode {
 
         async function playwrightLoader(url: string): Promise<Document[] | undefined> {
             try {
+                await checkDenyList(url)
                 let docs = []
 
                 const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH

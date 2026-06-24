@@ -6,6 +6,7 @@ import { omit } from 'lodash'
 import { PuppeteerLifeCycleEvent } from 'puppeteer'
 import { handleEscapeCharacters, INodeOutputsValue, webCrawl, xmlScrape } from '../../../src'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 class Puppeteer_DocumentLoaders implements INode {
     label: string
@@ -180,6 +181,7 @@ class Puppeteer_DocumentLoaders implements INode {
 
         async function puppeteerLoader(url: string): Promise<Document[] | undefined> {
             try {
+                await checkDenyList(url)
                 let docs: Document[] = []
 
                 const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH

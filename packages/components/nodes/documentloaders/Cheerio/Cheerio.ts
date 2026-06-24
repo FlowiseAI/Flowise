@@ -6,6 +6,7 @@ import { parse } from 'css-what'
 import { SelectorType } from 'cheerio'
 import { ICommonObject, INodeOutputsValue, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { handleEscapeCharacters, webCrawl, xmlScrape } from '../../../src/utils'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 class Cheerio_DocumentLoaders implements INode {
     label: string
@@ -148,6 +149,7 @@ class Cheerio_DocumentLoaders implements INode {
 
         async function cheerioLoader(url: string): Promise<any> {
             try {
+                await checkDenyList(url)
                 let docs: IDocument[] = []
                 if (url.endsWith('.pdf')) {
                     if (process.env.DEBUG === 'true')
