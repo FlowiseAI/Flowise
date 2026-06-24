@@ -36,13 +36,36 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
         if (!datasourceOptions) {
             throw new Error('No datasource options provided')
         }
-        // Prevent using default Postgres port, otherwise will throw uncaught error and crashing the app
+        // Prevent using default Postgres port
         if (datasourceOptions.port === 5432) {
             throw new Error('Invalid port number')
         }
-        const dataSource = new DataSource(datasourceOptions)
-        await dataSource.initialize()
-        return dataSource
+
+        // Update connection pool settings using correct MySQL2 options
+        const enhancedOptions = {
+            ...datasourceOptions,
+            extra: {
+                ...datasourceOptions.extra,
+                connectionLimit: 20,
+                connectTimeout: 60000, // 1 minute
+                waitForConnections: true
+            },
+            pool: {
+                max: 20,
+                min: 1,
+                idleTimeoutMillis: 60000, // 1 minute
+                acquireTimeoutMillis: 60000 // 1 minute
+            }
+        }
+
+        try {
+            const dataSource = new DataSource(enhancedOptions)
+            await dataSource.initialize()
+            return dataSource
+        } catch (error) {
+            console.error('Failed to get data source:', error)
+            throw new Error(`Database connection failed: ${error.message}`)
+        }
     }
 
     private async setup(dataSource: DataSource): Promise<void> {
@@ -56,10 +79,10 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
                     thread_id VARCHAR(255) NOT NULL,
                     checkpoint_id VARCHAR(255) NOT NULL,
                     parent_id VARCHAR(255),
-                    checkpoint BLOB,
-                    metadata BLOB,
+                    checkpoint LONGBLOB,
+                    metadata LONGBLOB,
                     PRIMARY KEY (thread_id, checkpoint_id)
-                );`)
+                );`) // Changed from BLOB to LONGBLOB
             await queryRunner.release()
         } catch (error) {
             console.error(`Error creating ${this.tableName} table`, error)
@@ -164,6 +187,34 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
         }
     }
 
+    private async cleanupOldMessages(dataSource: DataSource, threadId: string, limit: number = 100): Promise<void> {
+        const tableName = this.sanitizeTableName(this.tableName)
+        try {
+            const queryRunner = dataSource.createQueryRunner()
+            // Delete all but the last 100 messages for this thread
+            await queryRunner.manager.query(
+                `
+                DELETE FROM ${tableName} 
+                WHERE thread_id = ? 
+                AND checkpoint_id NOT IN (
+                    SELECT checkpoint_id 
+                    FROM (
+                        SELECT checkpoint_id 
+                        FROM ${tableName} 
+                        WHERE thread_id = ? 
+                        ORDER BY checkpoint_id DESC 
+                        LIMIT ?
+                    ) t
+                )
+            `,
+                [threadId, threadId, limit]
+            )
+            await queryRunner.release()
+        } catch (error) {
+            console.error(`Error cleaning up old messages for thread ${threadId}`, error)
+        }
+    }
+
     async put(config: RunnableConfig, checkpoint: Checkpoint, metadata: CheckpointMetadata): Promise<RunnableConfig> {
         const dataSource = await this.getDataSource()
         await this.setup(dataSource)
@@ -171,8 +222,9 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
         if (!config.configurable?.checkpoint_id) return {}
         try {
             const queryRunner = dataSource.createQueryRunner()
+            const threadId = config.configurable?.thread_id || this.threadId
             const row = [
-                config.configurable?.thread_id || this.threadId,
+                threadId,
                 checkpoint.id,
                 config.configurable?.checkpoint_id,
                 Buffer.from(this.serde.stringify(checkpoint)), // Encode to binary
@@ -186,6 +238,9 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
 
             await queryRunner.manager.query(query, row)
             await queryRunner.release()
+
+            // Cleanup old messages after successful insert
+            await this.cleanupOldMessages(dataSource, threadId)
         } catch (error) {
             console.error('Error saving checkpoint', error)
             throw new Error('Error saving checkpoint')
