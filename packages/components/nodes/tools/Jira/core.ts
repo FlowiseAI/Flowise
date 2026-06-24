@@ -245,7 +245,7 @@ class ListIssuesTool extends BaseJiraTool {
         if (params.maxResults) queryParams.append('maxResults', params.maxResults.toString())
         if (params.startAt) queryParams.append('startAt', params.startAt.toString())
 
-        const endpoint = `search?${queryParams.toString()}`
+        const endpoint = `search/jql?${queryParams.toString()}`
 
         try {
             const response = await this.makeJiraRequest({ endpoint, params })
