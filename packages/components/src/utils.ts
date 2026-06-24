@@ -1059,11 +1059,11 @@ export const getVersion: () => Promise<{ version: string }> = async () => {
 
 /**
  * Map Ext to InputField
- * @param {string} ext
+ * @param {string} [ext] File extension (case-insensitive), e.g. ".pdf"
  * @returns {string}
  */
-export const mapExtToInputField = (ext: string) => {
-    switch (ext) {
+export const mapExtToInputField = (ext?: string) => {
+    switch (ext?.toLowerCase()) {
         case '.txt':
             return 'txtFile'
         case '.pdf':
