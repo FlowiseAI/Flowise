@@ -2322,6 +2322,27 @@
                     "output_cost": 0.003
                 }
             ]
+        },
+        {
+            "name": "chatN1n",
+            "models": [
+                {
+                    "label": "gpt-4o-mini",
+                    "name": "gpt-4o-mini"
+                },
+                {
+                    "label": "gpt-4o",
+                    "name": "gpt-4o"
+                },
+                {
+                    "label": "gpt-3.5-turbo",
+                    "name": "gpt-3.5-turbo"
+                },
+                {
+                    "label": "deepseek-chat",
+                    "name": "deepseek-chat"
+                }
+            ]
         }
     ],
     "llm": [
