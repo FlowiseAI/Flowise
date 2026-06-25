@@ -1837,7 +1837,7 @@ export const getMemorySessionId = (
         // Provided in API body - incomingInput.chatId
         if (incomingInput.chatId) {
             if (typeof incomingInput.chatId !== 'string') {
-                throw new Error('Invalid chatId: must be a string')
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid chatId: must be a string')
             }
             return incomingInput.chatId
         }
