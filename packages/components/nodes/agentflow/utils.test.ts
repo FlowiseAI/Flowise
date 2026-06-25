@@ -711,6 +711,30 @@ describe('createTokenCounter', () => {
         expect(warnSpy).toHaveBeenCalledTimes(1)
     })
 
+    it('clears the timeout when token counting throws synchronously', async () => {
+        const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout')
+        const llm = {
+            getNumTokens: jest.fn(() => {
+                throw new Error('sync tokenizer failure')
+            })
+        }
+        const countTokens = createTokenCounter(llm)
+
+        await expect(countTokens('12345678')).resolves.toBe(2)
+        expect(llm.getNumTokens).toHaveBeenCalledTimes(1)
+        expect(clearTimeoutSpy).toHaveBeenCalledTimes(1)
+        expect(warnSpy).toHaveBeenCalledTimes(1)
+
+        clearTimeoutSpy.mockRestore()
+    })
+
+    it('uses approximate counts when the model token counter is unavailable', async () => {
+        const countTokens = createTokenCounter(undefined)
+
+        await expect(countTokens('12345678')).resolves.toBe(2)
+        expect(warnSpy).not.toHaveBeenCalled()
+    })
+
     it('falls back to approximate counts after token counting times out', async () => {
         process.env.TIKTOKEN_TIMEOUT = '1'
         const llm = { getNumTokens: jest.fn(() => new Promise<number>(() => undefined)) }

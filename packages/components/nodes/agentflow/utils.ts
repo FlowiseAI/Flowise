@@ -75,7 +75,16 @@ const getNumTokensWithTimeout = async (llm: TokenCountingModel, text: string, ti
     return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error(`Token counting timed out after ${timeoutMs}ms`)), timeoutMs)
 
-        llm.getNumTokens(text).then(
+        let tokenCountPromise: Promise<number>
+        try {
+            tokenCountPromise = Promise.resolve(llm.getNumTokens(text))
+        } catch (error) {
+            clearTimeout(timeout)
+            reject(error)
+            return
+        }
+
+        tokenCountPromise.then(
             (count) => {
                 clearTimeout(timeout)
                 resolve(count)
@@ -90,8 +99,11 @@ const getNumTokensWithTimeout = async (llm: TokenCountingModel, text: string, ti
 
 export const getApproximateTokenCount = (text: string): number => Math.ceil((text || '').length / 4)
 
-export const createTokenCounter = (llm: TokenCountingModel): ((text: string) => Promise<number>) => {
-    let useApproximateCount = isTruthyEnv(process.env.DISABLE_TIKTOKEN) || isTruthyEnv(process.env.USE_APPROXIMATE_TOKENS)
+export const createTokenCounter = (llm?: TokenCountingModel | null): ((text: string) => Promise<number>) => {
+    let useApproximateCount =
+        isTruthyEnv(process.env.DISABLE_TIKTOKEN) ||
+        isTruthyEnv(process.env.USE_APPROXIMATE_TOKENS) ||
+        typeof llm?.getNumTokens !== 'function'
 
     return async (text: string): Promise<number> => {
         if (useApproximateCount) {
