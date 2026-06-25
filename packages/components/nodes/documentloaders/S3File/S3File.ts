@@ -9,6 +9,7 @@ import {
 } from '@langchain/community/document_loaders/fs/unstructured'
 import { handleDocumentLoaderDocuments, handleDocumentLoaderMetadata, handleDocumentLoaderOutput } from '../../../src/utils'
 import { getAWSCredentialConfig } from '../../../src/awsToolsUtils'
+import { getSafeFilePath } from '../../../src/validator'
 import { S3Client, GetObjectCommand, HeadObjectCommand, S3ClientConfig } from '@aws-sdk/client-s3'
 import { getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { Readable } from 'node:stream'
@@ -753,68 +754,70 @@ class S3_DocumentLoaders implements INode {
         loader.load = async () => {
             const tempDir = fsDefault.mkdtempSync(path.join(os.tmpdir(), 's3fileloader-'))
 
-            const filePath = path.join(tempDir, keyName)
-
             try {
-                const s3Client = new S3Client(s3Config)
+                const filePath = getSafeFilePath(tempDir, keyName)
 
-                const getObjectCommand = new GetObjectCommand({
-                    Bucket: bucketName,
-                    Key: keyName
-                })
+                try {
+                    const s3Client = new S3Client(s3Config)
 
-                const response = await s3Client.send(getObjectCommand)
+                    const getObjectCommand = new GetObjectCommand({
+                        Bucket: bucketName,
+                        Key: keyName
+                    })
 
-                const objectData = await new Promise<Buffer>((resolve, reject) => {
-                    const chunks: Buffer[] = []
+                    const response = await s3Client.send(getObjectCommand)
 
-                    if (response.Body instanceof Readable) {
-                        response.Body.on('data', (chunk: Buffer) => chunks.push(chunk))
-                        response.Body.on('end', () => resolve(Buffer.concat(chunks)))
-                        response.Body.on('error', reject)
-                    } else {
-                        reject(new Error('Response body is not a readable stream.'))
-                    }
-                })
+                    const objectData = await new Promise<Buffer>((resolve, reject) => {
+                        const chunks: Buffer[] = []
 
-                fsDefault.mkdirSync(path.dirname(filePath), { recursive: true })
+                        if (response.Body instanceof Readable) {
+                            response.Body.on('data', (chunk: Buffer) => chunks.push(chunk))
+                            response.Body.on('end', () => resolve(Buffer.concat(chunks)))
+                            response.Body.on('error', reject)
+                        } else {
+                            reject(new Error('Response body is not a readable stream.'))
+                        }
+                    })
 
-                fsDefault.writeFileSync(filePath, objectData)
-            } catch (e: any) {
-                throw new Error(`Failed to download file ${keyName} from S3 bucket ${bucketName}: ${e.message}`)
-            }
+                    fsDefault.mkdirSync(path.dirname(filePath), { recursive: true })
 
-            try {
-                const obj: UnstructuredLoaderOptions = {
-                    apiUrl: unstructuredAPIUrl,
-                    strategy,
-                    encoding,
-                    coordinates,
-                    skipInferTableTypes,
-                    hiResModelName,
-                    includePageBreaks,
-                    chunkingStrategy,
-                    ocrLanguages,
-                    xmlKeepTags,
-                    multiPageSections,
-                    combineUnderNChars,
-                    newAfterNChars,
-                    maxCharacters
+                    fsDefault.writeFileSync(filePath, objectData)
+                } catch (e: any) {
+                    throw new Error(`Failed to download file ${keyName} from S3 bucket ${bucketName}: ${e.message}`)
                 }
 
-                if (unstructuredAPIKey) obj.apiKey = unstructuredAPIKey
+                try {
+                    const obj: UnstructuredLoaderOptions = {
+                        apiUrl: unstructuredAPIUrl,
+                        strategy,
+                        encoding,
+                        coordinates,
+                        skipInferTableTypes,
+                        hiResModelName,
+                        includePageBreaks,
+                        chunkingStrategy,
+                        ocrLanguages,
+                        xmlKeepTags,
+                        multiPageSections,
+                        combineUnderNChars,
+                        newAfterNChars,
+                        maxCharacters
+                    }
 
-                const unstructuredLoader = new UnstructuredLoader(filePath, obj)
+                    if (unstructuredAPIKey) obj.apiKey = unstructuredAPIKey
 
-                let docs = await handleDocumentLoaderDocuments(unstructuredLoader)
+                    const unstructuredLoader = new UnstructuredLoader(filePath, obj)
 
-                docs = handleDocumentLoaderMetadata(docs, _omitMetadataKeys, metadata, sourceIdKey)
+                    let docs = await handleDocumentLoaderDocuments(unstructuredLoader)
 
-                return handleDocumentLoaderOutput(docs, output)
-            } catch {
-                throw new Error(`Failed to load file ${filePath} using unstructured loader.`)
+                    docs = handleDocumentLoaderMetadata(docs, _omitMetadataKeys, metadata, sourceIdKey)
+
+                    return handleDocumentLoaderOutput(docs, output)
+                } catch {
+                    throw new Error(`Failed to load file ${filePath} using unstructured loader.`)
+                }
             } finally {
-                fsDefault.rmSync(path.dirname(filePath), { recursive: true })
+                fsDefault.rmSync(tempDir, { recursive: true, force: true })
             }
         }
 
