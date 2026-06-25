@@ -1846,7 +1846,7 @@ export const getMemorySessionId = (
     // Hard-coded sessionId in UI
     if (memoryNode && memoryNode.data.inputs?.sessionId) {
         if (typeof memoryNode.data.inputs.sessionId !== 'string') {
-            throw new Error('Invalid sessionId: must be a string')
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid sessionId: must be a string')
         }
         return memoryNode.data.inputs.sessionId
     }
