@@ -218,6 +218,8 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const [inputHistory] = useState(new ChatInputHistory(10))
 
     const inputRef = useRef(null)
+    const isKeyboardCursorAtStart = useRef(true)
+    const isKeyboardCursorAtEnd = useRef(true)
     const getChatmessageApi = useApi(chatmessageApi.getInternalChatmessageFromChatflow)
     const getAllExecutionsApi = useApi(executionsApi.getAllExecutions)
     const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
@@ -1021,14 +1023,14 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
         if (typeof selectedInput === 'string') {
             if (selectedInput !== undefined && selectedInput.trim() !== '') input = selectedInput
-
-            if (input.trim()) {
-                inputHistory.addToHistory(input)
-            }
         } else if (typeof selectedInput === 'object') {
             input = Object.entries(selectedInput)
                 .map(([key, value]) => `${key}: ${value}`)
                 .join('\n')
+        }
+
+        if (input.trim()) {
+            inputHistory.addToHistory(input)
         }
 
         setLoading(true)
@@ -1231,15 +1233,25 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             scrollToBottom()
         }, 100)
     }
+    // Allow cursor to navigate easily in multiline text (except at the end or start of the text)
+    const handleKeyboardCursorPosition = (e) => {
+        const targetValue = e.target.value ?? ''
+        const cursorPosition = e.target.selectionStart
+        isKeyboardCursorAtStart.current = cursorPosition === 0
+        isKeyboardCursorAtEnd.current = targetValue.length > 0 ? cursorPosition === targetValue.length : cursorPosition === 0
+    }
+
     // Prevent blank submissions and allow for multiline input
     const handleEnter = (e) => {
+        const isCursorPositionAtStart = isKeyboardCursorAtStart.current
+        const isCursorPositionAtEnd = isKeyboardCursorAtEnd.current
         // Check if IME composition is in progress
         const isIMEComposition = e.isComposing || e.keyCode === 229
-        if (e.key === 'ArrowUp' && !isIMEComposition) {
+        if (e.key === 'ArrowUp' && !isIMEComposition && isCursorPositionAtStart) {
             e.preventDefault()
             const previousInput = inputHistory.getPreviousInput(userInput)
             setUserInput(previousInput)
-        } else if (e.key === 'ArrowDown' && !isIMEComposition) {
+        } else if (e.key === 'ArrowDown' && !isIMEComposition && isCursorPositionAtEnd) {
             e.preventDefault()
             const nextInput = inputHistory.getNextInput()
             setUserInput(nextInput)
@@ -3028,6 +3040,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                             sx={{ width: '100%' }}
                             disabled={getInputDisabled()}
                             onKeyDown={handleEnter}
+                            onKeyUp={handleKeyboardCursorPosition}
                             id='userInput'
                             name='userInput'
                             placeholder={loading ? 'Waiting for response...' : 'Type your question...'}
