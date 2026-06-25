@@ -1,0 +1,3974 @@
+{
+  "nodes": [
+    {
+      "id": "gmail_0",
+      "position": {
+        "x": 670.4793246658837,
+        "y": -640.0436396696041
+      },
+      "type": "customNode",
+      "data": {
+        "id": "gmail_0",
+        "label": "Gmail",
+        "version": 1,
+        "name": "gmail",
+        "type": "Gmail",
+        "baseClasses": [
+          "Gmail",
+          "Tool"
+        ],
+        "category": "Tools",
+        "description": "Perform Gmail operations for drafts, messages, labels, and threads",
+        "inputParams": [
+          {
+            "label": "Connect Credential",
+            "name": "credential",
+            "type": "credential",
+            "credentialNames": [
+              "gmailOAuth2"
+            ],
+            "id": "gmail_0-input-credential-credential",
+            "display": true
+          },
+          {
+            "label": "Type",
+            "name": "gmailType",
+            "type": "options",
+            "options": [
+              {
+                "label": "Drafts",
+                "name": "drafts"
+              },
+              {
+                "label": "Messages",
+                "name": "messages"
+              },
+              {
+                "label": "Labels",
+                "name": "labels"
+              },
+              {
+                "label": "Threads",
+                "name": "threads"
+              }
+            ],
+            "id": "gmail_0-input-gmailType-options",
+            "display": true
+          },
+          {
+            "label": "Draft Actions",
+            "name": "draftActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Drafts",
+                "name": "listDrafts"
+              },
+              {
+                "label": "Create Draft",
+                "name": "createDraft"
+              },
+              {
+                "label": "Get Draft",
+                "name": "getDraft"
+              },
+              {
+                "label": "Update Draft",
+                "name": "updateDraft"
+              },
+              {
+                "label": "Send Draft",
+                "name": "sendDraft"
+              },
+              {
+                "label": "Delete Draft",
+                "name": "deleteDraft"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "drafts"
+              ]
+            },
+            "id": "gmail_0-input-draftActions-multiOptions",
+            "display": false
+          },
+          {
+            "label": "Message Actions",
+            "name": "messageActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Messages",
+                "name": "listMessages"
+              },
+              {
+                "label": "Get Message",
+                "name": "getMessage"
+              },
+              {
+                "label": "Send Message",
+                "name": "sendMessage"
+              },
+              {
+                "label": "Modify Message",
+                "name": "modifyMessage"
+              },
+              {
+                "label": "Trash Message",
+                "name": "trashMessage"
+              },
+              {
+                "label": "Untrash Message",
+                "name": "untrashMessage"
+              },
+              {
+                "label": "Delete Message",
+                "name": "deleteMessage"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "messages"
+              ]
+            },
+            "id": "gmail_0-input-messageActions-multiOptions",
+            "display": true
+          },
+          {
+            "label": "Label Actions",
+            "name": "labelActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Labels",
+                "name": "listLabels"
+              },
+              {
+                "label": "Get Label",
+                "name": "getLabel"
+              },
+              {
+                "label": "Create Label",
+                "name": "createLabel"
+              },
+              {
+                "label": "Update Label",
+                "name": "updateLabel"
+              },
+              {
+                "label": "Delete Label",
+                "name": "deleteLabel"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "labels"
+              ]
+            },
+            "id": "gmail_0-input-labelActions-multiOptions",
+            "display": false
+          },
+          {
+            "label": "Thread Actions",
+            "name": "threadActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Threads",
+                "name": "listThreads"
+              },
+              {
+                "label": "Get Thread",
+                "name": "getThread"
+              },
+              {
+                "label": "Modify Thread",
+                "name": "modifyThread"
+              },
+              {
+                "label": "Trash Thread",
+                "name": "trashThread"
+              },
+              {
+                "label": "Untrash Thread",
+                "name": "untrashThread"
+              },
+              {
+                "label": "Delete Thread",
+                "name": "deleteThread"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "threads"
+              ]
+            },
+            "id": "gmail_0-input-threadActions-multiOptions",
+            "display": false
+          },
+          {
+            "label": "Max Results",
+            "name": "draftMaxResults",
+            "type": "number",
+            "description": "Maximum number of drafts to return",
+            "default": 100,
+            "show": {
+              "draftActions": [
+                "listDrafts"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-draftMaxResults-number",
+            "display": false
+          },
+          {
+            "label": "To",
+            "name": "draftTo",
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated",
+            "placeholder": "user1@example.com,user2@example.com",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-draftTo-string",
+            "display": false
+          },
+          {
+            "label": "Subject",
+            "name": "draftSubject",
+            "type": "string",
+            "description": "Email subject",
+            "placeholder": "Email Subject",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-draftSubject-string",
+            "display": false
+          },
+          {
+            "label": "Body",
+            "name": "draftBody",
+            "type": "string",
+            "description": "Email body content",
+            "placeholder": "Email content",
+            "rows": 4,
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-draftBody-string",
+            "display": false
+          },
+          {
+            "label": "CC",
+            "name": "draftCc",
+            "type": "string",
+            "description": "CC email address(es), comma-separated",
+            "placeholder": "cc1@example.com,cc2@example.com",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-draftCc-string",
+            "display": false
+          },
+          {
+            "label": "BCC",
+            "name": "draftBcc",
+            "type": "string",
+            "description": "BCC email address(es), comma-separated",
+            "placeholder": "bcc1@example.com,bcc2@example.com",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-draftBcc-string",
+            "display": false
+          },
+          {
+            "label": "Draft ID",
+            "name": "draftId",
+            "type": "string",
+            "description": "ID of the draft",
+            "show": {
+              "draftActions": [
+                "getDraft",
+                "updateDraft",
+                "sendDraft",
+                "deleteDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-draftId-string",
+            "display": false
+          },
+          {
+            "label": "To (Update)",
+            "name": "draftUpdateTo",
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated",
+            "placeholder": "user1@example.com,user2@example.com",
+            "show": {
+              "draftActions": [
+                "updateDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-draftUpdateTo-string",
+            "display": false
+          },
+          {
+            "label": "Subject (Update)",
+            "name": "draftUpdateSubject",
+            "type": "string",
+            "description": "Email subject",
+            "placeholder": "Email Subject",
+            "show": {
+              "draftActions": [
+                "updateDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-draftUpdateSubject-string",
+            "display": false
+          },
+          {
+            "label": "Body (Update)",
+            "name": "draftUpdateBody",
+            "type": "string",
+            "description": "Email body content",
+            "placeholder": "Email content",
+            "rows": 4,
+            "show": {
+              "draftActions": [
+                "updateDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-draftUpdateBody-string",
+            "display": false
+          },
+          {
+            "label": "Max Results",
+            "name": "messageMaxResults",
+            "type": "number",
+            "description": "Maximum number of messages to return",
+            "default": 100,
+            "show": {
+              "messageActions": [
+                "listMessages"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-messageMaxResults-number",
+            "display": true
+          },
+          {
+            "label": "Query",
+            "name": "messageQuery",
+            "type": "string",
+            "description": "Query string for filtering results (Gmail search syntax)",
+            "placeholder": "is:unread from:example@gmail.com",
+            "show": {
+              "messageActions": [
+                "listMessages"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-messageQuery-string",
+            "display": true
+          },
+          {
+            "label": "To",
+            "name": "messageTo",
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated",
+            "placeholder": "user1@example.com,user2@example.com",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-messageTo-string",
+            "display": false
+          },
+          {
+            "label": "Subject",
+            "name": "messageSubject",
+            "type": "string",
+            "description": "Email subject",
+            "placeholder": "Email Subject",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-messageSubject-string",
+            "display": false
+          },
+          {
+            "label": "Body",
+            "name": "messageBody",
+            "type": "string",
+            "description": "Email body content",
+            "placeholder": "Email content",
+            "rows": 4,
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-messageBody-string",
+            "display": false
+          },
+          {
+            "label": "CC",
+            "name": "messageCc",
+            "type": "string",
+            "description": "CC email address(es), comma-separated",
+            "placeholder": "cc1@example.com,cc2@example.com",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-messageCc-string",
+            "display": false
+          },
+          {
+            "label": "BCC",
+            "name": "messageBcc",
+            "type": "string",
+            "description": "BCC email address(es), comma-separated",
+            "placeholder": "bcc1@example.com,bcc2@example.com",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-messageBcc-string",
+            "display": false
+          },
+          {
+            "label": "Message ID",
+            "name": "messageId",
+            "type": "string",
+            "description": "ID of the message",
+            "show": {
+              "messageActions": [
+                "getMessage",
+                "modifyMessage",
+                "trashMessage",
+                "untrashMessage",
+                "deleteMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-messageId-string",
+            "display": false
+          },
+          {
+            "label": "Add Label IDs",
+            "name": "messageAddLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to add",
+            "placeholder": "INBOX,STARRED",
+            "show": {
+              "messageActions": [
+                "modifyMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-messageAddLabelIds-string",
+            "display": false
+          },
+          {
+            "label": "Remove Label IDs",
+            "name": "messageRemoveLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to remove",
+            "placeholder": "UNREAD,SPAM",
+            "show": {
+              "messageActions": [
+                "modifyMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-messageRemoveLabelIds-string",
+            "display": false
+          },
+          {
+            "label": "Label Name",
+            "name": "labelName",
+            "type": "string",
+            "description": "Name of the label",
+            "placeholder": "Important",
+            "show": {
+              "labelActions": [
+                "createLabel",
+                "updateLabel"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-labelName-string",
+            "display": false
+          },
+          {
+            "label": "Label Color",
+            "name": "labelColor",
+            "type": "string",
+            "description": "Color of the label (hex color code)",
+            "placeholder": "#ff0000",
+            "show": {
+              "labelActions": [
+                "createLabel",
+                "updateLabel"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-labelColor-string",
+            "display": false
+          },
+          {
+            "label": "Label ID",
+            "name": "labelId",
+            "type": "string",
+            "description": "ID of the label",
+            "show": {
+              "labelActions": [
+                "getLabel",
+                "updateLabel",
+                "deleteLabel"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-labelId-string",
+            "display": false
+          },
+          {
+            "label": "Max Results",
+            "name": "threadMaxResults",
+            "type": "number",
+            "description": "Maximum number of threads to return",
+            "default": 100,
+            "show": {
+              "threadActions": [
+                "listThreads"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-threadMaxResults-number",
+            "display": false
+          },
+          {
+            "label": "Query",
+            "name": "threadQuery",
+            "type": "string",
+            "description": "Query string for filtering results (Gmail search syntax)",
+            "placeholder": "is:unread from:example@gmail.com",
+            "show": {
+              "threadActions": [
+                "listThreads"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-threadQuery-string",
+            "display": false
+          },
+          {
+            "label": "Thread ID",
+            "name": "threadId",
+            "type": "string",
+            "description": "ID of the thread",
+            "show": {
+              "threadActions": [
+                "getThread",
+                "modifyThread",
+                "trashThread",
+                "untrashThread",
+                "deleteThread"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-threadId-string",
+            "display": false
+          },
+          {
+            "label": "Add Label IDs",
+            "name": "threadAddLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to add",
+            "placeholder": "INBOX,STARRED",
+            "show": {
+              "threadActions": [
+                "modifyThread"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-threadAddLabelIds-string",
+            "display": false
+          },
+          {
+            "label": "Remove Label IDs",
+            "name": "threadRemoveLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to remove",
+            "placeholder": "UNREAD,SPAM",
+            "show": {
+              "threadActions": [
+                "modifyThread"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_0-input-threadRemoveLabelIds-string",
+            "display": false
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "gmailType": "messages",
+          "draftActions": "",
+          "messageActions": "[\"listMessages\"]",
+          "labelActions": "",
+          "threadActions": "",
+          "draftMaxResults": 100,
+          "draftTo": "",
+          "draftSubject": "",
+          "draftBody": "",
+          "draftCc": "",
+          "draftBcc": "",
+          "draftId": "",
+          "draftUpdateTo": "",
+          "draftUpdateSubject": "",
+          "draftUpdateBody": "",
+          "messageMaxResults": "10",
+          "messageQuery": "is:unread",
+          "messageTo": "",
+          "messageSubject": "",
+          "messageBody": "",
+          "messageCc": "",
+          "messageBcc": "",
+          "messageId": "",
+          "messageAddLabelIds": "",
+          "messageRemoveLabelIds": "",
+          "labelName": "",
+          "labelColor": "",
+          "labelId": "",
+          "threadMaxResults": 100,
+          "threadQuery": "",
+          "threadId": "",
+          "threadAddLabelIds": "",
+          "threadRemoveLabelIds": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "gmail_0-output-gmail-Gmail|Tool",
+            "name": "gmail",
+            "label": "Gmail",
+            "description": "Perform Gmail operations for drafts, messages, labels, and threads",
+            "type": "Gmail | Tool"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 529,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 670.4793246658837,
+        "y": -640.0436396696041
+      }
+    },
+    {
+      "id": "toolAgent_0",
+      "position": {
+        "x": 1603.725812722107,
+        "y": 281.68114510004
+      },
+      "type": "customNode",
+      "data": {
+        "id": "toolAgent_0",
+        "label": "Tool Agent",
+        "version": 2,
+        "name": "toolAgent",
+        "type": "AgentExecutor",
+        "baseClasses": [
+          "AgentExecutor",
+          "BaseChain",
+          "Runnable"
+        ],
+        "category": "Agents",
+        "description": "Agent that uses Function Calling to pick the tools and args to call",
+        "inputParams": [
+          {
+            "label": "System Message",
+            "name": "systemMessage",
+            "type": "string",
+            "default": "You are a helpful AI assistant.",
+            "description": "If Chat Prompt Template is provided, this will be ignored",
+            "rows": 4,
+            "optional": true,
+            "additionalParams": true,
+            "id": "toolAgent_0-input-systemMessage-string",
+            "display": true
+          },
+          {
+            "label": "Max Iterations",
+            "name": "maxIterations",
+            "type": "number",
+            "optional": true,
+            "additionalParams": true,
+            "id": "toolAgent_0-input-maxIterations-number",
+            "display": true
+          },
+          {
+            "label": "Enable Detailed Streaming",
+            "name": "enableDetailedStreaming",
+            "type": "boolean",
+            "default": false,
+            "description": "Stream detailed intermediate steps during agent execution",
+            "optional": true,
+            "additionalParams": true,
+            "id": "toolAgent_0-input-enableDetailedStreaming-boolean",
+            "display": true
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Tools",
+            "name": "tools",
+            "type": "Tool",
+            "list": true,
+            "id": "toolAgent_0-input-tools-Tool",
+            "display": true
+          },
+          {
+            "label": "Memory",
+            "name": "memory",
+            "type": "BaseChatMemory",
+            "id": "toolAgent_0-input-memory-BaseChatMemory",
+            "display": true
+          },
+          {
+            "label": "Tool Calling Chat Model",
+            "name": "model",
+            "type": "BaseChatModel",
+            "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat",
+            "id": "toolAgent_0-input-model-BaseChatModel",
+            "display": true
+          },
+          {
+            "label": "Chat Prompt Template",
+            "name": "chatPromptTemplate",
+            "type": "ChatPromptTemplate",
+            "description": "Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable",
+            "optional": true,
+            "id": "toolAgent_0-input-chatPromptTemplate-ChatPromptTemplate",
+            "display": true
+          },
+          {
+            "label": "Input Moderation",
+            "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+            "name": "inputModeration",
+            "type": "Moderation",
+            "optional": true,
+            "list": true,
+            "id": "toolAgent_0-input-inputModeration-Moderation",
+            "display": true
+          }
+        ],
+        "inputs": {
+          "tools": [
+            "{{gmail_0.data.instance}}",
+            "{{customTool_0.data.instance}}",
+            "{{gmail_2.data.instance}}",
+            "{{gmail_1.data.instance}}",
+            "{{gmail_3.data.instance}}"
+          ],
+          "memory": "{{bufferMemory_0.data.instance}}",
+          "model": "{{chatOpenAICustom_0.data.instance}}",
+          "chatPromptTemplate": "",
+          "systemMessage": "You are an AI email assistant powered by Eden AI and Gmail tools.\n\nYour workflow:\n1. Use Gmail List Messages to find the latest unread email.\n2. Use Gmail Get Message to read the full email content.\n3. Use eden_summarize_email to summarize the email, analyze priority, and decide whether a reply is needed.\n4. If a reply is needed, use Gmail Create Draft to create a draft response.\n5. Never send an email automatically.\n6. Show the user:\n   - sender\n   - subject\n   - short summary\n   - priority\n   - draft content\n7. Ask the user whether they want to send it manually.\n\nRules:\n- Never invent facts, dates, commitments, prices, or availability.\n- If context is missing, write a polite clarifying reply.\n- Keep replies concise and professional.\n- The default language is French unless the email is clearly in another language.\nOnly send an email if the user explicitly confirms after reviewing the draft.",
+          "inputModeration": "",
+          "maxIterations": "",
+          "enableDetailedStreaming": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "toolAgent_0-output-toolAgent-AgentExecutor|BaseChain|Runnable",
+            "name": "toolAgent",
+            "label": "AgentExecutor",
+            "description": "Agent that uses Function Calling to pick the tools and args to call",
+            "type": "AgentExecutor | BaseChain | Runnable"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 492,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1603.725812722107,
+        "y": 281.68114510004
+      },
+      "dragging": false
+    },
+    {
+      "id": "bufferMemory_0",
+      "position": {
+        "x": -75.19098569723724,
+        "y": -145.35993054571603
+      },
+      "type": "customNode",
+      "data": {
+        "id": "bufferMemory_0",
+        "label": "Buffer Memory",
+        "version": 2,
+        "name": "bufferMemory",
+        "type": "BufferMemory",
+        "baseClasses": [
+          "BufferMemory",
+          "BaseChatMemory",
+          "BaseMemory"
+        ],
+        "category": "Memory",
+        "description": "Retrieve chat messages stored in database",
+        "inputParams": [
+          {
+            "label": "Session Id",
+            "name": "sessionId",
+            "type": "string",
+            "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+            "default": "",
+            "additionalParams": true,
+            "optional": true,
+            "id": "bufferMemory_0-input-sessionId-string",
+            "display": true
+          },
+          {
+            "label": "Memory Key",
+            "name": "memoryKey",
+            "type": "string",
+            "default": "chat_history",
+            "additionalParams": true,
+            "id": "bufferMemory_0-input-memoryKey-string",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "sessionId": "",
+          "memoryKey": "chat_history"
+        },
+        "outputAnchors": [
+          {
+            "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+            "name": "bufferMemory",
+            "label": "BufferMemory",
+            "description": "Retrieve chat messages stored in database",
+            "type": "BufferMemory | BaseChatMemory | BaseMemory"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 259,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -75.19098569723724,
+        "y": -145.35993054571603
+      },
+      "dragging": false
+    },
+    {
+      "id": "gmail_1",
+      "position": {
+        "x": 1549.0439842614576,
+        "y": -634.1263810295815
+      },
+      "type": "customNode",
+      "data": {
+        "id": "gmail_1",
+        "label": "Gmail",
+        "version": 1,
+        "name": "gmail",
+        "type": "Gmail",
+        "baseClasses": [
+          "Gmail",
+          "Tool"
+        ],
+        "category": "Tools",
+        "description": "Perform Gmail operations for drafts, messages, labels, and threads",
+        "inputParams": [
+          {
+            "label": "Connect Credential",
+            "name": "credential",
+            "type": "credential",
+            "credentialNames": [
+              "gmailOAuth2"
+            ],
+            "id": "gmail_1-input-credential-credential",
+            "display": true
+          },
+          {
+            "label": "Type",
+            "name": "gmailType",
+            "type": "options",
+            "options": [
+              {
+                "label": "Drafts",
+                "name": "drafts"
+              },
+              {
+                "label": "Messages",
+                "name": "messages"
+              },
+              {
+                "label": "Labels",
+                "name": "labels"
+              },
+              {
+                "label": "Threads",
+                "name": "threads"
+              }
+            ],
+            "id": "gmail_1-input-gmailType-options",
+            "display": true
+          },
+          {
+            "label": "Draft Actions",
+            "name": "draftActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Drafts",
+                "name": "listDrafts"
+              },
+              {
+                "label": "Create Draft",
+                "name": "createDraft"
+              },
+              {
+                "label": "Get Draft",
+                "name": "getDraft"
+              },
+              {
+                "label": "Update Draft",
+                "name": "updateDraft"
+              },
+              {
+                "label": "Send Draft",
+                "name": "sendDraft"
+              },
+              {
+                "label": "Delete Draft",
+                "name": "deleteDraft"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "drafts"
+              ]
+            },
+            "id": "gmail_1-input-draftActions-multiOptions",
+            "display": true
+          },
+          {
+            "label": "Message Actions",
+            "name": "messageActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Messages",
+                "name": "listMessages"
+              },
+              {
+                "label": "Get Message",
+                "name": "getMessage"
+              },
+              {
+                "label": "Send Message",
+                "name": "sendMessage"
+              },
+              {
+                "label": "Modify Message",
+                "name": "modifyMessage"
+              },
+              {
+                "label": "Trash Message",
+                "name": "trashMessage"
+              },
+              {
+                "label": "Untrash Message",
+                "name": "untrashMessage"
+              },
+              {
+                "label": "Delete Message",
+                "name": "deleteMessage"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "messages"
+              ]
+            },
+            "id": "gmail_1-input-messageActions-multiOptions",
+            "display": false
+          },
+          {
+            "label": "Label Actions",
+            "name": "labelActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Labels",
+                "name": "listLabels"
+              },
+              {
+                "label": "Get Label",
+                "name": "getLabel"
+              },
+              {
+                "label": "Create Label",
+                "name": "createLabel"
+              },
+              {
+                "label": "Update Label",
+                "name": "updateLabel"
+              },
+              {
+                "label": "Delete Label",
+                "name": "deleteLabel"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "labels"
+              ]
+            },
+            "id": "gmail_1-input-labelActions-multiOptions",
+            "display": false
+          },
+          {
+            "label": "Thread Actions",
+            "name": "threadActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Threads",
+                "name": "listThreads"
+              },
+              {
+                "label": "Get Thread",
+                "name": "getThread"
+              },
+              {
+                "label": "Modify Thread",
+                "name": "modifyThread"
+              },
+              {
+                "label": "Trash Thread",
+                "name": "trashThread"
+              },
+              {
+                "label": "Untrash Thread",
+                "name": "untrashThread"
+              },
+              {
+                "label": "Delete Thread",
+                "name": "deleteThread"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "threads"
+              ]
+            },
+            "id": "gmail_1-input-threadActions-multiOptions",
+            "display": false
+          },
+          {
+            "label": "Max Results",
+            "name": "draftMaxResults",
+            "type": "number",
+            "description": "Maximum number of drafts to return",
+            "default": 100,
+            "show": {
+              "draftActions": [
+                "listDrafts"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-draftMaxResults-number",
+            "display": false
+          },
+          {
+            "label": "To",
+            "name": "draftTo",
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated",
+            "placeholder": "user1@example.com,user2@example.com",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-draftTo-string",
+            "display": true
+          },
+          {
+            "label": "Subject",
+            "name": "draftSubject",
+            "type": "string",
+            "description": "Email subject",
+            "placeholder": "Email Subject",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-draftSubject-string",
+            "display": true
+          },
+          {
+            "label": "Body",
+            "name": "draftBody",
+            "type": "string",
+            "description": "Email body content",
+            "placeholder": "Email content",
+            "rows": 4,
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-draftBody-string",
+            "display": true
+          },
+          {
+            "label": "CC",
+            "name": "draftCc",
+            "type": "string",
+            "description": "CC email address(es), comma-separated",
+            "placeholder": "cc1@example.com,cc2@example.com",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-draftCc-string",
+            "display": true
+          },
+          {
+            "label": "BCC",
+            "name": "draftBcc",
+            "type": "string",
+            "description": "BCC email address(es), comma-separated",
+            "placeholder": "bcc1@example.com,bcc2@example.com",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-draftBcc-string",
+            "display": true
+          },
+          {
+            "label": "Draft ID",
+            "name": "draftId",
+            "type": "string",
+            "description": "ID of the draft",
+            "show": {
+              "draftActions": [
+                "getDraft",
+                "updateDraft",
+                "sendDraft",
+                "deleteDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-draftId-string",
+            "display": false
+          },
+          {
+            "label": "To (Update)",
+            "name": "draftUpdateTo",
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated",
+            "placeholder": "user1@example.com,user2@example.com",
+            "show": {
+              "draftActions": [
+                "updateDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-draftUpdateTo-string",
+            "display": false
+          },
+          {
+            "label": "Subject (Update)",
+            "name": "draftUpdateSubject",
+            "type": "string",
+            "description": "Email subject",
+            "placeholder": "Email Subject",
+            "show": {
+              "draftActions": [
+                "updateDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-draftUpdateSubject-string",
+            "display": false
+          },
+          {
+            "label": "Body (Update)",
+            "name": "draftUpdateBody",
+            "type": "string",
+            "description": "Email body content",
+            "placeholder": "Email content",
+            "rows": 4,
+            "show": {
+              "draftActions": [
+                "updateDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-draftUpdateBody-string",
+            "display": false
+          },
+          {
+            "label": "Max Results",
+            "name": "messageMaxResults",
+            "type": "number",
+            "description": "Maximum number of messages to return",
+            "default": 100,
+            "show": {
+              "messageActions": [
+                "listMessages"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-messageMaxResults-number",
+            "display": false
+          },
+          {
+            "label": "Query",
+            "name": "messageQuery",
+            "type": "string",
+            "description": "Query string for filtering results (Gmail search syntax)",
+            "placeholder": "is:unread from:example@gmail.com",
+            "show": {
+              "messageActions": [
+                "listMessages"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-messageQuery-string",
+            "display": false
+          },
+          {
+            "label": "To",
+            "name": "messageTo",
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated",
+            "placeholder": "user1@example.com,user2@example.com",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-messageTo-string",
+            "display": false
+          },
+          {
+            "label": "Subject",
+            "name": "messageSubject",
+            "type": "string",
+            "description": "Email subject",
+            "placeholder": "Email Subject",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-messageSubject-string",
+            "display": false
+          },
+          {
+            "label": "Body",
+            "name": "messageBody",
+            "type": "string",
+            "description": "Email body content",
+            "placeholder": "Email content",
+            "rows": 4,
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-messageBody-string",
+            "display": false
+          },
+          {
+            "label": "CC",
+            "name": "messageCc",
+            "type": "string",
+            "description": "CC email address(es), comma-separated",
+            "placeholder": "cc1@example.com,cc2@example.com",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-messageCc-string",
+            "display": false
+          },
+          {
+            "label": "BCC",
+            "name": "messageBcc",
+            "type": "string",
+            "description": "BCC email address(es), comma-separated",
+            "placeholder": "bcc1@example.com,bcc2@example.com",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-messageBcc-string",
+            "display": false
+          },
+          {
+            "label": "Message ID",
+            "name": "messageId",
+            "type": "string",
+            "description": "ID of the message",
+            "show": {
+              "messageActions": [
+                "getMessage",
+                "modifyMessage",
+                "trashMessage",
+                "untrashMessage",
+                "deleteMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-messageId-string",
+            "display": false
+          },
+          {
+            "label": "Add Label IDs",
+            "name": "messageAddLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to add",
+            "placeholder": "INBOX,STARRED",
+            "show": {
+              "messageActions": [
+                "modifyMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-messageAddLabelIds-string",
+            "display": false
+          },
+          {
+            "label": "Remove Label IDs",
+            "name": "messageRemoveLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to remove",
+            "placeholder": "UNREAD,SPAM",
+            "show": {
+              "messageActions": [
+                "modifyMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-messageRemoveLabelIds-string",
+            "display": false
+          },
+          {
+            "label": "Label Name",
+            "name": "labelName",
+            "type": "string",
+            "description": "Name of the label",
+            "placeholder": "Important",
+            "show": {
+              "labelActions": [
+                "createLabel",
+                "updateLabel"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-labelName-string",
+            "display": false
+          },
+          {
+            "label": "Label Color",
+            "name": "labelColor",
+            "type": "string",
+            "description": "Color of the label (hex color code)",
+            "placeholder": "#ff0000",
+            "show": {
+              "labelActions": [
+                "createLabel",
+                "updateLabel"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-labelColor-string",
+            "display": false
+          },
+          {
+            "label": "Label ID",
+            "name": "labelId",
+            "type": "string",
+            "description": "ID of the label",
+            "show": {
+              "labelActions": [
+                "getLabel",
+                "updateLabel",
+                "deleteLabel"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-labelId-string",
+            "display": false
+          },
+          {
+            "label": "Max Results",
+            "name": "threadMaxResults",
+            "type": "number",
+            "description": "Maximum number of threads to return",
+            "default": 100,
+            "show": {
+              "threadActions": [
+                "listThreads"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-threadMaxResults-number",
+            "display": false
+          },
+          {
+            "label": "Query",
+            "name": "threadQuery",
+            "type": "string",
+            "description": "Query string for filtering results (Gmail search syntax)",
+            "placeholder": "is:unread from:example@gmail.com",
+            "show": {
+              "threadActions": [
+                "listThreads"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-threadQuery-string",
+            "display": false
+          },
+          {
+            "label": "Thread ID",
+            "name": "threadId",
+            "type": "string",
+            "description": "ID of the thread",
+            "show": {
+              "threadActions": [
+                "getThread",
+                "modifyThread",
+                "trashThread",
+                "untrashThread",
+                "deleteThread"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-threadId-string",
+            "display": false
+          },
+          {
+            "label": "Add Label IDs",
+            "name": "threadAddLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to add",
+            "placeholder": "INBOX,STARRED",
+            "show": {
+              "threadActions": [
+                "modifyThread"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-threadAddLabelIds-string",
+            "display": false
+          },
+          {
+            "label": "Remove Label IDs",
+            "name": "threadRemoveLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to remove",
+            "placeholder": "UNREAD,SPAM",
+            "show": {
+              "threadActions": [
+                "modifyThread"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_1-input-threadRemoveLabelIds-string",
+            "display": false
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "gmailType": "drafts",
+          "draftActions": "[\"createDraft\"]",
+          "messageActions": "",
+          "labelActions": "",
+          "threadActions": "",
+          "draftMaxResults": 100,
+          "draftTo": "",
+          "draftSubject": "",
+          "draftBody": "",
+          "draftCc": "",
+          "draftBcc": "",
+          "draftId": "",
+          "draftUpdateTo": "",
+          "draftUpdateSubject": "",
+          "draftUpdateBody": "",
+          "messageMaxResults": 100,
+          "messageQuery": "",
+          "messageTo": "",
+          "messageSubject": "",
+          "messageBody": "",
+          "messageCc": "",
+          "messageBcc": "",
+          "messageId": "",
+          "messageAddLabelIds": "",
+          "messageRemoveLabelIds": "",
+          "labelName": "",
+          "labelColor": "",
+          "labelId": "",
+          "threadMaxResults": 100,
+          "threadQuery": "",
+          "threadId": "",
+          "threadAddLabelIds": "",
+          "threadRemoveLabelIds": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "gmail_1-output-gmail-Gmail|Tool",
+            "name": "gmail",
+            "label": "Gmail",
+            "description": "Perform Gmail operations for drafts, messages, labels, and threads",
+            "type": "Gmail | Tool"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 529,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1549.0439842614576,
+        "y": -634.1263810295815
+      },
+      "dragging": false
+    },
+    {
+      "id": "chatOpenAICustom_0",
+      "position": {
+        "x": 425.0757971661652,
+        "y": 365.55789151266686
+      },
+      "type": "customNode",
+      "data": {
+        "id": "chatOpenAICustom_0",
+        "label": "OpenAI Custom Model",
+        "version": 4,
+        "name": "chatOpenAICustom",
+        "type": "ChatOpenAI-Custom",
+        "baseClasses": [
+          "ChatOpenAI-Custom",
+          "BaseChatOpenAI",
+          "BaseChatModel",
+          "BaseLanguageModel",
+          "Runnable"
+        ],
+        "category": "Chat Models",
+        "description": "Custom/FineTuned model using OpenAI Chat compatible API",
+        "inputParams": [
+          {
+            "label": "Connect Credential",
+            "name": "credential",
+            "type": "credential",
+            "credentialNames": [
+              "openAIApi"
+            ],
+            "optional": true,
+            "id": "chatOpenAICustom_0-input-credential-credential",
+            "display": true
+          },
+          {
+            "label": "Model Name",
+            "name": "modelName",
+            "type": "string",
+            "placeholder": "ft:gpt-3.5-turbo:my-org:custom_suffix:id",
+            "id": "chatOpenAICustom_0-input-modelName-string",
+            "display": true
+          },
+          {
+            "label": "Temperature",
+            "name": "temperature",
+            "type": "number",
+            "step": 0.1,
+            "default": 0.9,
+            "optional": true,
+            "id": "chatOpenAICustom_0-input-temperature-number",
+            "display": true
+          },
+          {
+            "label": "Streaming",
+            "name": "streaming",
+            "type": "boolean",
+            "default": true,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAICustom_0-input-streaming-boolean",
+            "display": true
+          },
+          {
+            "label": "Max Tokens",
+            "name": "maxTokens",
+            "type": "number",
+            "step": 1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAICustom_0-input-maxTokens-number",
+            "display": true
+          },
+          {
+            "label": "Top Probability",
+            "name": "topP",
+            "type": "number",
+            "step": 0.1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAICustom_0-input-topP-number",
+            "display": true
+          },
+          {
+            "label": "Frequency Penalty",
+            "name": "frequencyPenalty",
+            "type": "number",
+            "step": 0.1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAICustom_0-input-frequencyPenalty-number",
+            "display": true
+          },
+          {
+            "label": "Presence Penalty",
+            "name": "presencePenalty",
+            "type": "number",
+            "step": 0.1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAICustom_0-input-presencePenalty-number",
+            "display": true
+          },
+          {
+            "label": "Timeout",
+            "name": "timeout",
+            "type": "number",
+            "step": 1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAICustom_0-input-timeout-number",
+            "display": true
+          },
+          {
+            "label": "Base Path",
+            "name": "basepath",
+            "type": "string",
+            "optional": true,
+            "description": "Override the default base URL for the API, e.g., \"https://api.example.com/v2/",
+            "additionalParams": true,
+            "id": "chatOpenAICustom_0-input-basepath-string",
+            "display": true
+          },
+          {
+            "label": "Base Options",
+            "name": "baseOptions",
+            "type": "json",
+            "optional": true,
+            "description": "Default headers to include with every request to the API.",
+            "additionalParams": true,
+            "id": "chatOpenAICustom_0-input-baseOptions-json",
+            "display": true
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Cache",
+            "name": "cache",
+            "type": "BaseCache",
+            "optional": true,
+            "id": "chatOpenAICustom_0-input-cache-BaseCache",
+            "display": true
+          }
+        ],
+        "inputs": {
+          "cache": "",
+          "modelName": "qwen/qwen3.5-plus",
+          "temperature": 0.9,
+          "streaming": true,
+          "maxTokens": "",
+          "topP": "",
+          "frequencyPenalty": "",
+          "presencePenalty": "",
+          "timeout": "",
+          "basepath": "https://api.eu.edenai.run/v3",
+          "baseOptions": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "chatOpenAICustom_0-output-chatOpenAICustom-ChatOpenAI-Custom|BaseChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "name": "chatOpenAICustom",
+            "label": "ChatOpenAI-Custom",
+            "description": "Custom/FineTuned model using OpenAI Chat compatible API",
+            "type": "ChatOpenAI-Custom | BaseChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 583,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 425.0757971661652,
+        "y": 365.55789151266686
+      },
+      "dragging": false
+    },
+    {
+      "id": "customTool_0",
+      "position": {
+        "x": 923.8369150112834,
+        "y": 1027.0999881100731
+      },
+      "type": "customNode",
+      "data": {
+        "id": "customTool_0",
+        "label": "Custom Tool",
+        "version": 3,
+        "name": "customTool",
+        "type": "CustomTool",
+        "baseClasses": [
+          "CustomTool",
+          "Tool",
+          "StructuredTool",
+          "Runnable"
+        ],
+        "category": "Tools",
+        "description": "Use custom tool you've created in Flowise within chatflow",
+        "inputParams": [
+          {
+            "label": "Select Tool",
+            "name": "selectedTool",
+            "type": "asyncOptions",
+            "loadMethod": "listTools",
+            "id": "customTool_0-input-selectedTool-asyncOptions",
+            "display": true
+          },
+          {
+            "label": "Return Direct",
+            "name": "returnDirect",
+            "description": "Return the output of the tool directly to the user",
+            "type": "boolean",
+            "optional": true,
+            "id": "customTool_0-input-returnDirect-boolean",
+            "display": true
+          },
+          {
+            "label": "Custom Tool Name",
+            "name": "customToolName",
+            "type": "string",
+            "hidden": true,
+            "id": "customTool_0-input-customToolName-string",
+            "display": true
+          },
+          {
+            "label": "Custom Tool Description",
+            "name": "customToolDesc",
+            "type": "string",
+            "hidden": true,
+            "id": "customTool_0-input-customToolDesc-string",
+            "display": true
+          },
+          {
+            "label": "Custom Tool Schema",
+            "name": "customToolSchema",
+            "type": "string",
+            "hidden": true,
+            "id": "customTool_0-input-customToolSchema-string",
+            "display": true
+          },
+          {
+            "label": "Custom Tool Func",
+            "name": "customToolFunc",
+            "type": "string",
+            "hidden": true,
+            "id": "customTool_0-input-customToolFunc-string",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "selectedTool": "c01e8d40-c1e5-4cf9-813e-fa0101bd59cb",
+          "returnDirect": "",
+          "customToolName": "",
+          "customToolDesc": "",
+          "customToolSchema": "",
+          "customToolFunc": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable",
+            "name": "customTool",
+            "label": "CustomTool",
+            "description": "Use custom tool you've created in Flowise within chatflow",
+            "type": "CustomTool | Tool | StructuredTool | Runnable"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 379,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 923.8369150112834,
+        "y": 1027.0999881100731
+      },
+      "dragging": false
+    },
+    {
+      "id": "gmail_2",
+      "position": {
+        "x": 1108.5844021840467,
+        "y": -643.3613444224036
+      },
+      "type": "customNode",
+      "data": {
+        "id": "gmail_2",
+        "label": "Gmail",
+        "version": 1,
+        "name": "gmail",
+        "type": "Gmail",
+        "baseClasses": [
+          "Gmail",
+          "Tool"
+        ],
+        "category": "Tools",
+        "description": "Perform Gmail operations for drafts, messages, labels, and threads",
+        "inputParams": [
+          {
+            "label": "Connect Credential",
+            "name": "credential",
+            "type": "credential",
+            "credentialNames": [
+              "gmailOAuth2"
+            ],
+            "id": "gmail_2-input-credential-credential",
+            "display": true
+          },
+          {
+            "label": "Type",
+            "name": "gmailType",
+            "type": "options",
+            "options": [
+              {
+                "label": "Drafts",
+                "name": "drafts"
+              },
+              {
+                "label": "Messages",
+                "name": "messages"
+              },
+              {
+                "label": "Labels",
+                "name": "labels"
+              },
+              {
+                "label": "Threads",
+                "name": "threads"
+              }
+            ],
+            "id": "gmail_2-input-gmailType-options",
+            "display": true
+          },
+          {
+            "label": "Draft Actions",
+            "name": "draftActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Drafts",
+                "name": "listDrafts"
+              },
+              {
+                "label": "Create Draft",
+                "name": "createDraft"
+              },
+              {
+                "label": "Get Draft",
+                "name": "getDraft"
+              },
+              {
+                "label": "Update Draft",
+                "name": "updateDraft"
+              },
+              {
+                "label": "Send Draft",
+                "name": "sendDraft"
+              },
+              {
+                "label": "Delete Draft",
+                "name": "deleteDraft"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "drafts"
+              ]
+            },
+            "id": "gmail_2-input-draftActions-multiOptions",
+            "display": false
+          },
+          {
+            "label": "Message Actions",
+            "name": "messageActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Messages",
+                "name": "listMessages"
+              },
+              {
+                "label": "Get Message",
+                "name": "getMessage"
+              },
+              {
+                "label": "Send Message",
+                "name": "sendMessage"
+              },
+              {
+                "label": "Modify Message",
+                "name": "modifyMessage"
+              },
+              {
+                "label": "Trash Message",
+                "name": "trashMessage"
+              },
+              {
+                "label": "Untrash Message",
+                "name": "untrashMessage"
+              },
+              {
+                "label": "Delete Message",
+                "name": "deleteMessage"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "messages"
+              ]
+            },
+            "id": "gmail_2-input-messageActions-multiOptions",
+            "display": true
+          },
+          {
+            "label": "Label Actions",
+            "name": "labelActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Labels",
+                "name": "listLabels"
+              },
+              {
+                "label": "Get Label",
+                "name": "getLabel"
+              },
+              {
+                "label": "Create Label",
+                "name": "createLabel"
+              },
+              {
+                "label": "Update Label",
+                "name": "updateLabel"
+              },
+              {
+                "label": "Delete Label",
+                "name": "deleteLabel"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "labels"
+              ]
+            },
+            "id": "gmail_2-input-labelActions-multiOptions",
+            "display": false
+          },
+          {
+            "label": "Thread Actions",
+            "name": "threadActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Threads",
+                "name": "listThreads"
+              },
+              {
+                "label": "Get Thread",
+                "name": "getThread"
+              },
+              {
+                "label": "Modify Thread",
+                "name": "modifyThread"
+              },
+              {
+                "label": "Trash Thread",
+                "name": "trashThread"
+              },
+              {
+                "label": "Untrash Thread",
+                "name": "untrashThread"
+              },
+              {
+                "label": "Delete Thread",
+                "name": "deleteThread"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "threads"
+              ]
+            },
+            "id": "gmail_2-input-threadActions-multiOptions",
+            "display": false
+          },
+          {
+            "label": "Max Results",
+            "name": "draftMaxResults",
+            "type": "number",
+            "description": "Maximum number of drafts to return",
+            "default": 100,
+            "show": {
+              "draftActions": [
+                "listDrafts"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-draftMaxResults-number",
+            "display": false
+          },
+          {
+            "label": "To",
+            "name": "draftTo",
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated",
+            "placeholder": "user1@example.com,user2@example.com",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-draftTo-string",
+            "display": false
+          },
+          {
+            "label": "Subject",
+            "name": "draftSubject",
+            "type": "string",
+            "description": "Email subject",
+            "placeholder": "Email Subject",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-draftSubject-string",
+            "display": false
+          },
+          {
+            "label": "Body",
+            "name": "draftBody",
+            "type": "string",
+            "description": "Email body content",
+            "placeholder": "Email content",
+            "rows": 4,
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-draftBody-string",
+            "display": false
+          },
+          {
+            "label": "CC",
+            "name": "draftCc",
+            "type": "string",
+            "description": "CC email address(es), comma-separated",
+            "placeholder": "cc1@example.com,cc2@example.com",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-draftCc-string",
+            "display": false
+          },
+          {
+            "label": "BCC",
+            "name": "draftBcc",
+            "type": "string",
+            "description": "BCC email address(es), comma-separated",
+            "placeholder": "bcc1@example.com,bcc2@example.com",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-draftBcc-string",
+            "display": false
+          },
+          {
+            "label": "Draft ID",
+            "name": "draftId",
+            "type": "string",
+            "description": "ID of the draft",
+            "show": {
+              "draftActions": [
+                "getDraft",
+                "updateDraft",
+                "sendDraft",
+                "deleteDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-draftId-string",
+            "display": false
+          },
+          {
+            "label": "To (Update)",
+            "name": "draftUpdateTo",
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated",
+            "placeholder": "user1@example.com,user2@example.com",
+            "show": {
+              "draftActions": [
+                "updateDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-draftUpdateTo-string",
+            "display": false
+          },
+          {
+            "label": "Subject (Update)",
+            "name": "draftUpdateSubject",
+            "type": "string",
+            "description": "Email subject",
+            "placeholder": "Email Subject",
+            "show": {
+              "draftActions": [
+                "updateDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-draftUpdateSubject-string",
+            "display": false
+          },
+          {
+            "label": "Body (Update)",
+            "name": "draftUpdateBody",
+            "type": "string",
+            "description": "Email body content",
+            "placeholder": "Email content",
+            "rows": 4,
+            "show": {
+              "draftActions": [
+                "updateDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-draftUpdateBody-string",
+            "display": false
+          },
+          {
+            "label": "Max Results",
+            "name": "messageMaxResults",
+            "type": "number",
+            "description": "Maximum number of messages to return",
+            "default": 100,
+            "show": {
+              "messageActions": [
+                "listMessages"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-messageMaxResults-number",
+            "display": false
+          },
+          {
+            "label": "Query",
+            "name": "messageQuery",
+            "type": "string",
+            "description": "Query string for filtering results (Gmail search syntax)",
+            "placeholder": "is:unread from:example@gmail.com",
+            "show": {
+              "messageActions": [
+                "listMessages"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-messageQuery-string",
+            "display": false
+          },
+          {
+            "label": "To",
+            "name": "messageTo",
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated",
+            "placeholder": "user1@example.com,user2@example.com",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-messageTo-string",
+            "display": false
+          },
+          {
+            "label": "Subject",
+            "name": "messageSubject",
+            "type": "string",
+            "description": "Email subject",
+            "placeholder": "Email Subject",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-messageSubject-string",
+            "display": false
+          },
+          {
+            "label": "Body",
+            "name": "messageBody",
+            "type": "string",
+            "description": "Email body content",
+            "placeholder": "Email content",
+            "rows": 4,
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-messageBody-string",
+            "display": false
+          },
+          {
+            "label": "CC",
+            "name": "messageCc",
+            "type": "string",
+            "description": "CC email address(es), comma-separated",
+            "placeholder": "cc1@example.com,cc2@example.com",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-messageCc-string",
+            "display": false
+          },
+          {
+            "label": "BCC",
+            "name": "messageBcc",
+            "type": "string",
+            "description": "BCC email address(es), comma-separated",
+            "placeholder": "bcc1@example.com,bcc2@example.com",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-messageBcc-string",
+            "display": false
+          },
+          {
+            "label": "Message ID",
+            "name": "messageId",
+            "type": "string",
+            "description": "ID of the message",
+            "show": {
+              "messageActions": [
+                "getMessage",
+                "modifyMessage",
+                "trashMessage",
+                "untrashMessage",
+                "deleteMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-messageId-string",
+            "display": true
+          },
+          {
+            "label": "Add Label IDs",
+            "name": "messageAddLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to add",
+            "placeholder": "INBOX,STARRED",
+            "show": {
+              "messageActions": [
+                "modifyMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-messageAddLabelIds-string",
+            "display": false
+          },
+          {
+            "label": "Remove Label IDs",
+            "name": "messageRemoveLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to remove",
+            "placeholder": "UNREAD,SPAM",
+            "show": {
+              "messageActions": [
+                "modifyMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-messageRemoveLabelIds-string",
+            "display": false
+          },
+          {
+            "label": "Label Name",
+            "name": "labelName",
+            "type": "string",
+            "description": "Name of the label",
+            "placeholder": "Important",
+            "show": {
+              "labelActions": [
+                "createLabel",
+                "updateLabel"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-labelName-string",
+            "display": false
+          },
+          {
+            "label": "Label Color",
+            "name": "labelColor",
+            "type": "string",
+            "description": "Color of the label (hex color code)",
+            "placeholder": "#ff0000",
+            "show": {
+              "labelActions": [
+                "createLabel",
+                "updateLabel"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-labelColor-string",
+            "display": false
+          },
+          {
+            "label": "Label ID",
+            "name": "labelId",
+            "type": "string",
+            "description": "ID of the label",
+            "show": {
+              "labelActions": [
+                "getLabel",
+                "updateLabel",
+                "deleteLabel"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-labelId-string",
+            "display": false
+          },
+          {
+            "label": "Max Results",
+            "name": "threadMaxResults",
+            "type": "number",
+            "description": "Maximum number of threads to return",
+            "default": 100,
+            "show": {
+              "threadActions": [
+                "listThreads"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-threadMaxResults-number",
+            "display": false
+          },
+          {
+            "label": "Query",
+            "name": "threadQuery",
+            "type": "string",
+            "description": "Query string for filtering results (Gmail search syntax)",
+            "placeholder": "is:unread from:example@gmail.com",
+            "show": {
+              "threadActions": [
+                "listThreads"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-threadQuery-string",
+            "display": false
+          },
+          {
+            "label": "Thread ID",
+            "name": "threadId",
+            "type": "string",
+            "description": "ID of the thread",
+            "show": {
+              "threadActions": [
+                "getThread",
+                "modifyThread",
+                "trashThread",
+                "untrashThread",
+                "deleteThread"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-threadId-string",
+            "display": false
+          },
+          {
+            "label": "Add Label IDs",
+            "name": "threadAddLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to add",
+            "placeholder": "INBOX,STARRED",
+            "show": {
+              "threadActions": [
+                "modifyThread"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-threadAddLabelIds-string",
+            "display": false
+          },
+          {
+            "label": "Remove Label IDs",
+            "name": "threadRemoveLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to remove",
+            "placeholder": "UNREAD,SPAM",
+            "show": {
+              "threadActions": [
+                "modifyThread"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_2-input-threadRemoveLabelIds-string",
+            "display": false
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "gmailType": "messages",
+          "draftActions": "",
+          "messageActions": "[\"getMessage\"]",
+          "labelActions": "",
+          "threadActions": "",
+          "draftMaxResults": 100,
+          "draftTo": "",
+          "draftSubject": "",
+          "draftBody": "",
+          "draftCc": "",
+          "draftBcc": "",
+          "draftId": "",
+          "draftUpdateTo": "",
+          "draftUpdateSubject": "",
+          "draftUpdateBody": "",
+          "messageMaxResults": 100,
+          "messageQuery": "",
+          "messageTo": "",
+          "messageSubject": "",
+          "messageBody": "",
+          "messageCc": "",
+          "messageBcc": "",
+          "messageId": "",
+          "messageAddLabelIds": "",
+          "messageRemoveLabelIds": "",
+          "labelName": "",
+          "labelColor": "",
+          "labelId": "",
+          "threadMaxResults": 100,
+          "threadQuery": "",
+          "threadId": "",
+          "threadAddLabelIds": "",
+          "threadRemoveLabelIds": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "gmail_2-output-gmail-Gmail|Tool",
+            "name": "gmail",
+            "label": "Gmail",
+            "description": "Perform Gmail operations for drafts, messages, labels, and threads",
+            "type": "Gmail | Tool"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 529,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1108.5844021840467,
+        "y": -643.3613444224036
+      },
+      "dragging": false
+    },
+    {
+      "id": "gmail_3",
+      "position": {
+        "x": 1904.7023425868515,
+        "y": -605.2217356369871
+      },
+      "type": "customNode",
+      "data": {
+        "id": "gmail_3",
+        "label": "Gmail",
+        "version": 1,
+        "name": "gmail",
+        "type": "Gmail",
+        "baseClasses": [
+          "Gmail",
+          "Tool"
+        ],
+        "category": "Tools",
+        "description": "Perform Gmail operations for drafts, messages, labels, and threads",
+        "inputParams": [
+          {
+            "label": "Connect Credential",
+            "name": "credential",
+            "type": "credential",
+            "credentialNames": [
+              "gmailOAuth2"
+            ],
+            "id": "gmail_3-input-credential-credential",
+            "display": true
+          },
+          {
+            "label": "Type",
+            "name": "gmailType",
+            "type": "options",
+            "options": [
+              {
+                "label": "Drafts",
+                "name": "drafts"
+              },
+              {
+                "label": "Messages",
+                "name": "messages"
+              },
+              {
+                "label": "Labels",
+                "name": "labels"
+              },
+              {
+                "label": "Threads",
+                "name": "threads"
+              }
+            ],
+            "id": "gmail_3-input-gmailType-options",
+            "display": true
+          },
+          {
+            "label": "Draft Actions",
+            "name": "draftActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Drafts",
+                "name": "listDrafts"
+              },
+              {
+                "label": "Create Draft",
+                "name": "createDraft"
+              },
+              {
+                "label": "Get Draft",
+                "name": "getDraft"
+              },
+              {
+                "label": "Update Draft",
+                "name": "updateDraft"
+              },
+              {
+                "label": "Send Draft",
+                "name": "sendDraft"
+              },
+              {
+                "label": "Delete Draft",
+                "name": "deleteDraft"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "drafts"
+              ]
+            },
+            "id": "gmail_3-input-draftActions-multiOptions",
+            "display": false
+          },
+          {
+            "label": "Message Actions",
+            "name": "messageActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Messages",
+                "name": "listMessages"
+              },
+              {
+                "label": "Get Message",
+                "name": "getMessage"
+              },
+              {
+                "label": "Send Message",
+                "name": "sendMessage"
+              },
+              {
+                "label": "Modify Message",
+                "name": "modifyMessage"
+              },
+              {
+                "label": "Trash Message",
+                "name": "trashMessage"
+              },
+              {
+                "label": "Untrash Message",
+                "name": "untrashMessage"
+              },
+              {
+                "label": "Delete Message",
+                "name": "deleteMessage"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "messages"
+              ]
+            },
+            "id": "gmail_3-input-messageActions-multiOptions",
+            "display": true
+          },
+          {
+            "label": "Label Actions",
+            "name": "labelActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Labels",
+                "name": "listLabels"
+              },
+              {
+                "label": "Get Label",
+                "name": "getLabel"
+              },
+              {
+                "label": "Create Label",
+                "name": "createLabel"
+              },
+              {
+                "label": "Update Label",
+                "name": "updateLabel"
+              },
+              {
+                "label": "Delete Label",
+                "name": "deleteLabel"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "labels"
+              ]
+            },
+            "id": "gmail_3-input-labelActions-multiOptions",
+            "display": false
+          },
+          {
+            "label": "Thread Actions",
+            "name": "threadActions",
+            "type": "multiOptions",
+            "options": [
+              {
+                "label": "List Threads",
+                "name": "listThreads"
+              },
+              {
+                "label": "Get Thread",
+                "name": "getThread"
+              },
+              {
+                "label": "Modify Thread",
+                "name": "modifyThread"
+              },
+              {
+                "label": "Trash Thread",
+                "name": "trashThread"
+              },
+              {
+                "label": "Untrash Thread",
+                "name": "untrashThread"
+              },
+              {
+                "label": "Delete Thread",
+                "name": "deleteThread"
+              }
+            ],
+            "show": {
+              "gmailType": [
+                "threads"
+              ]
+            },
+            "id": "gmail_3-input-threadActions-multiOptions",
+            "display": false
+          },
+          {
+            "label": "Max Results",
+            "name": "draftMaxResults",
+            "type": "number",
+            "description": "Maximum number of drafts to return",
+            "default": 100,
+            "show": {
+              "draftActions": [
+                "listDrafts"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-draftMaxResults-number",
+            "display": false
+          },
+          {
+            "label": "To",
+            "name": "draftTo",
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated",
+            "placeholder": "user1@example.com,user2@example.com",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-draftTo-string",
+            "display": false
+          },
+          {
+            "label": "Subject",
+            "name": "draftSubject",
+            "type": "string",
+            "description": "Email subject",
+            "placeholder": "Email Subject",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-draftSubject-string",
+            "display": false
+          },
+          {
+            "label": "Body",
+            "name": "draftBody",
+            "type": "string",
+            "description": "Email body content",
+            "placeholder": "Email content",
+            "rows": 4,
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-draftBody-string",
+            "display": false
+          },
+          {
+            "label": "CC",
+            "name": "draftCc",
+            "type": "string",
+            "description": "CC email address(es), comma-separated",
+            "placeholder": "cc1@example.com,cc2@example.com",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-draftCc-string",
+            "display": false
+          },
+          {
+            "label": "BCC",
+            "name": "draftBcc",
+            "type": "string",
+            "description": "BCC email address(es), comma-separated",
+            "placeholder": "bcc1@example.com,bcc2@example.com",
+            "show": {
+              "draftActions": [
+                "createDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-draftBcc-string",
+            "display": false
+          },
+          {
+            "label": "Draft ID",
+            "name": "draftId",
+            "type": "string",
+            "description": "ID of the draft",
+            "show": {
+              "draftActions": [
+                "getDraft",
+                "updateDraft",
+                "sendDraft",
+                "deleteDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-draftId-string",
+            "display": false
+          },
+          {
+            "label": "To (Update)",
+            "name": "draftUpdateTo",
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated",
+            "placeholder": "user1@example.com,user2@example.com",
+            "show": {
+              "draftActions": [
+                "updateDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-draftUpdateTo-string",
+            "display": false
+          },
+          {
+            "label": "Subject (Update)",
+            "name": "draftUpdateSubject",
+            "type": "string",
+            "description": "Email subject",
+            "placeholder": "Email Subject",
+            "show": {
+              "draftActions": [
+                "updateDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-draftUpdateSubject-string",
+            "display": false
+          },
+          {
+            "label": "Body (Update)",
+            "name": "draftUpdateBody",
+            "type": "string",
+            "description": "Email body content",
+            "placeholder": "Email content",
+            "rows": 4,
+            "show": {
+              "draftActions": [
+                "updateDraft"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-draftUpdateBody-string",
+            "display": false
+          },
+          {
+            "label": "Max Results",
+            "name": "messageMaxResults",
+            "type": "number",
+            "description": "Maximum number of messages to return",
+            "default": 100,
+            "show": {
+              "messageActions": [
+                "listMessages"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-messageMaxResults-number",
+            "display": false
+          },
+          {
+            "label": "Query",
+            "name": "messageQuery",
+            "type": "string",
+            "description": "Query string for filtering results (Gmail search syntax)",
+            "placeholder": "is:unread from:example@gmail.com",
+            "show": {
+              "messageActions": [
+                "listMessages"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-messageQuery-string",
+            "display": false
+          },
+          {
+            "label": "To",
+            "name": "messageTo",
+            "type": "string",
+            "description": "Recipient email address(es), comma-separated",
+            "placeholder": "user1@example.com,user2@example.com",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-messageTo-string",
+            "display": true
+          },
+          {
+            "label": "Subject",
+            "name": "messageSubject",
+            "type": "string",
+            "description": "Email subject",
+            "placeholder": "Email Subject",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-messageSubject-string",
+            "display": true
+          },
+          {
+            "label": "Body",
+            "name": "messageBody",
+            "type": "string",
+            "description": "Email body content",
+            "placeholder": "Email content",
+            "rows": 4,
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-messageBody-string",
+            "display": true
+          },
+          {
+            "label": "CC",
+            "name": "messageCc",
+            "type": "string",
+            "description": "CC email address(es), comma-separated",
+            "placeholder": "cc1@example.com,cc2@example.com",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-messageCc-string",
+            "display": true
+          },
+          {
+            "label": "BCC",
+            "name": "messageBcc",
+            "type": "string",
+            "description": "BCC email address(es), comma-separated",
+            "placeholder": "bcc1@example.com,bcc2@example.com",
+            "show": {
+              "messageActions": [
+                "sendMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-messageBcc-string",
+            "display": true
+          },
+          {
+            "label": "Message ID",
+            "name": "messageId",
+            "type": "string",
+            "description": "ID of the message",
+            "show": {
+              "messageActions": [
+                "getMessage",
+                "modifyMessage",
+                "trashMessage",
+                "untrashMessage",
+                "deleteMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-messageId-string",
+            "display": false
+          },
+          {
+            "label": "Add Label IDs",
+            "name": "messageAddLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to add",
+            "placeholder": "INBOX,STARRED",
+            "show": {
+              "messageActions": [
+                "modifyMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-messageAddLabelIds-string",
+            "display": false
+          },
+          {
+            "label": "Remove Label IDs",
+            "name": "messageRemoveLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to remove",
+            "placeholder": "UNREAD,SPAM",
+            "show": {
+              "messageActions": [
+                "modifyMessage"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-messageRemoveLabelIds-string",
+            "display": false
+          },
+          {
+            "label": "Label Name",
+            "name": "labelName",
+            "type": "string",
+            "description": "Name of the label",
+            "placeholder": "Important",
+            "show": {
+              "labelActions": [
+                "createLabel",
+                "updateLabel"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-labelName-string",
+            "display": false
+          },
+          {
+            "label": "Label Color",
+            "name": "labelColor",
+            "type": "string",
+            "description": "Color of the label (hex color code)",
+            "placeholder": "#ff0000",
+            "show": {
+              "labelActions": [
+                "createLabel",
+                "updateLabel"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-labelColor-string",
+            "display": false
+          },
+          {
+            "label": "Label ID",
+            "name": "labelId",
+            "type": "string",
+            "description": "ID of the label",
+            "show": {
+              "labelActions": [
+                "getLabel",
+                "updateLabel",
+                "deleteLabel"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-labelId-string",
+            "display": false
+          },
+          {
+            "label": "Max Results",
+            "name": "threadMaxResults",
+            "type": "number",
+            "description": "Maximum number of threads to return",
+            "default": 100,
+            "show": {
+              "threadActions": [
+                "listThreads"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-threadMaxResults-number",
+            "display": false
+          },
+          {
+            "label": "Query",
+            "name": "threadQuery",
+            "type": "string",
+            "description": "Query string for filtering results (Gmail search syntax)",
+            "placeholder": "is:unread from:example@gmail.com",
+            "show": {
+              "threadActions": [
+                "listThreads"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-threadQuery-string",
+            "display": false
+          },
+          {
+            "label": "Thread ID",
+            "name": "threadId",
+            "type": "string",
+            "description": "ID of the thread",
+            "show": {
+              "threadActions": [
+                "getThread",
+                "modifyThread",
+                "trashThread",
+                "untrashThread",
+                "deleteThread"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-threadId-string",
+            "display": false
+          },
+          {
+            "label": "Add Label IDs",
+            "name": "threadAddLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to add",
+            "placeholder": "INBOX,STARRED",
+            "show": {
+              "threadActions": [
+                "modifyThread"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-threadAddLabelIds-string",
+            "display": false
+          },
+          {
+            "label": "Remove Label IDs",
+            "name": "threadRemoveLabelIds",
+            "type": "string",
+            "description": "Comma-separated label IDs to remove",
+            "placeholder": "UNREAD,SPAM",
+            "show": {
+              "threadActions": [
+                "modifyThread"
+              ]
+            },
+            "additionalParams": true,
+            "optional": true,
+            "id": "gmail_3-input-threadRemoveLabelIds-string",
+            "display": false
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "gmailType": "messages",
+          "draftActions": "",
+          "messageActions": "[\"sendMessage\"]",
+          "labelActions": "",
+          "threadActions": "",
+          "draftMaxResults": 100,
+          "draftTo": "",
+          "draftSubject": "",
+          "draftBody": "",
+          "draftCc": "",
+          "draftBcc": "",
+          "draftId": "",
+          "draftUpdateTo": "",
+          "draftUpdateSubject": "",
+          "draftUpdateBody": "",
+          "messageMaxResults": 100,
+          "messageQuery": "",
+          "messageTo": "",
+          "messageSubject": "",
+          "messageBody": "",
+          "messageCc": "",
+          "messageBcc": "",
+          "messageId": "",
+          "messageAddLabelIds": "",
+          "messageRemoveLabelIds": "",
+          "labelName": "",
+          "labelColor": "",
+          "labelId": "",
+          "threadMaxResults": 100,
+          "threadQuery": "",
+          "threadId": "",
+          "threadAddLabelIds": "",
+          "threadRemoveLabelIds": ""
+        },
+        "outputAnchors": [
+          {
+            "id": "gmail_3-output-gmail-Gmail|Tool",
+            "name": "gmail",
+            "label": "Gmail",
+            "description": "Perform Gmail operations for drafts, messages, labels, and threads",
+            "type": "Gmail | Tool"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 529,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1904.7023425868515,
+        "y": -605.2217356369871
+      },
+      "dragging": false
+    },
+    {
+      "id": "stickyNote_0",
+      "position": {
+        "x": 668.7053616196938,
+        "y": -698.8789447840236
+      },
+      "type": "stickyNote",
+      "data": {
+        "id": "stickyNote_0",
+        "label": "Sticky Note",
+        "version": 2,
+        "name": "stickyNote",
+        "type": "StickyNote",
+        "baseClasses": [
+          "StickyNote"
+        ],
+        "tags": [
+          "Utilities"
+        ],
+        "category": "Utilities",
+        "description": "Add a sticky note",
+        "inputParams": [
+          {
+            "label": "",
+            "name": "note",
+            "type": "string",
+            "rows": 1,
+            "placeholder": "Type something here",
+            "optional": true,
+            "id": "stickyNote_0-input-note-string",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "note": "01 - Gmail | List unread messages"
+        },
+        "outputAnchors": [
+          {
+            "id": "stickyNote_0-output-stickyNote-StickyNote",
+            "name": "stickyNote",
+            "label": "StickyNote",
+            "description": "Add a sticky note",
+            "type": "StickyNote"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 42,
+      "positionAbsolute": {
+        "x": 668.7053616196938,
+        "y": -698.8789447840236
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "stickyNote_1",
+      "position": {
+        "x": 1106.2171080067849,
+        "y": -703.756648681009
+      },
+      "type": "stickyNote",
+      "data": {
+        "id": "stickyNote_1",
+        "label": "Sticky Note (1)",
+        "version": 2,
+        "name": "stickyNote",
+        "type": "StickyNote",
+        "baseClasses": [
+          "StickyNote"
+        ],
+        "tags": [
+          "Utilities"
+        ],
+        "category": "Utilities",
+        "description": "Add a sticky note",
+        "inputParams": [
+          {
+            "label": "",
+            "name": "note",
+            "type": "string",
+            "rows": 1,
+            "placeholder": "Type something here",
+            "optional": true,
+            "id": "stickyNote_1-input-note-string",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "note": "02 - Gmail | Get message content"
+        },
+        "outputAnchors": [
+          {
+            "id": "stickyNote_1-output-stickyNote-StickyNote",
+            "name": "stickyNote",
+            "label": "StickyNote",
+            "description": "Add a sticky note",
+            "type": "StickyNote"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 42,
+      "positionAbsolute": {
+        "x": 1106.2171080067849,
+        "y": -703.756648681009
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "stickyNote_2",
+      "position": {
+        "x": 1545.1634731871068,
+        "y": -700.887411094547
+      },
+      "type": "stickyNote",
+      "data": {
+        "id": "stickyNote_2",
+        "label": "Sticky Note (1) (2)",
+        "version": 2,
+        "name": "stickyNote",
+        "type": "StickyNote",
+        "baseClasses": [
+          "StickyNote"
+        ],
+        "tags": [
+          "Utilities"
+        ],
+        "category": "Utilities",
+        "description": "Add a sticky note",
+        "inputParams": [
+          {
+            "label": "",
+            "name": "note",
+            "type": "string",
+            "rows": 1,
+            "placeholder": "Type something here",
+            "optional": true,
+            "id": "stickyNote_2-input-note-string",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "note": "04 - Gmail | Create draft reply"
+        },
+        "outputAnchors": [
+          {
+            "id": "stickyNote_2-output-stickyNote-StickyNote",
+            "name": "stickyNote",
+            "label": "StickyNote",
+            "description": "Add a sticky note",
+            "type": "StickyNote"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 42,
+      "positionAbsolute": {
+        "x": 1545.1634731871068,
+        "y": -700.887411094547
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "stickyNote_3",
+      "position": {
+        "x": 1904.9382748924395,
+        "y": -699.2582774769916
+      },
+      "type": "stickyNote",
+      "data": {
+        "id": "stickyNote_3",
+        "label": "Sticky Note (1) (2) (3)",
+        "version": 2,
+        "name": "stickyNote",
+        "type": "StickyNote",
+        "baseClasses": [
+          "StickyNote"
+        ],
+        "tags": [
+          "Utilities"
+        ],
+        "category": "Utilities",
+        "description": "Add a sticky note",
+        "inputParams": [
+          {
+            "label": "",
+            "name": "note",
+            "type": "string",
+            "rows": 1,
+            "placeholder": "Type something here",
+            "optional": true,
+            "id": "stickyNote_3-input-note-string",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "note": "05 - Gmail | Send draft manually optional"
+        },
+        "outputAnchors": [
+          {
+            "id": "stickyNote_3-output-stickyNote-StickyNote",
+            "name": "stickyNote",
+            "label": "StickyNote",
+            "description": "Add a sticky note",
+            "type": "StickyNote"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 62,
+      "positionAbsolute": {
+        "x": 1904.9382748924395,
+        "y": -699.2582774769916
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "stickyNote_4",
+      "position": {
+        "x": 424.1575360638361,
+        "y": 298.03963140054606
+      },
+      "type": "stickyNote",
+      "data": {
+        "id": "stickyNote_4",
+        "label": "Sticky Note (4)",
+        "version": 2,
+        "name": "stickyNote",
+        "type": "StickyNote",
+        "baseClasses": [
+          "StickyNote"
+        ],
+        "tags": [
+          "Utilities"
+        ],
+        "category": "Utilities",
+        "description": "Add a sticky note",
+        "inputParams": [
+          {
+            "label": "",
+            "name": "note",
+            "type": "string",
+            "rows": 1,
+            "placeholder": "Type something here",
+            "optional": true,
+            "id": "stickyNote_4-input-note-string",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "note": "LLM - Eden AI OpenAI-compatible model"
+        },
+        "outputAnchors": [
+          {
+            "id": "stickyNote_4-output-stickyNote-StickyNote",
+            "name": "stickyNote",
+            "label": "StickyNote",
+            "description": "Add a sticky note",
+            "type": "StickyNote"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 62,
+      "positionAbsolute": {
+        "x": 424.1575360638361,
+        "y": 298.03963140054606
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "stickyNote_5",
+      "position": {
+        "x": -76.89563663560392,
+        "y": -203.916487448881
+      },
+      "type": "stickyNote",
+      "data": {
+        "id": "stickyNote_5",
+        "label": "Sticky Note (4) (5)",
+        "version": 2,
+        "name": "stickyNote",
+        "type": "StickyNote",
+        "baseClasses": [
+          "StickyNote"
+        ],
+        "tags": [
+          "Utilities"
+        ],
+        "category": "Utilities",
+        "description": "Add a sticky note",
+        "inputParams": [
+          {
+            "label": "",
+            "name": "note",
+            "type": "string",
+            "rows": 1,
+            "placeholder": "Type something here",
+            "optional": true,
+            "id": "stickyNote_5-input-note-string",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "note": "Memory - Buffer Memory"
+        },
+        "outputAnchors": [
+          {
+            "id": "stickyNote_5-output-stickyNote-StickyNote",
+            "name": "stickyNote",
+            "label": "StickyNote",
+            "description": "Add a sticky note",
+            "type": "StickyNote"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 42,
+      "positionAbsolute": {
+        "x": -76.89563663560392,
+        "y": -203.916487448881
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "stickyNote_6",
+      "position": {
+        "x": 1600.4227522768851,
+        "y": 225.7414249819043
+      },
+      "type": "stickyNote",
+      "data": {
+        "id": "stickyNote_6",
+        "label": "Sticky Note (4) (6)",
+        "version": 2,
+        "name": "stickyNote",
+        "type": "StickyNote",
+        "baseClasses": [
+          "StickyNote"
+        ],
+        "tags": [
+          "Utilities"
+        ],
+        "category": "Utilities",
+        "description": "Add a sticky note",
+        "inputParams": [
+          {
+            "label": "",
+            "name": "note",
+            "type": "string",
+            "rows": 1,
+            "placeholder": "Type something here",
+            "optional": true,
+            "id": "stickyNote_6-input-note-string",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "note": "Agent - Email Assistant"
+        },
+        "outputAnchors": [
+          {
+            "id": "stickyNote_6-output-stickyNote-StickyNote",
+            "name": "stickyNote",
+            "label": "StickyNote",
+            "description": "Add a sticky note",
+            "type": "StickyNote"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 42,
+      "positionAbsolute": {
+        "x": 1600.4227522768851,
+        "y": 225.7414249819043
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "stickyNote_7",
+      "position": {
+        "x": 922.885274982185,
+        "y": 946.6578261277893
+      },
+      "type": "stickyNote",
+      "data": {
+        "id": "stickyNote_7",
+        "label": "Sticky Note (4) (7)",
+        "version": 2,
+        "name": "stickyNote",
+        "type": "StickyNote",
+        "baseClasses": [
+          "StickyNote"
+        ],
+        "tags": [
+          "Utilities"
+        ],
+        "category": "Utilities",
+        "description": "Add a sticky note",
+        "inputParams": [
+          {
+            "label": "",
+            "name": "note",
+            "type": "string",
+            "rows": 1,
+            "placeholder": "Type something here",
+            "optional": true,
+            "id": "stickyNote_7-input-note-string",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "note": "03 - Eden AI | Summarize + analyze email"
+        },
+        "outputAnchors": [
+          {
+            "id": "stickyNote_7-output-stickyNote-StickyNote",
+            "name": "stickyNote",
+            "label": "StickyNote",
+            "description": "Add a sticky note",
+            "type": "StickyNote"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 62,
+      "positionAbsolute": {
+        "x": 922.885274982185,
+        "y": 946.6578261277893
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "stickyNote_8",
+      "position": {
+        "x": 2217.3660133956473,
+        "y": 215.08063753455423
+      },
+      "type": "stickyNote",
+      "data": {
+        "id": "stickyNote_8",
+        "label": "Sticky Note",
+        "version": 2,
+        "name": "stickyNote",
+        "type": "StickyNote",
+        "baseClasses": [
+          "StickyNote"
+        ],
+        "tags": [
+          "Utilities"
+        ],
+        "category": "Utilities",
+        "description": "Add a sticky note",
+        "inputParams": [
+          {
+            "label": "",
+            "name": "note",
+            "type": "string",
+            "rows": 1,
+            "placeholder": "Type something here",
+            "optional": true,
+            "id": "stickyNote_8-input-note-string",
+            "display": true
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "note": "📧 Eden AI Gmail Assistant\n\nThis chatflow retrieves the latest unread Gmail email, summarizes and analyzes it with Eden AI, then creates a Gmail draft reply.\n\nSetup required:\n1. Gmail OAuth credential\n3. OpenAI Custom Model configured with Eden AI endpoint:\n   https://api.eu.edenai.run/v3\n\nSafe behavior:\n- Creates Gmail drafts only\n- Does not send emails automatically\n- User reviews the draft before sending\n\n##  Required variables\n\nThis template uses Eden AI through the OpenAI-compatible EU endpoint.\n\nCreate these Flowise variables before running the chatflow:\n\nEDENAI_API_KEY=YOUR_EDENAI_API_KEY\nEDENAI_BASE_URL=https://api.eu.edenai.run/v3/chat/completions\nEDENAI_MODEL=openai/gpt-4.1-nano\n\nRecommended model alternatives:\n\nEDENAI_MODEL=qwen/qwen3.5-plus\nEDENAI_MODEL=mistral/mistral-large-latest\n\nSecurity note:\nDo not hardcode your Eden AI API key inside the JavaScript function. Keep it inside Flowise Variables or Credentials.\n"
+        },
+        "outputAnchors": [
+          {
+            "id": "stickyNote_8-output-stickyNote-StickyNote",
+            "name": "stickyNote",
+            "label": "StickyNote",
+            "description": "Add a sticky note",
+            "type": "StickyNote"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 888,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 2217.3660133956473,
+        "y": 215.08063753455423
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "bufferMemory_0",
+      "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+      "target": "toolAgent_0",
+      "targetHandle": "toolAgent_0-input-memory-BaseChatMemory",
+      "type": "buttonedge",
+      "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-toolAgent_0-toolAgent_0-input-memory-BaseChatMemory"
+    },
+    {
+      "source": "gmail_0",
+      "sourceHandle": "gmail_0-output-gmail-Gmail|Tool",
+      "target": "toolAgent_0",
+      "targetHandle": "toolAgent_0-input-tools-Tool",
+      "type": "buttonedge",
+      "id": "gmail_0-gmail_0-output-gmail-Gmail|Tool-toolAgent_0-toolAgent_0-input-tools-Tool"
+    },
+    {
+      "source": "chatOpenAICustom_0",
+      "sourceHandle": "chatOpenAICustom_0-output-chatOpenAICustom-ChatOpenAI-Custom|BaseChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+      "target": "toolAgent_0",
+      "targetHandle": "toolAgent_0-input-model-BaseChatModel",
+      "type": "buttonedge",
+      "id": "chatOpenAICustom_0-chatOpenAICustom_0-output-chatOpenAICustom-ChatOpenAI-Custom|BaseChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-toolAgent_0-toolAgent_0-input-model-BaseChatModel"
+    },
+    {
+      "source": "customTool_0",
+      "sourceHandle": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable",
+      "target": "toolAgent_0",
+      "targetHandle": "toolAgent_0-input-tools-Tool",
+      "type": "buttonedge",
+      "id": "customTool_0-customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable-toolAgent_0-toolAgent_0-input-tools-Tool"
+    },
+    {
+      "source": "gmail_2",
+      "sourceHandle": "gmail_2-output-gmail-Gmail|Tool",
+      "target": "toolAgent_0",
+      "targetHandle": "toolAgent_0-input-tools-Tool",
+      "type": "buttonedge",
+      "id": "gmail_2-gmail_2-output-gmail-Gmail|Tool-toolAgent_0-toolAgent_0-input-tools-Tool"
+    },
+    {
+      "source": "gmail_1",
+      "sourceHandle": "gmail_1-output-gmail-Gmail|Tool",
+      "target": "toolAgent_0",
+      "targetHandle": "toolAgent_0-input-tools-Tool",
+      "type": "buttonedge",
+      "id": "gmail_1-gmail_1-output-gmail-Gmail|Tool-toolAgent_0-toolAgent_0-input-tools-Tool"
+    },
+    {
+      "source": "gmail_3",
+      "sourceHandle": "gmail_3-output-gmail-Gmail|Tool",
+      "target": "toolAgent_0",
+      "targetHandle": "toolAgent_0-input-tools-Tool",
+      "type": "buttonedge",
+      "id": "gmail_3-gmail_3-output-gmail-Gmail|Tool-toolAgent_0-toolAgent_0-input-tools-Tool"
+    }
+  ]
+}
