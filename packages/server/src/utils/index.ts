@@ -1830,7 +1830,7 @@ export const getMemorySessionId = (
         // Provided in API body - incomingInput.overrideConfig: { sessionId: 'abc' }
         if (incomingInput.overrideConfig?.sessionId) {
             if (typeof incomingInput.overrideConfig.sessionId !== 'string') {
-                throw new Error('Invalid sessionId: must be a string')
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid sessionId: must be a string')
             }
             return incomingInput.overrideConfig.sessionId
         }
