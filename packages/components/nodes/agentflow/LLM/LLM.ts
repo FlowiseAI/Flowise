@@ -13,7 +13,8 @@ import {
     processMessagesWithImages,
     revertBase64ImagesToFileRefs,
     replaceInlineDataWithFileReferences,
-    updateFlowState
+    updateFlowState,
+    createTokenCounter
 } from '../utils'
 import { processTemplateVariables, configureStructuredOutput, extractResponseContent } from '../../../src/utils'
 import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
@@ -797,10 +798,11 @@ class LLM_Agentflow implements INode {
         abortController: AbortController
     ): Promise<void> {
         const maxTokenLimit = (nodeData.inputs?.llmMemoryMaxTokenLimit as number) || 2000
+        const countTokens = createTokenCounter(llmNodeInstance)
 
         // Convert past messages to a format suitable for token counting
         const messagesString = pastMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
-        const tokenCount = await llmNodeInstance.getNumTokens(messagesString)
+        const tokenCount = await countTokens(messagesString)
 
         if (tokenCount > maxTokenLimit) {
             // Calculate how many messages to summarize (messages that exceed the token limit)
@@ -815,7 +817,7 @@ class LLM_Agentflow implements INode {
                     messagesToSummarize.push(poppedMessage)
                     // Recalculate token count for remaining messages
                     const remainingMessagesString = remainingMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
-                    currBufferLength = await llmNodeInstance.getNumTokens(remainingMessagesString)
+                    currBufferLength = await countTokens(remainingMessagesString)
                 }
             }
 

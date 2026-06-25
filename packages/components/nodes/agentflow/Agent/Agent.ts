@@ -32,7 +32,8 @@ import {
     revertBase64ImagesToFileRefs,
     normalizeMessagesForStorage,
     replaceInlineDataWithFileReferences,
-    updateFlowState
+    updateFlowState,
+    createTokenCounter
 } from '../utils'
 import {
     convertMultiOptionsToStringArray,
@@ -1806,10 +1807,11 @@ class Agent_Agentflow implements INode {
         abortController: AbortController
     ): Promise<void> {
         const maxTokenLimit = (nodeData.inputs?.agentMemoryMaxTokenLimit as number) || 2000
+        const countTokens = createTokenCounter(llmWithoutToolsBind)
 
         // Convert past messages to a format suitable for token counting
         const messagesString = pastMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
-        const tokenCount = await llmWithoutToolsBind.getNumTokens(messagesString)
+        const tokenCount = await countTokens(messagesString)
 
         if (tokenCount > maxTokenLimit) {
             // Calculate how many messages to summarize (messages that exceed the token limit)
@@ -1824,7 +1826,7 @@ class Agent_Agentflow implements INode {
                     messagesToSummarize.push(poppedMessage)
                     // Recalculate token count for remaining messages
                     const remainingMessagesString = remainingMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
-                    currBufferLength = await llmWithoutToolsBind.getNumTokens(remainingMessagesString)
+                    currBufferLength = await countTokens(remainingMessagesString)
                 }
             }
 
