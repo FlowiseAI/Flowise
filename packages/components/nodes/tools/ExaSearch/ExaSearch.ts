@@ -50,40 +50,34 @@ class ExaSearch_Tools implements INode {
                 type: 'options',
                 options: [
                     {
-                        label: 'keyword',
-                        name: 'keyword'
-                    },
-                    {
-                        label: 'neural',
-                        name: 'neural'
-                    },
-                    {
                         label: 'auto',
-                        name: 'auto',
-                        description: 'decides between keyword and neural'
+                        name: 'auto'
+                    },
+                    {
+                        label: 'fast',
+                        name: 'fast'
+                    },
+                    {
+                        label: 'deep',
+                        name: 'deep'
                     }
                 ],
                 optional: true,
                 additionalParams: true
             },
             {
-                label: 'Use Auto Prompt',
-                name: 'useAutoprompt',
-                type: 'boolean',
-                optional: true,
-                additionalParams: true,
-                description: 'If true, your query will be converted to a Exa query. Default false.'
-            },
-            {
-                label: 'Category (Beta)',
+                label: 'Category',
                 name: 'category',
                 type: 'options',
-                description:
-                    'A data category to focus on, with higher comprehensivity and data cleanliness. Categories right now include company, research paper, news, github, tweet, movie, song, personal site, and pdf',
+                description: 'A data category to focus on.',
                 options: [
                     {
                         label: 'company',
                         name: 'company'
+                    },
+                    {
+                        label: 'people',
+                        name: 'people'
                     },
                     {
                         label: 'research paper',
@@ -94,32 +88,8 @@ class ExaSearch_Tools implements INode {
                         name: 'news'
                     },
                     {
-                        label: 'github',
-                        name: 'github'
-                    },
-                    {
-                        label: 'tweet',
-                        name: 'tweet'
-                    },
-                    {
-                        label: 'movie',
-                        name: 'movie'
-                    },
-                    {
-                        label: 'song',
-                        name: 'song'
-                    },
-                    {
-                        label: 'pdf',
-                        name: 'pdf'
-                    },
-                    {
                         label: 'personal site',
                         name: 'personal site'
-                    },
-                    {
-                        label: 'linkedin profile',
-                        name: 'linkedin profile'
                     },
                     {
                         label: 'financial report',
@@ -128,6 +98,15 @@ class ExaSearch_Tools implements INode {
                 ],
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Max Age Hours',
+                name: 'maxAgeHours',
+                type: 'number',
+                optional: true,
+                additionalParams: true,
+                description:
+                    'Freshness control. 0 = always crawl, -1 = cache only, 24 = cache if less than 24h old.'
             },
             {
                 label: 'Include Domains',
@@ -200,9 +179,9 @@ class ExaSearch_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const description = nodeData.inputs?.description as string
         const numResults = nodeData.inputs?.numResults as string
-        const type = nodeData.inputs?.type as 'keyword' | 'neural' | 'auto' | undefined
-        const useAutoprompt = nodeData.inputs?.useAutoprompt as boolean
+        const type = nodeData.inputs?.type as 'auto' | 'fast' | 'deep' | undefined
         const category = nodeData.inputs?.category as string
+        const maxAgeHours = nodeData.inputs?.maxAgeHours as string
         const includeDomains = nodeData.inputs?.includeDomains as string
         const excludeDomains = nodeData.inputs?.excludeDomains as string
         const startCrawlDate = nodeData.inputs?.startCrawlDate as string
@@ -213,19 +192,22 @@ class ExaSearch_Tools implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const exaSearchApiKey = getCredentialParam('exaSearchApiKey', credentialData, nodeData)
 
+        const client = new Exa(exaSearchApiKey)
+        ;(client as any).headers.set('x-exa-integration', 'flowise-integration')
+
         const tool = new ExaSearchResults({
-            client: new Exa(exaSearchApiKey),
+            client,
             searchArgs: {
                 numResults: numResults ? parseFloat(numResults) : undefined,
                 type: type || undefined,
-                useAutoprompt: useAutoprompt || undefined,
                 category: (category as any) || undefined,
                 includeDomains: includeDomains ? includeDomains.split(',') : undefined,
                 excludeDomains: excludeDomains ? excludeDomains.split(',') : undefined,
                 startCrawlDate: startCrawlDate || undefined,
                 endCrawlDate: endCrawlDate || undefined,
                 startPublishedDate: startPublishedDate || undefined,
-                endPublishedDate: endPublishedDate || undefined
+                endPublishedDate: endPublishedDate || undefined,
+                ...(maxAgeHours ? { maxAgeHours: parseFloat(maxAgeHours) } : {})
             }
         })
 
