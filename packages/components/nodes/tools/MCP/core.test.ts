@@ -3,10 +3,211 @@ import {
     validateCommandInjection,
     validateArgsForLocalFileAccess,
     validateEnvironmentVariables,
+    MCPTool,
+    mcpInputSchemaToZodObject,
     validateMCPServerConfig
 } from './core'
 
 describe('MCP Security Validations', () => {
+    describe('mcpInputSchemaToZodObject', () => {
+        it('should preserve MCP input schema descriptions and required fields', () => {
+            const schema = mcpInputSchemaToZodObject({
+                type: 'object',
+                properties: {
+                    location: {
+                        type: 'string',
+                        description: 'The city and country to get weather for.'
+                    },
+                    days: {
+                        type: 'integer',
+                        description: 'Number of forecast days.'
+                    },
+                    unit: {
+                        type: 'string',
+                        enum: ['celsius', 'fahrenheit'],
+                        description: 'Temperature unit.'
+                    }
+                },
+                required: ['location']
+            })
+
+            expect(schema.safeParse({}).success).toBe(false)
+            expect(schema.safeParse({ location: 'Dhaka, Bangladesh', unit: 'kelvin' }).success).toBe(false)
+            expect(schema.safeParse({ location: 'Dhaka, Bangladesh', days: 3, unit: 'celsius' }).success).toBe(true)
+
+            const shape = schema.shape
+            expect(shape.location.description).toBe('The city and country to get weather for.')
+            expect(shape.days.description).toBe('Number of forecast days.')
+            expect(shape.unit.description).toBe('Temperature unit.')
+            expect(shape.location.safeParse(undefined).success).toBe(false)
+            expect(shape.days.safeParse(undefined).success).toBe(true)
+        })
+
+        it('should preserve nested object and array parameter schemas', () => {
+            const schema = mcpInputSchemaToZodObject({
+                type: 'object',
+                properties: {
+                    filters: {
+                        type: 'object',
+                        description: 'Search filters.',
+                        properties: {
+                            tags: {
+                                type: 'array',
+                                description: 'Tags to match.',
+                                items: {
+                                    type: 'string',
+                                    description: 'A tag value.'
+                                }
+                            }
+                        },
+                        required: ['tags']
+                    }
+                },
+                required: ['filters']
+            })
+
+            expect(schema.safeParse({ filters: { tags: ['docs', 'api'] } }).success).toBe(true)
+            expect(schema.safeParse({ filters: {} }).success).toBe(false)
+            expect(schema.shape.filters.description).toBe('Search filters.')
+            expect(schema.shape.filters.shape.tags.description).toBe('Tags to match.')
+        })
+
+        it('should preserve non-string enum values', () => {
+            const schema = mcpInputSchemaToZodObject({
+                type: 'object',
+                properties: {
+                    priority: {
+                        enum: [1, 2, 'urgent', true, null],
+                        description: 'Priority marker.'
+                    }
+                },
+                required: ['priority']
+            })
+
+            expect(schema.safeParse({ priority: 1 }).success).toBe(true)
+            expect(schema.safeParse({ priority: true }).success).toBe(true)
+            expect(schema.safeParse({ priority: null }).success).toBe(true)
+            expect(schema.safeParse({ priority: 'urgent' }).success).toBe(true)
+            expect(schema.safeParse({ priority: 'low' }).success).toBe(false)
+            expect(schema.shape.priority.description).toBe('Priority marker.')
+        })
+
+        it('should support array-based JSON schema types', () => {
+            const schema = mcpInputSchemaToZodObject({
+                type: 'object',
+                properties: {
+                    query: {
+                        type: ['string', 'null'],
+                        description: 'Optional query text.'
+                    }
+                },
+                required: ['query']
+            })
+
+            expect(schema.safeParse({ query: 'docs' }).success).toBe(true)
+            expect(schema.safeParse({ query: null }).success).toBe(true)
+            expect(schema.safeParse({ query: 123 }).success).toBe(false)
+            expect(schema.safeParse({}).success).toBe(false)
+            expect(schema.shape.query.description).toBe('Optional query text.')
+        })
+
+        it('should infer object and array schemas from structural fields', () => {
+            const schema = mcpInputSchemaToZodObject({
+                type: 'object',
+                properties: {
+                    filters: {
+                        description: 'Search filters.',
+                        properties: {
+                            tags: {
+                                description: 'Tags to match.',
+                                items: {
+                                    type: 'string'
+                                }
+                            }
+                        },
+                        required: ['tags']
+                    }
+                },
+                required: ['filters']
+            })
+
+            expect(schema.safeParse({ filters: { tags: ['docs', 'api'] } }).success).toBe(true)
+            expect(schema.safeParse({ filters: { tags: 'docs' } }).success).toBe(false)
+            expect(schema.safeParse({ filters: {} }).success).toBe(false)
+            expect(schema.shape.filters.description).toBe('Search filters.')
+            expect(schema.shape.filters.shape.tags.description).toBe('Tags to match.')
+        })
+
+        it('should preserve default values', () => {
+            const schema = mcpInputSchemaToZodObject({
+                type: 'object',
+                properties: {
+                    limit: {
+                        type: 'integer',
+                        default: 10,
+                        description: 'Maximum number of results.'
+                    }
+                }
+            })
+
+            const result = schema.safeParse({})
+
+            expect(result.success).toBe(true)
+            expect(result.data.limit).toBe(10)
+            expect(schema.safeParse({ limit: 5 }).success).toBe(true)
+            expect(schema.safeParse({ limit: 1.5 }).success).toBe(false)
+            expect(schema.shape.limit.description).toBe('Maximum number of results.')
+        })
+
+        it('should throw for invalid or unsupported JSON schemas', () => {
+            expect(() => {
+                mcpInputSchemaToZodObject(null)
+            }).toThrow('Invalid MCP input schema')
+
+            expect(() => {
+                mcpInputSchemaToZodObject({
+                    type: 'object',
+                    properties: {
+                        bad: null
+                    }
+                })
+            }).toThrow('Invalid schema definition for property: bad')
+
+            expect(() => {
+                mcpInputSchemaToZodObject({
+                    type: 'object',
+                    properties: {
+                        bad: {
+                            type: 'symbol'
+                        }
+                    }
+                })
+            }).toThrow('Unsupported schema type: symbol for property: bad')
+        })
+
+        it('should create LangChain MCP tools with the original MCP description and converted schema', async () => {
+            const mcpTool = await MCPTool({
+                toolkit: {} as any,
+                name: 'buscar_previsao_tempo',
+                description: 'Retorna a previsão do tempo para os próximos dias.',
+                argsSchema: {
+                    type: 'object',
+                    properties: {
+                        local: {
+                            type: 'string',
+                            description: 'Local para consultar a previsão.'
+                        }
+                    },
+                    required: ['local']
+                }
+            })
+
+            expect(mcpTool.description).toBe('Retorna a previsão do tempo para os próximos dias.')
+            expect((mcpTool.schema as any).shape.local.description).toBe('Local para consultar a previsão.')
+            expect((mcpTool.schema as any).safeParse({}).success).toBe(false)
+        })
+    })
+
     describe('validateCommandFlags', () => {
         describe('npx command', () => {
             it('should block -c flag', () => {
