@@ -9,5 +9,4 @@ yarn-error.log*
 .eslintrc
 .prettierignore
 .prettierrc
-jsconfig.json
-
+tsconfig.json
