@@ -9,6 +9,7 @@ type Metadata = Record<string, unknown>
 
 export interface ExtendedRecordManagerInterface extends RecordManagerInterface {
     update(keys: Array<{ uid: string; docId: string }> | string[], updateOptions?: Record<string, any>): Promise<void>
+    close?(): Promise<void>
 }
 
 type StringOrDocFunc = string | ((doc: DocumentInterface) => string)
@@ -255,6 +256,16 @@ interface IndexArgs {
  * @returns {Promise<IndexingResult>}
  */
 export async function index(args: IndexArgs): Promise<IndexingResult> {
+    const { recordManager } = args
+
+    try {
+        return await indexWithRecordManager(args)
+    } finally {
+        await recordManager.close?.()
+    }
+}
+
+async function indexWithRecordManager(args: IndexArgs): Promise<IndexingResult> {
     const { docsSource, recordManager, vectorStore, options } = args
     const { batchSize = 100, cleanup, sourceIdKey, cleanupBatchSize = 1000, forceUpdate = false, vectorStoreName } = options ?? {}
 

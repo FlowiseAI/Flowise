@@ -397,6 +397,8 @@ const deleteDocumentStoreFileChunk = async (storeId: string, docId: string, chun
 }
 
 const deleteVectorStoreFromStore = async (storeId: string, workspaceId: string, docId?: string) => {
+    let recordManagerObj: any
+
     try {
         const appServer = getRunningExpressApp()
         const componentNodes = appServer.nodesPool.componentNodes
@@ -433,7 +435,7 @@ const deleteVectorStoreFromStore = async (storeId: string, workspaceId: string, 
 
         // Get Record Manager Instance
         const recordManagerConfig = JSON.parse(entity.recordManagerConfig)
-        const recordManagerObj = await _createRecordManagerObject(
+        recordManagerObj = await _createRecordManagerObject(
             componentNodes,
             { recordManagerName: recordManagerConfig.name, recordManagerConfig: recordManagerConfig.config },
             options
@@ -473,6 +475,8 @@ const deleteVectorStoreFromStore = async (storeId: string, workspaceId: string, 
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: documentStoreServices.deleteVectorStoreFromStore - ${getErrorMessage(error)}`
         )
+    } finally {
+        await recordManagerObj?.close?.()
     }
 }
 
