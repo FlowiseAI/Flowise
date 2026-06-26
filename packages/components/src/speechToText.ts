@@ -5,13 +5,23 @@ import { AssemblyAI } from 'assemblyai'
 import { getFileFromStorage } from './storageUtils'
 import axios from 'axios'
 import Groq from 'groq-sdk'
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import {
+    TranscribeClient,
+    StartTranscriptionJobCommand,
+    GetTranscriptionJobCommand,
+    TranscriptionJobStatus,
+    MediaFormat,
+    DeleteTranscriptionJobCommand
+} from '@aws-sdk/client-transcribe'
 
 const SpeechToTextType = {
     OPENAI_WHISPER: 'openAIWhisper',
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
     LOCALAI_STT: 'localAISTT',
     AZURE_COGNITIVE: 'azureCognitive',
-    GROQ_WHISPER: 'groqWhisper'
+    GROQ_WHISPER: 'groqWhisper',
+    AWS_TRANSCRIBE: 'awsTranscribe'
 }
 
 export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
@@ -122,6 +132,156 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                 })
                 if (groqTranscription?.text) {
                     return groqTranscription.text
+                }
+                break
+            }
+            case SpeechToTextType.AWS_TRANSCRIBE: {
+                const region = speechToTextConfig.region || 'us-east-1'
+                const s3BucketName = speechToTextConfig.s3BucketName as string
+                const languageCode = speechToTextConfig.languageCode || 'en-US'
+
+                if (!s3BucketName) {
+                    throw new Error('S3 Bucket Name is required for AWS Transcribe')
+                }
+
+                const awsClientConfig: Record<string, any> = { region }
+                if (credentialData.awsKey && credentialData.awsSecret) {
+                    awsClientConfig.credentials = {
+                        accessKeyId: credentialData.awsKey,
+                        secretAccessKey: credentialData.awsSecret,
+                        ...(credentialData.awsSession && { sessionToken: credentialData.awsSession })
+                    }
+                }
+
+                const s3Client = new S3Client(awsClientConfig)
+                const transcribeClient = new TranscribeClient(awsClientConfig)
+
+                // Generate unique file name and upload to S3
+                const fileExtension = ((upload.name || '').split('.').pop() || 'webm').toLowerCase()
+                const s3Key = 'flowise-stt-temp/' + Date.now() + '-' + Math.random().toString(36).substring(2) + '.' + fileExtension
+                const jobName = 'flowise-' + Date.now() + '-' + Math.random().toString(36).substring(2)
+
+                try {
+                    await s3Client.send(
+                        new PutObjectCommand({
+                            Bucket: s3BucketName,
+                            Key: s3Key,
+                            Body: Buffer.from(audio_file),
+                            ContentType: upload.mime || 'audio/webm'
+                        })
+                    )
+
+                    // Determine media format from file extension
+                    const mediaFormatMap: Record<string, string> = {
+                        webm: 'webm',
+                        mp3: 'mp3',
+                        mp4: 'mp4',
+                        m4a: 'm4a',
+                        wav: 'wav',
+                        flac: 'flac',
+                        ogg: 'ogg',
+                        amr: 'amr'
+                    }
+                    const mediaFormat = (mediaFormatMap[fileExtension] || 'webm') as MediaFormat
+
+                    // Start transcription job
+                    await transcribeClient.send(
+                        new StartTranscriptionJobCommand({
+                            TranscriptionJobName: jobName,
+                            LanguageCode: languageCode,
+                            Media: {
+                                MediaFileUri: `s3://${s3BucketName}/${s3Key}`
+                            },
+                            MediaFormat: mediaFormat
+                        })
+                    )
+
+                    // Poll for completion with 60 second timeout
+                    const POLL_INTERVAL_MS = 3000
+                    const TIMEOUT_MS = 60000
+                    const startTime = Date.now()
+
+                    let transcriptText = ''
+                    let jobCompleted = false
+
+                    while (!jobCompleted) {
+                        if (Date.now() - startTime > TIMEOUT_MS) {
+                            throw new Error('AWS Transcribe job timed out after 60 seconds')
+                        }
+
+                        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+
+                        const jobResult = await transcribeClient.send(
+                            new GetTranscriptionJobCommand({
+                                TranscriptionJobName: jobName
+                            })
+                        )
+
+                        const status = jobResult.TranscriptionJob?.TranscriptionJobStatus
+
+                        if (status === TranscriptionJobStatus.COMPLETED) {
+                            const transcriptUri = jobResult.TranscriptionJob?.Transcript?.TranscriptFileUri
+                            if (transcriptUri) {
+                                const transcriptResponse = await axios.get(transcriptUri)
+                                const transcriptData = transcriptResponse.data
+                                transcriptText = transcriptData?.results?.transcripts?.[0]?.transcript || ''
+                            }
+                            jobCompleted = true
+                        } else if (status === TranscriptionJobStatus.FAILED) {
+                            const failureReason = jobResult.TranscriptionJob?.FailureReason || 'Unknown error'
+                            throw new Error(`AWS Transcribe job failed: ${failureReason}`)
+                        }
+                        // IN_PROGRESS or QUEUED — continue polling
+                    }
+
+                    // Clean up: delete temporary S3 file and Transcribe job
+                    try {
+                        await s3Client.send(
+                            new DeleteObjectCommand({
+                                Bucket: s3BucketName,
+                                Key: s3Key
+                            })
+                        )
+                    } catch {
+                        // Non-fatal: log but don't fail if cleanup fails
+                    }
+
+                    try {
+                        await transcribeClient.send(
+                            new DeleteTranscriptionJobCommand({
+                                TranscriptionJobName: jobName
+                            })
+                        )
+                    } catch {
+                        // Non-fatal
+                    }
+
+                    if (transcriptText) {
+                        return transcriptText
+                    }
+                } catch (error) {
+                    // Attempt cleanup on error too
+                    try {
+                        await s3Client.send(
+                            new DeleteObjectCommand({
+                                Bucket: s3BucketName,
+                                Key: s3Key
+                            })
+                        )
+                    } catch {
+                        // Non-fatal cleanup error
+                    }
+
+                    try {
+                        await transcribeClient.send(
+                            new DeleteTranscriptionJobCommand({
+                                TranscriptionJobName: jobName
+                            })
+                        )
+                    } catch {
+                        // Non-fatal cleanup error
+                    }
+                    throw error
                 }
                 break
             }

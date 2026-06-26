@@ -31,6 +31,7 @@ import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import AudioWaveform from '@/ui-component/extended/AudioWaveform'
 import openAISVG from '@/assets/images/openai.svg'
 import elevenLabsSVG from '@/assets/images/elevenlabs.svg'
+import awsSVG from '@/assets/images/aws.svg'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -41,7 +42,8 @@ import ttsApi from '@/api/tts'
 
 const TextToSpeechType = {
     OPENAI_TTS: 'openai',
-    ELEVEN_LABS_TTS: 'elevenlabs'
+    ELEVEN_LABS_TTS: 'elevenlabs',
+    AMAZON_POLLY_TTS: 'amazonPolly'
 }
 
 // Weird quirk - the key must match the name property value.
@@ -86,6 +88,63 @@ const textToSpeechProviders = {
                 type: 'voice_select',
                 description: 'The voice to use for text-to-speech',
                 default: '21m00Tcm4TlvDq8ikWAM',
+                optional: true
+            }
+        ]
+    },
+    [TextToSpeechType.AMAZON_POLLY_TTS]: {
+        label: 'Amazon Polly',
+        name: TextToSpeechType.AMAZON_POLLY_TTS,
+        icon: awsSVG,
+        url: 'https://aws.amazon.com/polly/',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['awsApi']
+            },
+            {
+                label: 'Region',
+                name: 'region',
+                type: 'string',
+                description: 'The AWS region for the Polly service (e.g., us-east-1)',
+                placeholder: 'us-east-1',
+                default: 'us-east-1',
+                optional: true
+            },
+            {
+                label: 'Voice',
+                name: 'voice',
+                type: 'voice_select',
+                description: 'The voice to use when generating the audio',
+                default: 'Joanna',
+                optional: true
+            },
+            {
+                label: 'Engine',
+                name: 'engine',
+                type: 'options',
+                description: 'The engine type for speech synthesis. Neural voices provide more natural-sounding speech.',
+                options: [
+                    {
+                        label: 'Neural',
+                        name: 'neural'
+                    },
+                    {
+                        label: 'Standard',
+                        name: 'standard'
+                    },
+                    {
+                        label: 'Long-form',
+                        name: 'long-form'
+                    },
+                    {
+                        label: 'Generative',
+                        name: 'generative'
+                    }
+                ],
+                default: 'neural',
                 optional: true
             }
         ]
@@ -183,8 +242,14 @@ const TextToSpeech = ({ dialogProps }) => {
             }
         }
 
-        // Reset test audio when voice or credential is changed
-        if ((inputParamName === 'voice' || inputParamName === 'credentialId') && providerName === selectedProvider) {
+        // Reset test audio when voice, credential, engine, or region is changed
+        if (
+            (inputParamName === 'voice' ||
+                inputParamName === 'credentialId' ||
+                inputParamName === 'engine' ||
+                inputParamName === 'region') &&
+            providerName === selectedProvider
+        ) {
             resetTestAudio()
         }
 
@@ -248,7 +313,9 @@ const TextToSpeech = ({ dialogProps }) => {
                 provider: selectedProvider,
                 credentialId: providerConfig.credentialId,
                 voice: providerConfig.voice,
-                model: providerConfig.model
+                model: providerConfig.model,
+                engine: providerConfig.engine,
+                region: providerConfig.region
             }
 
             const response = await fetch('/api/v1/text-to-speech/generate', {

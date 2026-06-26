@@ -20,6 +20,7 @@ import assemblyAIPng from '@/assets/images/assemblyai.png'
 import localAiPng from '@/assets/images/localai.png'
 import azureSvg from '@/assets/images/azure_openai.svg'
 import groqPng from '@/assets/images/groq.png'
+import awsSVG from '@/assets/images/aws.svg'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -34,7 +35,8 @@ const SpeechToTextType = {
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
     LOCALAI_STT: 'localAISTT',
     AZURE_COGNITIVE: 'azureCognitive',
-    GROQ_WHISPER: 'groqWhisper'
+    GROQ_WHISPER: 'groqWhisper',
+    AWS_TRANSCRIBE: 'awsTranscribe'
 }
 
 // Weird quirk - the key must match the name property value.
@@ -234,6 +236,44 @@ const speechToTextProviders = {
                 description:
                     'The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.',
                 optional: true
+            }
+        ]
+    },
+    [SpeechToTextType.AWS_TRANSCRIBE]: {
+        label: 'AWS Transcribe',
+        name: SpeechToTextType.AWS_TRANSCRIBE,
+        icon: awsSVG,
+        url: 'https://aws.amazon.com/transcribe/',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['awsApi']
+            },
+            {
+                label: 'Region',
+                name: 'region',
+                type: 'string',
+                description: 'The AWS region for the Transcribe service (e.g., us-east-1)',
+                placeholder: 'us-east-1',
+                optional: true
+            },
+            {
+                label: 'Language Code',
+                name: 'languageCode',
+                type: 'string',
+                description: 'The language code of the audio (e.g., en-US, es-ES, fr-FR)',
+                placeholder: 'en-US',
+                optional: true
+            },
+            {
+                label: 'S3 Bucket Name',
+                name: 's3BucketName',
+                type: 'string',
+                description:
+                    'The S3 bucket to use for temporary audio storage. AWS Transcribe requires audio files to be in S3. The file is automatically deleted after transcription.',
+                placeholder: 'my-transcribe-bucket'
             }
         ]
     }

@@ -17,7 +17,9 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             provider: bodyProvider,
             credentialId: bodyCredentialId,
             voice: bodyVoice,
-            model: bodyModel
+            model: bodyModel,
+            engine: bodyEngine,
+            region: bodyRegion
         } = req.body
 
         if (!text) {
@@ -27,7 +29,7 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             )
         }
 
-        let provider: string, credentialId: string, voice: string, model: string
+        let provider: string, credentialId: string, voice: string, model: string, engine: string, region: string
 
         if (chatflowId) {
             let workspaceId = req.user?.activeWorkspaceId
@@ -64,12 +66,16 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             credentialId = providerConfig.credentialId
             voice = providerConfig.voice
             model = providerConfig.model
+            engine = providerConfig.engine
+            region = providerConfig.region
         } else {
             // Use TTS config from request body
             provider = bodyProvider
             credentialId = bodyCredentialId
             voice = bodyVoice
             model = bodyModel
+            engine = bodyEngine
+            region = bodyRegion
         }
 
         if (!provider) {
@@ -103,7 +109,9 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             name: provider,
             credentialId: credentialId,
             voice: voice,
-            model: model
+            model: model,
+            engine: engine,
+            region: region
         }
 
         // Create and store AbortController
