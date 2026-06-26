@@ -113,6 +113,14 @@ class ChatNvdiaNIM_ChatModels implements INode {
                 type: 'json',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Additional Body Params (JSON)',
+                name: 'extraBody',
+                type: 'json',
+                optional: true,
+                description: "Additional fields to merge into the request body sent to the API. Equivalent to OpenAI SDK's `extra_body`.",
+                additionalParams: true
             }
         ]
     }
@@ -128,6 +136,7 @@ class ChatNvdiaNIM_ChatModels implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basePath as string
         const baseOptions = nodeData.inputs?.baseOptions
+        const extraBody = nodeData.inputs?.extraBody
         const cache = nodeData.inputs?.cache as BaseCache
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
@@ -162,6 +171,15 @@ class ChatNvdiaNIM_ChatModels implements INode {
             obj.configuration = {
                 baseURL: basePath,
                 defaultHeaders: parsedBaseOptions
+            }
+        }
+
+        if (extraBody) {
+            try {
+                const parsedExtraBody = typeof extraBody === 'object' ? extraBody : JSON.parse(extraBody)
+                obj.modelKwargs = { ...obj.modelKwargs, ...parsedExtraBody }
+            } catch (exception) {
+                throw new Error("Invalid JSON in the Chat NVIDIA NIM's Additional Body Params: " + exception)
             }
         }
 

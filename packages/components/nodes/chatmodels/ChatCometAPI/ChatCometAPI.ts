@@ -100,6 +100,14 @@ class ChatCometAPI_ChatModels implements INode {
                 optional: true,
                 additionalParams: true,
                 description: 'Additional options to pass to the CometAPI client. This should be a JSON object.'
+            },
+            {
+                label: 'Additional Body Params (JSON)',
+                name: 'extraBody',
+                type: 'json',
+                optional: true,
+                description: "Additional fields to merge into the request body sent to the API. Equivalent to OpenAI SDK's `extra_body`.",
+                additionalParams: true
             }
         ]
     }
@@ -113,6 +121,7 @@ class ChatCometAPI_ChatModels implements INode {
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const streaming = nodeData.inputs?.streaming as boolean
         const baseOptions = nodeData.inputs?.baseOptions
+        const extraBody = nodeData.inputs?.extraBody
 
         if (nodeData.inputs?.credentialId) {
             nodeData.credential = nodeData.inputs?.credentialId
@@ -159,6 +168,15 @@ class ChatCometAPI_ChatModels implements INode {
                 }
             } catch (exception) {
                 throw new Error('Invalid JSON in the BaseOptions: ' + exception)
+            }
+        }
+
+        if (extraBody) {
+            try {
+                const parsedExtraBody = typeof extraBody === 'object' ? extraBody : JSON.parse(extraBody)
+                obj.modelKwargs = { ...obj.modelKwargs, ...parsedExtraBody }
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatCometAPI's Additional Body Params: " + exception)
             }
         }
 
