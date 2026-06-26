@@ -789,20 +789,15 @@ function hasReceivedRequiredInputs(waitingNode: IWaitingNode): boolean {
 }
 
 /**
- * Determines which nodes should be ignored based on condition results
- * @param currentNode - The node being processed
- * @param result - The execution result from the node
- * @param edges - All edges in the workflow
- * @param nodeId - Current node ID
- * @returns Array of node IDs that should be ignored
+ * Determines which decision output edges were not selected.
  */
-async function determineNodesToIgnore(
+async function determineEdgesToIgnore(
     currentNode: IReactFlowNode,
     result: any,
     edges: IReactFlowEdge[],
     nodeId: string
-): Promise<string[]> {
-    const ignoreNodeIds: string[] = []
+): Promise<IReactFlowEdge[]> {
+    const ignoredEdges: IReactFlowEdge[] = []
 
     // Check if this is a decision node
     const isDecisionNode =
@@ -833,12 +828,96 @@ async function determineNodesToIgnore(
             const ignoreEdge = edges.find((edge) => edge.source === nodeId && edge.sourceHandle === `${nodeId}-output-${index}`)
 
             if (ignoreEdge) {
-                ignoreNodeIds.push(ignoreEdge.target)
+                ignoredEdges.push(ignoreEdge)
             }
         }
     }
 
-    return ignoreNodeIds
+    return ignoredEdges
+}
+
+function propagateSkippedInput({
+    sourceId,
+    targetId,
+    graph,
+    nodes,
+    edges,
+    nodeExecutionQueue,
+    waitingNodes
+}: {
+    sourceId: string
+    targetId: string
+    graph: Record<string, string[]>
+    nodes: IReactFlowNode[]
+    edges: IReactFlowEdge[]
+    nodeExecutionQueue: INodeQueue[]
+    waitingNodes: Map<string, IWaitingNode>
+}) {
+    let waitingNode = waitingNodes.get(targetId)
+    if (!waitingNode) {
+        waitingNode = setupNodeDependencies(targetId, edges, nodes)
+        waitingNodes.set(targetId, waitingNode)
+    }
+
+    if (!waitingNode.receivedInputs.has(sourceId)) {
+        waitingNode.receivedInputs.set(sourceId, null)
+    }
+
+    if (!hasReceivedRequiredInputs(waitingNode)) return
+
+    waitingNodes.delete(targetId)
+    const combinedInputs = combineNodeInputs(waitingNode.receivedInputs)
+
+    if (combinedInputs === null) {
+        for (const downstreamId of graph[targetId] || []) {
+            propagateSkippedInput({
+                sourceId: targetId,
+                targetId: downstreamId,
+                graph,
+                nodes,
+                edges,
+                nodeExecutionQueue,
+                waitingNodes
+            })
+        }
+        return
+    }
+
+    if (!nodeExecutionQueue.some((queuedNode) => queuedNode.nodeId === targetId)) {
+        nodeExecutionQueue.push({
+            nodeId: targetId,
+            data: combinedInputs,
+            inputs: Object.fromEntries(waitingNode.receivedInputs)
+        })
+    }
+}
+
+function propagateSkippedEdges({
+    ignoredEdges,
+    graph,
+    nodes,
+    edges,
+    nodeExecutionQueue,
+    waitingNodes
+}: {
+    ignoredEdges: IReactFlowEdge[]
+    graph: Record<string, string[]>
+    nodes: IReactFlowNode[]
+    edges: IReactFlowEdge[]
+    nodeExecutionQueue: INodeQueue[]
+    waitingNodes: Map<string, IWaitingNode>
+}) {
+    for (const ignoredEdge of ignoredEdges) {
+        propagateSkippedInput({
+            sourceId: ignoredEdge.source,
+            targetId: ignoredEdge.target,
+            graph,
+            nodes,
+            edges,
+            nodeExecutionQueue,
+            waitingNodes
+        })
+    }
 }
 
 /**
@@ -868,14 +947,23 @@ async function processNodeOutputs({
     const currentNode = nodes.find((n) => n.id === nodeId)
     if (!currentNode) return { humanInput: updatedHumanInput }
 
-    // Get nodes to ignore based on conditions
-    const ignoreNodeIds = await determineNodesToIgnore(currentNode, result, edges, nodeId)
-    if (ignoreNodeIds.length) {
-        logger.debug(`  ⏭️  Skipping nodes: [${ignoreNodeIds.join(', ')}]`)
+    // Get edges to ignore based on conditions
+    const ignoredEdges = await determineEdgesToIgnore(currentNode, result, edges, nodeId)
+    const ignoredChildIds = new Set(ignoredEdges.map((edge) => edge.target))
+    if (ignoredEdges.length) {
+        logger.debug(`  ⏭️  Skipping edges: [${ignoredEdges.map((edge) => `${edge.source}->${edge.target}`).join(', ')}]`)
+        propagateSkippedEdges({
+            ignoredEdges,
+            graph,
+            nodes,
+            edges,
+            nodeExecutionQueue,
+            waitingNodes
+        })
     }
 
     for (const childId of childNodeIds) {
-        if (ignoreNodeIds.includes(childId)) continue
+        if (ignoredChildIds.has(childId)) continue
 
         const childNode = nodes.find((n) => n.id === childId)
         if (!childNode) continue
@@ -1871,6 +1959,25 @@ export const executeAgentFlow = async ({
 
         // Update humanInput with the resolved startNodeId
         humanInput.startNodeId = startNodeId
+
+        for (const execData of executionData) {
+            if (execData.status !== 'FINISHED') continue
+
+            const executedNode = nodes.find((node) => node.id === execData.nodeId)
+            if (!executedNode) continue
+
+            const ignoredEdges = await determineEdgesToIgnore(executedNode, execData.data, edges, execData.nodeId)
+            if (!ignoredEdges.length) continue
+
+            propagateSkippedEdges({
+                ignoredEdges,
+                graph,
+                nodes,
+                edges,
+                nodeExecutionQueue,
+                waitingNodes
+            })
+        }
     } else if (isRecursive && parentExecutionId) {
         const { startingNodeIds: startingNodeIdsFromFlow } = getStartingNode(nodeDependencies)
         startingNodeIds.push(...startingNodeIdsFromFlow)
