@@ -175,6 +175,7 @@ class MySQLRecordManager implements RecordManagerInterface {
     namespace: string
     private dataSource?: DataSource
     private dataSourcePromise?: Promise<DataSource>
+    private dataSourceInitToken?: symbol
 
     constructor(namespace: string, config: MySQLRecordManagerOptions) {
         const { tableName } = config
@@ -213,20 +214,31 @@ class MySQLRecordManager implements RecordManagerInterface {
             return this.dataSourcePromise
         }
 
-        this.dataSourcePromise = (async () => {
+        const dataSourceInitToken = Symbol('dataSourceInit')
+        this.dataSourceInitToken = dataSourceInitToken
+
+        const dataSourcePromise = (async () => {
             const dataSource = new DataSource(mysqlOptions)
             await dataSource.initialize()
-            this.dataSource = dataSource
+            if (this.dataSourceInitToken === dataSourceInitToken) {
+                this.dataSource = dataSource
+            }
             return dataSource
         })()
+        this.dataSourcePromise = dataSourcePromise
 
         try {
-            return await this.dataSourcePromise
+            return await dataSourcePromise
         } catch (error) {
-            this.dataSource = undefined
+            if (this.dataSourceInitToken === dataSourceInitToken) {
+                this.dataSource = undefined
+                this.dataSourceInitToken = undefined
+            }
             throw error
         } finally {
-            this.dataSourcePromise = undefined
+            if (this.dataSourcePromise === dataSourcePromise) {
+                this.dataSourcePromise = undefined
+            }
         }
     }
 
@@ -236,12 +248,15 @@ class MySQLRecordManager implements RecordManagerInterface {
     }
 
     async close(): Promise<void> {
-        const dataSource = this.dataSourcePromise ? await this.dataSourcePromise.catch(() => undefined) : this.dataSource
+        const dataSourcePromise = this.dataSourcePromise
+        const dataSource = this.dataSource
         this.dataSourcePromise = undefined
         this.dataSource = undefined
+        this.dataSourceInitToken = undefined
 
-        if (dataSource?.isInitialized) {
-            await dataSource.destroy()
+        const ds = dataSourcePromise ? await dataSourcePromise.catch(() => undefined) : dataSource
+        if (ds?.isInitialized) {
+            await ds.destroy()
         }
     }
 
@@ -319,14 +334,18 @@ class MySQLRecordManager implements RecordManagerInterface {
     async getTime(): Promise<number> {
         const queryRunner = await this.getQueryRunner()
         try {
-            const res = await queryRunner.manager.query(`SELECT UNIX_TIMESTAMP(NOW()) AS epoch`)
-            return Number.parseFloat(res[0].epoch)
+            return await this.getTimeWithQueryRunner(queryRunner)
         } catch (error) {
             console.error('Error getting time in MySQLRecordManager:')
             throw error
         } finally {
             await this.releaseQueryRunner(queryRunner)
         }
+    }
+
+    private async getTimeWithQueryRunner(queryRunner: QueryRunner): Promise<number> {
+        const res = await queryRunner.manager.query(`SELECT UNIX_TIMESTAMP(NOW()) AS epoch`)
+        return Number.parseFloat(res[0].epoch)
     }
 
     async update(keys: Array<{ uid: string; docId: string }> | string[], updateOptions?: UpdateOptions): Promise<void> {
@@ -338,7 +357,7 @@ class MySQLRecordManager implements RecordManagerInterface {
         try {
             const tableName = this.sanitizeTableName(this.tableName)
 
-            const updatedAt = await this.getTime()
+            const updatedAt = await this.getTimeWithQueryRunner(queryRunner)
             const { timeAtLeast, groupIds: _groupIds } = updateOptions ?? {}
 
             if (timeAtLeast && updatedAt < timeAtLeast) {
@@ -382,19 +401,18 @@ class MySQLRecordManager implements RecordManagerInterface {
         }
 
         const queryRunner = await this.getQueryRunner()
-        const tableName = this.sanitizeTableName(this.tableName)
+        try {
+            const tableName = this.sanitizeTableName(this.tableName)
 
-        // Prepare the placeholders and the query
-        const placeholders = keys.map(() => `?`).join(', ')
-        const query = `
+            // Prepare the placeholders and the query
+            const placeholders = keys.map(() => `?`).join(', ')
+            const query = `
     SELECT \`key\`
     FROM \`${tableName}\`
     WHERE \`namespace\` = ? AND \`key\` IN (${placeholders})`
 
-        // Initialize an array to fill with the existence checks
-        const existsArray = new Array(keys.length).fill(false)
-
-        try {
+            // Initialize an array to fill with the existence checks
+            const existsArray = new Array(keys.length).fill(false)
             // Execute the query
             const rows = await queryRunner.manager.query(query, [this.namespace, ...keys.flat()])
             // Create a set of existing keys for faster lookup
@@ -414,9 +432,9 @@ class MySQLRecordManager implements RecordManagerInterface {
 
     async listKeys(options?: ListKeyOptions & { docId?: string }): Promise<string[]> {
         const queryRunner = await this.getQueryRunner()
-        const tableName = this.sanitizeTableName(this.tableName)
 
         try {
+            const tableName = this.sanitizeTableName(this.tableName)
             const { before, after, limit, groupIds, docId } = options ?? {}
             let query = `SELECT \`key\` FROM \`${tableName}\` WHERE \`namespace\` = ?`
             const values: (string | number | string[])[] = [this.namespace]
@@ -468,14 +486,15 @@ class MySQLRecordManager implements RecordManagerInterface {
         }
 
         const queryRunner = await this.getQueryRunner()
-        const tableName = this.sanitizeTableName(this.tableName)
-
-        const placeholders = keys.map(() => '?').join(', ')
-        const query = `DELETE FROM \`${tableName}\` WHERE \`namespace\` = ? AND \`key\` IN (${placeholders});`
-        const values = [this.namespace, ...keys].map((v) => (typeof v !== 'string' ? `${v}` : v))
 
         // Directly using try/catch with async/await for cleaner flow
         try {
+            const tableName = this.sanitizeTableName(this.tableName)
+
+            const placeholders = keys.map(() => '?').join(', ')
+            const query = `DELETE FROM \`${tableName}\` WHERE \`namespace\` = ? AND \`key\` IN (${placeholders});`
+            const values = [this.namespace, ...keys].map((v) => (typeof v !== 'string' ? `${v}` : v))
+
             await queryRunner.manager.query(query, values)
         } catch (error) {
             console.error('Error deleting keys')

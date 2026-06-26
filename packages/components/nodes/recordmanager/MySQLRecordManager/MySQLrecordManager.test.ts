@@ -62,7 +62,7 @@ jest.mock('typeorm', () => {
 
 const { MySQLRecordManager } = require('./MySQLrecordManager')
 
-const createManager = () =>
+const createManager = (tableName = 'upsertion_records') =>
     new MySQLRecordManager('test_namespace', {
         mysqlOptions: {
             type: 'mysql',
@@ -72,7 +72,7 @@ const createManager = () =>
             password: 'password',
             database: 'flowise'
         },
-        tableName: 'upsertion_records'
+        tableName
     })
 
 describe('MySQLRecordManager connection lifecycle', () => {
@@ -118,7 +118,18 @@ describe('MySQLRecordManager connection lifecycle', () => {
         await manager.close()
     })
 
-    it('releases query runners when update validation fails', async () => {
+    it('destroys the cached DataSource once when close is called concurrently', async () => {
+        const manager = createManager()
+
+        await expect(manager.getTime()).resolves.toBe(123)
+        await Promise.all([manager.close(), manager.close()])
+
+        expect(mockDataSourceInstances).toHaveLength(1)
+        expect(mockDataSourceInstances[0].destroy).toHaveBeenCalledTimes(1)
+        expect(mockDataSourceInstances[0].isInitialized).toBe(false)
+    })
+
+    it('uses the active query runner for update time checks', async () => {
         const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
         const manager = createManager()
 
@@ -126,8 +137,33 @@ describe('MySQLRecordManager connection lifecycle', () => {
 
         expect(mockDataSourceInstances).toHaveLength(1)
         expect(mockDataSourceInstances[0].destroy).not.toHaveBeenCalled()
-        expect(mockQueryRunners).toHaveLength(2)
+        expect(mockDataSourceInstances[0].createQueryRunner).toHaveBeenCalledTimes(1)
+        expect(mockQueryRunners).toHaveLength(1)
+        expect(mockQueryRunners[0].manager.query).toHaveBeenCalledTimes(1)
+        expect(mockQueryRunners[0].manager.query).toHaveBeenCalledWith('SELECT UNIX_TIMESTAMP(NOW()) AS epoch')
         mockQueryRunners.forEach((queryRunner) => {
+            expect(queryRunner.release).toHaveBeenCalledTimes(1)
+            expect(queryRunner.isReleased).toBe(true)
+        })
+
+        await manager.close()
+        consoleErrorSpy.mockRestore()
+    })
+
+    it('releases query runners when table name validation fails', async () => {
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+        const manager = createManager('invalid-table-name')
+
+        await expect(manager.exists(['a'])).rejects.toThrow('Invalid table name')
+        await expect(manager.listKeys()).rejects.toThrow('Invalid table name')
+        await expect(manager.deleteKeys(['a'])).rejects.toThrow('Invalid table name')
+
+        expect(mockDataSourceInstances).toHaveLength(1)
+        expect(mockDataSourceInstances[0].destroy).not.toHaveBeenCalled()
+        expect(mockDataSourceInstances[0].createQueryRunner).toHaveBeenCalledTimes(3)
+        expect(mockQueryRunners).toHaveLength(3)
+        mockQueryRunners.forEach((queryRunner) => {
+            expect(queryRunner.manager.query).not.toHaveBeenCalled()
             expect(queryRunner.release).toHaveBeenCalledTimes(1)
             expect(queryRunner.isReleased).toBe(true)
         })
