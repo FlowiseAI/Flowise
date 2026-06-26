@@ -63,6 +63,7 @@ import {
     SecretsManagerClient,
     SecretsManagerClientConfig
 } from '@aws-sdk/client-secrets-manager'
+import { SUPPORTED_FILE_LOADERS } from './constants'
 
 export const QUESTION_VAR_PREFIX = 'question'
 export const FILE_ATTACHMENT_PREFIX = 'file_attachment'
@@ -406,11 +407,22 @@ export const saveUpsertFlowData = (nodeData: INodeData, upsertHistory: Record<st
         }
         // Get file name instead of the base64 string
         if (nodeData.category === 'Document Loaders' && nodeData.inputParams.find((inp) => inp.name === input)?.type === 'file') {
+            let fileName = getFileName(nodeData.inputs[input])
+            // Check the overrideConfig to get latest file
+            const overrideInput = Object.keys(nodeData.inputs ?? {}).find((inputKey: string) => SUPPORTED_FILE_LOADERS.includes(inputKey))
+            if (
+                overrideInput &&
+                typeof nodeData.inputs[overrideInput] === 'string' &&
+                nodeData.inputs[overrideInput].includes('FILE-STORAGE::')
+            ) {
+                fileName = getFileName(nodeData.inputs[overrideInput])
+            }
+
             paramValue = {
                 label: inputParam?.label,
                 name: inputParam?.name,
                 type: inputParam?.type,
-                value: getFileName(nodeData.inputs[input])
+                value: fileName
             }
             paramValues.push(paramValue)
             continue
@@ -1098,7 +1110,22 @@ export const replaceInputsWithConfig = (
 
     const isParameterEnabled = (nodeType: string, paramName: string): boolean => {
         if (!nodeOverrides[nodeType]) return false
-        const parameter = nodeOverrides[nodeType].find((param: any) => param.name === paramName)
+        let paramConfigName = paramName
+        if (nodeType === 'File Loader') {
+            // Values example: { nodeType: paramName }
+            // { docxFile: "FILE-STORAGE::['file.docx']", pdfFile: "FILE-STORAGE::['file.pdf']" }
+            if (
+                typeof overrideConfig[paramName] === 'string' &&
+                overrideConfig[paramName].includes('FILE-STORAGE::') &&
+                SUPPORTED_FILE_LOADERS.includes(paramName)
+            ) {
+                // Convert all override config with "File" suffix to "files" for easier checking in nodeOverrides,
+                // because in nodeOverrides we only have "files" as parameter name for file storage override.
+                // Example: { label: "File", name: "files", type: "*", enabled: true }
+                paramConfigName = 'files'
+            }
+        }
+        const parameter = nodeOverrides[nodeType].find((param: any) => param.name === paramConfigName)
         return parameter?.enabled ?? false
     }
 
