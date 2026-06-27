@@ -36,7 +36,7 @@ English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.
 
 ## ⚡Quick Start
 
-Download and Install [NodeJS](https://nodejs.org/en/download) >= 20.0.0
+Download and install [NodeJS](https://nodejs.org/en/download) 24.x
 
 1. Install Flowise
     ```bash
@@ -92,7 +92,7 @@ Flowise has 3 different modules in a single mono repository.
 
 ### Prerequisite
 
--   Install [PNPM](https://pnpm.io/installation)
+-   Install [PNPM](https://pnpm.io/installation) >= 10.26.0
     ```bash
     npm i -g pnpm
     ```
