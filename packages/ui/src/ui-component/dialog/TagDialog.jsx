@@ -16,7 +16,9 @@ const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
     }
 
     const handleInputKeyDown = (event) => {
-        if (event.key === 'Enter' && inputValue.trim()) {
+        // Check if IME composition is in progress
+        const isIMEComposition = event.isComposing || event.keyCode === 229
+        if (event.key === 'Enter' && !isIMEComposition && inputValue.trim()) {
             event.preventDefault()
             if (!categoryValues.includes(inputValue)) {
                 setCategoryValues([...categoryValues, inputValue])
