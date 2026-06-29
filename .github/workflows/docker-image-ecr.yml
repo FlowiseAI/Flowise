@@ -15,9 +15,9 @@ on:
                 description: 'Node.js version to build this image with.'
                 type: choice
                 required: true
-                default: '20'
+                default: '24'
                 options:
-                    - '20'
+                    - '24'
             tag_version:
                 description: 'Tag version of the image to be pushed.'
                 type: string
@@ -36,7 +36,7 @@ jobs:
             - name: Set default values
               id: defaults
               run: |
-                  echo "node_version=${{ github.event.inputs.node_version || '20' }}" >> $GITHUB_OUTPUT
+                  echo "node_version=${{ github.event.inputs.node_version || '24' }}" >> $GITHUB_OUTPUT
                   echo "tag_version=${{ github.event.inputs.tag_version || 'latest' }}" >> $GITHUB_OUTPUT
 
             - name: Checkout
@@ -48,16 +48,7 @@ jobs:
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v4.0.0
 
-            - name: Configure AWS Credentials
-              if: ${{ inputs.environment != 'prod' }}
-              uses: aws-actions/configure-aws-credentials@v6
-              with:
-                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  aws-region: ${{ secrets.AWS_REGION }}
-
             - name: Configure AWS OIDC Credentials
-              if: ${{ inputs.environment == 'prod' }}
               uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
               with:
                   aws-region: ${{ secrets.AWS_REGION }}

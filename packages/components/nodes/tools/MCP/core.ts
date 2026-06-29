@@ -1,9 +1,9 @@
-import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
+import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
 import { checkDenyList, secureFetch } from '../../../src/httpSecurity'
 
 export class MCPToolkit extends BaseToolkit {
@@ -249,12 +249,21 @@ export const validateCommandInjection = (args: string[]): void => {
     }
 }
 
+/**
+ * Validates user-supplied env vars against the operator-controlled allow-list in
+ * `CUSTOM_MCP_ALLOWED_ENV_VARS` (comma-separated names). Empty = none allowed.
+ */
 export const validateEnvironmentVariables = (env: Record<string, any>): void => {
-    const dangerousEnvVars = ['PATH', 'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH', 'NODE_OPTIONS']
+    const allowedEnvVars = new Set(
+        (process.env.CUSTOM_MCP_ALLOWED_ENV_VARS ?? '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+    )
 
     for (const [key, value] of Object.entries(env)) {
-        if (dangerousEnvVars.includes(key)) {
-            throw new Error(`Environment variable '${key}' modification is not allowed`)
+        if (!allowedEnvVars.has(key)) {
+            throw new Error(`Environment variable '${key}' is not allowed. Permitted: ${[...allowedEnvVars].join(', ') || '(none)'}`)
         }
 
         if (typeof value === 'string' && value.includes('\0')) {

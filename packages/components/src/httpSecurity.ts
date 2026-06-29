@@ -55,22 +55,60 @@ function getHttpDenyList(): string[] {
  * @throws Error if IP is in deny list
  */
 export function isDeniedIP(ip: string, denyList: string[]): void {
-    const parsedIp = ipaddr.parse(ip)
+    let parsedIp = ipaddr.parse(ip)
+
+    // Normalize IPv4-mapped IPv6 addresses to IPv4 before checking
+    // This prevents bypass of IPv4 deny list rules via ::ffff:x.x.x.x addresses
+    if (parsedIp.kind() === 'ipv6') {
+        const ipv6Addr = parsedIp as ipaddr.IPv6
+        if (ipv6Addr.isIPv4MappedAddress()) {
+            parsedIp = ipv6Addr.toIPv4Address()
+        }
+    }
+
     for (const entry of denyList) {
         if (entry.includes('/')) {
             try {
-                const [range, _] = entry.split('/')
-                const parsedRange = ipaddr.parse(range)
+                const [rangeAddr, mask] = ipaddr.parseCIDR(entry)
+                let parsedRange = rangeAddr
+                let adjustedMask = mask
+
+                // Also normalize deny list entries
+                if (parsedRange.kind() === 'ipv6' && (parsedRange as ipaddr.IPv6).isIPv4MappedAddress()) {
+                    if (mask < 96) continue // malformed IPv4-mapped CIDR — skip
+                    parsedRange = (parsedRange as ipaddr.IPv6).toIPv4Address()
+                    adjustedMask -= 96
+                }
+
                 if (parsedIp.kind() === parsedRange.kind()) {
-                    if (parsedIp.match(ipaddr.parseCIDR(entry))) {
+                    if (parsedIp.match(parsedRange, adjustedMask)) {
                         throw new Error('Access to this host is denied by policy.')
                     }
                 }
             } catch (error) {
                 throw new Error(`isDeniedIP: ${error}`)
             }
-        } else if (ip === entry) {
-            throw new Error('Access to this host is denied by policy.')
+        } else {
+            // Try to parse and normalize the deny list entry for consistent comparison
+            // This handles non-canonical IPv6 addresses (e.g., FE80::1, 2001:0DB8::1)
+            if (ipaddr.isValid(entry)) {
+                let parsedEntry = ipaddr.parse(entry)
+
+                // Normalize IPv4-mapped IPv6 entries
+                if (parsedEntry.kind() === 'ipv6' && (parsedEntry as ipaddr.IPv6).isIPv4MappedAddress()) {
+                    parsedEntry = (parsedEntry as ipaddr.IPv6).toIPv4Address()
+                }
+
+                // Compare normalized forms
+                if (parsedIp.toString() === parsedEntry.toString()) {
+                    throw new Error('Access to this host is denied by policy.')
+                }
+            } else {
+                // Not a valid IP - compare as-is (e.g., hostname like "localhost")
+                if (parsedIp.toString() === entry) {
+                    throw new Error('Access to this host is denied by policy.')
+                }
+            }
         }
     }
 }
@@ -84,7 +122,11 @@ export async function checkDenyList(url: string): Promise<void> {
     const httpDenyList = getHttpDenyList()
 
     const urlObj = new URL(url)
-    const hostname = urlObj.hostname
+    let hostname = urlObj.hostname
+    // Strip IPv6 brackets if present
+    if (hostname.startsWith('[') && hostname.endsWith(']')) {
+        hostname = hostname.slice(1, -1)
+    }
 
     if (ipaddr.isValid(hostname)) {
         isDeniedIP(hostname, httpDenyList)
@@ -254,12 +296,15 @@ async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     const denyList = getHttpDenyList()
 
     const u = new URL(url)
-    const hostname = u.hostname
+    let hostname = u.hostname
+    // Strip IPv6 brackets if present
+    if (hostname.startsWith('[') && hostname.endsWith(']')) {
+        hostname = hostname.slice(1, -1)
+    }
     const protocol: 'http' | 'https' = u.protocol === 'https:' ? 'https' : 'http'
 
     if (ipaddr.isValid(hostname)) {
         isDeniedIP(hostname, denyList)
-
         return {
             hostname,
             ip: hostname,
