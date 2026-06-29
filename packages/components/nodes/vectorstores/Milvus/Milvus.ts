@@ -11,6 +11,25 @@ interface InsertRow {
     [x: string]: string | number[]
 }
 
+/**
+ * Resolve a user-provided metric type string to a Milvus metric type.
+ * Accepts the values exposed by the node's "Metric Type" input (L2, COSINE, IP),
+ * case-insensitively, and falls back to L2 for empty or unrecognized input so
+ * existing flows keep their previous behavior. Returns the string-literal union
+ * used by @langchain/community's Milvus `indexCreateParams.metric_type`.
+ */
+const resolveMilvusMetricType = (value?: string): 'L2' | 'COSINE' | 'IP' => {
+    switch ((value ?? '').trim().toUpperCase()) {
+        case 'COSINE':
+            return 'COSINE'
+        case 'IP':
+            return 'IP'
+        case 'L2':
+        default:
+            return 'L2'
+    }
+}
+
 class Milvus_VectorStores implements INode {
     label: string
     name: string
@@ -28,7 +47,7 @@ class Milvus_VectorStores implements INode {
     constructor() {
         this.label = 'Milvus'
         this.name = 'milvus'
-        this.version = 2.1
+        this.version = 2.2
         this.type = 'Milvus'
         this.icon = 'milvus.svg'
         this.category = 'Vector Stores'
@@ -109,6 +128,21 @@ class Milvus_VectorStores implements INode {
                 description: 'Number of top results to fetch. Default to 4',
                 placeholder: '4',
                 type: 'number',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Metric Type',
+                name: 'metricType',
+                description:
+                    'Distance metric used when creating the index on upsert and when querying. Must match the metric the Milvus collection was created with. Defaults to L2.',
+                type: 'options',
+                options: [
+                    { label: 'L2 (Euclidean)', name: 'L2' },
+                    { label: 'Cosine Similarity', name: 'COSINE' },
+                    { label: 'Inner Product (IP)', name: 'IP' }
+                ],
+                default: 'L2',
                 additionalParams: true,
                 optional: true
             },
@@ -194,6 +228,9 @@ class Milvus_VectorStores implements INode {
             // partition
             const partitionName = nodeData.inputs?.milvusPartition ?? '_default'
 
+            // metric type
+            const metricType = resolveMilvusMetricType(nodeData.inputs?.metricType as string)
+
             // init MilvusLibArgs
             const milVusArgs: MilvusLibArgs = {
                 url: address,
@@ -229,7 +266,13 @@ class Milvus_VectorStores implements INode {
             }
 
             try {
-                const vectorStore = await MilvusUpsert.fromDocuments(finalDocs, embeddings, milVusArgs)
+                // Mirror MilvusUpsert.fromDocuments, but inject the configured metric type
+                // into indexCreateParams before the index is created on first upsert.
+                const vectorStore = new MilvusUpsert(embeddings, milVusArgs)
+                if (vectorStore.indexCreateParams) {
+                    vectorStore.indexCreateParams.metric_type = metricType
+                }
+                await vectorStore.addDocuments(finalDocs)
 
                 // Avoid Illegal Invocation
                 vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: string) => {
@@ -276,6 +319,9 @@ class Milvus_VectorStores implements INode {
         // partition
         const partitionName = nodeData.inputs?.milvusPartition ?? '_default'
 
+        // metric type
+        const metricType = resolveMilvusMetricType(nodeData.inputs?.metricType as string)
+
         // init MilvusLibArgs
         const milVusArgs: MilvusLibArgs = {
             url: address,
@@ -307,6 +353,12 @@ class Milvus_VectorStores implements INode {
         }
 
         const vectorStore = await Milvus.fromExistingCollection(embeddings, milVusArgs)
+
+        // Ensure the search path uses the user-selected metric (and its matching score
+        // normalization) instead of the LangChain default of L2.
+        if (vectorStore.indexCreateParams) {
+            vectorStore.indexCreateParams.metric_type = metricType
+        }
 
         // Avoid Illegal Invocation
         vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: string) => {
@@ -471,7 +523,7 @@ class MilvusUpsert extends Milvus {
                 field_name: this.vectorField,
                 index_name: `myindex_${Date.now().toString()}`,
                 index_type: IndexType.AUTOINDEX,
-                metric_type: MetricType.L2
+                metric_type: this.indexCreateParams?.metric_type ?? MetricType.L2
             })
             if (resp.error_code !== ErrorCode.SUCCESS) {
                 throw new Error(`Error creating index`)
@@ -491,4 +543,4 @@ class MilvusUpsert extends Milvus {
     }
 }
 
-module.exports = { nodeClass: Milvus_VectorStores }
+module.exports = { nodeClass: Milvus_VectorStores, resolveMilvusMetricType }
