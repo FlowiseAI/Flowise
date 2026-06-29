@@ -371,17 +371,29 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
     }
 }
 
+/**
+ * Validates a user-supplied MCP server configuration against operator-controlled allow-lists.
+ *
+ * For stdio configs, the command must appear in the `CUSTOM_MCP_ALLOWED_COMMANDS` allow-list
+ * (comma-separated, empty = none allowed). The list is empty by default, so no command can run
+ * until an operator explicitly opts in. To enable local/custom stdio MCP servers, set
+ * `CUSTOM_MCP_PROTOCOL=stdio` and `CUSTOM_MCP_ALLOWED_COMMANDS` in your env file
+ * (see docker/.env.example, docker/worker/.env.example, packages/server/.env.example).
+ */
 export const validateMCPServerConfig = (serverParams: any): void => {
     // Validate the entire server configuration
     if (!serverParams || typeof serverParams !== 'object') {
         throw new Error('Invalid server configuration')
     }
 
-    // Command allowlist - only allow specific safe commands
-    const allowedCommands = ['node', 'npx', 'python', 'python3', 'docker']
+    // Command allowlist - operator-controlled via CUSTOM_MCP_ALLOWED_COMMANDS (empty = none allowed)
+    const allowedCommands = (process.env.CUSTOM_MCP_ALLOWED_COMMANDS ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
 
     if (serverParams.command && !allowedCommands.includes(serverParams.command)) {
-        throw new Error(`Command '${serverParams.command}' is not allowed. Allowed commands: ${allowedCommands.join(', ')}`)
+        throw new Error(`Command '${serverParams.command}' is not allowed. Permitted: ${allowedCommands.join(', ') || '(none)'}`)
     }
 
     // Validate arguments if present
