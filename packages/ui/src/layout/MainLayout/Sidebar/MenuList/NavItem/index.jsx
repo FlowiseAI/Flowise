@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { forwardRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
@@ -77,23 +77,23 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
         }
     }
 
-    // active menu item on page load
+    const location = useLocation()
+
     useEffect(() => {
-        if (navType === 'MENU') {
-            const currentIndex = document.location.pathname
-                .toString()
-                .split('/')
-                .findIndex((id) => id === item.id)
-            if (currentIndex > -1) {
-                dispatch({ type: MENU_OPEN, id: item.id })
-            }
-            if (!document.location.pathname.toString().split('/')[1]) {
-                itemHandler('chatflows')
-            }
+        if (navType !== 'MENU') return
+
+        const pathnameParts = location.pathname.toString().split('/')
+        const activePathSegment = pathnameParts[1]
+
+        if (!activePathSegment) {
+            itemHandler('chatflows')
+            return
         }
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [navType])
+        if (activePathSegment === item.id) {
+            dispatch({ type: MENU_OPEN, id: item.id })
+        }
+    }, [dispatch, item.id, location.pathname, navType, itemHandler])
 
     return (
         <ListItemButton
