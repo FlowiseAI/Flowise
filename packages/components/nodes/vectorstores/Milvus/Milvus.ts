@@ -269,8 +269,9 @@ class Milvus_VectorStores implements INode {
                 // Mirror MilvusUpsert.fromDocuments, but inject the configured metric type
                 // into indexCreateParams before the index is created on first upsert.
                 const vectorStore = new MilvusUpsert(embeddings, milVusArgs)
-                if (vectorStore.indexCreateParams) {
-                    vectorStore.indexCreateParams.metric_type = metricType
+                vectorStore.indexCreateParams = {
+                    ...vectorStore.indexCreateParams,
+                    metric_type: metricType
                 }
                 await vectorStore.addDocuments(finalDocs)
 
@@ -356,8 +357,9 @@ class Milvus_VectorStores implements INode {
 
         // Ensure the search path uses the user-selected metric (and its matching score
         // normalization) instead of the LangChain default of L2.
-        if (vectorStore.indexCreateParams) {
-            vectorStore.indexCreateParams.metric_type = metricType
+        vectorStore.indexCreateParams = {
+            ...vectorStore.indexCreateParams,
+            metric_type: metricType
         }
 
         // Avoid Illegal Invocation
@@ -523,7 +525,7 @@ class MilvusUpsert extends Milvus {
                 field_name: this.vectorField,
                 index_name: `myindex_${Date.now().toString()}`,
                 index_type: IndexType.AUTOINDEX,
-                metric_type: this.indexCreateParams?.metric_type ?? MetricType.L2
+                metric_type: (this.indexCreateParams?.metric_type as MetricType) ?? MetricType.L2
             })
             if (resp.error_code !== ErrorCode.SUCCESS) {
                 throw new Error(`Error creating index`)
