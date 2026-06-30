@@ -29,9 +29,6 @@ const TOOL_ARGS_PREFIX = '\n\n----FLOWISE_TOOL_ARGS----\n\n'
 const buildAndInitTool = async (chatflowid: string, reqWorkspaceId?: string, _chatId?: string, _apiMessageId?: string) => {
     const appServer = getRunningExpressApp()
     const chatflow = await chatflowsService.getChatflowByIdForWorkspace(chatflowid, reqWorkspaceId)
-    if (!chatflow) {
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
-    }
 
     const chatId = _chatId || uuidv4()
     const apiMessageId = _apiMessageId || uuidv4()
