@@ -12,6 +12,7 @@ import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback
 import { ScheduleTriggerType } from '../../database/entities/ScheduleRecord'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { Workspace } from '../../enterprise/database/entities/workspace.entity'
+import { WorkspaceUser } from '../../enterprise/database/entities/workspace-user.entity'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
@@ -300,6 +301,50 @@ const getChatflowById = async (chatflowId: string, workspaceId?: string): Promis
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.getChatflowById - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+// Resolve which workspace owns a flow, but ONLY for a caller who is a member of that workspace. A chatflow
+// id is a globally-unique UUID, so it maps to exactly one owning workspace; the UI uses this to auto-switch
+// the active workspace when a user opens a flow URL that lives in a workspace they belong to but isn't
+// currently active. SECURITY: every failure mode returns the IDENTICAL 404 as getChatflowById, so this never
+// discloses that a flow exists in a workspace the caller cannot access. API-key callers (no userId) -> 404.
+const resolveChatflowWorkspace = async (chatflowId: string, userId?: string): Promise<{ workspaceId: string }> => {
+    const notFound = () => new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
+    try {
+        if (!isValidUUID(chatflowId)) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, ChatflowErrorMessage.INVALID_CHATFLOW_ID)
+        }
+        if (!userId) {
+            throw notFound()
+        }
+        const appServer = getRunningExpressApp()
+        // Look up the flow across ALL workspaces (no workspace filter), then gate strictly on membership.
+        const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
+            where: { id: chatflowId },
+            select: ['id', 'workspaceId']
+        })
+        if (!chatflow) {
+            throw notFound()
+        }
+        // Direct membership check so the no-leak guarantee holds: identical response whether the flow is
+        // missing or the user simply isn't a member of its workspace.
+        const membership = await appServer.AppDataSource.getRepository(WorkspaceUser).findOneBy({
+            workspaceId: chatflow.workspaceId,
+            userId
+        })
+        if (!membership) {
+            throw notFound()
+        }
+        return { workspaceId: chatflow.workspaceId }
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.resolveChatflowWorkspace - ${getErrorMessage(error)}`
         )
     }
 }
@@ -702,6 +747,7 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     getChatflowByIdForWorkspace,
+    resolveChatflowWorkspace,
     saveChatflow,
     updateChatflow,
     getSinglePublicChatbotConfig,

@@ -143,6 +143,25 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
     }
 }
 
+// Resolve the owning workspace of a flow for the requesting user IFF they are a member of it (else an
+// identical 404 — no cross-workspace disclosure). Used by the UI to auto-switch the active workspace when a
+// user opens a flow URL that lives in a workspace they belong to but isn't active. UI-only: API-key callers
+// have no req.user.id, so the service treats them as non-members (404).
+const getChatflowWorkspace = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params === 'undefined' || !req.params.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: chatflowsController.getChatflowWorkspace - id not provided!`
+            )
+        }
+        const apiResponse = await chatflowsService.resolveChatflowWorkspace(req.params.id, req.user?.id)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const saveChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.body) {
@@ -444,6 +463,7 @@ export default {
     getAllChatflows,
     getChatflowByApiKey,
     getChatflowById,
+    getChatflowWorkspace,
     saveChatflow,
     updateChatflow,
     getSinglePublicChatflow,
