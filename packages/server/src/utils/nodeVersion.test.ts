@@ -1,4 +1,3 @@
-import { describe, expect, it } from '@jest/globals'
 import {
     assertNodeVersion,
     FALLBACK_MIN_NODE_MAJOR,

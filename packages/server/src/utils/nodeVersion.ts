@@ -14,7 +14,7 @@ export const FALLBACK_MIN_NODE_MAJOR = 24
  * @returns the major version number, or null if it cannot be parsed
  */
 export const parseMajor = (version: string): number | null => {
-    const match = /^v?(\d+)\./.exec(String(version ?? '').trim())
+    const match = /^v?(\d+)\./.exec(version.trim())
     return match ? parseInt(match[1], 10) : null
 }
 
