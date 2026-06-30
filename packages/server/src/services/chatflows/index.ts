@@ -325,7 +325,7 @@ const resolveChatflowWorkspace = async (chatflowId: string, userId?: string): Pr
             where: { id: chatflowId },
             select: ['id', 'workspaceId']
         })
-        if (!chatflow) {
+        if (!chatflow || !chatflow.workspaceId) {
             throw notFound()
         }
         // Direct membership check so the no-leak guarantee holds: identical response whether the flow is

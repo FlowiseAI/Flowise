@@ -426,7 +426,10 @@ const Canvas = () => {
             // If the flow lives in another workspace the user is a member of, auto-switch + re-fetch instead
             // of dead-ending on "not found". Falls back to the normal error if it's a genuine 404 / non-member.
             tryWorkspaceAutoSwitch(chatflowId, error, () => getSpecificChatflowApi.request(chatflowId)).then((handled) => {
-                if (!handled) errorFailed(`Failed to retrieve ${canvasTitle}: ${error.response.data.message}`)
+                if (!handled) {
+                    const errorMsg = error?.response?.data?.message || error?.message || 'Unknown error'
+                    errorFailed(`Failed to retrieve ${canvasTitle}: ${errorMsg}`)
+                }
             })
         }
 

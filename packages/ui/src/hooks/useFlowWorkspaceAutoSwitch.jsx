@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useCallback, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import chatflowsApi from '@/api/chatflows'
@@ -20,30 +20,33 @@ export const useFlowWorkspaceAutoSwitch = () => {
     const currentUser = useSelector((state) => state.auth.user)
     const attemptedRef = useRef(new Set())
 
-    const tryAutoSwitch = async (chatflowId, error, onSwitched) => {
-        const status = error?.response?.status
-        if (status !== 404 || !chatflowId) return false
-        // Only attempt once per flow id to avoid any retry loop if something goes sideways.
-        if (attemptedRef.current.has(chatflowId)) return false
-        attemptedRef.current.add(chatflowId)
+    const tryAutoSwitch = useCallback(
+        async (chatflowId, error, onSwitched) => {
+            const status = error?.response?.status
+            if (status !== 404 || !chatflowId) return false
+            // Only attempt once per flow id to avoid any retry loop if something goes sideways.
+            if (attemptedRef.current.has(chatflowId)) return false
+            attemptedRef.current.add(chatflowId)
 
-        try {
-            const res = await chatflowsApi.getChatflowWorkspace(chatflowId)
-            const workspaceId = res?.data?.workspaceId
-            if (!workspaceId) return false
-            if (workspaceId === currentUser?.activeWorkspaceId) return false
-            const assigned = currentUser?.assignedWorkspaces || []
-            if (!assigned.some((w) => w.id === workspaceId)) return false
+            try {
+                const res = await chatflowsApi.getChatflowWorkspace(chatflowId)
+                const workspaceId = res?.data?.workspaceId
+                if (!workspaceId) return false
+                if (workspaceId === currentUser?.activeWorkspaceId) return false
+                const assigned = currentUser?.assignedWorkspaces || []
+                if (!assigned.some((w) => w?.id === workspaceId)) return false
 
-            const switchRes = await workspaceApi.switchWorkspace(workspaceId)
-            dispatch(workspaceSwitchSuccess(switchRes.data))
-            if (typeof onSwitched === 'function') onSwitched()
-            return true
-        } catch (e) {
-            // Resolver 404 (not a member / missing flow) or any failure → fall back to the normal error.
-            return false
-        }
-    }
+                const switchRes = await workspaceApi.switchWorkspace(workspaceId)
+                dispatch(workspaceSwitchSuccess(switchRes?.data))
+                if (typeof onSwitched === 'function') onSwitched()
+                return true
+            } catch (e) {
+                // Resolver 404 (not a member / missing flow) or any failure → fall back to the normal error.
+                return false
+            }
+        },
+        [currentUser, dispatch]
+    )
 
     return tryAutoSwitch
 }
