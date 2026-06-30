@@ -12,7 +12,7 @@ import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback
 import { ScheduleTriggerType } from '../../database/entities/ScheduleRecord'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { Workspace } from '../../enterprise/database/entities/workspace.entity'
-import { WorkspaceUser } from '../../enterprise/database/entities/workspace-user.entity'
+import { WorkspaceUser, WorkspaceUserStatus } from '../../enterprise/database/entities/workspace-user.entity'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
@@ -329,10 +329,12 @@ const resolveChatflowWorkspace = async (chatflowId: string, userId?: string): Pr
             throw notFound()
         }
         // Direct membership check so the no-leak guarantee holds: identical response whether the flow is
-        // missing or the user simply isn't a member of its workspace.
+        // missing or the user simply isn't an active member of its workspace. Require ACTIVE status so a
+        // user who is only INVITED (not yet accepted) or DISABLEd cannot resolve or switch into it.
         const membership = await appServer.AppDataSource.getRepository(WorkspaceUser).findOneBy({
             workspaceId: chatflow.workspaceId,
-            userId
+            userId,
+            status: WorkspaceUserStatus.ACTIVE
         })
         if (!membership) {
             throw notFound()
