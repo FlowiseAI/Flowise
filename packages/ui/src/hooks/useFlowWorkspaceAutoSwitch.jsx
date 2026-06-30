@@ -54,7 +54,12 @@ export const useFlowWorkspaceAutoSwitch = () => {
                 if (typeof onSwitched === 'function') onSwitched()
                 return true
             } catch (e) {
-                // Resolver 404 (not a member / missing flow) or any failure → fall back to the normal error.
+                // A 404 is definitive (not a member / missing flow) — leave it marked so we don't retry.
+                // For transient failures (network error, 5xx, etc.) clear the mark so a later re-fetch can retry.
+                if (e?.response?.status !== 404) {
+                    attemptedRef.current.delete(chatflowId)
+                }
+                // Fall back to the caller's normal error handling.
                 return false
             }
         },
