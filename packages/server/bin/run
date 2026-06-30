@@ -1,5 +1,22 @@
 #!/usr/bin/env node
 
+// Fail fast with a clear message when running on an unsupported Node.js version.
+// `undici` (pulled in transitively via `cheerio`) references the `File` global,
+// which only exists on Node >= 20, so older runtimes crash at startup with an
+// opaque "ReferenceError: File is not defined". This guard runs before
+// @oclif/core loads any command (the start command imports the server, and thus
+// cheerio, at module scope), and it can never itself break startup. See #5670.
+try {
+    const { assertNodeVersion } = require('../dist/utils/nodeVersion')
+    const check = assertNodeVersion()
+    if (!check.ok) {
+        console.error(check.message)
+        process.exit(1)
+    }
+} catch (err) {
+    // Never let the version guard block startup (e.g. dist not built yet).
+}
+
 const oclif = require('@oclif/core')
 
 oclif.run().then(require('@oclif/core/flush')).catch(require('@oclif/core/handle'))
