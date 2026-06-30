@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import chatflowsApi from '@/api/chatflows'
@@ -18,12 +18,25 @@ import { workspaceSwitchSuccess } from '@/store/reducers/authSlice'
 export const useFlowWorkspaceAutoSwitch = () => {
     const dispatch = useDispatch()
     const currentUser = useSelector((state) => state.auth.user)
+    // Keep the latest user in a ref so tryAutoSwitch can read it without being listed as a useCallback dep.
+    // This keeps the callback identity stable (callers omit it from their useEffect deps) while still reading
+    // the freshest user — avoiding a stale closure if the user loads/changes after the callback was created.
+    const currentUserRef = useRef(currentUser)
+    useEffect(() => {
+        currentUserRef.current = currentUser
+    }, [currentUser])
+
     const attemptedRef = useRef(new Set())
 
     const tryAutoSwitch = useCallback(
         async (chatflowId, error, onSwitched) => {
             const status = error?.response?.status
             if (status !== 404 || !chatflowId) return false
+
+            // Bail before marking attempted if the user isn't loaded yet, so a later (loaded) call can retry.
+            const user = currentUserRef.current
+            if (!user) return false
+
             // Only attempt once per flow id to avoid any retry loop if something goes sideways.
             if (attemptedRef.current.has(chatflowId)) return false
             attemptedRef.current.add(chatflowId)
@@ -32,8 +45,8 @@ export const useFlowWorkspaceAutoSwitch = () => {
                 const res = await chatflowsApi.getChatflowWorkspace(chatflowId)
                 const workspaceId = res?.data?.workspaceId
                 if (!workspaceId) return false
-                if (workspaceId === currentUser?.activeWorkspaceId) return false
-                const assigned = currentUser?.assignedWorkspaces || []
+                if (workspaceId === user.activeWorkspaceId) return false
+                const assigned = user.assignedWorkspaces || []
                 if (!assigned.some((w) => w?.id === workspaceId)) return false
 
                 const switchRes = await workspaceApi.switchWorkspace(workspaceId)
@@ -45,7 +58,7 @@ export const useFlowWorkspaceAutoSwitch = () => {
                 return false
             }
         },
-        [currentUser, dispatch]
+        [dispatch]
     )
 
     return tryAutoSwitch
