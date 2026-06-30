@@ -13,7 +13,7 @@ try {
         console.error(check.message)
         process.exit(1)
     }
-} catch (err) {
+} catch {
     // Never let the version guard block startup (e.g. dist not built yet).
 }
 
