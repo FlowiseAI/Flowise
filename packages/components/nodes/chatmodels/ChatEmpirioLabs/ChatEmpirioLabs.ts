@@ -36,7 +36,7 @@ class ChatEmpirioLabs_ChatModels implements INode {
         this.type = 'ChatEmpirioLabs'
         this.icon = 'empiriolabs.svg'
         this.category = 'Chat Models'
-        this.description = 'Wrapper around EmpirioLabs chat models that use the OpenAI compatible Chat endpoint'
+        this.description = 'Wrapper around EmpirioLabs AI chat models that use the OpenAI compatible Chat endpoint'
         this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
