@@ -165,7 +165,7 @@ class Ollama_LLMs implements INode {
                 rows: 4,
                 placeholder: 'AI assistant:',
                 description:
-                    'Sets the stop sequences to use. Use comma to seperate different sequences. Refer to <a target="_blank" href="https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values">docs</a> for more details',
+                    'Sets the stop sequences to use. Use comma to separate different sequences. Refer to <a target="_blank" href="https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values">docs</a> for more details',
                 optional: true,
                 additionalParams: true
             },
