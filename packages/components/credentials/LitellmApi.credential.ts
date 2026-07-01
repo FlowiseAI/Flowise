@@ -15,6 +15,13 @@ class LitellmApi implements INodeCredential {
                 label: 'API Key',
                 name: 'litellmApiKey',
                 type: 'password'
+            },
+            {
+                label: 'Custom Headers',
+                name: 'litellmCustomHeaders',
+                type: 'string',
+                optional: true,
+                placeholder: '{"x-litellm-tags": "team:activation,env:prod"}'
             }
         ]
     }
