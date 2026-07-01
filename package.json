@@ -96,11 +96,9 @@
             "uuid": "^10.0.0",
             "request>uuid": "^3.4.0",
             "@tootallnate/once": ">=3.0.1",
-            "ai": ">=5.0.52",
             "tmp": ">=0.2.4",
             "@elastic/transport": ">=8.9.3",
             "@modelcontextprotocol/sdk": ">=1.25.2",
-            "minimatch": ">=9.0.7",
             "multer": ">=2.1.1"
         }
     },
