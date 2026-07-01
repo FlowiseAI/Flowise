@@ -1,6 +1,7 @@
 import { ChatCloudflareWorkersAI, type CloudflareWorkersAIInput } from '@langchain/cloudflare'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 class ChatCloudflareWorkersAI_ChatModels implements INode {
     label: string
@@ -69,6 +70,7 @@ class ChatCloudflareWorkersAI_ChatModels implements INode {
             model
         }
 
+        if (baseUrl) await checkDenyList(baseUrl)
         if (baseUrl) {
             obj.baseUrl = baseUrl
         }
