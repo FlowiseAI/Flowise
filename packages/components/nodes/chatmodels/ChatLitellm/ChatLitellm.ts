@@ -126,8 +126,8 @@ class ChatLitellm_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
-        if (basePath) await checkDenyList(basePath)
         if (basePath) {
+            await checkDenyList(basePath)
             obj.configuration = {
                 baseURL: basePath
             }

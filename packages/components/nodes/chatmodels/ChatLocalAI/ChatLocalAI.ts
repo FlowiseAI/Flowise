@@ -124,8 +124,10 @@ class ChatLocalAI_ChatModels implements INode {
             obj.openAIApiKey = localAIApiKey
             obj.apiKey = localAIApiKey
         }
-        if (basePath) await checkDenyList(basePath)
-        if (basePath) obj.configuration = { baseURL: basePath }
+        if (basePath) {
+            await checkDenyList(basePath)
+            obj.configuration = { baseURL: basePath }
+        }
 
         const model = new ChatOpenAI(obj)
 

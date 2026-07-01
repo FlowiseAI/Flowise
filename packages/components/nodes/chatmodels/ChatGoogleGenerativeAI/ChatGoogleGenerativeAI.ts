@@ -276,8 +276,10 @@ class GoogleGenerativeAI_ChatModels implements INode {
         if (topK) obj.topK = parseFloat(topK)
         if (cache) obj.cache = cache
         if (temperature) obj.temperature = parseFloat(temperature)
-        if (baseUrl) await checkDenyList(baseUrl)
-        if (baseUrl) obj.baseUrl = baseUrl
+        if (baseUrl) {
+            await checkDenyList(baseUrl)
+            obj.baseUrl = baseUrl
+        }
         if (thinkingLevel) {
             obj.thinkingConfig = {
                 thinkingLevel: thinkingLevel,
