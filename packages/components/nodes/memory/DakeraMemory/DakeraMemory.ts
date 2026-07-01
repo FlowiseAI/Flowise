@@ -116,7 +116,7 @@ class DakeraMemory_Memory implements INode {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                default: 'http://localhost:3000',
+                default: 'http://localhost:3300',
                 description: 'URL of your self-hosted Dakera server',
             },
             {
@@ -157,7 +157,7 @@ class DakeraMemory_Memory implements INode {
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<DakeraMemoryExtended> {
-        const baseUrl = (nodeData.inputs?.baseUrl as string) || 'http://localhost:3000'
+        const baseUrl = (nodeData.inputs?.baseUrl as string) || 'http://localhost:3300'
         const agentId = (nodeData.inputs?.agentId as string) || 'flowise'
         const topK = Number(nodeData.inputs?.topK ?? 10)
         const memoryKey = (nodeData.inputs?.memoryKey as string) || 'history'
