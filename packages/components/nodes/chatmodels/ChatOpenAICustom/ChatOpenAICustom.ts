@@ -115,6 +115,15 @@ class ChatOpenAICustom_ChatModels implements INode {
                 optional: true,
                 description: 'Default headers to include with every request to the API.',
                 additionalParams: true
+            },
+            {
+                label: 'Model Kwargs',
+                name: 'modelKwargs',
+                type: 'json',
+                optional: true,
+                description:
+                    'Additional parameters to pass to the model body, e.g. {"parallel_tool_calls": false} or {"logit_bias": {50256: -100}}',
+                additionalParams: true
             }
         ]
     }
@@ -131,6 +140,7 @@ class ChatOpenAICustom_ChatModels implements INode {
         const basePath = nodeData.inputs?.basepath as string
         const baseOptions = nodeData.inputs?.baseOptions
         const cache = nodeData.inputs?.cache as BaseCache
+        const modelKwargs = nodeData.inputs?.modelKwargs
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
@@ -149,6 +159,15 @@ class ChatOpenAICustom_ChatModels implements INode {
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
+
+        if (modelKwargs) {
+            try {
+                const parsedModelKwargs = typeof modelKwargs === 'object' ? modelKwargs : JSON.parse(modelKwargs)
+                obj.modelKwargs = parsedModelKwargs
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatOpenAICustom's Model Kwargs: " + exception)
+            }
+        }
 
         let parsedBaseOptions: any | undefined = undefined
 
