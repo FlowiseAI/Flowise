@@ -217,6 +217,35 @@ class Puppeteer_DocumentLoaders implements INode {
                     }
                 }
                 const loader = new PuppeteerWebBaseLoader(url, config)
+                loader.scrape = async (): Promise<string> => {
+                    const { launch } = await PuppeteerWebBaseLoader.imports()
+                    const browser = await launch({
+                        headless: true,
+                        defaultViewport: null,
+                        ignoreDefaultArgs: ['--disable-extensions'],
+                        ...config.launchOptions
+                    })
+                    try {
+                        const page = await browser.newPage()
+                        await page.setRequestInterception(true)
+                        page.on('request', async (interceptedRequest) => {
+                            try {
+                                await checkDenyList(interceptedRequest.url())
+                                await interceptedRequest.continue()
+                            } catch {
+                                await interceptedRequest.abort('blockedbyclient')
+                            }
+                        })
+                        await page.goto(url, {
+                            timeout: 180000,
+                            waitUntil: 'domcontentloaded',
+                            ...config.gotoOptions
+                        })
+                        return config.evaluate ? await config.evaluate(page, browser) : await page.evaluate(() => document.body.innerHTML)
+                    } finally {
+                        await browser.close()
+                    }
+                }
                 if (textSplitter) {
                     docs = await loader.load()
                     docs = await textSplitter.splitDocuments(docs)
