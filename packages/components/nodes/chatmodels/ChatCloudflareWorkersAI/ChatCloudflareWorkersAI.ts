@@ -70,8 +70,8 @@ class ChatCloudflareWorkersAI_ChatModels implements INode {
             model
         }
 
-        if (baseUrl) await checkDenyList(baseUrl)
         if (baseUrl) {
+            await checkDenyList(baseUrl)
             obj.baseUrl = baseUrl
         }
 
