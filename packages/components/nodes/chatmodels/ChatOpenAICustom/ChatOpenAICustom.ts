@@ -18,7 +18,7 @@ class ChatOpenAICustom_ChatModels implements INode {
     constructor() {
         this.label = 'OpenAI Custom Model'
         this.name = 'chatOpenAICustom'
-        this.version = 4.0
+        this.version = 4.1
         this.type = 'ChatOpenAI-Custom'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
@@ -93,6 +93,15 @@ class ChatOpenAICustom_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Stop Sequence',
+                name: 'stopSequence',
+                type: 'string',
+                rows: 4,
+                optional: true,
+                description: 'List of stop words to use when generating. Use comma to separate multiple stop words.',
+                additionalParams: true
+            },
+            {
                 label: 'Timeout',
                 name: 'timeout',
                 type: 'number',
@@ -126,6 +135,7 @@ class ChatOpenAICustom_ChatModels implements INode {
         const topP = nodeData.inputs?.topP as string
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const presencePenalty = nodeData.inputs?.presencePenalty as string
+        const stopSequence = nodeData.inputs?.stopSequence as string
         const timeout = nodeData.inputs?.timeout as string
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basepath as string
@@ -147,6 +157,13 @@ class ChatOpenAICustom_ChatModels implements INode {
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
+        if (stopSequence) {
+            const stopSequenceArray = stopSequence
+                .split(',')
+                .map((item) => item.trim())
+                .filter((item) => item !== '')
+            if (stopSequenceArray.length > 0) obj.stop = stopSequenceArray
+        }
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
 
