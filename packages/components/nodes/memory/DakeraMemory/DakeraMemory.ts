@@ -30,30 +30,49 @@ class DakeraClient {
     }
 
     async store(content: string, sessionId: string, agentId: string): Promise<void> {
-        await fetch(`${this.baseUrl}/v1/memories`, {
-            method: 'POST',
-            headers: this.headers,
-            body: JSON.stringify({ content, session_id: sessionId, agent_id: agentId }),
-        })
+        try {
+            const res = await fetch(`${this.baseUrl}/v1/memories`, {
+                method: 'POST',
+                headers: this.headers,
+                body: JSON.stringify({ content, session_id: sessionId, agent_id: agentId }),
+            })
+            if (!res.ok) {
+                console.warn(`DakeraClient.store: HTTP ${res.status}`)
+            }
+        } catch (err) {
+            console.warn('DakeraClient.store failed:', err)
+        }
     }
 
     async recall(query: string, sessionId: string, agentId: string, topK = 10): Promise<DakeraSearchResult[]> {
-        const res = await fetch(`${this.baseUrl}/v1/memories/search`, {
-            method: 'POST',
-            headers: this.headers,
-            body: JSON.stringify({ query, session_id: sessionId, agent_id: agentId, top_k: topK }),
-        })
-        if (!res.ok) return []
-        const data = (await res.json()) as { results?: DakeraSearchResult[] }
-        return data.results ?? []
+        try {
+            const res = await fetch(`${this.baseUrl}/v1/memories/search`, {
+                method: 'POST',
+                headers: this.headers,
+                body: JSON.stringify({ query, session_id: sessionId, agent_id: agentId, top_k: topK }),
+            })
+            if (!res.ok) return []
+            const data = (await res.json()) as { results?: DakeraSearchResult[] }
+            return data.results ?? []
+        } catch (err) {
+            console.warn('DakeraClient.recall failed:', err)
+            return []
+        }
     }
 
     async forget(sessionId: string, agentId: string): Promise<void> {
-        await fetch(`${this.baseUrl}/v1/memories`, {
-            method: 'DELETE',
-            headers: this.headers,
-            body: JSON.stringify({ session_id: sessionId, agent_id: agentId }),
-        })
+        try {
+            const res = await fetch(`${this.baseUrl}/v1/memories`, {
+                method: 'DELETE',
+                headers: this.headers,
+                body: JSON.stringify({ session_id: sessionId, agent_id: agentId }),
+            })
+            if (!res.ok) {
+                console.warn(`DakeraClient.forget: HTTP ${res.status}`)
+            }
+        } catch (err) {
+            console.warn('DakeraClient.forget failed:', err)
+        }
     }
 }
 
@@ -143,6 +162,7 @@ class DakeraMemory_Memory implements INode {
         const topK = Number(nodeData.inputs?.topK ?? 10)
         const memoryKey = (nodeData.inputs?.memoryKey as string) || 'history'
         const sessionId = (nodeData.inputs?.sessionId as string) || ''
+        const orgId = options.orgId as string
 
         let apiKey = ''
         if (nodeData.credential) {
@@ -157,6 +177,7 @@ class DakeraMemory_Memory implements INode {
             topK,
             memoryKey,
             sessionId,
+            orgId,
             input,
             appDataSource: options.appDataSource as DataSource,
             databaseEntities: options.databaseEntities as IDatabaseEntity,
@@ -176,6 +197,7 @@ interface DakeraMemoryExtendedInput extends BaseChatMemoryInput {
     topK: number
     memoryKey: string
     sessionId: string
+    orgId: string
     input: string
     appDataSource: DataSource
     databaseEntities: IDatabaseEntity
@@ -188,6 +210,7 @@ class DakeraMemoryExtended extends BaseChatMemory implements MemoryMethods {
     private topK: number
     private sessionId: string
     private input: string
+    orgId: string
     memoryKey: string
     appDataSource: DataSource
     databaseEntities: IDatabaseEntity
@@ -200,6 +223,7 @@ class DakeraMemoryExtended extends BaseChatMemory implements MemoryMethods {
         this.topK = fields.topK
         this.memoryKey = fields.memoryKey
         this.sessionId = fields.sessionId
+        this.orgId = fields.orgId
         this.input = fields.input
         this.appDataSource = fields.appDataSource
         this.databaseEntities = fields.databaseEntities
@@ -245,16 +269,16 @@ class DakeraMemoryExtended extends BaseChatMemory implements MemoryMethods {
         prependMessages?: IMessage[]
     ): Promise<IMessage[] | BaseMessage[]> {
         const sid = overrideSessionId || this.sessionId || 'default'
-        const query = this.input || 'conversation history'
-        const results = await this.client.recall(query, sid, this.agentId, this.topK)
 
-        const chatMessages = await this.appDataSource
+        // Fetch most recent messages first (DESC), then reverse to chronological order
+        let chatMessages = await this.appDataSource
             .getRepository(this.databaseEntities['ChatMessage'])
             .find({
                 where: { sessionId: sid, chatflowid: this.chatflowid },
-                order: { createdDate: 'ASC' },
+                order: { createdDate: 'DESC' },
                 take: 20,
             })
+        chatMessages = chatMessages.reverse()
 
         let returnIMessages: IMessage[] = chatMessages.map((m) => ({
             message: m.content as string,
@@ -263,18 +287,22 @@ class DakeraMemoryExtended extends BaseChatMemory implements MemoryMethods {
 
         if (prependMessages?.length) {
             returnIMessages.unshift(...prependMessages)
+            chatMessages.unshift(...(prependMessages as any))
         }
 
         if (returnBaseMessages) {
-            if (results.length > 0) {
-                const memoryContext = results.map((r) => r.content).join('\n')
+            // Prepend Dakera semantic recall context ahead of the DB messages
+            const query = this.input || 'conversation history'
+            const recalled = await this.client.recall(query, sid, this.agentId, this.topK)
+            if (recalled.length > 0) {
+                const memoryContext = recalled.map((r) => r.content).join('\n')
                 const systemMsg = {
                     role: 'apiMessage' as MessageType,
                     content: `Relevant memories from Dakera:\n${memoryContext}`,
                 } as any
                 chatMessages.unshift(systemMsg)
             }
-            return await mapChatMessageToBaseMessage(chatMessages as any, '')
+            return await mapChatMessageToBaseMessage(chatMessages as any, this.orgId)
         }
 
         return returnIMessages
@@ -285,10 +313,13 @@ class DakeraMemoryExtended extends BaseChatMemory implements MemoryMethods {
         overrideSessionId = ''
     ): Promise<void> {
         const sid = overrideSessionId || this.sessionId || 'default'
-        const userMsg = msgArray.find((m) => m.type === 'userMessage')
-        const aiMsg = msgArray.find((m) => m.type === 'apiMessage')
-        if (userMsg && aiMsg) {
-            await this.saveContext({ input: userMsg.text }, { output: aiMsg.text }, sid)
+        // Store user and AI messages independently — don't require both to be present
+        for (const msg of msgArray) {
+            if (msg.type === 'userMessage' && msg.text) {
+                await this.client.store(`User: ${msg.text}`, sid, this.agentId)
+            } else if (msg.type === 'apiMessage' && msg.text) {
+                await this.client.store(`Assistant: ${msg.text}`, sid, this.agentId)
+            }
         }
     }
 
