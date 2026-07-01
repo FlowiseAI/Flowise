@@ -253,10 +253,11 @@ class ChatOllama_ChatModels implements INode {
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        if (baseUrl) await checkDenyList(baseUrl)
+        const activeBaseUrl = baseUrl || 'http://localhost:11434'
+        await checkDenyList(activeBaseUrl)
 
         const obj: ChatOllamaInput & BaseChatModelParams = {
-            baseUrl,
+            baseUrl: activeBaseUrl,
             temperature: parseFloat(temperature),
             model: modelName,
             streaming: streaming ?? true
