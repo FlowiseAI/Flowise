@@ -86,14 +86,20 @@
             "rollup": "4.45.0",
             "semver": "7.7.1",
             "set-value": "4.1.0",
-            "solid-js": "1.9.7",
-            "tar-fs": "3.1.0",
+            "solid-js": "1.9.11",
+            "protobufjs": ">=7.5.5",
+            "tar-fs": "3.1.1",
             "unset-value": "2.0.1",
             "webpack-dev-middleware": "7.4.2",
             "ws": "8.18.3",
             "xlsx": "0.18.5",
             "uuid": "^10.0.0",
-            "request>uuid": "^3.4.0"
+            "request>uuid": "^3.4.0",
+            "@tootallnate/once": ">=3.0.1",
+            "tmp": ">=0.2.4",
+            "@elastic/transport": ">=8.9.3",
+            "@modelcontextprotocol/sdk": ">=1.25.2",
+            "multer": ">=2.1.1"
         }
     },
     "engines": {
@@ -107,7 +113,7 @@
         "@langchain/core": "1.1.20",
         "@qdrant/openapi-typescript-fetch": "1.2.6",
         "openai": "6.19.0",
-        "protobufjs": "7.4.0",
+        "protobufjs": "7.5.5",
         "uuid": "^10.0.0"
     },
     "eslintIgnore": [
