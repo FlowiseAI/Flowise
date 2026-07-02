@@ -34,6 +34,7 @@ import chatflowsApi from '@/api/chatflows'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { useFlowWorkspaceAutoSwitch } from '@/hooks/useFlowWorkspaceAutoSwitch'
 import useConfirm from '@/hooks/useConfirm'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -112,6 +113,7 @@ const Canvas = () => {
     const createNewChatflowApi = useApi(chatflowsApi.createNewChatflow)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
+    const tryWorkspaceAutoSwitch = useFlowWorkspaceAutoSwitch()
     const getHasChatflowChangedApi = useApi(chatflowsApi.getHasChatflowChanged)
 
     // ==============================|| Events & Actions ||============================== //
@@ -420,7 +422,15 @@ const Canvas = () => {
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
-            errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
+            const error = getSpecificChatflowApi.error
+            // If the flow lives in another workspace the user is a member of, auto-switch + re-fetch instead
+            // of dead-ending on "not found". Falls back to the normal error if it's a genuine 404 / non-member.
+            tryWorkspaceAutoSwitch(chatflowId, error, () => getSpecificChatflowApi.request(chatflowId)).then((handled) => {
+                if (!handled) {
+                    const errorMsg = error?.response?.data?.message || error?.message || 'Unknown error'
+                    errorFailed(`Failed to retrieve ${canvasTitle}: ${errorMsg}`)
+                }
+            })
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
