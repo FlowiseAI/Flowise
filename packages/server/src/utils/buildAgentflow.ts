@@ -101,6 +101,13 @@ interface IAgentFlowRuntime {
     webhook?: Record<string, any>
 }
 
+type IterationOutcome = {
+    text?: string
+    executedData?: IAgentflowExecutedData[]
+    state?: ICommonObject
+    error?: string
+}
+
 /**
  * Resolves {{ $webhook.body.* }}, {{ $webhook.headers.* }}, {{ $webhook.query.* }} references in a
  * template string against an incoming webhook payload. Used to pre-resolve webhookDefaultInput
@@ -1292,17 +1299,25 @@ const executeNode = async ({
                 // Initialize array to collect results from iterations
                 const iterationResults: string[] = []
 
-                // Execute sub-flow for each item in the iteration array
-                for (let i = 0; i < results.input.iterationInput.length; i++) {
+                const totalItems = results.input.iterationInput.length
+
+                // Resolve concurrency: 1 = sequential (default), clamped to the number of items
+                const requestedConcurrency = Math.max(1, parseInt(results.input.iterationConcurrency) || 1)
+                const concurrency = Math.min(requestedConcurrency, totalItems || 1)
+
+                // Per-item outcome, stored by index so merging stays deterministic regardless of completion order
+                const perItem: (IterationOutcome | undefined)[] = new Array(totalItems)
+
+                // Execute a single iteration item into perItem[i] without mutating shared parent state
+                const runIterationItem = async (i: number) => {
                     const item = results.input.iterationInput[i]
-                    logger.debug(`  🔄 Processing iteration ${i + 1}/${results.input.iterationInput.length} recursively`)
 
                     // Create iteration context
                     const iterationContext = {
                         index: i,
                         value: item,
                         isFirst: i === 0,
-                        isLast: i === results.input.iterationInput.length - 1,
+                        isLast: i === totalItems - 1,
                         sessionId: sessionId
                     }
 
@@ -1336,14 +1351,14 @@ const executeNode = async ({
                             productId
                         })
 
-                        // Store the result
+                        const outcome: IterationOutcome = {}
+
                         if (subFlowResult?.text) {
-                            iterationResults.push(subFlowResult.text)
+                            outcome.text = subFlowResult.text
                         }
 
-                        // Add executed data from sub-flow to main execution data with appropriate iteration context
                         if (subFlowResult?.agentFlowExecutedData) {
-                            const subflowExecutedData = subFlowResult.agentFlowExecutedData.map((data: IAgentflowExecutedData) => ({
+                            outcome.executedData = subFlowResult.agentFlowExecutedData.map((data: IAgentflowExecutedData) => ({
                                 ...data,
                                 data: {
                                     ...data.data,
@@ -1352,46 +1367,82 @@ const executeNode = async ({
                                     parentNodeId: reactFlowNode.data.id
                                 }
                             }))
-
-                            // Add executed data to parent execution
-                            agentFlowExecutedData.push(...subflowExecutedData)
-
-                            // Update parent execution record with combined data if we have a parent execution ID
-                            if (parentExecutionId) {
-                                try {
-                                    logger.debug(`  📝 Updating parent execution ${parentExecutionId} with iteration ${i + 1} data`)
-                                    await updateExecution(appDataSource, parentExecutionId, workspaceId, {
-                                        executionData: JSON.stringify(agentFlowExecutedData)
-                                    })
-                                } catch (error) {
-                                    console.error(`  ❌ Error updating parent execution: ${getErrorMessage(error)}`)
-                                }
-                            }
                         }
 
-                        // Merge the child iteration's runtime state back to parent
                         if (
                             subFlowResult?.agentflowRuntime &&
                             subFlowResult.agentflowRuntime.state &&
                             Object.keys(subFlowResult.agentflowRuntime.state).length > 0
                         ) {
+                            outcome.state = subFlowResult.agentflowRuntime.state
+                        }
+
+                        perItem[i] = outcome
+                    } catch (error) {
+                        console.error(`  ❌ Error in iteration ${i + 1}: ${getErrorMessage(error)}`)
+                        perItem[i] = { error: `Error in iteration ${i + 1}: ${getErrorMessage(error)}` }
+                    }
+                }
+
+                // Merge a contiguous, completed batch [start, end) back into shared parent state in index order
+                const mergeBatch = async (start: number, end: number) => {
+                    let executionDataChanged = false
+
+                    for (let i = start; i < end; i++) {
+                        const outcome = perItem[i]
+                        if (!outcome) continue
+
+                        if (outcome.error) {
+                            iterationResults.push(outcome.error)
+                            continue
+                        }
+
+                        if (outcome.text) {
+                            iterationResults.push(outcome.text)
+                        }
+
+                        if (outcome.executedData?.length) {
+                            agentFlowExecutedData.push(...outcome.executedData)
+                            executionDataChanged = true
+                        }
+
+                        if (outcome.state) {
                             logger.debug(`  🔄 Merging iteration ${i + 1} runtime state back to parent`)
 
                             updatedState = {
                                 ...updatedState,
-                                ...subFlowResult.agentflowRuntime.state
+                                ...outcome.state
                             }
 
-                            // Update next iteration's runtime state
+                            // Subsequent batches read the merged state
                             agentflowRuntime.state = updatedState
 
                             // Update parent execution's runtime state
                             results.state = updatedState
                         }
-                    } catch (error) {
-                        console.error(`  ❌ Error in iteration ${i + 1}: ${getErrorMessage(error)}`)
-                        iterationResults.push(`Error in iteration ${i + 1}: ${getErrorMessage(error)}`)
                     }
+
+                    // Persist the parent execution once per batch instead of once per item to avoid racing DB writes
+                    if (executionDataChanged && parentExecutionId) {
+                        try {
+                            await updateExecution(appDataSource, parentExecutionId, workspaceId, {
+                                executionData: JSON.stringify(agentFlowExecutedData)
+                            })
+                        } catch (error) {
+                            console.error(`  ❌ Error updating parent execution: ${getErrorMessage(error)}`)
+                        }
+                    }
+                }
+
+                // Process items in batches of `concurrency`, preserving index order on merge
+                for (let start = 0; start < totalItems; start += concurrency) {
+                    const end = Math.min(start + concurrency, totalItems)
+                    const batch: Promise<void>[] = []
+                    for (let i = start; i < end; i++) {
+                        batch.push(runIterationItem(i))
+                    }
+                    await Promise.all(batch)
+                    await mergeBatch(start, end)
                 }
 
                 // Update the output with combined results
@@ -1400,7 +1451,6 @@ const executeNode = async ({
                     iterationResults,
                     content: iterationResults.join('\n')
                 }
-
                 logger.debug(`  📊 Completed all iterations. Total results: ${iterationResults.length}`)
             }
         }
