@@ -82,7 +82,9 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
     }
 
     const handleUsecaseInputKeyDown = (event) => {
-        if (event.key === 'Enter' && usecaseInput.trim()) {
+        // Check if IME composition is in progress
+        const isIMEComposition = event.isComposing || event.keyCode === 229
+        if (event.key === 'Enter' && !isIMEComposition && usecaseInput.trim()) {
             event.preventDefault()
             if (!usecases.includes(usecaseInput)) {
                 setUsecases([...usecases, usecaseInput])

@@ -41,7 +41,9 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     value={chatflowName}
                     onChange={(e) => setChatflowName(e.target.value)}
                     onKeyDown={(e) => {
-                        if (isReadyToSave && e.key === 'Enter') onConfirm(e.target.value)
+                        // Check if IME composition is in progress
+                        const isIMEComposition = e.isComposing || e.keyCode === 229
+                        if (isReadyToSave && e.key === 'Enter' && !isIMEComposition) onConfirm(e.target.value)
                     }}
                 />
             </DialogContent>
