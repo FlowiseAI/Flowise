@@ -11,7 +11,8 @@ const SpeechToTextType = {
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
     LOCALAI_STT: 'localAISTT',
     AZURE_COGNITIVE: 'azureCognitive',
-    GROQ_WHISPER: 'groqWhisper'
+    GROQ_WHISPER: 'groqWhisper',
+    TELNYX_STT: 'telnyxStt'
 }
 
 export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
@@ -81,7 +82,7 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
 
                     const formData = new FormData()
                     const audioBlob = new Blob([new Uint8Array(audio_file)], { type: upload.type })
-                    formData.append('audio', audioBlob, upload.name)
+                    formData.append('file', audioBlob, upload.name)
 
                     const channelsStr = speechToTextConfig.channels || '0,1'
                     const channels = channelsStr.split(',').map(Number)
@@ -107,6 +108,29 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                 } catch (error) {
                     throw error.response?.data || error
                 }
+            }
+
+            case SpeechToTextType.TELNYX_STT: {
+                const formData = new FormData()
+                const audioBlob = new Blob([new Uint8Array(audio_file)], { type: upload.type || 'audio/mpeg' })
+                formData.append('file', audioBlob, upload.name)
+                formData.append('model', speechToTextConfig?.model || 'openai/whisper-large-v3-turbo')
+                if (speechToTextConfig?.language) formData.append('language', speechToTextConfig.language)
+                if (speechToTextConfig?.prompt) formData.append('prompt', speechToTextConfig.prompt)
+                if (speechToTextConfig?.temperature) formData.append('temperature', speechToTextConfig.temperature)
+
+                const response = await axios.post('https://api.telnyx.com/v2/ai/audio/transcriptions', formData, {
+                    headers: {
+                        Authorization: `Bearer ${credentialData.apiKey}`,
+                        Accept: 'application/json'
+                    }
+                })
+
+                const text = response?.data?.data?.text || response?.data?.text || response?.data?.transcript
+                if (text) {
+                    return text
+                }
+                break
             }
             case SpeechToTextType.GROQ_WHISPER: {
                 const groqClient = new Groq({
