@@ -1,4 +1,5 @@
 import express from 'express'
+import a2aRouter from './a2a'
 import agentflowv2GeneratorRouter from './agentflowv2-generator'
 import apikeyRouter from './apikey'
 import assistantsRouter from './assistants'
@@ -133,6 +134,7 @@ router.use('/text-to-speech', textToSpeechRouter)
 router.use('/custom-mcp-servers', customMcpServersRouter)
 router.use('/mcp-server', mcpServerRouter)
 router.use('/mcp', mcpEndpointRouter)
+router.use('/a2a', a2aRouter)
 
 router.use('/auth', authRouter)
 router.use('/audit', IdentityManager.checkFeatureByPlan('feat:login-activity'), auditRouter)
