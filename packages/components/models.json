@@ -1,6 +1,18 @@
 {
     "chat": [
         {
+            "name": "chatInception",
+            "models": [
+                {
+                    "label": "mercury-2",
+                    "name": "mercury-2",
+                    "description": "Fastest reasoning LLM and Inception's most powerful model. Supports tool calling and structured outputs.",
+                    "input_cost": 0.00025,
+                    "output_cost": 0.00075
+                }
+            ]
+        },
+        {
             "name": "awsChatBedrock",
             "models": [
                 {
