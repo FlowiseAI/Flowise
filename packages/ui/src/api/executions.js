@@ -5,11 +5,13 @@ const deleteExecutions = (executionIds) => client.delete('/executions', { data: 
 const getExecutionById = (executionId) => client.get(`/executions/${executionId}`)
 const getExecutionByIdPublic = (executionId) => client.get(`/public-executions/${executionId}`)
 const updateExecution = (executionId, body) => client.put(`/executions/${executionId}`, body)
+const abortExecution = (executionId) => client.post(`/executions/${executionId}/abort`)
 
 export default {
     getAllExecutions,
     deleteExecutions,
     getExecutionById,
     getExecutionByIdPublic,
-    updateExecution
+    updateExecution,
+    abortExecution
 }
