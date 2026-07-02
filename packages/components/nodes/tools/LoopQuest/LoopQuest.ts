@@ -2,7 +2,7 @@ import { z } from 'zod/v3'
 import axios from 'axios'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getCredentialData, getCredentialParam, handleErrorMessage } from '../../../src/utils'
 import { buildTaskBody, verdictToString, TaskStatus } from './core'
 
 class LoopQuest_Tools implements INode {
@@ -93,15 +93,19 @@ class LoopQuest_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('loopQuestApiKey', credentialData, nodeData)
+        if (!apiKey) {
+            throw new Error('LoopQuest API Key is missing. Please configure the LoopQuest API credential.')
+        }
         const baseUrl = (getCredentialParam('baseUrl', credentialData, nodeData) || 'https://loopquest.tomphillips.uk').replace(
             /\/+$/,
             ''
         )
         const gameModule = (nodeData.inputs?.module as string) || 'swiper'
         const mode = (nodeData.inputs?.mode as string) || 'gate'
-        const timeoutSeconds = Number(nodeData.inputs?.timeoutSeconds) || 3600
-        const maxWaitSeconds = Number(nodeData.inputs?.maxWaitSeconds) || 300
-        const pollSeconds = Number(nodeData.inputs?.pollSeconds) || 5
+        // Clamp to positive values — a 0/negative poll interval would tight-loop.
+        const timeoutSeconds = Math.max(1, Number(nodeData.inputs?.timeoutSeconds) || 3600)
+        const maxWaitSeconds = Math.max(1, Number(nodeData.inputs?.maxWaitSeconds) || 300)
+        const pollSeconds = Math.max(1, Number(nodeData.inputs?.pollSeconds) || 5)
         const headers = { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' }
 
         return new DynamicStructuredTool({
@@ -122,19 +126,27 @@ class LoopQuest_Tools implements INode {
                     onTimeout: 'escalate',
                     source: 'flowise'
                 })
-                const created = await axios.post(`${baseUrl}/api/v1/tasks`, body, { headers })
-                const taskId = created.data?.id
-                if (!taskId) return 'Failed to create the review task.'
-                if (mode !== 'gate') return `Review task ${taskId} created (monitor mode) — not waiting for a verdict.`
+                try {
+                    const created = await axios.post(`${baseUrl}/api/v1/tasks`, body, { headers })
+                    const taskId = created.data?.id
+                    if (!taskId) return 'Failed to create the review task.'
+                    if (mode !== 'gate') return `Review task ${taskId} created (monitor mode) — not waiting for a verdict.`
 
-                const deadline = Date.now() + maxWaitSeconds * 1000
-                while (Date.now() < deadline) {
-                    await new Promise((r) => setTimeout(r, pollSeconds * 1000))
-                    const res = await axios.get(`${baseUrl}/api/v1/tasks/${taskId}`, { headers })
-                    const verdict = verdictToString(res.data as TaskStatus)
-                    if (verdict) return verdict
+                    const deadline = Date.now() + maxWaitSeconds * 1000
+                    while (Date.now() < deadline) {
+                        await new Promise((r) => setTimeout(r, pollSeconds * 1000))
+                        try {
+                            const res = await axios.get(`${baseUrl}/api/v1/tasks/${taskId}`, { headers })
+                            const verdict = verdictToString(res.data as TaskStatus)
+                            if (verdict) return verdict
+                        } catch {
+                            // Ignore transient network errors while polling — keep waiting.
+                        }
+                    }
+                    return 'No human verdict within the wait window — treat as NOT approved (fail closed).'
+                } catch (error) {
+                    return `Error in LoopQuest Human Review: ${handleErrorMessage(error)}`
                 }
-                return 'No human verdict within the wait window — treat as NOT approved (fail closed).'
             }
         })
     }
