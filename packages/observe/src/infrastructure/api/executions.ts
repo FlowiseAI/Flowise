@@ -6,8 +6,8 @@ export function createExecutionsApi(client: AxiosInstance) {
     return {
         /**
          * List executions with optional filters and pagination.
-         * When agentflowId is provided this returns a scoped view (M1).
-         * Without agentflowId it returns the full cross-agent list (M2).
+         * Pass `agentflowIds` to scope to one or more agentflows. Omit (or pass
+         * an empty array) for the full cross-agent list.
          */
         getAllExecutions: async (params: ExecutionListParams): Promise<ExecutionListResponse> => {
             const query: Record<string, unknown> = {
@@ -15,7 +15,13 @@ export function createExecutionsApi(client: AxiosInstance) {
                 limit: params.limit
             }
             if (params.state) query.state = params.state
-            if (params.agentflowId) query.agentflowId = params.agentflowId
+            if (params.agentflowIds && params.agentflowIds.length > 0) {
+                // Server expects a single `agentflowId` query value: one id, or
+                // multiple ids comma-joined (e.g. `agentflowId=a,b`). UUIDs can't
+                // contain commas, so the join is unambiguous.
+                const ids = params.agentflowIds.filter(Boolean)
+                if (ids.length > 0) query.agentflowId = ids.join(',')
+            }
             if (params.agentflowName) query.agentflowName = params.agentflowName
             if (params.sessionId) query.sessionId = params.sessionId
             if (params.startDate) query.startDate = params.startDate.toISOString()

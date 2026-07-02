@@ -3,7 +3,7 @@
 interface ImportMetaEnv {
     readonly VITE_API_BASE_URL: string
     readonly VITE_API_TOKEN: string
-    readonly VITE_FLOW_ID: string
+    readonly VITE_FLOW_IDS: string
     readonly VITE_EXECUTION_ID: string
 }
 
