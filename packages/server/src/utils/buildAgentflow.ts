@@ -1289,7 +1289,6 @@ const executeNode = async ({
                     flowData: JSON.stringify(iterationFlowData)
                 }
 
-                // Initialize array to collect results from iterations
                 const iterationResults: string[] = []
 
                 // Execute sub-flow for each item in the iteration array
@@ -1336,9 +1335,16 @@ const executeNode = async ({
                             productId
                         })
 
-                        // Store the result
-                        if (subFlowResult?.text) {
-                            iterationResults.push(subFlowResult.text)
+                        if (subFlowResult) {
+                            iterationResults.push(subFlowResult.text || '')
+                            if (subFlowResult.text) {
+                                // Stream each result as it completes rather than batching at the end.
+                                // Sub-flows run with isRecursive=true, so inner nodes (e.g. DirectReply)
+                                // never reach isLastNode=true and never call streamTokenEvent themselves.
+                                if (isLastNode && sseStreamer) {
+                                    sseStreamer.streamTokenEvent(chatId, (i > 0 ? '\n' : '') + subFlowResult.text)
+                                }
+                            }
                         }
 
                         // Add executed data from sub-flow to main execution data with appropriate iteration context
@@ -1394,7 +1400,6 @@ const executeNode = async ({
                     }
                 }
 
-                // Update the output with combined results
                 results.output = {
                     ...(results.output || {}),
                     iterationResults,
