@@ -1,7 +1,7 @@
-import axios from 'axios'
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { secureAxiosRequest } from '../../../src/httpSecurity'
 
 interface ScavioSearchParams {
     apiKey: string
@@ -47,12 +47,19 @@ class ScavioSearchTool extends Tool {
         if (this.page) body.page = this.page
 
         try {
-            const { data } = await axios.post('https://api.scavio.dev/api/v2/google', body, {
+            const response = await secureAxiosRequest({
+                method: 'POST',
+                url: 'https://api.scavio.dev/api/v2/google',
+                data: body,
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${this.apiKey}`
                 }
             })
+            if (response.status >= 400) {
+                return `Scavio API error (${response.status}): ${JSON.stringify(response.data).slice(0, 2000)}`
+            }
+            const data = response.data
             const results = Array.isArray(data?.organic_results) ? data.organic_results : []
             if (!results.length) return JSON.stringify(data).slice(0, 4000)
             return JSON.stringify(
@@ -165,6 +172,9 @@ class Scavio_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const scavioApiKey = getCredentialParam('scavioApiKey', credentialData, nodeData)
+        if (!scavioApiKey) {
+            throw new Error('Scavio API Key is missing. Please connect your Scavio API credential.')
+        }
 
         const searchType = nodeData.inputs?.searchType as string
         const countryCode = nodeData.inputs?.countryCode as string
