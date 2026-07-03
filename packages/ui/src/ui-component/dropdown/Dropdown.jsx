@@ -5,6 +5,7 @@ import { Popper, FormControl, TextField, Box, Typography } from '@mui/material'
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
 import { useTheme, styled } from '@mui/material/styles'
 import PropTypes from 'prop-types'
+import { getOptionLabel, getSelectionValue, getSingleAutocompleteValue, isOptionEqualToValue } from './dropdownUtils'
 
 const StyledPopper = styled(Popper)({
     boxShadow: '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
@@ -21,7 +22,6 @@ const StyledPopper = styled(Popper)({
 export const Dropdown = ({ name, value, loading, options, onSelect, disabled = false, freeSolo = false, disableClearable = false }) => {
     const customization = useSelector((state) => state.customization)
     const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value)
-    const getDefaultOptionValue = () => ''
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
     const theme = useTheme()
 
@@ -32,12 +32,15 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
                 disabled={disabled}
                 freeSolo={freeSolo}
                 disableClearable={disableClearable}
+                autoSelect={freeSolo}
+                getOptionLabel={getOptionLabel}
+                isOptionEqualToValue={isOptionEqualToValue}
                 size='small'
                 loading={loading}
                 options={options || []}
-                value={findMatchingOptions(options, internalValue) || getDefaultOptionValue()}
+                value={getSingleAutocompleteValue({ options, value: internalValue, freeSolo })}
                 onChange={(e, selection) => {
-                    const value = selection ? selection.name : ''
+                    const value = getSelectionValue(selection)
                     setInternalValue(value)
                     onSelect(value)
                 }}
@@ -47,7 +50,6 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
                     return (
                         <TextField
                             {...params}
-                            value={internalValue}
                             sx={{
                                 height: '100%',
                                 '& .MuiInputBase-root': {
