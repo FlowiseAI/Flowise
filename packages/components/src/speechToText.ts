@@ -14,6 +14,7 @@ import {
     MediaFormat,
     DeleteTranscriptionJobCommand
 } from '@aws-sdk/client-transcribe'
+import type { StartTranscriptionJobCommandInput, LanguageCode } from '@aws-sdk/client-transcribe'
 
 const SpeechToTextType = {
     OPENAI_WHISPER: 'openAIWhisper',
@@ -138,7 +139,8 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
             case SpeechToTextType.AWS_TRANSCRIBE: {
                 const region = speechToTextConfig.region || 'us-east-1'
                 const s3BucketName = speechToTextConfig.s3BucketName as string
-                const languageCode = speechToTextConfig.languageCode || 'en-US'
+                const identifyLanguage = speechToTextConfig.identifyLanguage === true || speechToTextConfig.identifyLanguage === 'true'
+                const languageOptions = speechToTextConfig.languageOptions as string | undefined
 
                 if (!s3BucketName) {
                     throw new Error('S3 Bucket Name is required for AWS Transcribe')
@@ -184,17 +186,34 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                     }
                     const mediaFormat = (mediaFormatMap[fileExtension] || 'webm') as MediaFormat
 
+                    // Dynamically build the transcription job payload
+                    const transcriptionJobInput: StartTranscriptionJobCommandInput = {
+                        TranscriptionJobName: jobName,
+                        Media: {
+                            MediaFileUri: `s3://${s3BucketName}/${s3Key}`
+                        },
+                        MediaFormat: mediaFormat
+                    }
+
+                    if (identifyLanguage) {
+                        // Automatic language identification mode — LanguageCode must NOT be set
+                        transcriptionJobInput.IdentifyLanguage = true
+                        if (languageOptions) {
+                            const parsedLanguageOptions = languageOptions
+                                .split(',')
+                                .map((code) => code.trim())
+                                .filter((code) => code.length > 0)
+                            if (parsedLanguageOptions.length > 0) {
+                                transcriptionJobInput.LanguageOptions = parsedLanguageOptions as LanguageCode[]
+                            }
+                        }
+                    } else {
+                        // Standard mode — use a single LanguageCode
+                        transcriptionJobInput.LanguageCode = (speechToTextConfig.languageCode || 'en-US') as LanguageCode
+                    }
+
                     // Start transcription job
-                    await transcribeClient.send(
-                        new StartTranscriptionJobCommand({
-                            TranscriptionJobName: jobName,
-                            LanguageCode: languageCode,
-                            Media: {
-                                MediaFileUri: `s3://${s3BucketName}/${s3Key}`
-                            },
-                            MediaFormat: mediaFormat
-                        })
-                    )
+                    await transcribeClient.send(new StartTranscriptionJobCommand(transcriptionJobInput))
 
                     // Poll for completion with 60 second timeout
                     const POLL_INTERVAL_MS = 3000
