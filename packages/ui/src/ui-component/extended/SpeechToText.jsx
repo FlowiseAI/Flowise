@@ -265,7 +265,27 @@ const speechToTextProviders = {
                 type: 'string',
                 description: 'The language code of the audio (e.g., en-US, es-ES, fr-FR)',
                 placeholder: 'en-US',
-                optional: true
+                optional: true,
+                show: { identifyLanguage: false }
+            },
+            {
+                label: 'Automatic Language Identification',
+                name: 'identifyLanguage',
+                type: 'boolean',
+                default: false,
+                optional: true,
+                description:
+                    'If enabled, Amazon Transcribe will automatically identify the language spoken in the audio.'
+            },
+            {
+                label: 'Language Options',
+                name: 'languageOptions',
+                type: 'string',
+                optional: true,
+                description:
+                    'Comma-separated list of language codes to restrict detection (e.g., en-US, es-ES, fr-FR). Improves accuracy and latency when Identify Language is enabled.',
+                placeholder: 'en-US, es-ES, fr-FR',
+                show: { identifyLanguage: true }
             },
             {
                 label: 'S3 Bucket Name',
@@ -457,8 +477,17 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                             }
                         />
                     </ListItem>
-                    {speechToTextProviders[selectedProvider].inputs.map((inputParam, index) => (
-                        <Box key={index} sx={{ p: 2 }}>
+                    {speechToTextProviders[selectedProvider].inputs
+                        .filter((inputParam) => {
+                            if (!inputParam.show) return true
+                            const providerConfig = speechToText[selectedProvider] || {}
+                            return Object.entries(inputParam.show).every(([key, value]) => {
+                                const currentValue = providerConfig[key] ?? false
+                                return currentValue === value
+                            })
+                        })
+                        .map((inputParam, index) => (
+                        <Box key={inputParam.name || index} sx={{ p: 2 }}>
                             <div style={{ display: 'flex', flexDirection: 'row' }}>
                                 <Typography>
                                     {inputParam.label}
