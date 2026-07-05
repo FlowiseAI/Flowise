@@ -274,8 +274,7 @@ const speechToTextProviders = {
                 type: 'boolean',
                 default: false,
                 optional: true,
-                description:
-                    'If enabled, Amazon Transcribe will automatically identify the language spoken in the audio.'
+                description: 'If enabled, Amazon Transcribe will automatically identify the language spoken in the audio.'
             },
             {
                 label: 'Language Options',
@@ -487,64 +486,64 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                             })
                         })
                         .map((inputParam, index) => (
-                        <Box key={inputParam.name || index} sx={{ p: 2 }}>
-                            <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                <Typography>
-                                    {inputParam.label}
-                                    {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                                    {inputParam.description && (
-                                        <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />
-                                    )}
-                                </Typography>
-                            </div>
-                            {inputParam.type === 'credential' && (
-                                <CredentialInputHandler
-                                    key={speechToText[selectedProvider]?.credentialId}
-                                    data={
-                                        speechToText[selectedProvider]?.credentialId
-                                            ? { credential: speechToText[selectedProvider].credentialId }
-                                            : {}
-                                    }
-                                    inputParam={inputParam}
-                                    onSelect={(newValue) => setValue(newValue, selectedProvider, 'credentialId')}
-                                />
-                            )}
-                            {inputParam.type === 'boolean' && (
-                                <SwitchInput
-                                    onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
-                                    value={
-                                        speechToText[selectedProvider]
-                                            ? speechToText[selectedProvider][inputParam.name]
-                                            : inputParam.default ?? false
-                                    }
-                                />
-                            )}
-                            {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
-                                <Input
-                                    inputParam={inputParam}
-                                    onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
-                                    value={
-                                        speechToText[selectedProvider]
-                                            ? speechToText[selectedProvider][inputParam.name]
-                                            : inputParam.default ?? ''
-                                    }
-                                />
-                            )}
+                            <Box key={inputParam.name || index} sx={{ p: 2 }}>
+                                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                    <Typography>
+                                        {inputParam.label}
+                                        {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                                        {inputParam.description && (
+                                            <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />
+                                        )}
+                                    </Typography>
+                                </div>
+                                {inputParam.type === 'credential' && (
+                                    <CredentialInputHandler
+                                        key={speechToText[selectedProvider]?.credentialId}
+                                        data={
+                                            speechToText[selectedProvider]?.credentialId
+                                                ? { credential: speechToText[selectedProvider].credentialId }
+                                                : {}
+                                        }
+                                        inputParam={inputParam}
+                                        onSelect={(newValue) => setValue(newValue, selectedProvider, 'credentialId')}
+                                    />
+                                )}
+                                {inputParam.type === 'boolean' && (
+                                    <SwitchInput
+                                        onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                        value={
+                                            speechToText[selectedProvider]
+                                                ? speechToText[selectedProvider][inputParam.name]
+                                                : inputParam.default ?? false
+                                        }
+                                    />
+                                )}
+                                {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
+                                    <Input
+                                        inputParam={inputParam}
+                                        onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                        value={
+                                            speechToText[selectedProvider]
+                                                ? speechToText[selectedProvider][inputParam.name]
+                                                : inputParam.default ?? ''
+                                        }
+                                    />
+                                )}
 
-                            {inputParam.type === 'options' && (
-                                <Dropdown
-                                    name={inputParam.name}
-                                    options={inputParam.options}
-                                    onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
-                                    value={
-                                        speechToText[selectedProvider]
-                                            ? speechToText[selectedProvider][inputParam.name]
-                                            : inputParam.default ?? 'choose an option'
-                                    }
-                                />
-                            )}
-                        </Box>
-                    ))}
+                                {inputParam.type === 'options' && (
+                                    <Dropdown
+                                        name={inputParam.name}
+                                        options={inputParam.options}
+                                        onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                        value={
+                                            speechToText[selectedProvider]
+                                                ? speechToText[selectedProvider][inputParam.name]
+                                                : inputParam.default ?? 'choose an option'
+                                        }
+                                    />
+                                )}
+                            </Box>
+                        ))}
                 </>
             )}
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
