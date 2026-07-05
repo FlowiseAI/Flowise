@@ -303,7 +303,9 @@ export const getVoices = async (provider: string, credentialId: string, options:
                 { id: 'Pedro', name: 'Pedro (Male, US Spanish)' },
                 { id: 'Léa', name: 'Léa (Female, French)' },
                 { id: 'Vicki', name: 'Vicki (Female, German)' },
-                { id: 'Daniel', name: 'Daniel (Male, German)' }
+                { id: 'Daniel', name: 'Daniel (Male, German)' },
+                { id: 'Lucia', name: 'Lucia (Female, European Spanish)' },
+                { id: 'Sergio', name: 'Sergio (Male, European Spanish)' }
             ]
 
         default:
