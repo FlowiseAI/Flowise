@@ -4,6 +4,8 @@ import { SaverOptions } from '../interface'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeParams } from '../../../../src/Interface'
 import { SqliteSaver } from './sqliteSaver'
 import { DataSource } from 'typeorm'
+import { mergeDataSourceOptions, sanitizeDataSourceOptions } from '../../../../src/sanitizeDataSourceOptions'
+import { validateSQLitePath } from '../../../../src/validator'
 
 class SQLiteAgentMemory_Memory implements INode {
     label: string
@@ -40,6 +42,8 @@ class SQLiteAgentMemory_Memory implements INode {
                 label: 'Additional Connection Configuration',
                 name: 'additionalConfig',
                 type: 'json',
+                description:
+                    'Optional TypeORM connection options (e.g. ssl, connectTimeout). entities, subscribers, migrations, and extra are not allowed.',
                 additionalParams: true,
                 optional: true
             }
@@ -60,17 +64,20 @@ class SQLiteAgentMemory_Memory implements INode {
             } catch (exception) {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
+            additionalConfiguration = sanitizeDataSourceOptions(additionalConfiguration)
         }
 
         const threadId = options.sessionId || options.chatId
 
-        const database = path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite')
+        const database = validateSQLitePath(path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite'))
 
-        let datasourceOptions: ICommonObject = {
-            database,
-            ...additionalConfiguration,
-            type: 'sqlite'
-        }
+        const datasourceOptions: ICommonObject = mergeDataSourceOptions(
+            {
+                database,
+                type: 'sqlite'
+            },
+            additionalConfiguration
+        )
 
         const args: SaverOptions = {
             datasourceOptions,

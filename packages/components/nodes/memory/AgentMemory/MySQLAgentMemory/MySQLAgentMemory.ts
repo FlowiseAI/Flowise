@@ -3,6 +3,7 @@ import { SaverOptions } from '../interface'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeParams } from '../../../../src/Interface'
 import { DataSource } from 'typeorm'
 import { MySQLSaver } from './mysqlSaver'
+import { sanitizeDataSourceOptions } from '../../../../src/sanitizeDataSourceOptions'
 
 class MySQLAgentMemory_Memory implements INode {
     label: string
@@ -54,6 +55,8 @@ class MySQLAgentMemory_Memory implements INode {
                 label: 'Additional Connection Configuration',
                 name: 'additionalConfig',
                 type: 'json',
+                description:
+                    'Optional TypeORM connection options (e.g. ssl, connectTimeout). entities, subscribers, migrations, and extra are not allowed.',
                 additionalParams: true,
                 optional: true
             }
@@ -74,6 +77,7 @@ class MySQLAgentMemory_Memory implements INode {
             } catch (exception) {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
+            additionalConfiguration = sanitizeDataSourceOptions(additionalConfiguration)
         }
 
         const threadId = options.sessionId || options.chatId
