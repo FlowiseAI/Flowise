@@ -20,6 +20,60 @@ export interface FollowUpPromptResult {
     questions: string[]
 }
 
+interface FollowUpPromptGenerationOptions {
+    timeoutMs?: number
+    maxRetries?: number
+}
+
+type FollowUpPromptTask<T> = () => Promise<T>
+
+const DEFAULT_FOLLOW_UP_PROMPT_TIMEOUT_MS = 10000
+const DEFAULT_FOLLOW_UP_PROMPT_MAX_RETRIES = 1
+
+class FollowUpPromptTimeoutError extends Error {
+    constructor(timeoutMs: number) {
+        super(`Follow-up prompt generation timed out after ${timeoutMs}ms`)
+        this.name = 'FollowUpPromptTimeoutError'
+    }
+}
+
+const createTimeoutPromise = <T>(timeoutMs: number): { promise: Promise<T>; clear: () => void } => {
+    let timeout: NodeJS.Timeout
+    const promise = new Promise<T>((_, reject) => {
+        timeout = setTimeout(() => reject(new FollowUpPromptTimeoutError(timeoutMs)), timeoutMs)
+    })
+
+    return {
+        promise,
+        clear: () => clearTimeout(timeout)
+    }
+}
+
+const invokeWithTimeoutAndRetry = async <T>(
+    task: FollowUpPromptTask<T>,
+    options: FollowUpPromptGenerationOptions = {}
+): Promise<T | undefined> => {
+    const timeoutMs = options.timeoutMs ?? DEFAULT_FOLLOW_UP_PROMPT_TIMEOUT_MS
+    const maxRetries = options.maxRetries ?? DEFAULT_FOLLOW_UP_PROMPT_MAX_RETRIES
+
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+        const timeout = createTimeoutPromise<T>(timeoutMs)
+
+        try {
+            const taskPromise = task()
+            taskPromise.catch(() => undefined)
+
+            return await Promise.race([taskPromise, timeout.promise])
+        } catch {
+            if (attempt === maxRetries) return undefined
+        } finally {
+            timeout.clear()
+        }
+    }
+
+    return undefined
+}
+
 export const generateFollowUpPrompts = async (
     followUpPromptsConfig: FollowUpPromptConfig,
     apiMessageContent: string,
@@ -44,8 +98,10 @@ export const generateFollowUpPrompts = async (
                 const structuredLLM = llm.withStructuredOutput(FollowUpPromptType, {
                     method: 'functionCalling'
                 })
-                const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
-                return structuredResponse as FollowUpPromptResult
+                return await invokeWithTimeoutAndRetry(async () => {
+                    const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
+                    return structuredResponse as FollowUpPromptResult
+                })
             }
             case FollowUpPromptProvider.AZURE_OPENAI: {
                 const azureOpenAIApiKey = credentialData['azureOpenAIApiKey']
@@ -70,11 +126,13 @@ export const generateFollowUpPrompts = async (
                     {format_instructions}
                 `)
                 const chain = prompt.pipe(llm).pipe(parser)
-                const structuredResponse = await chain.invoke({
-                    history: apiMessageContent,
-                    format_instructions: formatInstructions
+                return await invokeWithTimeoutAndRetry(async () => {
+                    const structuredResponse = await chain.invoke({
+                        history: apiMessageContent,
+                        format_instructions: formatInstructions
+                    })
+                    return structuredResponse as FollowUpPromptResult
                 })
-                return structuredResponse as FollowUpPromptResult
             }
             case FollowUpPromptProvider.GOOGLE_GENAI: {
                 const model = new ChatGoogleGenerativeAI({
@@ -85,8 +143,10 @@ export const generateFollowUpPrompts = async (
                 const structuredLLM = model.withStructuredOutput(FollowUpPromptType, {
                     method: 'functionCalling'
                 })
-                const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
-                return structuredResponse as FollowUpPromptResult
+                return await invokeWithTimeoutAndRetry(async () => {
+                    const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
+                    return structuredResponse as FollowUpPromptResult
+                })
             }
             case FollowUpPromptProvider.MISTRALAI: {
                 const model = new ChatMistralAI({
@@ -98,8 +158,10 @@ export const generateFollowUpPrompts = async (
                 const structuredLLM = model.withStructuredOutput(FollowUpPromptType, {
                     method: 'functionCalling'
                 })
-                const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
-                return structuredResponse as FollowUpPromptResult
+                return await invokeWithTimeoutAndRetry(async () => {
+                    const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
+                    return structuredResponse as FollowUpPromptResult
+                })
             }
             case FollowUpPromptProvider.OPENAI: {
                 const model = new ChatOpenAI({
@@ -112,8 +174,10 @@ export const generateFollowUpPrompts = async (
                 const structuredLLM = model.withStructuredOutput(FollowUpPromptType, {
                     method: 'functionCalling'
                 })
-                const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
-                return structuredResponse as FollowUpPromptResult
+                return await invokeWithTimeoutAndRetry(async () => {
+                    const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
+                    return structuredResponse as FollowUpPromptResult
+                })
             }
             case FollowUpPromptProvider.GROQ: {
                 const llm = new ChatGroq({
@@ -124,44 +188,48 @@ export const generateFollowUpPrompts = async (
                 const structuredLLM = llm.withStructuredOutput(FollowUpPromptType, {
                     method: 'functionCalling'
                 })
-                const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
-                return structuredResponse as FollowUpPromptResult
+                return await invokeWithTimeoutAndRetry(async () => {
+                    const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
+                    return structuredResponse as FollowUpPromptResult
+                })
             }
             case FollowUpPromptProvider.OLLAMA: {
                 const ollamaClient = new Ollama({
                     host: providerConfig.baseUrl || 'http://127.0.0.1:11434'
                 })
 
-                const response = await ollamaClient.chat({
-                    model: providerConfig.modelName,
-                    messages: [
-                        {
-                            role: 'user',
-                            content: followUpPromptsPrompt
-                        }
-                    ],
-                    format: {
-                        type: 'object',
-                        properties: {
-                            questions: {
-                                type: 'array',
-                                items: {
-                                    type: 'string'
-                                },
-                                minItems: 3,
-                                maxItems: 3,
-                                description: 'Three follow-up questions based on the conversation history'
+                return await invokeWithTimeoutAndRetry(async () => {
+                    const response = await ollamaClient.chat({
+                        model: providerConfig.modelName,
+                        messages: [
+                            {
+                                role: 'user',
+                                content: followUpPromptsPrompt
                             }
+                        ],
+                        format: {
+                            type: 'object',
+                            properties: {
+                                questions: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'string'
+                                    },
+                                    minItems: 3,
+                                    maxItems: 3,
+                                    description: 'Three follow-up questions based on the conversation history'
+                                }
+                            },
+                            required: ['questions'],
+                            additionalProperties: false
                         },
-                        required: ['questions'],
-                        additionalProperties: false
-                    },
-                    options: {
-                        temperature: parseFloat(`${providerConfig.temperature}`)
-                    }
+                        options: {
+                            temperature: parseFloat(`${providerConfig.temperature}`)
+                        }
+                    })
+                    const result = FollowUpPromptType.parse(JSON.parse(response.message.content))
+                    return result
                 })
-                const result = FollowUpPromptType.parse(JSON.parse(response.message.content))
-                return result
             }
         }
     } else {
