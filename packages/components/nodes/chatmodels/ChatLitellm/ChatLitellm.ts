@@ -117,6 +117,7 @@ class ChatLitellm_ChatModels implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('litellmApiKey', credentialData, nodeData)
+        const customHeadersRaw = getCredentialParam('litellmCustomHeaders', credentialData, nodeData)
 
         const obj: Partial<OpenAIChatInput> &
             BaseLLMParams & { openAIApiKey?: string } & { configuration?: { baseURL?: string; defaultHeaders?: ICommonObject } } = {
@@ -125,9 +126,22 @@ class ChatLitellm_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
-        if (basePath) {
+        let defaultHeaders: ICommonObject = {}
+        if (customHeadersRaw) {
+            try {
+                const parsed = JSON.parse(customHeadersRaw)
+                if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                    defaultHeaders = parsed
+                }
+            } catch {
+                // ignore malformed JSON
+            }
+        }
+
+        if (basePath || Object.keys(defaultHeaders).length > 0) {
             obj.configuration = {
-                baseURL: basePath
+                ...(basePath ? { baseURL: basePath } : {}),
+                ...(Object.keys(defaultHeaders).length > 0 ? { defaultHeaders } : {})
             }
         }
 
