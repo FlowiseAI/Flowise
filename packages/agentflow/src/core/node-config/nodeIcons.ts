@@ -6,6 +6,7 @@ import type { ComponentType } from 'react'
 
 import {
     IconArrowsSplit,
+    IconCoin,
     IconFunctionFilled,
     IconLibrary,
     IconMessageCircleFilled,
@@ -98,6 +99,11 @@ export const AGENTFLOW_ICONS: AgentflowIcon[] = [
     {
         name: 'httpAgentflow',
         icon: IconWorld,
+        color: tokens.colors.nodes.http
+    },
+    {
+        name: 'x402PaidApiAgentflow',
+        icon: IconCoin,
         color: tokens.colors.nodes.http
     },
     {
