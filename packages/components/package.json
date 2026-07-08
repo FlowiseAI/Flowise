@@ -58,6 +58,7 @@
         "@google/generative-ai": "^0.24.0",
         "@grpc/grpc-js": "^1.10.10",
         "@huggingface/inference": "^4.13.2",
+        "@huggingface/transformers": "^3.5.2",
         "@ibm-cloud/watsonx-ai": "1.7.7",
         "@langchain/anthropic": "1.3.20",
         "@langchain/aws": "1.2.2",
