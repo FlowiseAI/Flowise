@@ -174,6 +174,16 @@ Flowise supports different environment variables to configure your instance. You
 
 You can view the Flowise Docs [here](https://docs.flowiseai.com/)
 
+### In-Repository Guides
+
+Self-hosted and local-development guides shipped with this repo:
+
+-   [Local LLM Providers (Ollama, LM Studio, LocalAI)](./docs/local-providers.md)
+-   [LLM & Embedding Caching](./docs/llm-caching.md)
+-   [RAG & Agent Templates](./docs/rag-and-agent-templates.md)
+-   [Local Development Setup](./docs/local-development-setup.md)
+-   [All guides](./docs/README.md)
+
 ## 🌐 Self Host
 
 Deploy Flowise self-hosted in your existing infrastructure, we support various [deployments](https://docs.flowiseai.com/configuration/deployment)
