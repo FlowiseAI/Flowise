@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="img" aria-label="TokenLab">
+  <rect width="48" height="48" rx="10" fill="#111827"/>
+  <path d="M12 13h24v6H27v16h-6V19h-9z" fill="#f9fafb"/>
+  <path d="M31 25h5v10H20v-5h11z" fill="#38bdf8"/>
+</svg>
