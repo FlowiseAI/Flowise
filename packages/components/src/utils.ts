@@ -294,21 +294,126 @@ export const transformBracesWithColon = (input: string): string => {
     })
 }
 
-/**
- * Extracts text content from an AIMessageChunk, filtering out reasoning/thinking
- * content blocks that reasoning models may return.
- */
-const extractTextFromChunk = (response: AIMessageChunk): string => {
-    if (typeof response.content === 'string') {
-        return response.content
+const getStringValues = (source: any, keys: string[]): string[] => {
+    if (!source || typeof source !== 'object') return []
+
+    return keys.map((key) => source[key]).filter((value): value is string => typeof value === 'string' && value.length > 0)
+}
+
+const getReasoningTextFromBlock = (block: any): string => {
+    if (!block || typeof block !== 'object') return ''
+
+    const reasoningParts = getStringValues(block, ['reasoning', 'reasoning_content', 'reasoningContent', 'thinking'])
+
+    if (block.delta) {
+        const deltaReasoning = getReasoningTextFromBlock(block.delta)
+        if (deltaReasoning) reasoningParts.push(deltaReasoning)
     }
-    if (Array.isArray(response.content)) {
-        return response.content
-            .filter((block: any) => block.type === 'text' || block.type === 'text_delta')
-            .map((block: any) => block.text ?? '')
+
+    if (block.__raw_response) {
+        const rawReasoning = getReasoningTextFromBlock(block.__raw_response)
+        if (rawReasoning) reasoningParts.push(rawReasoning)
+    }
+
+    if (Array.isArray(block.choices)) {
+        for (const choice of block.choices) {
+            const choiceReasoning = getReasoningTextFromBlock(choice?.delta)
+            if (choiceReasoning) reasoningParts.push(choiceReasoning)
+        }
+    }
+
+    if (['reasoning', 'reasoning_content', 'thinking', 'reasoning_delta', 'thinking_delta'].includes(block.type)) {
+        if (typeof block.text === 'string') reasoningParts.push(block.text)
+    }
+
+    return reasoningParts.join('')
+}
+
+const isReasoningBlock = (block: any): boolean => {
+    if (!block || typeof block !== 'object') return false
+    return (
+        Boolean(getReasoningTextFromBlock(block)) ||
+        ['reasoning', 'reasoning_content', 'thinking', 'reasoning_delta', 'thinking_delta'].includes(block.type)
+    )
+}
+
+const extractReasoningContentFromChunk = (chunk: any): string => {
+    if (!chunk || typeof chunk === 'string') return ''
+
+    const reasoningParts: string[] = []
+
+    const addReasoning = (value: string) => {
+        if (value) reasoningParts.push(value)
+    }
+
+    addReasoning(getReasoningTextFromBlock(chunk.additional_kwargs))
+    addReasoning(getReasoningTextFromBlock(chunk.response_metadata))
+    addReasoning(getReasoningTextFromBlock(chunk.delta))
+
+    if (Array.isArray(chunk.choices)) {
+        for (const choice of chunk.choices) {
+            addReasoning(getReasoningTextFromBlock(choice?.delta))
+        }
+    }
+
+    const reasoningBlocks = chunk.contentBlocks?.length ? chunk.contentBlocks : Array.isArray(chunk.content) ? chunk.content : []
+    for (const block of reasoningBlocks) {
+        addReasoning(getReasoningTextFromBlock(block))
+    }
+
+    return reasoningParts.join('')
+}
+
+export interface IStreamingChunkContent {
+    text: string
+    reasoning: string
+}
+
+export const extractStreamingChunkContent = (chunk: any, options: { includeCodeExecution?: boolean } = {}): IStreamingChunkContent => {
+    const reasoning = extractReasoningContentFromChunk(chunk)
+
+    if (typeof chunk === 'string') {
+        return { text: chunk, reasoning }
+    }
+
+    if (!chunk) {
+        return { text: '', reasoning }
+    }
+
+    const content = chunk.content
+
+    if (Array.isArray(content)) {
+        const text = content
+            .map((item: any) => {
+                if (isReasoningBlock(item)) return ''
+                if ((item.text && !item.type) || ((item.type === 'text' || item.type === 'text_delta') && item.text)) {
+                    return item.text
+                }
+                if (options.includeCodeExecution && item.type === 'executableCode' && item.executableCode) {
+                    const language = item.executableCode.language?.toLowerCase() || 'python'
+                    return `\n\`\`\`${language}\n${item.executableCode.code}\n\`\`\`\n`
+                }
+                if (options.includeCodeExecution && item.type === 'codeExecutionResult' && item.codeExecutionResult) {
+                    const outcome = item.codeExecutionResult.outcome || 'OUTCOME_OK'
+                    const output = item.codeExecutionResult.output || ''
+                    if (outcome === 'OUTCOME_OK' && output) {
+                        return `**Code Output:**\n\`\`\`\n${output}\n\`\`\`\n`
+                    } else if (outcome !== 'OUTCOME_OK') {
+                        return `**Code Execution Error:**\n\`\`\`\n${output}\n\`\`\`\n`
+                    }
+                }
+                return ''
+            })
+            .filter((text: string) => text)
             .join('')
+
+        return { text, reasoning }
     }
-    return ''
+
+    if (typeof content === 'string') return { text: content, reasoning }
+    if (content != null && !isReasoningBlock(content)) return { text: content.toString(), reasoning }
+
+    return { text: '', reasoning }
 }
 
 /**
@@ -328,12 +433,12 @@ class TextOnlyOutputParser extends Runnable<AIMessageChunk, string> {
     lc_namespace = ['flowise', 'output_parsers']
 
     async invoke(input: AIMessageChunk, _options?: Partial<RunnableConfig>): Promise<string> {
-        return extractTextFromChunk(input)
+        return extractStreamingChunkContent(input).text
     }
 
     async *_transform(generator: AsyncGenerator<AIMessageChunk>): AsyncGenerator<string> {
         for await (const chunk of generator) {
-            const text = extractTextFromChunk(chunk)
+            const text = extractStreamingChunkContent(chunk).text
             if (text) {
                 yield text
             }
