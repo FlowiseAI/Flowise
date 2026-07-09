@@ -139,14 +139,16 @@ class ChatTokenLab_ChatModels implements INode {
             throw new Error('Model Name is required. Please enter a valid TokenLab model name, for example gpt-5.4-mini.')
         }
 
+        const parsedTemperature = temperature !== undefined && temperature !== '' ? parseFloat(temperature) : undefined
+
         const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: tokenLabApiKey,
             apiKey: tokenLabApiKey,
             streaming: streaming ?? true
         }
 
+        if (parsedTemperature !== undefined && !Number.isNaN(parsedTemperature)) obj.temperature = parsedTemperature
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
@@ -159,6 +161,9 @@ class ChatTokenLab_ChatModels implements INode {
         if (baseOptions) {
             try {
                 parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+                if (!parsedBaseOptions || typeof parsedBaseOptions !== 'object' || Array.isArray(parsedBaseOptions)) {
+                    throw new Error('BaseOptions must be a JSON object.')
+                }
                 if (parsedBaseOptions.baseURL) {
                     console.warn("The 'baseURL' parameter is not allowed when using the ChatTokenLab node.")
                     parsedBaseOptions.baseURL = undefined
