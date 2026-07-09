@@ -113,7 +113,7 @@ class ChatOpenAICustom_ChatModels implements INode {
                 name: 'baseOptions',
                 type: 'json',
                 optional: true,
-                description: 'Default headers to include with every request to the API.',
+                description: 'JSON options for the OpenAI-compatible client. Use defaultHeaders for request headers.',
                 additionalParams: true
             }
         ]
@@ -150,7 +150,7 @@ class ChatOpenAICustom_ChatModels implements INode {
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
 
-        let parsedBaseOptions: any | undefined = undefined
+        let parsedBaseOptions: ICommonObject | undefined = undefined
 
         if (baseOptions) {
             try {
@@ -160,10 +160,27 @@ class ChatOpenAICustom_ChatModels implements INode {
             }
         }
 
-        if (basePath || parsedBaseOptions) {
+        let baseOptionsBaseURL: string | undefined
+        let baseOptionsDefaultHeaders: ICommonObject | undefined
+
+        if (parsedBaseOptions) {
+            const { stop, baseURL, defaultHeaders, ...remainingBaseOptions } = parsedBaseOptions
+
+            if (stop) obj.stop = stop
+            if (baseURL) baseOptionsBaseURL = baseURL
+
+            const remainingDefaultHeaders = Object.keys(remainingBaseOptions).length ? remainingBaseOptions : undefined
+            if (defaultHeaders && remainingDefaultHeaders) {
+                baseOptionsDefaultHeaders = { ...remainingDefaultHeaders, ...defaultHeaders }
+            } else {
+                baseOptionsDefaultHeaders = defaultHeaders ?? remainingDefaultHeaders
+            }
+        }
+
+        if (basePath || baseOptionsBaseURL || baseOptionsDefaultHeaders) {
             obj.configuration = {
-                baseURL: basePath,
-                defaultHeaders: parsedBaseOptions
+                baseURL: basePath || baseOptionsBaseURL,
+                defaultHeaders: baseOptionsDefaultHeaders
             }
         }
 
