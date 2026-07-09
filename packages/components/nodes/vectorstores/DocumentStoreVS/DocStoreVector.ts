@@ -1,4 +1,5 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { applyMatryoshkaTruncation, MATRYOSHKA_TRUNCATE_DIMENSIONS } from '../../../src/matryoshkaEmbeddings'
 import { DataSource } from 'typeorm'
 
 class DocStore_VectorStores implements INode {
@@ -118,8 +119,11 @@ class DocStore_VectorStores implements INode {
 const _createEmbeddingsObject = async (componentNodes: ICommonObject, data: ICommonObject, options: ICommonObject): Promise<any> => {
     // prepare embedding node data
     const embeddingComponent = componentNodes[data.embeddingName]
+    const embeddingConfig = { ...data.embeddingConfig }
+    const matryoshkaTruncateDimensions = embeddingConfig[MATRYOSHKA_TRUNCATE_DIMENSIONS]
+    delete embeddingConfig[MATRYOSHKA_TRUNCATE_DIMENSIONS]
     const embeddingNodeData: any = {
-        inputs: { ...data.embeddingConfig },
+        inputs: embeddingConfig,
         outputs: { output: 'document' },
         id: `${embeddingComponent.name}_0`,
         label: embeddingComponent.label,
@@ -127,15 +131,16 @@ const _createEmbeddingsObject = async (componentNodes: ICommonObject, data: ICom
         category: embeddingComponent.category,
         inputParams: embeddingComponent.inputs || []
     }
-    if (data.embeddingConfig.credential) {
-        embeddingNodeData.credential = data.embeddingConfig.credential
+    if (embeddingConfig.credential) {
+        embeddingNodeData.credential = embeddingConfig.credential
     }
 
     // init embedding object
     const embeddingNodeInstanceFilePath = embeddingComponent.filePath as string
     const embeddingNodeModule = await import(embeddingNodeInstanceFilePath)
     const embeddingNodeInstance = new embeddingNodeModule.nodeClass()
-    return await embeddingNodeInstance.init(embeddingNodeData, '', options)
+    const embeddingObj = await embeddingNodeInstance.init(embeddingNodeData, '', options)
+    return applyMatryoshkaTruncation(embeddingObj, matryoshkaTruncateDimensions)
 }
 
 const _createVectorStoreNodeData = (componentNodes: ICommonObject, data: ICommonObject, embeddingObj: any) => {

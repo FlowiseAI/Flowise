@@ -7,6 +7,8 @@ import {
     getFileFromUpload,
     ICommonObject,
     IDocument,
+    applyMatryoshkaTruncation,
+    MATRYOSHKA_TRUNCATE_DIMENSIONS,
     mapExtToInputField,
     mapMimeTypeToInputField,
     removeFilesFromStorage,
@@ -1583,8 +1585,11 @@ const _createEmbeddingsObject = async (
 ): Promise<any> => {
     // prepare embedding node data
     const embeddingComponent = componentNodes[data.embeddingName]
+    const embeddingConfig = { ...data.embeddingConfig }
+    const matryoshkaTruncateDimensions = embeddingConfig[MATRYOSHKA_TRUNCATE_DIMENSIONS]
+    delete embeddingConfig[MATRYOSHKA_TRUNCATE_DIMENSIONS]
     const embeddingNodeData: any = {
-        inputs: { ...data.embeddingConfig },
+        inputs: embeddingConfig,
         outputs: { output: 'document' },
         id: `${embeddingComponent.name}_0`,
         label: embeddingComponent.label,
@@ -1592,12 +1597,28 @@ const _createEmbeddingsObject = async (
         category: embeddingComponent.category,
         inputParams: embeddingComponent.inputs || []
     }
-    if (data.embeddingConfig.credential) {
-        embeddingNodeData.credential = data.embeddingConfig.credential
+    if (embeddingConfig.credential) {
+        embeddingNodeData.credential = embeddingConfig.credential
     }
 
     // save to upsert history
-    if (upsertHistory) upsertHistory['flowData'] = saveUpsertFlowData(embeddingNodeData, upsertHistory)
+    if (upsertHistory) {
+        const embeddingHistoryNodeData = matryoshkaTruncateDimensions
+            ? {
+                  ...embeddingNodeData,
+                  inputs: { ...embeddingConfig, [MATRYOSHKA_TRUNCATE_DIMENSIONS]: matryoshkaTruncateDimensions },
+                  inputParams: [
+                      ...embeddingNodeData.inputParams,
+                      {
+                          label: 'Matryoshka Truncate Dimensions',
+                          name: MATRYOSHKA_TRUNCATE_DIMENSIONS,
+                          type: 'number'
+                      }
+                  ]
+              }
+            : embeddingNodeData
+        upsertHistory['flowData'] = saveUpsertFlowData(embeddingHistoryNodeData, upsertHistory)
+    }
 
     // init embedding object
     const embeddingNodeInstanceFilePath = embeddingComponent.filePath as string
@@ -1607,7 +1628,7 @@ const _createEmbeddingsObject = async (
     if (!embeddingObj) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Failed to create EmbeddingObj`)
     }
-    return embeddingObj
+    return applyMatryoshkaTruncation(embeddingObj, matryoshkaTruncateDimensions)
 }
 
 const _createRecordManagerObject = async (
