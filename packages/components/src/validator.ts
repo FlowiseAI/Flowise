@@ -391,3 +391,43 @@ export const sanitizeFileName = (name: string): string => {
     }
     return baseName
 }
+
+/**
+ * Safely resolve an untrusted relative key/filename to an absolute path inside a
+ * trusted base directory, guaranteeing the result cannot escape that directory.
+ *
+ * @param {string} baseDir The trusted base directory (e.g. a freshly created temp dir)
+ * @param {string} key The untrusted relative key or filename
+ * @returns {string} A validated absolute path guaranteed to be within baseDir
+ * @throws {Error} If key is missing/invalid or the resolved path escapes baseDir
+ */
+export const getSafeFilePath = (baseDir: string, key: string): string => {
+    if (!key || typeof key !== 'string') {
+        throw new Error('Invalid file path: key is required and must be a string')
+    }
+
+    let decodedKey = key
+    try {
+        decodedKey = decodeURIComponent(key)
+    } catch {
+        // malformed percent-encoding — keep the raw key; resolve/relative handle it safely
+    }
+
+    if (decodedKey.includes('\0')) {
+        throw new Error(`Invalid file path: null byte detected in "${key}"`)
+    }
+
+    const resolvedBase = path.resolve(baseDir)
+    const resolvedPath = path.resolve(resolvedBase, decodedKey)
+
+    if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
+        return resolvedPath
+    }
+
+    const relative = path.relative(resolvedBase, resolvedPath)
+    if (relative === '' || relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) {
+        throw new Error(`Invalid file path: path traversal attempt detected in "${key}"`)
+    }
+
+    return resolvedPath
+}
