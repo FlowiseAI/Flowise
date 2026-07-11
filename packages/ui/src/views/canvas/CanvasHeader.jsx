@@ -131,6 +131,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
     const [flowName, setFlowName] = useState('')
     const [isSettingsOpen, setSettingsOpen] = useState(false)
     const [flowDialogOpen, setFlowDialogOpen] = useState(false)
+    const [flowDialogLoading, setFlowDialogLoading] = useState(false)
     const [apiDialogOpen, setAPIDialogOpen] = useState(false)
     const [apiDialogProps, setAPIDialogProps] = useState({})
     const [viewMessagesDialogOpen, setViewMessagesDialogOpen] = useState(false)
@@ -324,9 +325,18 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
     }
 
     const onConfirmSaveName = (flowName) => {
-        setFlowDialogOpen(false)
+        setFlowDialogLoading(true)
         setSavePermission(isAgentCanvas ? 'agentflows:update' : 'chatflows:update')
-        handleSaveFlow(flowName)
+        const savePromise = handleSaveFlow(flowName)
+        if (savePromise && typeof savePromise.then === 'function') {
+            savePromise.finally(() => {
+                setFlowDialogOpen(false)
+                setFlowDialogLoading(false)
+            })
+        } else {
+            setFlowDialogOpen(false)
+            setFlowDialogLoading(false)
+        }
     }
 
     useEffect(() => {
@@ -651,7 +661,10 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                     confirmButtonName: 'Save',
                     cancelButtonName: 'Cancel'
                 }}
-                onCancel={() => setFlowDialogOpen(false)}
+                loading={flowDialogLoading}
+                onCancel={() => {
+                    if (!flowDialogLoading) setFlowDialogOpen(false)
+                }}
                 onConfirm={onConfirmSaveName}
             />
             {apiDialogOpen && <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />}
