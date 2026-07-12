@@ -889,8 +889,12 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         setUserInput(elem.label)
         setMessages((prevMessages) => {
             let allMessages = [...cloneDeep(prevMessages)]
-            if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
-            allMessages[allMessages.length - 1].action = null
+            // Clear the action on the message this button belongs to, not just the last message - a flow
+            // can have multiple pending HIL nodes at once. See #4787.
+            const targetIndex = allMessages.findIndex((msg) => msg.action && action && msg.action.id === action.id)
+            const indexToClear = targetIndex !== -1 ? targetIndex : allMessages.length - 1
+            if (allMessages[indexToClear].type === 'userMessage') return allMessages
+            allMessages[indexToClear].action = null
             return allMessages
         })
         if (elem.type.includes('agentflowv2')) {
