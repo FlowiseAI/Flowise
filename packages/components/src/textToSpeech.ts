@@ -2,7 +2,14 @@ import { ICommonObject } from './Interface'
 import { getCredentialData } from './utils'
 import OpenAI from 'openai'
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
-import { PollyClient, SynthesizeSpeechCommand, Engine, VoiceId } from '@aws-sdk/client-polly'
+import {
+    PollyClient,
+    StartSpeechSynthesisStreamCommand,
+    Engine,
+    VoiceId,
+    type StartSpeechSynthesisStreamActionStream
+} from '@aws-sdk/client-polly'
+import { NodeHttp2Handler } from '@smithy/node-http-handler'
 import { Readable } from 'node:stream'
 import type { ReadableStream } from 'node:stream/web'
 
@@ -10,6 +17,37 @@ const TextToSpeechType = {
     OPENAI_TTS: 'openai',
     ELEVEN_LABS_TTS: 'elevenlabs',
     AMAZON_POLLY_TTS: 'amazonPolly'
+}
+
+/**
+ * Splits input text into sentence-boundary chunks and yields them as
+ * StartSpeechSynthesisStreamActionStream TextEvent payloads.
+ *
+ * Chunking strategy: split on sentence-ending punctuation (.!?) followed by
+ * whitespace, keeping the punctuation attached to the preceding sentence.
+ * Each chunk is sent as a separate TextEvent so Polly can begin synthesizing
+ * immediately without waiting for the full text.
+ */
+async function* createTextEventStream(text: string): AsyncGenerator<StartSpeechSynthesisStreamActionStream> {
+    // Split on sentence boundaries (., !, ?) followed by whitespace while
+    // keeping the delimiter attached to the preceding chunk.
+    const sentences = text.match(/[^.!?]*[.!?]+[\s]*/g)
+    const chunks = sentences && sentences.length > 0 ? sentences : [text]
+
+    for (const chunk of chunks) {
+        const trimmed = chunk.trim()
+        if (trimmed.length === 0) continue
+        yield {
+            TextEvent: {
+                Text: trimmed
+            }
+        } as StartSpeechSynthesisStreamActionStream
+    }
+
+    // Signal end-of-input to Polly
+    yield {
+        CloseStreamEvent: {}
+    } as StartSpeechSynthesisStreamActionStream
 }
 
 export const convertTextToSpeechStream = async (
@@ -107,7 +145,12 @@ export const convertTextToSpeechStream = async (
                             onStart('mp3')
 
                             const region = textToSpeechConfig.region || 'us-east-1'
-                            const pollyClientConfig: Record<string, any> = { region }
+                            const pollyClientConfig: Record<string, any> = {
+                                region,
+                                // Bidirectional streaming requires HTTP/2; the default HTTP/1.1
+                                // handler causes the request to hang indefinitely.
+                                requestHandler: new NodeHttp2Handler()
+                            }
 
                             if (credentialData.awsKey && credentialData.awsSecret) {
                                 pollyClientConfig.credentials = {
@@ -120,27 +163,64 @@ export const convertTextToSpeechStream = async (
                             const pollyClient = new PollyClient(pollyClientConfig)
 
                             const voiceId = (textToSpeechConfig.voice || 'Joanna') as VoiceId
-                            const engine = (textToSpeechConfig.engine || 'neural') as Engine
+                            const configuredEngine = (textToSpeechConfig.engine || 'neural') as Engine
 
-                            const command = new SynthesizeSpeechCommand({
-                                Text: text,
+                            // Bidirectional streaming only supports 'generative' and 'long-form' engines.
+                            // Fall back to 'generative' for unsupported engines (standard, neural).
+                            const streamingEngine: Engine =
+                                configuredEngine === 'long-form' || configuredEngine === 'generative'
+                                    ? configuredEngine
+                                    : ('generative' as Engine)
+
+                            const command = new StartSpeechSynthesisStreamCommand({
+                                Engine: streamingEngine,
                                 OutputFormat: 'mp3',
+                                SampleRate: textToSpeechConfig.sampleRate || '24000',
                                 VoiceId: voiceId,
-                                Engine: engine
+                                ActionStream: createTextEventStream(text)
                             })
 
-                            const pollyResponse = await pollyClient.send(command, {
-                                abortSignal: abortController.signal
-                            })
+                            const pollyResponse = await pollyClient.send(command)
 
-                            if (!pollyResponse.AudioStream) {
-                                throw new Error('Amazon Polly returned no audio stream')
+                            if (!pollyResponse.EventStream) {
+                                throw new Error('Amazon Polly returned no event stream')
                             }
 
-                            // AudioStream from Polly is a Readable in Node.js
-                            const pollyStream = pollyResponse.AudioStream as unknown as Readable
-                            const stream =
-                                pollyStream instanceof Readable ? pollyStream : Readable.fromWeb(pollyStream as unknown as ReadableStream)
+                            // Collect audio chunks from the bidirectional event stream
+                            const audioChunks: Buffer[] = []
+
+                            for await (const event of pollyResponse.EventStream) {
+                                // Check for abort between events
+                                if (abortController.signal.aborted) {
+                                    throw new Error('TTS generation aborted')
+                                }
+
+                                if ('AudioEvent' in event && event.AudioEvent?.AudioChunk) {
+                                    audioChunks.push(Buffer.from(event.AudioEvent.AudioChunk))
+                                }
+
+                                // Re-throw service-side errors surfaced as event stream members
+                                if ('ValidationException' in event && event.ValidationException) {
+                                    throw new Error(`Polly ValidationException: ${event.ValidationException.message}`)
+                                }
+                                if ('ServiceFailureException' in event && event.ServiceFailureException) {
+                                    throw new Error(`Polly ServiceFailure: ${event.ServiceFailureException.message}`)
+                                }
+                                if ('ThrottlingException' in event && event.ThrottlingException) {
+                                    throw new Error(`Polly ThrottlingException: ${event.ThrottlingException.message}`)
+                                }
+                                if ('ServiceQuotaExceededException' in event && event.ServiceQuotaExceededException) {
+                                    throw new Error(`Polly ServiceQuotaExceeded: ${event.ServiceQuotaExceededException.message}`)
+                                }
+                            }
+
+                            if (audioChunks.length === 0) {
+                                throw new Error('Amazon Polly returned no audio data')
+                            }
+
+                            // Concatenate all chunks and wrap in a Readable for the rate-limited streamer
+                            const concatenatedAudio = Buffer.concat(audioChunks)
+                            const stream = Readable.from(concatenatedAudio)
 
                             await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 20, abortController, () => {
                                 streamDestroyed = true
