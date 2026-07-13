@@ -20,31 +20,58 @@ const TextToSpeechType = {
 }
 
 /**
- * Splits input text into sentence-boundary chunks and yields them as
- * StartSpeechSynthesisStreamActionStream TextEvent payloads.
- *
- * Chunking strategy: split on sentence-ending punctuation (.!?) followed by
- * whitespace, keeping the punctuation attached to the preceding sentence.
- * Each chunk is sent as a separate TextEvent so Polly can begin synthesizing
- * immediately without waiting for the full text.
+ * Maximum characters per streaming session batch.
+ * Polly's bidirectional streaming has a per-session audio duration limit (~5 min).
+ * Keeping each batch under ~2500 chars ensures we stay well within that limit
+ * while still batching enough text for natural-sounding synthesis.
  */
-async function* createTextEventStream(text: string): AsyncGenerator<StartSpeechSynthesisStreamActionStream> {
-    // Split on sentence boundaries (., !, ?) followed by whitespace while
-    // keeping the delimiter attached to the preceding chunk.
-    const sentences = text.match(/[^.!?]*[.!?]+[\s]*/g)
-    const chunks = sentences && sentences.length > 0 ? sentences : [text]
+const POLLY_STREAMING_MAX_BATCH_CHARS = 2500
 
-    for (const chunk of chunks) {
-        const trimmed = chunk.trim()
+/**
+ * Splits the full text into batches of sentences, each batch staying under
+ * POLLY_STREAMING_MAX_BATCH_CHARS. This avoids Polly's per-session
+ * "Synthesis duration limit exceeded" error for very long texts.
+ */
+function splitTextIntoBatches(text: string): string[] {
+    const sentences = text.match(/[^.!?]*[.!?]+[\s]*/g)
+    // If no sentence boundaries found, split by newlines or return as-is
+    const parts = sentences && sentences.length > 0 ? sentences : text.split(/\n+/).filter((s) => s.trim().length > 0)
+
+    const batches: string[] = []
+    let currentBatch = ''
+
+    for (const part of parts) {
+        const trimmed = part.trim()
         if (trimmed.length === 0) continue
-        yield {
-            TextEvent: {
-                Text: trimmed
-            }
-        } as StartSpeechSynthesisStreamActionStream
+
+        // If adding this sentence would exceed the limit, finalize the current batch
+        if (currentBatch.length > 0 && currentBatch.length + trimmed.length + 1 > POLLY_STREAMING_MAX_BATCH_CHARS) {
+            batches.push(currentBatch.trim())
+            currentBatch = ''
+        }
+
+        currentBatch += (currentBatch.length > 0 ? ' ' : '') + trimmed
     }
 
-    // Signal end-of-input to Polly
+    // Push any remaining text
+    if (currentBatch.trim().length > 0) {
+        batches.push(currentBatch.trim())
+    }
+
+    return batches.length > 0 ? batches : [text]
+}
+
+/**
+ * Creates an async generator that yields TextEvent payloads for a single
+ * batch of text, then signals end-of-input with CloseStreamEvent.
+ */
+async function* createTextEventStream(batchText: string): AsyncGenerator<StartSpeechSynthesisStreamActionStream> {
+    yield {
+        TextEvent: {
+            Text: batchText
+        }
+    } as StartSpeechSynthesisStreamActionStream
+
     yield {
         CloseStreamEvent: {}
     } as StartSpeechSynthesisStreamActionStream
@@ -172,52 +199,58 @@ export const convertTextToSpeechStream = async (
                                     ? configuredEngine
                                     : ('generative' as Engine)
 
-                            const command = new StartSpeechSynthesisStreamCommand({
-                                Engine: streamingEngine,
-                                OutputFormat: 'mp3',
-                                SampleRate: textToSpeechConfig.sampleRate || '24000',
-                                VoiceId: voiceId,
-                                ActionStream: createTextEventStream(text)
-                            })
+                            // Split text into batches to avoid Polly's per-session
+                            // "Synthesis duration limit exceeded" error on long texts.
+                            const textBatches = splitTextIntoBatches(text)
+                            let receivedAnyAudio = false
 
-                            const pollyResponse = await pollyClient.send(command)
-
-                            if (!pollyResponse.EventStream) {
-                                throw new Error('Amazon Polly returned no event stream')
-                            }
-
-                            // Stream audio chunks directly to the frontend as they arrive
-                            // from Polly — no buffering. This gives true real-time playback
-                            // with ~200ms time-to-first-byte instead of waiting for full synthesis.
-                            let receivedAudio = false
-
-                            for await (const event of pollyResponse.EventStream) {
-                                // Check for abort between events
+                            for (const batch of textBatches) {
                                 if (abortController.signal.aborted) {
                                     throw new Error('TTS generation aborted')
                                 }
 
-                                if ('AudioEvent' in event && event.AudioEvent?.AudioChunk) {
-                                    receivedAudio = true
-                                    onChunk(Buffer.from(event.AudioEvent.AudioChunk))
+                                const command = new StartSpeechSynthesisStreamCommand({
+                                    Engine: streamingEngine,
+                                    OutputFormat: 'mp3',
+                                    SampleRate: textToSpeechConfig.sampleRate || '24000',
+                                    VoiceId: voiceId,
+                                    ActionStream: createTextEventStream(batch)
+                                })
+
+                                const pollyResponse = await pollyClient.send(command)
+
+                                if (!pollyResponse.EventStream) {
+                                    throw new Error('Amazon Polly returned no event stream')
                                 }
 
-                                // Re-throw service-side errors surfaced as event stream members
-                                if ('ValidationException' in event && event.ValidationException) {
-                                    throw new Error(`Polly ValidationException: ${event.ValidationException.message}`)
-                                }
-                                if ('ServiceFailureException' in event && event.ServiceFailureException) {
-                                    throw new Error(`Polly ServiceFailure: ${event.ServiceFailureException.message}`)
-                                }
-                                if ('ThrottlingException' in event && event.ThrottlingException) {
-                                    throw new Error(`Polly ThrottlingException: ${event.ThrottlingException.message}`)
-                                }
-                                if ('ServiceQuotaExceededException' in event && event.ServiceQuotaExceededException) {
-                                    throw new Error(`Polly ServiceQuotaExceeded: ${event.ServiceQuotaExceededException.message}`)
+                                // Stream audio chunks directly to the frontend as they arrive.
+                                for await (const event of pollyResponse.EventStream) {
+                                    if (abortController.signal.aborted) {
+                                        throw new Error('TTS generation aborted')
+                                    }
+
+                                    if ('AudioEvent' in event && event.AudioEvent?.AudioChunk) {
+                                        receivedAnyAudio = true
+                                        onChunk(Buffer.from(event.AudioEvent.AudioChunk))
+                                    }
+
+                                    // Re-throw service-side errors surfaced as event stream members
+                                    if ('ValidationException' in event && event.ValidationException) {
+                                        throw new Error(`Polly ValidationException: ${event.ValidationException.message}`)
+                                    }
+                                    if ('ServiceFailureException' in event && event.ServiceFailureException) {
+                                        throw new Error(`Polly ServiceFailure: ${event.ServiceFailureException.message}`)
+                                    }
+                                    if ('ThrottlingException' in event && event.ThrottlingException) {
+                                        throw new Error(`Polly ThrottlingException: ${event.ThrottlingException.message}`)
+                                    }
+                                    if ('ServiceQuotaExceededException' in event && event.ServiceQuotaExceededException) {
+                                        throw new Error(`Polly ServiceQuotaExceeded: ${event.ServiceQuotaExceededException.message}`)
+                                    }
                                 }
                             }
 
-                            if (!receivedAudio) {
+                            if (!receivedAnyAudio) {
                                 throw new Error('Amazon Polly returned no audio data')
                             }
 
