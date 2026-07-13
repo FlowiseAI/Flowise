@@ -186,8 +186,10 @@ export const convertTextToSpeechStream = async (
                                 throw new Error('Amazon Polly returned no event stream')
                             }
 
-                            // Collect audio chunks from the bidirectional event stream
-                            const audioChunks: Buffer[] = []
+                            // Stream audio chunks directly to the frontend as they arrive
+                            // from Polly — no buffering. This gives true real-time playback
+                            // with ~200ms time-to-first-byte instead of waiting for full synthesis.
+                            let receivedAudio = false
 
                             for await (const event of pollyResponse.EventStream) {
                                 // Check for abort between events
@@ -196,7 +198,8 @@ export const convertTextToSpeechStream = async (
                                 }
 
                                 if ('AudioEvent' in event && event.AudioEvent?.AudioChunk) {
-                                    audioChunks.push(Buffer.from(event.AudioEvent.AudioChunk))
+                                    receivedAudio = true
+                                    onChunk(Buffer.from(event.AudioEvent.AudioChunk))
                                 }
 
                                 // Re-throw service-side errors surfaced as event stream members
@@ -214,17 +217,12 @@ export const convertTextToSpeechStream = async (
                                 }
                             }
 
-                            if (audioChunks.length === 0) {
+                            if (!receivedAudio) {
                                 throw new Error('Amazon Polly returned no audio data')
                             }
 
-                            // Concatenate all chunks and wrap in a Readable for the rate-limited streamer
-                            const concatenatedAudio = Buffer.concat(audioChunks)
-                            const stream = Readable.from(concatenatedAudio)
-
-                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 20, abortController, () => {
-                                streamDestroyed = true
-                            })
+                            onEnd()
+                            resolve()
                             break
                         }
                     }
