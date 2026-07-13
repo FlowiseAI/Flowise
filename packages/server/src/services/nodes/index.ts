@@ -1,14 +1,15 @@
-import { cloneDeep, omit } from 'lodash'
-import { StatusCodes } from 'http-status-codes'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { INodeData, MODE } from '../../Interface'
 import { ClientType, INodeOptionsValue } from 'flowise-components'
-import { databaseEntities } from '../../utils'
-import logger from '../../utils/logger'
+import { StatusCodes } from 'http-status-codes'
+import { cloneDeep, omit } from 'lodash'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { INodeData, MODE } from '../../Interface'
+import { databaseEntities } from '../../utils'
 import { OMIT_QUEUE_JOB_DATA } from '../../utils/constants'
 import { executeCustomNodeFunction } from '../../utils/executeCustomNodeFunction'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import logger from '../../utils/logger'
+import credentialsService from '../credentials'
 import { filterNodeByClient } from './filterNodeByClient'
 
 export { filterNodeByClient }
@@ -91,11 +92,15 @@ const getSingleNodeIcon = async (nodeName: string) => {
     }
 }
 
-const getSingleNodeAsyncOptions = async (nodeName: string, requestBody: any): Promise<any> => {
+const getSingleNodeAsyncOptions = async (nodeName: string, requestBody: any, workspaceId?: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const nodeData: INodeData = requestBody
         if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentNodes, nodeName)) {
+            if (nodeData.credential) {
+                await credentialsService.assertCredentialInWorkspace(nodeData.credential, workspaceId)
+            }
+
             try {
                 const nodeInstance = appServer.nodesPool.componentNodes[nodeName]
                 const methodName = nodeData.loadMethod || ''
@@ -118,6 +123,9 @@ const getSingleNodeAsyncOptions = async (nodeName: string, requestBody: any): Pr
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node ${nodeName} not found`)
         }
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: nodesService.getSingleNodeAsyncOptions - ${getErrorMessage(error)}`

@@ -192,6 +192,35 @@ const updateCredential = async (credentialId: string, requestBody: any, workspac
     }
 }
 
+/**
+ * Confirms a credential exists and belongs to (or is shared with) the given workspace.
+ * Does NOT decrypt or return credential material — only used for authorization checks.
+ * Throws 400 when workspaceId is missing (prevents unscoped lookup), 404 when the
+ * credential does not belong to the workspace or is not shared with it.
+ */
+const assertCredentialInWorkspace = async (credentialId: string, workspaceId: string | undefined): Promise<void> => {
+    if (!workspaceId) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Workspace ID is required`)
+    }
+    const appServer = getRunningExpressApp()
+    const owned = await appServer.AppDataSource.getRepository(Credential).findOneBy({
+        id: credentialId,
+        workspaceId: workspaceId
+    })
+    if (owned) return
+
+    const shared = await appServer.AppDataSource.getRepository(WorkspaceShared).count({
+        where: {
+            workspaceId: workspaceId,
+            sharedItemId: credentialId,
+            itemType: 'credential'
+        }
+    })
+    if (shared > 0) return
+
+    throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
+}
+
 const revealCredentialById = async (credentialId: string, workspaceId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
@@ -227,5 +256,6 @@ export default {
     getAllCredentials,
     getCredentialById,
     revealCredentialById,
-    updateCredential
+    updateCredential,
+    assertCredentialInWorkspace
 }
