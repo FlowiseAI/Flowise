@@ -110,7 +110,7 @@ export class OrganizationUserController {
             if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
 
             req.body.organizationId = req.user.activeOrganizationId
-            req.body.createdBy = req.user.id
+            req.body.updatedBy = req.user.id
 
             const organizationUserService = new OrganizationUserService()
             const organizationUser = await organizationUserService.updateOrganizationUser(req.body)
