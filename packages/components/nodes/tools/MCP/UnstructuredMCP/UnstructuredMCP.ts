@@ -3,7 +3,7 @@ import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from 
 import { getCredentialData, getCredentialParam } from '../../../../src/utils'
 import { MCPToolkit } from '../core'
 
-class Unstructured_MCP implements INode {
+class UnstructuredMCP implements INode {
     label: string
     name: string
     version: number
@@ -44,9 +44,8 @@ class Unstructured_MCP implements INode {
         this.baseClasses = ['Tool']
     }
 
-    //@ts-ignore
     loadMethods = {
-        listActions: async (nodeData: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> => {
+        listActions: async (nodeData: INodeData, options: ICommonObject = {}): Promise<INodeOptionsValue[]> => {
             try {
                 const toolset = await this.getTools(nodeData, options)
                 toolset.sort((a: any, b: any) => a.name.localeCompare(b.name))
@@ -69,23 +68,23 @@ class Unstructured_MCP implements INode {
         }
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject = {}): Promise<any> {
         const tools = await this.getTools(nodeData, options)
 
         const _mcpActions = nodeData.inputs?.mcpActions
-        let mcpActions = []
+        let mcpActions: string[] = []
         if (_mcpActions) {
-            try {
-                mcpActions = typeof _mcpActions === 'string' ? JSON.parse(_mcpActions) : _mcpActions
-            } catch (error) {
-                console.error('Error parsing mcp actions:', error)
+            const parsed = typeof _mcpActions === 'string' ? JSON.parse(_mcpActions) : _mcpActions
+            if (!Array.isArray(parsed)) {
+                throw new Error('mcpActions must be an array')
             }
+            mcpActions = parsed
         }
 
         return tools.filter((tool: any) => mcpActions.includes(tool.name))
     }
 
-    async getTools(nodeData: INodeData, options: ICommonObject): Promise<Tool[]> {
+    async getTools(nodeData: INodeData, options: ICommonObject = {}): Promise<Tool[]> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('unstructuredTransformAPIKey', credentialData, nodeData)
 
@@ -112,4 +111,4 @@ class Unstructured_MCP implements INode {
     }
 }
 
-module.exports = { nodeClass: Unstructured_MCP }
+module.exports = { nodeClass: UnstructuredMCP }
