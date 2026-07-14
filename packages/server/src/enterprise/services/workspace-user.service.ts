@@ -222,11 +222,13 @@ export class WorkspaceUserService {
         return await queryRunner.manager.save(WorkspaceUser, data)
     }
 
-    public async createWorkspaceUser(data: Partial<WorkspaceUser>) {
+    public async createWorkspaceUser(data: Partial<WorkspaceUser>, activeOrganizationId: string) {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
         const { workspace, workspaceUser } = await this.readWorkspaceUserByWorkspaceIdUserId(data.workspaceId, data.userId, queryRunner)
+        if (workspace.organizationId !== activeOrganizationId)
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)
         if (workspaceUser) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, WorkspaceUserErrorMessage.WORKSPACE_USER_ALREADY_EXISTS)
         const role = await this.roleService.readRoleById(data.roleId, queryRunner)
         if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
@@ -330,13 +332,16 @@ export class WorkspaceUserService {
         return newWorkspace
     }
 
-    public async updateWorkspaceUser(newWorkspaserUser: Partial<WorkspaceUser>, queryRunner: QueryRunner) {
+    public async updateWorkspaceUser(newWorkspaserUser: Partial<WorkspaceUser>, queryRunner: QueryRunner, activeOrganizationId: string) {
         const { workspaceUser } = await this.readWorkspaceUserByWorkspaceIdUserId(
             newWorkspaserUser.workspaceId,
             newWorkspaserUser.userId,
             queryRunner
         )
         if (!workspaceUser) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceUserErrorMessage.WORKSPACE_USER_NOT_FOUND)
+        const workspace = await this.workspaceService.readWorkspaceById(workspaceUser.workspaceId, queryRunner)
+        if (!workspace || workspace.organizationId !== activeOrganizationId)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)
         if (newWorkspaserUser.roleId && workspaceUser.role) {
             const role = await this.roleService.readRoleById(newWorkspaserUser.roleId, queryRunner)
             if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
@@ -359,12 +364,18 @@ export class WorkspaceUserService {
         return updataWorkspaceUser
     }
 
-    public async deleteWorkspaceUser(workspaceId: string | undefined, userId: string | undefined) {
+    public async deleteWorkspaceUser(
+        workspaceId: string | undefined,
+        userId: string | undefined,
+        activeOrganizationId: string | undefined
+    ) {
         const queryRunner = this.dataSource.createQueryRunner()
         try {
             await queryRunner.connect()
             const { workspace, workspaceUser } = await this.readWorkspaceUserByWorkspaceIdUserId(workspaceId, userId, queryRunner)
             if (!workspaceUser) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceUserErrorMessage.WORKSPACE_USER_NOT_FOUND)
+            if (!workspace || workspace.organizationId !== activeOrganizationId)
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)
             const role = await this.roleService.readRoleById(workspaceUser.roleId, queryRunner)
             if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
             if (role.name === GeneralRole.OWNER)

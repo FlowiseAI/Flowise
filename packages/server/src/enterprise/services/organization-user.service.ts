@@ -222,6 +222,8 @@ export class OrganizationUserService {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, OrganizationUserErrorMessage.ORGANIZATION_USER_ALREADY_EXISTS)
         const role = await this.roleService.readRoleIsGeneral(data.roleId, queryRunner)
         if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
+        if (role.name === GeneralRole.OWNER)
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, RoleErrorMessage.INVALID_ROLE_PERMISSIONS)
         const createdBy = await this.userService.readUserById(data.createdBy, queryRunner)
         if (!createdBy) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
 
@@ -290,6 +292,8 @@ export class OrganizationUserService {
         if (newOrganizationUser.roleId) {
             const role = await this.roleService.readRoleIsGeneral(newOrganizationUser.roleId, queryRunner)
             if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
+            if (role.name === GeneralRole.OWNER && organizationUser.roleId !== newOrganizationUser.roleId)
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, RoleErrorMessage.INVALID_ROLE_PERMISSIONS)
         }
 
         if (newOrganizationUser.status) this.validateOrganizationUserStatus(newOrganizationUser.status)
