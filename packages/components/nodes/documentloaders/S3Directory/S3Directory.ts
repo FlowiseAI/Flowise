@@ -18,6 +18,27 @@ import { TextSplitter } from '@langchain/textsplitters'
 import { CSVLoader } from '../Csv/CsvLoader'
 import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
 import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
+
+const getS3FileKeys = async (s3Client: S3Client, bucketName: string, prefix: string): Promise<string[]> => {
+    const keys: string[] = []
+    let continuationToken: string | undefined
+
+    do {
+        const listObjectsOutput: ListObjectsV2Output = await s3Client.send(
+            new ListObjectsV2Command({
+                Bucket: bucketName,
+                Prefix: prefix,
+                ContinuationToken: continuationToken
+            })
+        )
+
+        keys.push(...(listObjectsOutput.Contents ?? []).filter((item) => item.Key && item.ETag).map((item) => item.Key!))
+        continuationToken = listObjectsOutput.IsTruncated ? listObjectsOutput.NextContinuationToken : undefined
+    } while (continuationToken)
+
+    return keys
+}
+
 class S3_DocumentLoaders implements INode {
     label: string
     name: string
@@ -178,14 +199,7 @@ class S3_DocumentLoaders implements INode {
         try {
             const s3Client = new S3Client(s3Config)
 
-            const listObjectsOutput: ListObjectsV2Output = await s3Client.send(
-                new ListObjectsV2Command({
-                    Bucket: bucketName,
-                    Prefix: prefix
-                })
-            )
-
-            const keys: string[] = (listObjectsOutput?.Contents ?? []).filter((item) => item.Key && item.ETag).map((item) => item.Key!)
+            const keys = await getS3FileKeys(s3Client, bucketName, prefix)
 
             await Promise.all(
                 keys.map(async (key) => {
@@ -291,4 +305,4 @@ class S3_DocumentLoaders implements INode {
         }
     }
 }
-module.exports = { nodeClass: S3_DocumentLoaders }
+module.exports = { nodeClass: S3_DocumentLoaders, getS3FileKeys }
