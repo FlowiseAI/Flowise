@@ -1,5 +1,5 @@
-import { describe, expect, it } from '@jest/globals'
-import { isDeniedIP } from './httpSecurity'
+import { describe, expect, it, beforeEach, afterEach, jest } from '@jest/globals'
+import { isDeniedIP, checkDenyList, secureFetch } from './httpSecurity'
 
 // Test deny list covering common SSRF targets
 const TEST_DENY_LIST = [
@@ -393,5 +393,124 @@ describe('isDeniedIP - SSRF Protection', () => {
             expect(() => isDeniedIP('1.1.1.1', multiMalformedList)).not.toThrow()
             expect(() => isDeniedIP('10.0.0.1', multiMalformedList)).not.toThrow()
         })
+    })
+})
+
+jest.mock('dns/promises', () => ({
+    lookup: jest.fn()
+}))
+
+describe('checkDenyList - HTTP_ALLOW_LIST', () => {
+    const dnsMock = jest.requireMock('dns/promises') as { lookup: jest.Mock }
+
+    beforeEach(() => {
+        delete process.env.HTTP_ALLOW_LIST
+        delete process.env.HTTP_SECURITY_CHECK
+        // Default: resolve to a Docker-internal private IP
+        dnsMock.lookup.mockResolvedValue([{ address: '172.18.0.2', family: 4 }] as never)
+    })
+
+    afterEach(() => {
+        jest.clearAllMocks()
+        delete process.env.HTTP_ALLOW_LIST
+        delete process.env.HTTP_SECURITY_CHECK
+    })
+
+    it('blocks Docker-internal hostname when no allow list is set', async () => {
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).rejects.toThrow()
+    })
+
+    it('allows Docker-internal hostname when it is in HTTP_ALLOW_LIST', async () => {
+        process.env.HTTP_ALLOW_LIST = 'mcp-server'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).resolves.toBeUndefined()
+    })
+
+    it('allows one of multiple entries in HTTP_ALLOW_LIST', async () => {
+        process.env.HTTP_ALLOW_LIST = 'other-service,mcp-server,yet-another'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).resolves.toBeUndefined()
+    })
+
+    it('does not allow a hostname not present in HTTP_ALLOW_LIST', async () => {
+        process.env.HTTP_ALLOW_LIST = 'other-service'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).rejects.toThrow()
+    })
+
+    it('allow list does not bypass the deny list for unrelated private hostnames', async () => {
+        process.env.HTTP_ALLOW_LIST = 'mcp-server'
+        dnsMock.lookup.mockResolvedValue([{ address: '10.0.0.1', family: 4 }] as never)
+        // different-host is not in the allow list, so it must still be blocked
+        await expect(checkDenyList('http://different-host/path')).rejects.toThrow()
+    })
+
+    it('trims whitespace around entries in HTTP_ALLOW_LIST', async () => {
+        process.env.HTTP_ALLOW_LIST = '  mcp-server  ,  other  '
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).resolves.toBeUndefined()
+    })
+
+    it('still blocks private IPs directly when HTTP_SECURITY_CHECK is enabled', async () => {
+        // Direct IP, no allow list entry matching it
+        await expect(checkDenyList('http://172.18.0.2/')).rejects.toThrow()
+    })
+
+    it('skips DNS lookup entirely for allowed hostnames', async () => {
+        process.env.HTTP_ALLOW_LIST = 'mcp-server'
+        await checkDenyList('http://mcp-server:8000/mcp')
+        expect(dnsMock.lookup).not.toHaveBeenCalled()
+    })
+
+    it('matches case-insensitively (URL hostnames are always lowercase)', async () => {
+        process.env.HTTP_ALLOW_LIST = 'MCP-Server'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).resolves.toBeUndefined()
+    })
+})
+
+jest.mock('node-fetch', () => jest.fn())
+
+describe('resolveAndValidate - HTTP_ALLOW_LIST (via secureFetch)', () => {
+    const dnsMock = jest.requireMock('dns/promises') as { lookup: jest.Mock }
+    const fetchMock = jest.requireMock('node-fetch') as jest.Mock
+
+    beforeEach(() => {
+        delete process.env.HTTP_ALLOW_LIST
+        delete process.env.HTTP_SECURITY_CHECK
+        // Hostnames resolve to a Docker-internal private IP by default
+        dnsMock.lookup.mockResolvedValue([{ address: '172.18.0.2', family: 4 }] as never)
+        fetchMock.mockReset()
+        fetchMock.mockResolvedValue({
+            status: 200,
+            headers: { get: () => null }
+        } as never)
+    })
+
+    afterEach(() => {
+        jest.clearAllMocks()
+        delete process.env.HTTP_ALLOW_LIST
+        delete process.env.HTTP_SECURITY_CHECK
+    })
+
+    it('blocks a Docker-internal hostname when no allow list is set', async () => {
+        await expect(secureFetch('http://mcp-server:8000/mcp')).rejects.toThrow()
+        expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('allows a Docker-internal hostname when it is in HTTP_ALLOW_LIST', async () => {
+        process.env.HTTP_ALLOW_LIST = 'mcp-server'
+        // DNS lookup still runs — resolveAndValidate needs the IP to build a pinned agent —
+        // but the resolved private IP is not deny-checked because the hostname is allowed.
+        await secureFetch('http://mcp-server:8000/mcp')
+        expect(fetchMock).toHaveBeenCalledTimes(1)
+        expect(dnsMock.lookup).toHaveBeenCalledTimes(1)
+    })
+
+    it('allows a direct private IP when it is in HTTP_ALLOW_LIST', async () => {
+        process.env.HTTP_ALLOW_LIST = '172.18.0.2'
+        await secureFetch('http://172.18.0.2:8000/mcp')
+        expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('still blocks a direct private IP that is not in the allow list', async () => {
+        process.env.HTTP_ALLOW_LIST = 'mcp-server'
+        await expect(secureFetch('http://172.18.0.2:8000/mcp')).rejects.toThrow()
+        expect(fetchMock).not.toHaveBeenCalled()
     })
 })

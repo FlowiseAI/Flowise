@@ -49,6 +49,23 @@ function getHttpDenyList(): string[] {
 }
 
 /**
+ * Gets the HTTP allow list from HTTP_ALLOW_LIST env variable.
+ * Hostnames in this list bypass the deny list check, allowing connections to
+ * internal services (e.g. Docker Compose siblings) without disabling SSRF
+ * protection globally. Entries are exact hostname matches (no wildcards) and
+ * are normalized to lowercase to align with URL hostname parsing.
+ * @returns Array of hostnames explicitly allowed
+ */
+function getHttpAllowList(): string[] {
+    const raw = process.env.HTTP_ALLOW_LIST
+    if (!raw) return []
+    return raw
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean)
+}
+
+/**
  * Checks if an IP address is in the deny list
  * @param ip - IP address to check
  * @param denyList - Array of denied IP addresses/CIDR ranges
@@ -114,12 +131,16 @@ export function isDeniedIP(ip: string, denyList: string[]): void {
 }
 
 /**
- * Checks if a URL is allowed based on HTTP_DENY_LIST environment variable.
+ * Checks if a URL is allowed based on HTTP_DENY_LIST / HTTP_ALLOW_LIST environment variables.
+ * Hostnames present in HTTP_ALLOW_LIST bypass the deny list entirely, which lets
+ * Docker-internal or other trusted private services connect without disabling
+ * global SSRF protection via HTTP_SECURITY_CHECK=false.
  * @param url - URL to check
  * @throws Error if URL hostname resolves to a denied IP
  */
 export async function checkDenyList(url: string): Promise<void> {
     const httpDenyList = getHttpDenyList()
+    const httpAllowList = getHttpAllowList()
 
     const urlObj = new URL(url)
     let hostname = urlObj.hostname
@@ -127,6 +148,9 @@ export async function checkDenyList(url: string): Promise<void> {
     if (hostname.startsWith('[') && hostname.endsWith(']')) {
         hostname = hostname.slice(1, -1)
     }
+
+    // Explicitly allowed hostnames bypass the deny list
+    if (httpAllowList.includes(hostname)) return
 
     if (ipaddr.isValid(hostname)) {
         isDeniedIP(hostname, httpDenyList)
@@ -294,6 +318,7 @@ type ResolvedTarget = {
 
 async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     const denyList = getHttpDenyList()
+    const allowList = getHttpAllowList()
 
     const u = new URL(url)
     let hostname = u.hostname
@@ -303,8 +328,11 @@ async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     }
     const protocol: 'http' | 'https' = u.protocol === 'https:' ? 'https' : 'http'
 
+    // Explicitly allowed hostnames bypass the deny list
+    const isAllowed = allowList.includes(hostname)
+
     if (ipaddr.isValid(hostname)) {
-        isDeniedIP(hostname, denyList)
+        if (!isAllowed) isDeniedIP(hostname, denyList)
         return {
             hostname,
             ip: hostname,
@@ -318,8 +346,10 @@ async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
         throw new Error(`DNS resolution failed for ${hostname}`)
     }
 
-    for (const r of records) {
-        isDeniedIP(r.address, denyList)
+    if (!isAllowed) {
+        for (const r of records) {
+            isDeniedIP(r.address, denyList)
+        }
     }
 
     const chosen = records.find((r) => r.family === 4) ?? records[0]
