@@ -386,7 +386,7 @@ export const validateMCPServerConfig = (serverParams: any): void => {
         throw new Error('Invalid server configuration')
     }
 
-    if (serverParams.cwd !== undefined) {
+    if (serverParams.cwd != null) {
         throw new Error('cwd parameter is not allowed in MCP server configuration')
     }
 
