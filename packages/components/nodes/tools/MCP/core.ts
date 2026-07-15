@@ -386,6 +386,10 @@ export const validateMCPServerConfig = (serverParams: any): void => {
         throw new Error('Invalid server configuration')
     }
 
+    if (serverParams.cwd !== undefined) {
+        throw new Error('cwd parameter is not allowed in MCP server configuration')
+    }
+
     // Command allowlist - operator-controlled via CUSTOM_MCP_ALLOWED_COMMANDS (empty = none allowed)
     const allowedCommands = (process.env.CUSTOM_MCP_ALLOWED_COMMANDS ?? '')
         .split(',')

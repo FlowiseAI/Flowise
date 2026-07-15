@@ -617,5 +617,25 @@ describe('MCP Security Validations', () => {
                 }).not.toThrow()
             })
         })
+
+        it('should block absolute cwd', () => {
+            expect(() => {
+                validateMCPServerConfig({
+                    command: 'node',
+                    args: ['server.js'],
+                    cwd: '/tmp/evil'
+                })
+            }).toThrow('cwd parameter is not allowed in MCP server configuration')
+        })
+
+        it('should block relative cwd', () => {
+            expect(() => {
+                validateMCPServerConfig({
+                    command: 'node',
+                    args: ['server.js'],
+                    cwd: '../uploads'
+                })
+            }).toThrow('cwd parameter is not allowed in MCP server configuration')
+        })
     })
 })
