@@ -108,6 +108,7 @@ const generateTTSForResponseStream = async (
             const provider = config[providerKey]
             if (provider && provider.status === true) {
                 activeProviderConfig = {
+                    ...provider,
                     name: providerKey,
                     credentialId: provider.credentialId,
                     voice: provider.voice,

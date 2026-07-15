@@ -20,6 +20,7 @@ import assemblyAIPng from '@/assets/images/assemblyai.png'
 import localAiPng from '@/assets/images/localai.png'
 import azureSvg from '@/assets/images/azure_openai.svg'
 import groqPng from '@/assets/images/groq.png'
+import awsSVG from '@/assets/images/aws.svg'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -34,7 +35,8 @@ const SpeechToTextType = {
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
     LOCALAI_STT: 'localAISTT',
     AZURE_COGNITIVE: 'azureCognitive',
-    GROQ_WHISPER: 'groqWhisper'
+    GROQ_WHISPER: 'groqWhisper',
+    AWS_TRANSCRIBE: 'awsTranscribe'
 }
 
 // Weird quirk - the key must match the name property value.
@@ -236,6 +238,63 @@ const speechToTextProviders = {
                 optional: true
             }
         ]
+    },
+    [SpeechToTextType.AWS_TRANSCRIBE]: {
+        label: 'AWS Transcribe',
+        name: SpeechToTextType.AWS_TRANSCRIBE,
+        icon: awsSVG,
+        url: 'https://aws.amazon.com/transcribe/',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['awsApi']
+            },
+            {
+                label: 'Region',
+                name: 'region',
+                type: 'string',
+                description: 'The AWS region for the Transcribe service (e.g., us-east-1)',
+                placeholder: 'us-east-1',
+                optional: true
+            },
+            {
+                label: 'Language Code',
+                name: 'languageCode',
+                type: 'string',
+                description: 'The language code of the audio (e.g., en-US, es-ES, fr-FR)',
+                placeholder: 'en-US',
+                optional: true,
+                show: { identifyLanguage: false }
+            },
+            {
+                label: 'Automatic Language Identification',
+                name: 'identifyLanguage',
+                type: 'boolean',
+                default: false,
+                optional: true,
+                description: 'If enabled, Amazon Transcribe will automatically identify the language spoken in the audio.'
+            },
+            {
+                label: 'Language Options',
+                name: 'languageOptions',
+                type: 'string',
+                optional: true,
+                description:
+                    'Comma-separated list of language codes to restrict detection (e.g., en-US, es-ES, fr-FR). Improves accuracy and latency when Identify Language is enabled.',
+                placeholder: 'en-US, es-ES, fr-FR',
+                show: { identifyLanguage: true }
+            },
+            {
+                label: 'S3 Bucket Name',
+                name: 's3BucketName',
+                type: 'string',
+                description:
+                    'The S3 bucket to use for temporary audio storage. AWS Transcribe requires audio files to be in S3. The file is automatically deleted after transcription.',
+                placeholder: 'my-transcribe-bucket'
+            }
+        ]
     }
 }
 
@@ -417,65 +476,74 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                             }
                         />
                     </ListItem>
-                    {speechToTextProviders[selectedProvider].inputs.map((inputParam, index) => (
-                        <Box key={index} sx={{ p: 2 }}>
-                            <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                <Typography>
-                                    {inputParam.label}
-                                    {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                                    {inputParam.description && (
-                                        <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />
-                                    )}
-                                </Typography>
-                            </div>
-                            {inputParam.type === 'credential' && (
-                                <CredentialInputHandler
-                                    key={speechToText[selectedProvider]?.credentialId}
-                                    data={
-                                        speechToText[selectedProvider]?.credentialId
-                                            ? { credential: speechToText[selectedProvider].credentialId }
-                                            : {}
-                                    }
-                                    inputParam={inputParam}
-                                    onSelect={(newValue) => setValue(newValue, selectedProvider, 'credentialId')}
-                                />
-                            )}
-                            {inputParam.type === 'boolean' && (
-                                <SwitchInput
-                                    onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
-                                    value={
-                                        speechToText[selectedProvider]
-                                            ? speechToText[selectedProvider][inputParam.name]
-                                            : inputParam.default ?? false
-                                    }
-                                />
-                            )}
-                            {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
-                                <Input
-                                    inputParam={inputParam}
-                                    onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
-                                    value={
-                                        speechToText[selectedProvider]
-                                            ? speechToText[selectedProvider][inputParam.name]
-                                            : inputParam.default ?? ''
-                                    }
-                                />
-                            )}
+                    {speechToTextProviders[selectedProvider].inputs
+                        .filter((inputParam) => {
+                            if (!inputParam.show) return true
+                            const providerConfig = speechToText[selectedProvider] || {}
+                            return Object.entries(inputParam.show).every(([key, value]) => {
+                                const currentValue = providerConfig[key] ?? false
+                                return currentValue === value
+                            })
+                        })
+                        .map((inputParam, index) => (
+                            <Box key={inputParam.name || index} sx={{ p: 2 }}>
+                                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                    <Typography>
+                                        {inputParam.label}
+                                        {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                                        {inputParam.description && (
+                                            <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />
+                                        )}
+                                    </Typography>
+                                </div>
+                                {inputParam.type === 'credential' && (
+                                    <CredentialInputHandler
+                                        key={speechToText[selectedProvider]?.credentialId}
+                                        data={
+                                            speechToText[selectedProvider]?.credentialId
+                                                ? { credential: speechToText[selectedProvider].credentialId }
+                                                : {}
+                                        }
+                                        inputParam={inputParam}
+                                        onSelect={(newValue) => setValue(newValue, selectedProvider, 'credentialId')}
+                                    />
+                                )}
+                                {inputParam.type === 'boolean' && (
+                                    <SwitchInput
+                                        onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                        value={
+                                            speechToText[selectedProvider]
+                                                ? speechToText[selectedProvider][inputParam.name]
+                                                : inputParam.default ?? false
+                                        }
+                                    />
+                                )}
+                                {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
+                                    <Input
+                                        inputParam={inputParam}
+                                        onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                        value={
+                                            speechToText[selectedProvider]
+                                                ? speechToText[selectedProvider][inputParam.name]
+                                                : inputParam.default ?? ''
+                                        }
+                                    />
+                                )}
 
-                            {inputParam.type === 'options' && (
-                                <Dropdown
-                                    name={inputParam.name}
-                                    options={inputParam.options}
-                                    onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
-                                    value={
-                                        speechToText[selectedProvider]
-                                            ? speechToText[selectedProvider][inputParam.name]
-                                            : inputParam.default ?? 'choose an option'
-                                    }
-                                />
-                            )}
-                        </Box>
-                    ))}
+                                {inputParam.type === 'options' && (
+                                    <Dropdown
+                                        name={inputParam.name}
+                                        options={inputParam.options}
+                                        onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                        value={
+                                            speechToText[selectedProvider]
+                                                ? speechToText[selectedProvider][inputParam.name]
+                                                : inputParam.default ?? 'choose an option'
+                                        }
+                                    />
+                                )}
+                            </Box>
+                        ))}
                 </>
             )}
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
