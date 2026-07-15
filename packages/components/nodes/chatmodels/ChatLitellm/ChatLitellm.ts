@@ -4,6 +4,7 @@ import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI } from '../ChatOpenAI/FlowiseChatOpenAI'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 class ChatLitellm_ChatModels implements INode {
     label: string
@@ -126,6 +127,7 @@ class ChatLitellm_ChatModels implements INode {
         }
 
         if (basePath) {
+            await checkDenyList(basePath)
             obj.configuration = {
                 baseURL: basePath
             }
