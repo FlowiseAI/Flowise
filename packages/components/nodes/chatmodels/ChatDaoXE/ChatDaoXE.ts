@@ -137,14 +137,16 @@ class ChatDaoXE_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
             apiKey: openAIApiKey,
             streaming: streaming ?? true
         }
 
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
+        if (temperature != null && temperature !== '') {
+            obj.temperature = parseFloat(temperature)
+        }
+        if (maxTokens) obj.maxCompletionTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
