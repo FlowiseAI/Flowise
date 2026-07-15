@@ -462,6 +462,31 @@ describe('checkDenyList - HTTP_ALLOW_LIST', () => {
         process.env.HTTP_ALLOW_LIST = 'MCP-Server'
         await expect(checkDenyList('http://mcp-server:8000/mcp')).resolves.toBeUndefined()
     })
+
+    it('strips port from hostname:port entries (URL parser strips ports too)', async () => {
+        process.env.HTTP_ALLOW_LIST = 'mcp-server:8000'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).resolves.toBeUndefined()
+    })
+
+    it('strips port from ipv4:port entries', async () => {
+        process.env.HTTP_ALLOW_LIST = '172.18.0.2:8080'
+        await expect(checkDenyList('http://172.18.0.2:8080/')).resolves.toBeUndefined()
+    })
+
+    it('strips brackets from bare IPv6 entries like [::1]', async () => {
+        process.env.HTTP_ALLOW_LIST = '[::1]'
+        await expect(checkDenyList('http://[::1]/')).resolves.toBeUndefined()
+    })
+
+    it('strips brackets and port from IPv6-with-port entries like [::1]:8080', async () => {
+        process.env.HTTP_ALLOW_LIST = '[::1]:8080'
+        await expect(checkDenyList('http://[::1]:8080/')).resolves.toBeUndefined()
+    })
+
+    it('leaves bare IPv6 addresses (e.g. fe80::1) untouched', async () => {
+        process.env.HTTP_ALLOW_LIST = 'fe80::1'
+        await expect(checkDenyList('http://[fe80::1]/')).resolves.toBeUndefined()
+    })
 })
 
 jest.mock('node-fetch', () => jest.fn())

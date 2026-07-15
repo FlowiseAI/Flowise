@@ -54,6 +54,13 @@ function getHttpDenyList(): string[] {
  * internal services (e.g. Docker Compose siblings) without disabling SSRF
  * protection globally. Entries are exact hostname matches (no wildcards) and
  * are normalized to lowercase to align with URL hostname parsing.
+ *
+ * Common formats users copy from connection strings are normalized before
+ * matching so they line up with the hostname the URL parser produces:
+ *  - `host:port` → `host` (port stripped; the allow list is hostname-scoped)
+ *  - `[::1]` / `[::1]:8080` → `::1` (IPv6 brackets stripped, port stripped)
+ *  - bare IPv4/IPv6 (e.g. `172.18.0.2`, `fe80::1`) are left as-is
+ *
  * @returns Array of hostnames explicitly allowed
  */
 function getHttpAllowList(): string[] {
@@ -61,7 +68,25 @@ function getHttpAllowList(): string[] {
     if (!raw) return []
     return raw
         .split(',')
-        .map((s) => s.trim().toLowerCase())
+        .map((s) => {
+            let trimmed = s.trim().toLowerCase()
+            if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+                // Bracketed IPv6 with no port: [::1]
+                trimmed = trimmed.slice(1, -1)
+            } else if (trimmed.startsWith('[') && trimmed.includes(']')) {
+                // Bracketed IPv6 with port: [::1]:8080
+                const closeBracketIndex = trimmed.indexOf(']')
+                trimmed = trimmed.slice(1, closeBracketIndex)
+            } else if (!ipaddr.isValid(trimmed) && trimmed.includes(':')) {
+                // hostname:port or ipv4:port — the isValid guard avoids
+                // truncating bare IPv6 addresses like fe80::1
+                const parts = trimmed.split(':')
+                if (parts.length === 2) {
+                    trimmed = parts[0]
+                }
+            }
+            return trimmed
+        })
         .filter(Boolean)
 }
 
