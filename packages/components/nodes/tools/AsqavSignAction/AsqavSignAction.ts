@@ -1,5 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 const DEFAULT_BASE_URL = 'https://api.asqav.com/api/v1'
 
@@ -47,6 +48,14 @@ class AsqavSignAction_Tools implements INode {
                 description: 'Optional JSON metadata describing the action. Only the values you pass are hashed into the receipt.'
             },
             {
+                label: 'Agent ID',
+                name: 'agentId',
+                type: 'string',
+                optional: true,
+                description:
+                    'Optional existing Asqav agent id to sign with. When omitted, a fresh ephemeral agent is created for the run.'
+            },
+            {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
@@ -60,6 +69,9 @@ class AsqavSignAction_Tools implements INode {
     async run(nodeData: INodeData, _input: string, options?: ICommonObject): Promise<string | ICommonObject> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options ?? {})
         const apiKey = getCredentialParam('asqavApiKey', credentialData, nodeData)
+        if (!apiKey) {
+            throw new Error('Asqav Sign Action: API Key is required. Please configure the Asqav API credential.')
+        }
 
         const actionType = (nodeData.inputs?.actionType as string) ?? ''
         if (!actionType) {
@@ -73,7 +85,7 @@ class AsqavSignAction_Tools implements INode {
                 const trimmed = rawContext.trim()
                 if (trimmed.length) {
                     try {
-                        context = JSON.parse(trimmed)
+                        context = parseJsonBody(trimmed)
                     } catch {
                         throw new Error('Asqav Sign Action: "Context" must be valid JSON.')
                     }
@@ -84,29 +96,34 @@ class AsqavSignAction_Tools implements INode {
         }
 
         const baseUrl = ((nodeData.inputs?.baseUrl as string) || DEFAULT_BASE_URL).replace(/\/+$/, '')
+        await checkDenyList(baseUrl)
         const headers = {
             'X-API-Key': apiKey,
             'Content-Type': 'application/json'
         }
 
-        const agentResponse = await fetch(`${baseUrl}/agents/create`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-                name: 'flowise',
-                algorithm: 'ml-dsa-65',
-                capabilities: []
+        let agentId = ((nodeData.inputs?.agentId as string) ?? '').trim()
+        if (!agentId) {
+            const agentResponse = await fetch(`${baseUrl}/agents/create`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    name: 'flowise',
+                    algorithm: 'ml-dsa-65',
+                    capabilities: []
+                })
             })
-        })
-        if (!agentResponse.ok) {
-            const detail = await agentResponse.text().catch(() => '')
-            throw new Error(
-                `Asqav Sign Action: agent create failed (${agentResponse.status} ${agentResponse.statusText})${detail ? `: ${detail}` : ''}`
-            )
+            if (!agentResponse.ok) {
+                const detail = await agentResponse.text().catch(() => '')
+                throw new Error(
+                    `Asqav Sign Action: agent create failed (${agentResponse.status} ${agentResponse.statusText})${detail ? `: ${detail}` : ''}`
+                )
+            }
+            const agent = (await agentResponse.json()) as { agent_id: string }
+            agentId = agent.agent_id
         }
-        const agent = (await agentResponse.json()) as { agent_id: string }
 
-        const signResponse = await fetch(`${baseUrl}/agents/${agent.agent_id}/sign`, {
+        const signResponse = await fetch(`${baseUrl}/agents/${agentId}/sign`, {
             method: 'POST',
             headers,
             body: JSON.stringify({
