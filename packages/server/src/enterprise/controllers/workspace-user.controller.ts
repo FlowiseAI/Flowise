@@ -4,7 +4,7 @@ import { QueryRunner } from 'typeorm'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { WorkspaceUser } from '../database/entities/workspace-user.entity'
+import { WorkspaceUser, WorkspaceUserStatus } from '../database/entities/workspace-user.entity'
 import { WorkspaceUserService } from '../services/workspace-user.service'
 import {
     assertMayReadTargetUser,
@@ -17,8 +17,13 @@ import {
 export class WorkspaceUserController {
     public async create(req: Request, res: Response, next: NextFunction) {
         try {
+            if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
+            req.body.createdBy = req.user.id
+            req.body.status = WorkspaceUserStatus.INVITED
+
             const workspaceUserService = new WorkspaceUserService()
-            const newWorkspaceUser = await workspaceUserService.createWorkspaceUser(req.body)
+            const newWorkspaceUser = await workspaceUserService.createWorkspaceUser(req.body, req.user.activeOrganizationId)
             return res.status(StatusCodes.CREATED).json(newWorkspaceUser)
         } catch (error) {
             next(error)
@@ -92,10 +97,14 @@ export class WorkspaceUserController {
     public async update(req: Request, res: Response, next: NextFunction) {
         let queryRunner: QueryRunner | undefined
         try {
+            if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
+            req.body.updatedBy = req.user.id
+
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             const workspaceUserService = new WorkspaceUserService()
-            const workspaceUser = await workspaceUserService.updateWorkspaceUser(req.body, queryRunner)
+            const workspaceUser = await workspaceUserService.updateWorkspaceUser(req.body, queryRunner, req.user.activeOrganizationId)
             return res.status(StatusCodes.OK).json(workspaceUser)
         } catch (error) {
             if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
@@ -107,10 +116,16 @@ export class WorkspaceUserController {
 
     public async delete(req: Request, res: Response, next: NextFunction) {
         try {
+            if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
             const query = req.query as Partial<WorkspaceUser>
 
             const workspaceUserService = new WorkspaceUserService()
-            const workspaceUser = await workspaceUserService.deleteWorkspaceUser(query.workspaceId, query.userId)
+            const workspaceUser = await workspaceUserService.deleteWorkspaceUser(
+                query.workspaceId,
+                query.userId,
+                req.user.activeOrganizationId
+            )
             return res.status(StatusCodes.OK).json(workspaceUser)
         } catch (error) {
             next(error)

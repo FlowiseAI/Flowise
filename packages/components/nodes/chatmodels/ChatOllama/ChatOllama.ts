@@ -4,6 +4,7 @@ import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOllama } from './FlowiseChatOllama'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 class ChatOllama_ChatModels implements INode {
     label: string
@@ -252,8 +253,11 @@ class ChatOllama_ChatModels implements INode {
 
         const cache = nodeData.inputs?.cache as BaseCache
 
+        const activeBaseUrl = baseUrl || 'http://localhost:11434'
+        await checkDenyList(activeBaseUrl)
+
         const obj: ChatOllamaInput & BaseChatModelParams = {
-            baseUrl,
+            baseUrl: activeBaseUrl,
             temperature: parseFloat(temperature),
             model: modelName,
             streaming: streaming ?? true
