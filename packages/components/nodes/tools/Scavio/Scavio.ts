@@ -5,11 +5,11 @@ import { secureAxiosRequest } from '../../../src/httpSecurity'
 
 interface ScavioSearchParams {
     apiKey: string
-    searchType?: string
-    countryCode?: string
-    language?: string
+    gl?: string
+    hl?: string
+    googleDomain?: string
+    location?: string
     device?: string
-    lightRequest?: boolean
     page?: number
 }
 
@@ -19,32 +19,32 @@ class ScavioSearchTool extends Tool {
         'Real-time web search via Scavio. Input should be a plain search query string. Returns Google results (title, url, description) as JSON.'
 
     apiKey: string
-    searchType?: string
-    countryCode?: string
-    language?: string
+    gl?: string
+    hl?: string
+    googleDomain?: string
+    location?: string
     device?: string
-    lightRequest?: boolean
     page?: number
 
     constructor(fields: ScavioSearchParams) {
         super()
         this.apiKey = fields.apiKey
-        this.searchType = fields.searchType
-        this.countryCode = fields.countryCode
-        this.language = fields.language
+        this.gl = fields.gl
+        this.hl = fields.hl
+        this.googleDomain = fields.googleDomain
+        this.location = fields.location
         this.device = fields.device
-        this.lightRequest = fields.lightRequest
         this.page = fields.page
     }
 
     async _call(input: string): Promise<string> {
         const body: Record<string, any> = { query: input }
-        if (this.searchType) body.search_type = this.searchType
-        if (this.countryCode) body.country_code = this.countryCode
-        if (this.language) body.language = this.language
+        if (this.gl) body.gl = this.gl
+        if (this.hl) body.hl = this.hl
+        if (this.googleDomain) body.google_domain = this.googleDomain
+        if (this.location) body.location = this.location
         if (this.device) body.device = this.device
-        if (this.lightRequest !== undefined) body.light_request = this.lightRequest
-        if (this.page) body.page = this.page
+        if (this.page && this.page > 1) body.start = (this.page - 1) * 10
 
         try {
             const response = await secureAxiosRequest({
@@ -98,34 +98,38 @@ class Scavio_Tools implements INode {
             'Real-time search API for AI agents - Google, YouTube, Amazon, Walmart, Reddit, TikTok, and Instagram as clean JSON'
         this.inputs = [
             {
-                label: 'Search Type',
-                name: 'searchType',
-                type: 'options',
-                options: [
-                    { label: 'Classic', name: 'classic' },
-                    { label: 'News', name: 'news' },
-                    { label: 'Images', name: 'images' }
-                ],
-                default: 'classic',
-                description: 'Google search vertical',
-                additionalParams: true,
-                optional: true
-            },
-            {
                 label: 'Country Code',
-                name: 'countryCode',
+                name: 'gl',
                 type: 'string',
                 placeholder: 'us',
-                description: 'Two-letter country code, e.g. us',
+                description: 'Two-letter country code (ISO 3166-1 alpha-2), e.g. us',
                 additionalParams: true,
                 optional: true
             },
             {
                 label: 'Language',
-                name: 'language',
+                name: 'hl',
                 type: 'string',
                 placeholder: 'en',
                 description: 'Two-letter language code, e.g. en',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Google Domain',
+                name: 'googleDomain',
+                type: 'string',
+                placeholder: 'google.com',
+                description: 'Google domain to use, e.g. google.com',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Location',
+                name: 'location',
+                type: 'string',
+                placeholder: 'Austin, Texas, United States',
+                description: 'Canonical location string to originate the search from',
                 additionalParams: true,
                 optional: true
             },
@@ -138,15 +142,6 @@ class Scavio_Tools implements INode {
                     { label: 'Mobile', name: 'mobile' }
                 ],
                 default: 'desktop',
-                additionalParams: true,
-                optional: true
-            },
-            {
-                label: 'Light Request',
-                name: 'lightRequest',
-                type: 'boolean',
-                default: true,
-                description: 'Cheaper, lighter response (1 credit instead of 2)',
                 additionalParams: true,
                 optional: true
             },
@@ -176,20 +171,20 @@ class Scavio_Tools implements INode {
             throw new Error('Scavio API Key is missing. Please connect your Scavio API credential.')
         }
 
-        const searchType = nodeData.inputs?.searchType as string
-        const countryCode = nodeData.inputs?.countryCode as string
-        const language = nodeData.inputs?.language as string
+        const gl = nodeData.inputs?.gl as string
+        const hl = nodeData.inputs?.hl as string
+        const googleDomain = nodeData.inputs?.googleDomain as string
+        const location = nodeData.inputs?.location as string
         const device = nodeData.inputs?.device as string
-        const lightRequest = nodeData.inputs?.lightRequest as boolean
         const page = nodeData.inputs?.page as number
 
         return new ScavioSearchTool({
             apiKey: scavioApiKey,
-            searchType,
-            countryCode,
-            language,
+            gl,
+            hl,
+            googleDomain,
+            location,
             device,
-            lightRequest,
             page
         })
     }
