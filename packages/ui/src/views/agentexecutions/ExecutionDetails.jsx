@@ -33,7 +33,8 @@ import {
     IconRelationOneToManyFilled,
     IconShare,
     IconWorld,
-    IconX
+    IconX,
+    IconGitFork
 } from '@tabler/icons-react'
 
 // Project imports
@@ -123,6 +124,8 @@ const StyledTreeItemLabelText = styled(Typography)(({ theme }) => ({
 function CustomLabel({ icon: Icon, itemStatus, children, name, ...other }) {
     // Check if this is an iteration node
     const isIterationNode = name === 'iterationAgentflow'
+    // Check if this is a parallel node
+    const isParallelNode = name === 'parallelAgentflow'
 
     return (
         <TreeItem2Label
@@ -145,6 +148,22 @@ function CustomLabel({ icon: Icon, itemStatus, children, name, ...other }) {
                             }}
                         >
                             <IconRelationOneToManyFilled size={20} color={'#9C89B8'} />
+                        </Box>
+                    )
+                }
+
+                // Display parallel icon for parallel nodes
+                if (isParallelNode) {
+                    return (
+                        <Box
+                            sx={{
+                                mr: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <IconGitFork size={20} color={'#26A69A'} />
                         </Box>
                     )
                 }
@@ -415,6 +434,28 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
             }
         })
 
+        // Identify parallel nodes and their branch children
+        const parallelGroups = new Map() // parentId -> Map of branchIndex -> nodes
+
+        // Group parallel branch child nodes by their parent and branch index
+        nodes.forEach((node, index) => {
+            if (node.data?.parentNodeId && node.data?.branchIndex !== undefined) {
+                const parentId = node.data.parentNodeId
+                const branchIndex = node.data.branchIndex
+
+                if (!parallelGroups.has(parentId)) {
+                    parallelGroups.set(parentId, new Map())
+                }
+
+                const branchMap = parallelGroups.get(parentId)
+                if (!branchMap.has(branchIndex)) {
+                    branchMap.set(branchIndex, [])
+                }
+
+                branchMap.get(branchIndex).push(`${node.nodeId}_${index}`)
+            }
+        })
+
         // Create virtual iteration container nodes
         iterationGroups.forEach((iterationMap, parentId) => {
             iterationMap.forEach((nodeIds, iterationIndex) => {
@@ -478,6 +519,63 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
             })
         })
 
+        // Create virtual parallel branch container nodes
+        parallelGroups.forEach((branchMap, parentId) => {
+            branchMap.forEach((nodeIds, branchIndex) => {
+                // Find the parent parallel node
+                let parentNode = null
+                for (let i = 0; i < nodes.length; i++) {
+                    if (nodes[i].nodeId === parentId) {
+                        parentNode = nodes[i]
+                        break
+                    }
+                }
+
+                if (!parentNode) return
+
+                // Create a virtual node for this branch
+                const branchNodeId = `${parentId}_branch_${branchIndex}`
+                const branchLabel = `Branch #${branchIndex + 1}`
+
+                // Determine status based on child nodes
+                const childNodes = nodeIds.map((id) => nodeMap.get(id))
+                const branchStatus = childNodes.some((n) => n.status === 'ERROR')
+                    ? 'ERROR'
+                    : childNodes.some((n) => n.status === 'INPROGRESS')
+                    ? 'INPROGRESS'
+                    : childNodes.every((n) => n.status === 'FINISHED')
+                    ? 'FINISHED'
+                    : 'UNKNOWN'
+
+                // Create the virtual node and add to nodeMap
+                const virtualNode = {
+                    nodeId: branchNodeId,
+                    nodeLabel: branchLabel,
+                    data: {
+                        name: 'parallelAgentflow',
+                        branchIndex,
+                        isVirtualNode: true,
+                        parentIterationId: parentId
+                    },
+                    previousNodeIds: [], // Will be handled in the main tree building
+                    status: branchStatus,
+                    uniqueNodeId: branchNodeId,
+                    children: [],
+                    executionIndex: -1 // Flag as a virtual node
+                }
+
+                nodeMap.set(branchNodeId, virtualNode)
+
+                // Set this virtual node as the parent for all nodes in this branch
+                nodeIds.forEach((childId) => {
+                    const childNode = nodeMap.get(childId)
+                    if (childNode) {
+                        childNode.virtualParentId = branchNodeId
+                    }
+                })
+            })
+        })
+
         // Root nodes have no previous nodes
         const rootNodes = []
         const processedNodes = new Set()
@@ -487,8 +585,8 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
             const uniqueNodeId = `${node.nodeId}_${index}`
             const treeNode = nodeMap.get(uniqueNodeId)
 
-            // Skip nodes that belong to an iteration (they'll be added to their virtual parent)
-            if (node.data?.parentNodeId && node.data?.iterationIndex !== undefined) {
+            // Skip nodes that belong to an iteration or parallel branch (they'll be added to their virtual parent)
+            if (node.data?.parentNodeId && (node.data?.iterationIndex !== undefined || node.data?.branchIndex !== undefined)) {
                 return
             }
 
@@ -554,7 +652,40 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
             })
         })
 
-        // Third pass: Build the structure inside each virtual iteration node
+        // Second pass (parallel): Build the parallel branch sub-trees
+        parallelGroups.forEach((branchMap, parentId) => {
+            // Find all instances of the parent node
+            const parentInstances = []
+            nodes.forEach((node, index) => {
+                if (node.nodeId === parentId) {
+                    parentInstances.push(`${node.nodeId}_${index}`)
+                }
+            })
+
+            // Find the latest instance of the parent node that exists in the tree
+            let latestParent = null
+            for (let i = parentInstances.length - 1; i >= 0; i--) {
+                const instanceId = parentInstances[i]
+                const parent = nodeMap.get(instanceId)
+                if (parent) {
+                    latestParent = parent
+                    break
+                }
+            }
+
+            if (!latestParent) return
+
+            // Add all virtual branch nodes to the parent
+            branchMap.forEach((nodeIds, branchIndex) => {
+                const branchNodeId = `${parentId}_branch_${branchIndex}`
+                const virtualNode = nodeMap.get(branchNodeId)
+                if (virtualNode) {
+                    latestParent.children.push(virtualNode)
+                }
+            })
+        })
+
+        // Third pass: Build the structure inside each virtual iteration/parallel node
         nodeMap.forEach((node) => {
             if (node.virtualParentId) {
                 const virtualParent = nodeMap.get(node.virtualParentId)
@@ -563,14 +694,19 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                         // This is a root node within the iteration
                         virtualParent.children.push(node)
                     } else {
-                        // Find its parent within the same iteration
+                        // Find its parent within the same iteration/branch
                         let parentFound = false
                         for (const prevNodeId of node.previousNodeIds) {
-                            // Look for nodes with the same previous node ID in the same iteration
+                            // Look for nodes with the same previous node ID in the same iteration/branch
                             nodeMap.forEach((potentialParent) => {
+                                const sameGroup =
+                                    node.data?.iterationIndex !== undefined
+                                        ? potentialParent.data?.iterationIndex === node.data?.iterationIndex
+                                        : potentialParent.data?.branchIndex === node.data?.branchIndex
+
                                 if (
                                     potentialParent.nodeId === prevNodeId &&
-                                    potentialParent.data?.iterationIndex === node.data?.iterationIndex &&
+                                    sameGroup &&
                                     potentialParent.data?.parentNodeId === node.data?.parentNodeId &&
                                     !parentFound
                                 ) {
@@ -580,7 +716,7 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                             })
                         }
 
-                        // If no parent was found within the iteration, add directly to virtual parent
+                        // If no parent was found within the iteration/branch, add directly to virtual parent
                         if (!parentFound) {
                             virtualParent.children.push(node)
                         }
@@ -594,18 +730,20 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
             if (node.children && node.children.length > 0) {
                 // Sort children: iteration nodes first, then others by their original execution order
                 node.children.sort((a, b) => {
-                    // Check if a is an iteration node
-                    const aIsIteration = a.data?.name === 'iterationAgentflow' || a.data?.isVirtualNode
-                    // Check if b is an iteration node
-                    const bIsIteration = b.data?.name === 'iterationAgentflow' || b.data?.isVirtualNode
+                    // Check if a is a container (iteration/parallel) node
+                    const aIsContainer =
+                        a.data?.name === 'iterationAgentflow' || a.data?.name === 'parallelAgentflow' || a.data?.isVirtualNode
+                    // Check if b is a container (iteration/parallel) node
+                    const bIsContainer =
+                        b.data?.name === 'iterationAgentflow' || b.data?.name === 'parallelAgentflow' || b.data?.isVirtualNode
 
-                    // If both are iterations or both are not iterations, preserve original order
-                    if (aIsIteration === bIsIteration) {
+                    // If both are containers or both are not containers, preserve original order
+                    if (aIsContainer === bIsContainer) {
                         return a.executionIndex - b.executionIndex
                     }
 
-                    // Otherwise, put iterations first
-                    return aIsIteration ? -1 : 1
+                    // Otherwise, put containers first
+                    return aIsContainer ? -1 : 1
                 })
 
                 // Recursively sort children's children

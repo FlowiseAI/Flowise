@@ -22,6 +22,7 @@ import { useTheme } from '@mui/material/styles'
 // project imports
 import CanvasNode from './AgentFlowNode'
 import IterationNode from './IterationNode'
+import ParallelNode from './ParallelNode'
 import AgentFlowEdge from './AgentFlowEdge'
 import ConnectionLine from './ConnectionLine'
 import StickyNote from './StickyNote'
@@ -61,7 +62,7 @@ import { usePrompt } from '@/utils/usePrompt'
 // const
 import { FLOWISE_CREDENTIAL_ID, AGENTFLOW_ICONS } from '@/store/constant'
 
-const nodeTypes = { agentFlow: CanvasNode, stickyNote: StickyNote, iteration: IterationNode }
+const nodeTypes = { agentFlow: CanvasNode, stickyNote: StickyNote, iteration: IterationNode, parallel: ParallelNode }
 const edgeTypes = { agentFlow: AgentFlowEdge }
 
 // ==============================|| CANVAS ||============================== //
@@ -345,33 +346,35 @@ const AgentflowCanvas = () => {
 
             if (nodeData.type === 'Iteration') {
                 newNode.type = 'iteration'
+            } else if (nodeData.type === 'Parallel') {
+                newNode.type = 'parallel'
             } else if (nodeData.type === 'StickyNote') {
                 newNode.type = 'stickyNote'
             } else {
                 newNode.type = 'agentFlow'
             }
 
-            // Check if the dropped node is within any Iteration node's flowContainerSize
-            const iterationNodes = nodes.filter((node) => node.type === 'iteration')
+            // Check if the dropped node is within any Iteration/Parallel container node's bounds
+            const containerNodes = nodes.filter((node) => node.type === 'iteration' || node.type === 'parallel')
             let parentNode = null
 
-            for (const iterationNode of iterationNodes) {
-                // Get the iteration node's position and dimensions
-                const nodeWidth = iterationNode.width || 300
-                const nodeHeight = iterationNode.height || 250
+            for (const containerNode of containerNodes) {
+                // Get the container node's position and dimensions
+                const nodeWidth = containerNode.width || 300
+                const nodeHeight = containerNode.height || 250
 
-                // Calculate the boundaries of the iteration node
-                const nodeLeft = iterationNode.position.x
+                // Calculate the boundaries of the container node
+                const nodeLeft = containerNode.position.x
                 const nodeRight = nodeLeft + nodeWidth
-                const nodeTop = iterationNode.position.y
+                const nodeTop = containerNode.position.y
                 const nodeBottom = nodeTop + nodeHeight
 
                 // Check if the dropped position is within these boundaries
                 if (position.x >= nodeLeft && position.x <= nodeRight && position.y >= nodeTop && position.y <= nodeBottom) {
-                    parentNode = iterationNode
+                    parentNode = containerNode
 
                     // We can't have nested iteration nodes
-                    if (nodeData.name === 'iterationAgentflow') {
+                    if (nodeData.name === 'iterationAgentflow' && containerNode.type === 'iteration') {
                         enqueueSnackbar({
                             message: 'Nested iteration node is not supported yet',
                             options: {
@@ -388,10 +391,30 @@ const AgentflowCanvas = () => {
                         return
                     }
 
-                    // We can't have human input node inside iteration node
+                    // We can't have nested parallel nodes
+                    if (nodeData.name === 'parallelAgentflow' && containerNode.type === 'parallel') {
+                        enqueueSnackbar({
+                            message: 'Nested parallel node is not supported yet',
+                            options: {
+                                key: new Date().getTime() + Math.random(),
+                                variant: 'error',
+                                persist: true,
+                                action: (key) => (
+                                    <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                        <IconX />
+                                    </Button>
+                                )
+                            }
+                        })
+                        return
+                    }
+
+                    // We can't have human input node inside iteration/parallel node
                     if (nodeData.name === 'humanInputAgentflow') {
                         enqueueSnackbar({
-                            message: 'Human input node is not supported inside Iteration node',
+                            message: `Human input node is not supported inside ${
+                                containerNode.type === 'iteration' ? 'Iteration' : 'Parallel'
+                            } node`,
                             options: {
                                 key: new Date().getTime() + Math.random(),
                                 variant: 'error',
@@ -409,7 +432,7 @@ const AgentflowCanvas = () => {
                 }
             }
 
-            // If the node is dropped inside an iteration node, set its parent
+            // If the node is dropped inside a container node, set its parent
             if (parentNode) {
                 newNode.parentNode = parentNode.id
                 newNode.extent = 'parent'
