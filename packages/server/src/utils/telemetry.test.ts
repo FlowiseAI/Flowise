@@ -70,6 +70,16 @@ describe('utils/telemetry.ts', () => {
             expect(posthogNode.PostHog).not.toHaveBeenCalled()
         })
 
+        it('does not create PostHog when telemetry is explicitly disabled', () => {
+            process.env.POSTHOG_PUBLIC_API_KEY = 'ph-key'
+            process.env.DISABLE_FLOWISE_TELEMETRY = 'true'
+
+            const t = new Telemetry()
+
+            expect(t.postHog).toBeUndefined()
+            expect(posthogNode.PostHog).not.toHaveBeenCalled()
+        })
+
         it('creates PostHog when POSTHOG_PUBLIC_API_KEY is set and captures', async () => {
             process.env.POSTHOG_PUBLIC_API_KEY = 'ph-key'
 
