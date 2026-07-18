@@ -1,9 +1,14 @@
-import { omit } from 'lodash'
 import { TextSplitter } from '@langchain/classic/text_splitter'
-import { Document, DocumentInterface } from '@langchain/core/documents'
+import { Document } from '@langchain/core/documents'
 import { BaseDocumentLoader } from '@langchain/classic/document_loaders/base'
 import { INode, INodeData, INodeParams, ICommonObject, INodeOutputsValue } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
+import {
+    getCredentialData,
+    getCredentialParam,
+    handleDocumentLoaderDocuments,
+    handleDocumentLoaderMetadata,
+    handleDocumentLoaderOutput
+} from '../../../src/utils'
 import { AxiosRequestConfig } from 'axios'
 import { secureAxiosRequest } from '../../../src/httpSecurity'
 
@@ -16,7 +21,6 @@ interface ScrapeUnblockerLoaderParameters {
     parsedData?: boolean
     proxyCountry?: string
     pagesToCheck?: number
-    additionalMetadata?: Record<string, unknown>
 }
 
 class ScrapeUnblockerLoader extends BaseDocumentLoader {
@@ -28,11 +32,10 @@ class ScrapeUnblockerLoader extends BaseDocumentLoader {
     private parsedData: boolean
     private proxyCountry?: string
     private pagesToCheck?: number
-    private additionalMetadata?: Record<string, unknown>
 
     constructor(loaderParams: ScrapeUnblockerLoaderParameters) {
         super()
-        const { apiKey, apiUrl, mode, url, keyword, parsedData, proxyCountry, pagesToCheck, additionalMetadata } = loaderParams
+        const { apiKey, apiUrl, mode, url, keyword, parsedData, proxyCountry, pagesToCheck } = loaderParams
         if (!apiKey) {
             throw new Error('ScrapeUnblocker API key not set. Please set it in the credential.')
         }
@@ -45,7 +48,6 @@ class ScrapeUnblockerLoader extends BaseDocumentLoader {
         this.parsedData = parsedData ?? false
         this.proxyCountry = proxyCountry
         this.pagesToCheck = pagesToCheck
-        this.additionalMetadata = additionalMetadata
     }
 
     private async request(path: string, params: Record<string, unknown>): Promise<any> {
@@ -68,7 +70,7 @@ class ScrapeUnblockerLoader extends BaseDocumentLoader {
         return response.data
     }
 
-    private async loadPage(): Promise<DocumentInterface[]> {
+    private async loadPage(): Promise<Document[]> {
         if (!this.url) {
             throw new Error('ScrapeUnblocker: URL is required in Scrape mode.')
         }
@@ -85,7 +87,6 @@ class ScrapeUnblockerLoader extends BaseDocumentLoader {
             new Document({
                 pageContent,
                 metadata: {
-                    ...(this.additionalMetadata || {}),
                     source: this.url,
                     type: this.parsedData ? 'parsed_data' : 'html'
                 }
@@ -93,7 +94,7 @@ class ScrapeUnblockerLoader extends BaseDocumentLoader {
         ]
     }
 
-    private async loadSearch(): Promise<DocumentInterface[]> {
+    private async loadSearch(): Promise<Document[]> {
         if (!this.keyword) {
             throw new Error('ScrapeUnblocker: Keyword is required in Search mode.')
         }
@@ -104,12 +105,12 @@ class ScrapeUnblockerLoader extends BaseDocumentLoader {
             pages_to_check: this.pagesToCheck
         })
 
-        const organic = Array.isArray(data?.organic) ? data.organic : []
+        const organic = Array.isArray(data?.organic) ? data.organic.filter((result: any) => result) : []
         if (!organic.length) {
             return [
                 new Document({
                     pageContent: JSON.stringify(data ?? {}),
-                    metadata: { ...(this.additionalMetadata || {}), source: this.keyword, type: 'serp' }
+                    metadata: { source: this.keyword, type: 'serp' }
                 })
             ]
         }
@@ -119,7 +120,6 @@ class ScrapeUnblockerLoader extends BaseDocumentLoader {
                 new Document({
                     pageContent: result.description || result.title || '',
                     metadata: {
-                        ...(this.additionalMetadata || {}),
                         title: result.title,
                         source: result.url,
                         type: 'serp'
@@ -128,7 +128,7 @@ class ScrapeUnblockerLoader extends BaseDocumentLoader {
         )
     }
 
-    public async load(): Promise<DocumentInterface[]> {
+    public async load(): Promise<Document[]> {
         if (this.mode === 'scrape') {
             return this.loadPage()
         } else if (this.mode === 'search') {
@@ -286,32 +286,13 @@ class ScrapeUnblocker_DocumentLoaders implements INode {
         const parsedData = nodeData.inputs?.parsedData as boolean
         const proxyCountry = nodeData.inputs?.proxyCountry as string
         const pagesToCheck = nodeData.inputs?.pagesToCheck as number
-        let additionalMetadata = nodeData.inputs?.additional_metadata
+        const additionalMetadata = nodeData.inputs?.additional_metadata
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
         const output = nodeData.outputs?.output as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('scrapeUnblockerApiKey', credentialData, nodeData)
         const apiUrl = getCredentialParam('scrapeUnblockerApiUrl', credentialData, nodeData, 'https://api.scrapeunblocker.com')
-
-        let omitMetadataKeys: string[] = []
-        if (_omitMetadataKeys) {
-            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
-        }
-
-        if (additionalMetadata) {
-            if (typeof additionalMetadata === 'string') {
-                try {
-                    additionalMetadata = JSON.parse(additionalMetadata)
-                } catch (e) {
-                    console.error('Invalid JSON string provided for additional metadata')
-                }
-            } else if (typeof additionalMetadata !== 'object') {
-                console.error('Additional metadata must be a valid JSON object')
-            }
-        } else {
-            additionalMetadata = {}
-        }
 
         const input: ScrapeUnblockerLoaderParameters = {
             apiKey,
@@ -321,44 +302,15 @@ class ScrapeUnblocker_DocumentLoaders implements INode {
             keyword,
             parsedData,
             proxyCountry,
-            pagesToCheck,
-            additionalMetadata: additionalMetadata as Record<string, unknown>
+            pagesToCheck
         }
 
         const loader = new ScrapeUnblockerLoader(input)
 
-        let docs = []
+        let docs = await handleDocumentLoaderDocuments(loader, textSplitter)
+        docs = handleDocumentLoaderMetadata(docs, _omitMetadataKeys, additionalMetadata)
 
-        if (textSplitter) {
-            docs = await loader.load()
-            docs = await textSplitter.splitDocuments(docs)
-        } else {
-            docs = await loader.load()
-        }
-
-        docs = docs.map((doc: DocumentInterface) => ({
-            ...doc,
-            metadata:
-                _omitMetadataKeys === '*'
-                    ? additionalMetadata
-                    : omit(
-                          {
-                              ...doc.metadata,
-                              ...additionalMetadata
-                          },
-                          omitMetadataKeys
-                      )
-        }))
-
-        if (output === 'document') {
-            return docs
-        } else {
-            let finaltext = ''
-            for (const doc of docs) {
-                finaltext += `${doc.pageContent}\n`
-            }
-            return handleEscapeCharacters(finaltext, false)
-        }
+        return handleDocumentLoaderOutput(docs, output)
     }
 }
 
