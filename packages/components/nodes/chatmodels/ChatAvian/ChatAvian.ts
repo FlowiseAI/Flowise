@@ -151,11 +151,11 @@ class ChatAvian_ChatModels implements INode {
         }
 
         if (temperature !== undefined && temperature !== null && temperature !== '') obj.temperature = parseFloat(temperature)
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
+        if (maxTokens !== undefined && maxTokens !== null && maxTokens !== '') obj.maxTokens = parseInt(maxTokens, 10)
         if (topP !== undefined && topP !== null && topP !== '') obj.topP = parseFloat(topP)
         if (frequencyPenalty !== undefined && frequencyPenalty !== null && frequencyPenalty !== '') obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty !== undefined && presencePenalty !== null && presencePenalty !== '') obj.presencePenalty = parseFloat(presencePenalty)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
+        if (timeout !== undefined && timeout !== null && timeout !== '') obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
         if (stopSequence) {
             const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
