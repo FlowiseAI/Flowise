@@ -92,6 +92,12 @@ export const AsyncDropdown = ({
         }
         return options.find((option) => option.name === value)
     }
+    const getSelectionValue = (selection) => (typeof selection === 'string' ? selection : selection?.name ?? '')
+    const getAutocompleteValue = (options = [], value) => {
+        const matchingOption = findMatchingOptions(options, value)
+        if (matchingOption) return matchingOption
+        return !multiple && freeSolo && value && value !== 'choose an option' ? value : getDefaultOptionValue()
+    }
     const getDefaultOptionValue = () => (multiple ? [] : '')
     const addNewOption = [{ label: '- Create New -', name: '-create-' }]
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
@@ -194,7 +200,9 @@ export const AsyncDropdown = ({
                     setOpen(false)
                 }}
                 options={options}
-                value={findMatchingOptions(options, internalValue) || getDefaultOptionValue()}
+                value={getAutocompleteValue(options, internalValue)}
+                getOptionLabel={(option) => (typeof option === 'string' ? option : option?.label ?? option?.name ?? '')}
+                isOptionEqualToValue={(option, value) => option?.name === (typeof value === 'string' ? value : value?.name)}
                 onChange={(e, selection) => {
                     if (multiple) {
                         let value = ''
@@ -205,7 +213,7 @@ export const AsyncDropdown = ({
                         setInternalValue(value)
                         onSelect(value)
                     } else {
-                        const value = selection ? selection.name : ''
+                        const value = getSelectionValue(selection)
                         if (isCreateNewOption && value === '-create-') {
                             onCreateNew()
                         } else {

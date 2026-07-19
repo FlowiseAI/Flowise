@@ -55,7 +55,8 @@ class AzureOpenAI_LLMs implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'text-davinci-003'
+                default: 'text-davinci-003',
+                freeSolo: true
             },
             {
                 label: 'Temperature',
