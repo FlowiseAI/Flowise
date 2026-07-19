@@ -10,12 +10,13 @@ const CROSS_ORIGIN_SENSITIVE_HEADERS = [
     'proxy-authorization',
     'cookie',
     'cookie2',
+    'host',
     'x-api-key',
     'x-auth-token',
     'x-amz-security-token'
 ]
 
-const ENTITY_HEADERS = ['content-length', 'content-type', 'transfer-encoding']
+const ENTITY_HEADERS = ['content-encoding', 'content-language', 'content-length', 'content-location', 'content-type', 'transfer-encoding']
 
 const DEFAULT_DENY_LIST = [
     '0.0.0.0',

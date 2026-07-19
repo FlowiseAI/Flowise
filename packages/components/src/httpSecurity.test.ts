@@ -29,6 +29,7 @@ const mockedFetch = fetch as jest.MockedFunction<typeof fetch>
 const sensitiveHeaders = {
     Authorization: 'Bearer secret',
     Cookie: 'session=secret',
+    Host: 'source.example',
     'X-Api-Key': 'secret-key'
 }
 
@@ -451,6 +452,7 @@ describe('secure redirect handling', () => {
         const redirectedHeaders = new Headers(redirectedInit?.headers)
         expect(redirectedHeaders.get('authorization')).toBeNull()
         expect(redirectedHeaders.get('cookie')).toBeNull()
+        expect(redirectedHeaders.get('host')).toBeNull()
         expect(redirectedHeaders.get('x-api-key')).toBeNull()
         expect(redirectedHeaders.get('accept')).toBe('application/json')
     })
@@ -472,6 +474,7 @@ describe('secure redirect handling', () => {
         const redirectedHeaders = new Headers(redirectedConfig.headers as Record<string, string>)
         expect(redirectedHeaders.get('authorization')).toBeNull()
         expect(redirectedHeaders.get('cookie')).toBeNull()
+        expect(redirectedHeaders.get('host')).toBe('redirected.example')
         expect(redirectedHeaders.get('x-api-key')).toBeNull()
         expect(redirectedHeaders.get('accept')).toBe('application/json')
     })
@@ -486,6 +489,7 @@ describe('secure redirect handling', () => {
         const redirectedHeaders = new Headers(mockedFetch.mock.calls[1][1]?.headers)
         expect(redirectedHeaders.get('authorization')).toBe('Bearer secret')
         expect(redirectedHeaders.get('cookie')).toBe('session=secret')
+        expect(redirectedHeaders.get('host')).toBe('source.example')
         expect(redirectedHeaders.get('x-api-key')).toBe('secret-key')
     })
 
@@ -497,6 +501,7 @@ describe('secure redirect handling', () => {
             body: '{"query":"value"}',
             headers: {
                 'Content-Length': '17',
+                'Content-Encoding': 'gzip',
                 'Content-Type': 'application/json',
                 'X-Request-Id': 'request-1'
             }
@@ -506,6 +511,7 @@ describe('secure redirect handling', () => {
         const redirectedHeaders = new Headers(redirectedInit?.headers)
         expect(redirectedInit?.method).toBe('GET')
         expect(redirectedInit?.body).toBeUndefined()
+        expect(redirectedHeaders.get('content-encoding')).toBeNull()
         expect(redirectedHeaders.get('content-length')).toBeNull()
         expect(redirectedHeaders.get('content-type')).toBeNull()
         expect(redirectedHeaders.get('x-request-id')).toBe('request-1')
@@ -520,6 +526,7 @@ describe('secure redirect handling', () => {
             data: '{"query":"value"}',
             headers: {
                 'Content-Length': '17',
+                'Content-Encoding': 'gzip',
                 'Content-Type': 'application/json',
                 'X-Request-Id': 'request-1'
             }
@@ -529,6 +536,7 @@ describe('secure redirect handling', () => {
         const redirectedHeaders = new Headers(redirectedConfig.headers as Record<string, string>)
         expect(redirectedConfig.method).toBe('GET')
         expect(redirectedConfig.data).toBeUndefined()
+        expect(redirectedHeaders.get('content-encoding')).toBeNull()
         expect(redirectedHeaders.get('content-length')).toBeNull()
         expect(redirectedHeaders.get('content-type')).toBeNull()
         expect(redirectedHeaders.get('x-request-id')).toBe('request-1')
