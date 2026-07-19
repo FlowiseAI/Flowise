@@ -7,30 +7,65 @@ on:
                 description: 'Node.js version to build this image with.'
                 type: choice
                 required: true
-                default: '20'
+                default: '24'
                 options:
                     - '20'
+                    - '24'
             tag_version:
                 description: 'Tag version of the image to be pushed.'
                 type: string
                 required: true
                 default: 'latest'
 
+permissions:
+    contents: read
+
 jobs:
-    docker:
+    prepare:
         runs-on: ubuntu-latest
+        outputs:
+            node_version: ${{ steps.defaults.outputs.node_version }}
+            tag_version: ${{ steps.defaults.outputs.tag_version }}
         steps:
             - name: Set default values
               id: defaults
               run: |
-                  echo "node_version=${{ github.event.inputs.node_version || '20' }}" >> $GITHUB_OUTPUT
+                  echo "node_version=${{ github.event.inputs.node_version || '24' }}" >> $GITHUB_OUTPUT
                   echo "tag_version=${{ github.event.inputs.tag_version || 'latest' }}" >> $GITHUB_OUTPUT
+
+    build:
+        needs: prepare
+        runs-on: ${{ matrix.runner }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - image: flowiseai/flowise
+                      dockerfile: ./docker/Dockerfile
+                      platform: linux/amd64
+                      runner: ubuntu-latest
+                    - image: flowiseai/flowise
+                      dockerfile: ./docker/Dockerfile
+                      platform: linux/arm64
+                      runner: ubuntu-24.04-arm
+                    - image: flowiseai/flowise-worker
+                      dockerfile: docker/worker/Dockerfile
+                      platform: linux/amd64
+                      runner: ubuntu-latest
+                    - image: flowiseai/flowise-worker
+                      dockerfile: docker/worker/Dockerfile
+                      platform: linux/arm64
+                      runner: ubuntu-24.04-arm
+        steps:
+            - name: Prepare env
+              run: |
+                  platform=${{ matrix.platform }}
+                  echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+                  image=${{ matrix.image }}
+                  echo "IMAGE_SLUG=${image//\//-}" >> $GITHUB_ENV
 
             - name: Checkout
               uses: actions/checkout@v6.0.2
-
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v4.0.0
 
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v4.0.0
@@ -41,32 +76,69 @@ jobs:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-            # -------------------------
-            # Build and push main image
-            # -------------------------
-            - name: Build and push main image
+            - name: Build and push by digest
+              id: build
               uses: docker/build-push-action@v6.19.2
               with:
                   context: .
-                  file: ./docker/Dockerfile
+                  file: ${{ matrix.dockerfile }}
+                  platforms: ${{ matrix.platform }}
                   build-args: |
-                      NODE_VERSION=${{ steps.defaults.outputs.node_version }}
-                  platforms: linux/amd64,linux/arm64
-                  push: true
-                  tags: |
-                      flowiseai/flowise:${{ steps.defaults.outputs.tag_version }}
+                      NODE_VERSION=${{ needs.prepare.outputs.node_version }}
+                  outputs: type=image,name=${{ matrix.image }},push-by-digest=true,name-canonical=true,push=true
 
-            # -------------------------
-            # Build and push worker image
-            # -------------------------
-            - name: Build and push worker image
-              uses: docker/build-push-action@v6.19.2
+            - name: Export digest
+              run: |
+                  mkdir -p ${{ runner.temp }}/digests
+                  digest="${{ steps.build.outputs.digest }}"
+                  touch "${{ runner.temp }}/digests/${digest#sha256:}"
+
+            - name: Upload digest
+              uses: actions/upload-artifact@v4
               with:
-                  context: .
-                  file: docker/worker/Dockerfile
-                  build-args: |
-                      NODE_VERSION=${{ steps.defaults.outputs.node_version }}
-                  platforms: linux/amd64,linux/arm64
-                  push: true
-                  tags: |
-                      flowiseai/flowise-worker:${{ steps.defaults.outputs.tag_version }}
+                  name: digests-${{ env.IMAGE_SLUG }}-${{ env.PLATFORM_PAIR }}
+                  path: ${{ runner.temp }}/digests/*
+                  if-no-files-found: error
+                  retention-days: 1
+
+    merge:
+        needs: [prepare, build]
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                image:
+                    - flowiseai/flowise
+                    - flowiseai/flowise-worker
+        steps:
+            - name: Prepare env
+              run: |
+                  image=${{ matrix.image }}
+                  echo "IMAGE_SLUG=${image//\//-}" >> $GITHUB_ENV
+
+            - name: Download digests
+              uses: actions/download-artifact@v4
+              with:
+                  path: ${{ runner.temp }}/digests
+                  pattern: digests-${{ env.IMAGE_SLUG }}-linux-*
+                  merge-multiple: true
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v4.0.0
+
+            - name: Login to Docker Hub
+              uses: docker/login-action@v4
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+            - name: Create manifest list and push
+              working-directory: ${{ runner.temp }}/digests
+              run: |
+                  docker buildx imagetools create \
+                      -t ${{ matrix.image }}:${{ needs.prepare.outputs.tag_version }} \
+                      $(printf '${{ matrix.image }}@sha256:%s ' *)
+
+            - name: Inspect image
+              run: |
+                  docker buildx imagetools inspect ${{ matrix.image }}:${{ needs.prepare.outputs.tag_version }}

@@ -1,4 +1,10 @@
-import { removeInvalidImageMarkdown, convertRequireToImport, COMMONJS_REQUIRE_REGEX, IMPORT_EXTRACTION_REGEX } from './utils'
+import {
+    removeInvalidImageMarkdown,
+    convertRequireToImport,
+    COMMONJS_REQUIRE_REGEX,
+    IMPORT_EXTRACTION_REGEX,
+    executeJavaScriptCode
+} from './utils'
 
 describe('removeInvalidImageMarkdown', () => {
     describe('strips non-http/https image markdown', () => {
@@ -228,4 +234,56 @@ describe('Import extraction regex (utils.ts line 1596 pattern)', () => {
     it('returns empty array when there are no imports', () => {
         expect(extractModules('console.log("hello")')).toEqual([])
     })
+})
+
+// ---------------------------------------------------------------------------
+// NodeVM sandbox — availableDependencies allowlist
+// ---------------------------------------------------------------------------
+
+describe('NodeVM sandbox — availableDependencies allowlist', () => {
+    afterEach(() => {
+        delete process.env.ALLOW_BUILTIN_DEP
+        delete process.env.TOOL_FUNCTION_EXTERNAL_DEP
+    })
+
+    describe('high-risk packages are blocked even when ALLOW_BUILTIN_DEP=true', () => {
+        beforeEach(() => {
+            process.env.ALLOW_BUILTIN_DEP = 'true'
+        })
+
+        const removedPackages = [
+            'pg',
+            'mysql2',
+            'mongodb',
+            'ioredis',
+            'redis',
+            'typeorm',
+            'puppeteer',
+            'playwright',
+            '@zilliz/milvus2-sdk-node'
+        ]
+
+        test.each(removedPackages)(
+            "require('%s') is denied",
+            async (pkg) => {
+                await expect(
+                    executeJavaScriptCode(`const m = require('${pkg}'); return 'loaded'`, {}, { timeout: 10000 })
+                ).rejects.toThrow()
+            },
+            15000
+        )
+    })
+
+    it('packages remaining in availableDependencies are still accessible with ALLOW_BUILTIN_DEP=true', async () => {
+        process.env.ALLOW_BUILTIN_DEP = 'true'
+        const result = await executeJavaScriptCode(`const cheerio = require('cheerio'); return typeof cheerio.load`, {}, { timeout: 10000 })
+        expect(result).toBe('function')
+    }, 15000)
+
+    it('a removed package becomes accessible via TOOL_FUNCTION_EXTERNAL_DEP', async () => {
+        process.env.ALLOW_BUILTIN_DEP = 'true'
+        process.env.TOOL_FUNCTION_EXTERNAL_DEP = 'pg'
+        const result = await executeJavaScriptCode(`const { Client } = require('pg'); return typeof Client`, {}, { timeout: 10000 })
+        expect(result).toBe('function')
+    }, 15000)
 })

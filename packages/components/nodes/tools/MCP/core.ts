@@ -1,9 +1,9 @@
-import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
+import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
 import { checkDenyList, secureFetch } from '../../../src/httpSecurity'
 
 export class MCPToolkit extends BaseToolkit {
@@ -249,12 +249,21 @@ export const validateCommandInjection = (args: string[]): void => {
     }
 }
 
+/**
+ * Validates user-supplied env vars against the operator-controlled allow-list in
+ * `CUSTOM_MCP_ALLOWED_ENV_VARS` (comma-separated names). Empty = none allowed.
+ */
 export const validateEnvironmentVariables = (env: Record<string, any>): void => {
-    const dangerousEnvVars = ['PATH', 'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH', 'NODE_OPTIONS']
+    const allowedEnvVars = new Set(
+        (process.env.CUSTOM_MCP_ALLOWED_ENV_VARS ?? '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+    )
 
     for (const [key, value] of Object.entries(env)) {
-        if (dangerousEnvVars.includes(key)) {
-            throw new Error(`Environment variable '${key}' modification is not allowed`)
+        if (!allowedEnvVars.has(key)) {
+            throw new Error(`Environment variable '${key}' is not allowed. Permitted: ${[...allowedEnvVars].join(', ') || '(none)'}`)
         }
 
         if (typeof value === 'string' && value.includes('\0')) {
@@ -362,17 +371,29 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
     }
 }
 
+/**
+ * Validates a user-supplied MCP server configuration against operator-controlled allow-lists.
+ *
+ * For stdio configs, the command must appear in the `CUSTOM_MCP_ALLOWED_COMMANDS` allow-list
+ * (comma-separated, empty = none allowed). The list is empty by default, so no command can run
+ * until an operator explicitly opts in. To enable local/custom stdio MCP servers, set
+ * `CUSTOM_MCP_PROTOCOL=stdio` and `CUSTOM_MCP_ALLOWED_COMMANDS` in your env file
+ * (see docker/.env.example, docker/worker/.env.example, packages/server/.env.example).
+ */
 export const validateMCPServerConfig = (serverParams: any): void => {
     // Validate the entire server configuration
     if (!serverParams || typeof serverParams !== 'object') {
         throw new Error('Invalid server configuration')
     }
 
-    // Command allowlist - only allow specific safe commands
-    const allowedCommands = ['node', 'npx', 'python', 'python3', 'docker']
+    // Command allowlist - operator-controlled via CUSTOM_MCP_ALLOWED_COMMANDS (empty = none allowed)
+    const allowedCommands = (process.env.CUSTOM_MCP_ALLOWED_COMMANDS ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
 
     if (serverParams.command && !allowedCommands.includes(serverParams.command)) {
-        throw new Error(`Command '${serverParams.command}' is not allowed. Allowed commands: ${allowedCommands.join(', ')}`)
+        throw new Error(`Command '${serverParams.command}' is not allowed. Permitted: ${allowedCommands.join(', ') || '(none)'}`)
     }
 
     // Validate arguments if present

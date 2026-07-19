@@ -413,23 +413,47 @@ describe('MCP Security Validations', () => {
     })
 
     describe('validateEnvironmentVariables', () => {
-        it('should block dangerous environment variables', () => {
-            expect(() => {
-                validateEnvironmentVariables({ PATH: '/malicious/path' })
-            }).toThrow("Environment variable 'PATH' modification is not allowed")
+        const originalAllowList = process.env.CUSTOM_MCP_ALLOWED_ENV_VARS
 
-            expect(() => {
-                validateEnvironmentVariables({ NODE_OPTIONS: '--inspect' })
-            }).toThrow("Environment variable 'NODE_OPTIONS' modification is not allowed")
+        afterEach(() => {
+            if (originalAllowList === undefined) {
+                delete process.env.CUSTOM_MCP_ALLOWED_ENV_VARS
+            } else {
+                process.env.CUSTOM_MCP_ALLOWED_ENV_VARS = originalAllowList
+            }
         })
 
-        it('should block null bytes in values', () => {
+        it('should block all environment variables when the allow-list is empty', () => {
+            delete process.env.CUSTOM_MCP_ALLOWED_ENV_VARS
+
+            expect(() => {
+                validateEnvironmentVariables({ API_KEY: 'key123' })
+            }).toThrow("Environment variable 'API_KEY' is not allowed")
+        })
+
+        it('should block variables that are not on the allow-list', () => {
+            process.env.CUSTOM_MCP_ALLOWED_ENV_VARS = 'API_KEY'
+
+            expect(() => {
+                validateEnvironmentVariables({ PATH: '/malicious/path' })
+            }).toThrow("Environment variable 'PATH' is not allowed")
+
+            expect(() => {
+                validateEnvironmentVariables({ PYTHONWARNINGS: 'module::antigravity.' })
+            }).toThrow("Environment variable 'PYTHONWARNINGS' is not allowed")
+        })
+
+        it('should block null bytes in values of allow-listed variables', () => {
+            process.env.CUSTOM_MCP_ALLOWED_ENV_VARS = 'CUSTOM_VAR'
+
             expect(() => {
                 validateEnvironmentVariables({ CUSTOM_VAR: 'value\0malicious' })
             }).toThrow("Environment variable 'CUSTOM_VAR' contains null byte")
         })
 
-        it('should allow safe environment variables', () => {
+        it('should allow variables that are on the allow-list', () => {
+            process.env.CUSTOM_MCP_ALLOWED_ENV_VARS = 'CUSTOM_VAR,API_KEY'
+
             expect(() => {
                 validateEnvironmentVariables({ CUSTOM_VAR: 'safe-value', API_KEY: 'key123' })
             }).not.toThrow()
@@ -437,6 +461,22 @@ describe('MCP Security Validations', () => {
     })
 
     describe('validateMCPServerConfig', () => {
+        const originalAllowedCommands = process.env.CUSTOM_MCP_ALLOWED_COMMANDS
+
+        beforeEach(() => {
+            // These tests assume the operator has permitted the common interpreters.
+            // The default (empty) allow-list is exercised separately below.
+            process.env.CUSTOM_MCP_ALLOWED_COMMANDS = 'node,npx,python,python3,docker'
+        })
+
+        afterEach(() => {
+            if (originalAllowedCommands === undefined) {
+                delete process.env.CUSTOM_MCP_ALLOWED_COMMANDS
+            } else {
+                process.env.CUSTOM_MCP_ALLOWED_COMMANDS = originalAllowedCommands
+            }
+        })
+
         it('should validate complete server configuration', () => {
             expect(() => {
                 validateMCPServerConfig({
@@ -482,14 +522,35 @@ describe('MCP Security Validations', () => {
             }).toThrow('Argument contains potential local file access')
         })
 
-        it('should block dangerous environment variables', () => {
+        it('should block environment variables that are not on the allow-list', () => {
             expect(() => {
                 validateMCPServerConfig({
                     command: 'npx',
                     args: ['safe-arg'],
                     env: { PATH: '/malicious' }
                 })
-            }).toThrow("Environment variable 'PATH' modification is not allowed")
+            }).toThrow("Environment variable 'PATH' is not allowed")
+        })
+
+        it('should allow environment variables that are on the allow-list', () => {
+            const original = process.env.CUSTOM_MCP_ALLOWED_ENV_VARS
+            process.env.CUSTOM_MCP_ALLOWED_ENV_VARS = 'API_TOKEN'
+
+            try {
+                expect(() => {
+                    validateMCPServerConfig({
+                        command: 'npx',
+                        args: ['safe-arg'],
+                        env: { API_TOKEN: 'secret123' }
+                    })
+                }).not.toThrow()
+            } finally {
+                if (original === undefined) {
+                    delete process.env.CUSTOM_MCP_ALLOWED_ENV_VARS
+                } else {
+                    process.env.CUSTOM_MCP_ALLOWED_ENV_VARS = original
+                }
+            }
         })
 
         it('should reject invalid server params', () => {
@@ -509,6 +570,52 @@ describe('MCP Security Validations', () => {
                     args: ['mcp-server.js']
                 })
             }).not.toThrow()
+        })
+
+        describe('command allow-list (CUSTOM_MCP_ALLOWED_COMMANDS)', () => {
+            it('should block every command when the allow-list is empty', () => {
+                delete process.env.CUSTOM_MCP_ALLOWED_COMMANDS
+
+                expect(() => {
+                    validateMCPServerConfig({
+                        command: 'npx',
+                        args: ['@modelcontextprotocol/server-filesystem']
+                    })
+                }).toThrow("Command 'npx' is not allowed. Permitted: (none)")
+            })
+
+            it('should block commands that are not on the allow-list', () => {
+                process.env.CUSTOM_MCP_ALLOWED_COMMANDS = 'python3'
+
+                expect(() => {
+                    validateMCPServerConfig({
+                        command: 'npx',
+                        args: ['safe-arg']
+                    })
+                }).toThrow("Command 'npx' is not allowed. Permitted: python3")
+            })
+
+            it('should allow commands that are on the allow-list', () => {
+                process.env.CUSTOM_MCP_ALLOWED_COMMANDS = 'npx,docker'
+
+                expect(() => {
+                    validateMCPServerConfig({
+                        command: 'npx',
+                        args: ['@modelcontextprotocol/server-filesystem']
+                    })
+                }).not.toThrow()
+            })
+
+            it('should ignore surrounding whitespace in the allow-list entries', () => {
+                process.env.CUSTOM_MCP_ALLOWED_COMMANDS = ' node , npx '
+
+                expect(() => {
+                    validateMCPServerConfig({
+                        command: 'npx',
+                        args: ['server.js']
+                    })
+                }).not.toThrow()
+            })
         })
     })
 })

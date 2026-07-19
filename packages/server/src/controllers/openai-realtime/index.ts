@@ -11,7 +11,8 @@ const getAgentTools = async (req: Request, res: Response, next: NextFunction) =>
                 `Error: openaiRealTimeController.getAgentTools - id not provided!`
             )
         }
-        const apiResponse = await openaiRealTimeService.getAgentTools(req.params.id)
+        const workspaceId = req.user?.activeWorkspaceId
+        const apiResponse = await openaiRealTimeService.getAgentTools(req.params.id, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -50,8 +51,10 @@ const executeAgentTool = async (req: Request, res: Response, next: NextFunction)
                 `Error: openaiRealTimeController.executeAgentTool - body inputArgs not provided!`
             )
         }
+        const workspaceId = req.user?.activeWorkspaceId
         const apiResponse = await openaiRealTimeService.executeAgentTool(
             req.params.id,
+            workspaceId,
             req.body.chatId,
             req.body.toolName,
             req.body.inputArgs,
