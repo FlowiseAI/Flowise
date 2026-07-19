@@ -1,9 +1,21 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios, { AxiosHeaders, AxiosRequestConfig, AxiosResponse } from 'axios'
 import dns from 'dns/promises'
 import http from 'http'
 import https from 'https'
 import * as ipaddr from 'ipaddr.js'
-import fetch, { RequestInit, Response } from 'node-fetch'
+import fetch, { Headers, RequestInit, Response } from 'node-fetch'
+
+const CROSS_ORIGIN_SENSITIVE_HEADERS = [
+    'authorization',
+    'proxy-authorization',
+    'cookie',
+    'cookie2',
+    'x-api-key',
+    'x-auth-token',
+    'x-amz-security-token'
+]
+
+const ENTITY_HEADERS = ['content-length', 'content-type', 'transfer-encoding']
 
 const DEFAULT_DENY_LIST = [
     '0.0.0.0',
@@ -163,7 +175,11 @@ export async function secureAxiosRequest(
             throw new Error('Too many redirects')
         }
 
-        currentUrl = new URL(location, currentUrl).toString()
+        const redirectUrl = new URL(location, currentUrl).toString()
+        if (!hasSameOrigin(currentUrl, redirectUrl)) {
+            currentConfig.headers = removeAxiosHeaders(currentConfig.headers, CROSS_ORIGIN_SENSITIVE_HEADERS)
+        }
+        currentUrl = redirectUrl
 
         // For redirects, we only need to preserve certain headers and change method if needed
         if (response.status === 301 || response.status === 302 || response.status === 303) {
@@ -174,6 +190,7 @@ export async function secureAxiosRequest(
             ) {
                 currentConfig.method = 'GET'
                 delete currentConfig.data
+                currentConfig.headers = removeAxiosHeaders(currentConfig.headers, ENTITY_HEADERS)
             }
         }
     }
@@ -225,7 +242,14 @@ export async function secureFetch(
         }
 
         // Resolve the redirect URL (handle relative URLs)
-        currentUrl = new URL(location, currentUrl).toString()
+        const redirectUrl = new URL(location, currentUrl).toString()
+        if (!hasSameOrigin(currentUrl, redirectUrl)) {
+            currentInit = {
+                ...currentInit,
+                headers: removeFetchHeaders(currentInit.headers, CROSS_ORIGIN_SENSITIVE_HEADERS)
+            }
+        }
+        currentUrl = redirectUrl
 
         // Handle method changes for redirects according to HTTP specs
         if (response.status === 301 || response.status === 302 || response.status === 303) {
@@ -234,13 +258,32 @@ export async function secureFetch(
                 currentInit = {
                     ...currentInit,
                     method: 'GET',
-                    body: undefined
+                    body: undefined,
+                    headers: removeFetchHeaders(currentInit.headers, ENTITY_HEADERS)
                 }
             }
         }
     }
 
     throw new Error('Too many redirects')
+}
+
+function hasSameOrigin(currentUrl: string, redirectUrl: string): boolean {
+    return new URL(currentUrl).origin === new URL(redirectUrl).origin
+}
+
+function removeAxiosHeaders(headers: AxiosRequestConfig['headers'], names: string[]): AxiosHeaders {
+    const sanitized = AxiosHeaders.from(headers as Parameters<typeof AxiosHeaders.from>[0])
+    sanitized.delete(names)
+    return sanitized
+}
+
+function removeFetchHeaders(headers: RequestInit['headers'], names: string[]): Headers {
+    const sanitized = new Headers(headers)
+    for (const name of names) {
+        sanitized.delete(name)
+    }
+    return sanitized
 }
 
 type ResolvedTarget = {
