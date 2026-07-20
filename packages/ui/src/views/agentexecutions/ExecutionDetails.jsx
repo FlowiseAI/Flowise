@@ -700,9 +700,9 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                             // Look for nodes with the same previous node ID in the same iteration/branch
                             nodeMap.forEach((potentialParent) => {
                                 const sameGroup =
-                                    node.data?.iterationIndex !== undefined
-                                        ? potentialParent.data?.iterationIndex === node.data?.iterationIndex
-                                        : potentialParent.data?.branchIndex === node.data?.branchIndex
+                                    (node.data?.iterationIndex === undefined ||
+                                        potentialParent.data?.iterationIndex === node.data?.iterationIndex) &&
+                                    (node.data?.branchIndex === undefined || potentialParent.data?.branchIndex === node.data?.branchIndex)
 
                                 if (
                                     potentialParent.nodeId === prevNodeId &&

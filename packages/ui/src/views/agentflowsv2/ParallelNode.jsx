@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useContext, memo, useRef, useState, useEffect, useCallback } from 'react'
+import { useContext, memo, useRef, useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { Background, Handle, Position, useUpdateNodeInternals, NodeToolbar, NodeResizer } from 'reactflow'
 
@@ -58,27 +58,9 @@ const ParallelNode = ({ data }) => {
     // eslint-disable-next-line
     const [position, setPosition] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
-    const { deleteNode, duplicateNode, reactFlowInstance } = useContext(flowContext)
+    const { deleteNode, duplicateNode } = useContext(flowContext)
     const [showInfoDialog, setShowInfoDialog] = useState(false)
     const [infoDialogProps, setInfoDialogProps] = useState({})
-
-    const [cardDimensions, setCardDimensions] = useState({
-        width: '300px',
-        height: '250px'
-    })
-
-    // Add useEffect to update dimensions when reactFlowInstance becomes available
-    useEffect(() => {
-        if (reactFlowInstance) {
-            const node = reactFlowInstance.getNodes().find((node) => node.id === data.id)
-            if (node && node.width && node.height) {
-                setCardDimensions({
-                    width: `${node.width}px`,
-                    height: `${node.height}px`
-                })
-            }
-        }
-    }, [reactFlowInstance, data.id])
 
     const defaultColor = '#666666' // fallback color if data.color is not present
     const nodeColor = data.color || defaultColor
@@ -152,21 +134,13 @@ const ParallelNode = ({ data }) => {
         }
     }, [data, ref, updateNodeInternals])
 
-    const onResizeEnd = useCallback(
-        (e, params) => {
-            if (!ref.current) return
-
-            // Set the card dimensions directly from resize params
-            setCardDimensions({
-                width: `${params.width}px`,
-                height: `${params.height}px`
-            })
-        },
-        [ref, setCardDimensions]
-    )
-
     return (
-        <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+        <div
+            ref={ref}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            style={{ width: '100%', height: '100%' }}
+        >
             <NodeToolbar align='start' isVisible={true}>
                 <Box style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
                     {data.color && !data.icon ? (
@@ -263,7 +237,7 @@ const ParallelNode = ({ data }) => {
                     </IconButton>
                 </ButtonGroup>
             </StyledNodeToolbar>
-            <NodeResizer minWidth={300} minHeight={Math.max(getMinimumHeight(), 250)} onResizeEnd={onResizeEnd} />
+            <NodeResizer minWidth={300} minHeight={Math.max(getMinimumHeight(), 250)} />
             <CardWrapper
                 content={false}
                 sx={{
@@ -272,8 +246,8 @@ const ParallelNode = ({ data }) => {
                     boxShadow: data.selected ? `0 0 0 1px ${getStateColor()} !important` : 'none',
                     minHeight: Math.max(getMinimumHeight(), 250),
                     minWidth: 300,
-                    width: cardDimensions.width,
-                    height: cardDimensions.height,
+                    width: '100%',
+                    height: '100%',
                     backgroundColor: getBackgroundColor(),
                     display: 'flex',
                     '&:hover': {
@@ -346,8 +320,8 @@ const ParallelNode = ({ data }) => {
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                         <Box
                             sx={{
-                                height: `calc(${cardDimensions.height} - 20px)`,
-                                width: `${cardDimensions.width}`,
+                                height: 'calc(100% - 20px)',
+                                width: '100%',
                                 overflow: 'hidden',
                                 position: 'relative',
                                 borderRadius: '10px'

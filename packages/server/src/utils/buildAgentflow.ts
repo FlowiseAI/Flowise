@@ -1483,6 +1483,7 @@ const executeNode = async ({
                                 isRecursive: true,
                                 parentExecutionId,
                                 iterationContext: {
+                                    ...iterationContext,
                                     branchIndex: branch.branchIndex,
                                     sessionId,
                                     agentflowRuntime: branchAgentflowRuntime
@@ -1512,7 +1513,7 @@ const executeNode = async ({
                                     data: {
                                         ...data.data,
                                         branchIndex,
-                                        parentNodeId: reactFlowNode.data.id
+                                        parentNodeId: data.data.parentNodeId || reactFlowNode.data.id
                                     }
                                 }))
                                 agentFlowExecutedData.push(...branchExecutedData)
@@ -1541,6 +1542,21 @@ const executeNode = async ({
                             const errorMessage = getErrorMessage(settled.reason)
                             console.error(`  ❌ Error in parallel branch ${branchIndex + 1}: ${errorMessage}`)
                             branchResults.push({ branchIndex, error: errorMessage })
+
+                            // Recover partial execution data from the rejected branch so it's still visible in the UI
+                            const branchExecutedData = (settled.reason as { agentFlowExecutedData?: IAgentflowExecutedData[] })
+                                ?.agentFlowExecutedData
+                            if (branchExecutedData) {
+                                const mappedData = branchExecutedData.map((data: IAgentflowExecutedData) => ({
+                                    ...data,
+                                    data: {
+                                        ...data.data,
+                                        branchIndex,
+                                        parentNodeId: data.data.parentNodeId || reactFlowNode.data.id
+                                    }
+                                }))
+                                agentFlowExecutedData.push(...mappedData)
+                            }
                         }
                     })
 
@@ -2371,7 +2387,11 @@ export const executeAgentFlow = async ({
                 await analyticHandlers.onChainError(parentTraceIds, errorMessage, true)
             }
 
-            throw new Error(errorMessage)
+            // Attach the executed data accumulated so far so callers (e.g. parallel branch handling)
+            // can still surface partial results from a branch that threw
+            const executionError = new Error(errorMessage) as Error & { agentFlowExecutedData?: IAgentflowExecutedData[] }
+            executionError.agentFlowExecutedData = agentFlowExecutedData
+            throw executionError
         }
 
         logger.debug(`/////////////////////////////////////////////////////////////////////////////`)
