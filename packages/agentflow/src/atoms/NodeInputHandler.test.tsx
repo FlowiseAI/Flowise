@@ -36,9 +36,17 @@ jest.mock('./RichTextEditor.lazy', () => ({
     )
 }))
 
+jest.mock('./VariableInput', () => ({
+    VariableInput: ({ suggestionItems }: { suggestionItems?: { id: string }[] }) => (
+        <div data-testid='variable-input' data-suggestion-ids={JSON.stringify(suggestionItems?.map((i) => i.id))} />
+    )
+}))
+
 jest.mock('@tabler/icons-react', () => ({
     IconArrowsMaximize: () => <span data-testid='icon-expand' />,
+    IconCode: () => <span />,
     IconInfoCircle: () => <span data-testid='icon-info-circle' />,
+    IconPencil: () => <span />,
     IconVariable: () => <span data-testid='icon-variable' />,
     IconRefresh: () => <span data-testid='icon-refresh' />
 }))
@@ -328,8 +336,8 @@ jest.mock('./JsonInput', () => ({
     )
 }))
 
-jest.mock('./SelectVariable', () => ({
-    SelectVariable: ({ items, onSelect }: { items: Array<{ value: string }>; onSelect: (v: string) => void }) => (
+jest.mock('./VariablePicker', () => ({
+    VariablePicker: ({ items, onSelect }: { items: Array<{ value: string }>; onSelect: (v: string) => void }) => (
         <div data-testid='select-variable'>
             {items.map((item, i) => (
                 <button key={i} data-testid={`var-${item.value}`} onClick={() => onSelect(item.value)}>
@@ -371,17 +379,18 @@ describe('NodeInputHandler – json type', () => {
         expect(screen.queryByTestId('json-input')).toBeNull()
     })
 
-    it('renders inline JsonInput for json with acceptVariable but no variableItems', () => {
+    it('renders a button for json with acceptVariable even when no variableItems are provided', () => {
         render(
             <NodeInputHandler
-                inputParam={makeParam({ type: 'json', acceptVariable: true })}
+                inputParam={makeParam({ type: 'json', acceptVariable: true, label: 'My Field' })}
                 data={baseNodeData}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
             />
         )
 
-        expect(screen.getByTestId('json-input')).toBeTruthy()
+        expect(screen.getByRole('button', { name: 'My Field' })).toBeTruthy()
+        expect(screen.queryByTestId('json-input')).toBeNull()
     })
 })
 
@@ -503,6 +512,28 @@ describe('NodeInputHandler – variable popover', () => {
 
         expect(screen.queryByTestId('icon-variable')).toBeNull()
     })
+
+    it('deduplicates suggestionItem ids when variableItems share the same value', () => {
+        // Two flow-state entries with the same key produce the same base id.
+        // The first should keep its id; subsequent duplicates get a __N suffix.
+        const variableItems = [
+            { label: '$flow.state.myVar', value: '$flow.state.myVar', category: 'Flow State' },
+            { label: '$flow.state.myVar', value: '$flow.state.myVar', category: 'Flow State' },
+            { label: '$flow.state.other', value: '$flow.state.other', category: 'Flow State' }
+        ]
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'string', acceptVariable: true })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                variableItems={variableItems}
+            />
+        )
+
+        const ids = JSON.parse(screen.getByTestId('variable-input').getAttribute('data-suggestion-ids')!)
+        expect(ids).toEqual(['$flow.state.myVar', '$flow.state.myVar__1', '$flow.state.other'])
+    })
 })
 
 describe('NodeInputHandler – credential type rendering', () => {
@@ -556,5 +587,25 @@ describe('NodeInputHandler – credential type rendering', () => {
             inputParam: expect.objectContaining({ name: 'FLOWISE_CREDENTIAL_ID', type: 'credential' }),
             newValue: 'cred-id-123'
         })
+    })
+})
+
+describe('NodeInputHandler – Loop node inputs', () => {
+    it('fallbackMessage — multiline VariableInput renders when variableItems are provided', () => {
+        const variableItems = [{ label: 'question', value: '{{question}}', category: 'Chat Context' }]
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ name: 'fallbackMessage', type: 'string', rows: 4, acceptVariable: true })}
+                data={{ ...baseNodeData, inputs: { fallbackMessage: '' } }}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                variableItems={variableItems}
+            />
+        )
+
+        // VariableInput takes priority over RichTextEditor when suggestions exist,
+        // even for multiline (rows) fields
+        expect(screen.getByTestId('variable-input')).toBeInTheDocument()
+        expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
     })
 })

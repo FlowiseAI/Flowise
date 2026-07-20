@@ -17,6 +17,7 @@ import { Evaluator } from './Evaluator'
 import { ApiKey } from './ApiKey'
 import { CustomTemplate } from './CustomTemplate'
 import { Execution } from './Execution'
+import { CustomMcpServer } from './CustomMcpServer'
 import { LoginActivity, WorkspaceShared, WorkspaceUsers } from '../../enterprise/database/entities/EnterpriseEntities'
 import { User } from '../../enterprise/database/entities/user.entity'
 import { Organization } from '../../enterprise/database/entities/organization.entity'
@@ -29,6 +30,8 @@ import { LoginSession } from '../../enterprise/database/entities/login-session.e
 import { ChannelAccount } from './ChannelAccount'
 import { AgentChannel } from './AgentChannel'
 import { ChannelInboundMessage } from './ChannelInboundMessage'
+import { ScheduleRecord } from './ScheduleRecord'
+import { ScheduleTriggerLog } from './ScheduleTriggerLog'
 
 export const entities = {
     ChatFlow,
@@ -54,6 +57,7 @@ export const entities = {
     WorkspaceShared,
     CustomTemplate,
     Execution,
+    CustomMcpServer,
     Organization,
     Role,
     OrganizationUser,
@@ -64,4 +68,6 @@ export const entities = {
     ChannelAccount,
     AgentChannel,
     ChannelInboundMessage
+    ScheduleRecord,
+    ScheduleTriggerLog
 }

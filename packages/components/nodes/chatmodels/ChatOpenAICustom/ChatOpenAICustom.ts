@@ -2,6 +2,7 @@ import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 class ChatOpenAICustom_ChatModels implements INode {
     label: string
@@ -159,6 +160,8 @@ class ChatOpenAICustom_ChatModels implements INode {
                 throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
             }
         }
+
+        if (basePath) await checkDenyList(basePath)
 
         if (basePath || parsedBaseOptions) {
             obj.configuration = {

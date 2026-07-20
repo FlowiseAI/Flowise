@@ -8,6 +8,7 @@ import { Box, Chip, Grid, Stack, Tooltip, Typography, useTheme } from '@mui/mate
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import MoreItemsTooltip from '../tooltip/MoreItemsTooltip'
+import ScheduleStatusBadge from '@/ui-component/extended/ScheduleStatusBadge'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -29,7 +30,6 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 }))
 
 // ===========================|| CONTRACT CARD ||=========================== //
-
 const formatProviderLabel = (provider) => {
     if (provider === 'whatsapp') return 'WhatsApp'
     if (provider === 'instagram') return 'Instagram'
@@ -37,7 +37,50 @@ const formatProviderLabel = (provider) => {
     return provider
 }
 
-const ItemCard = ({ data, images, icons, onClick, channelBindings }) => {
+//const ItemCard = ({ data, images, icons, onClick, channelBindings }) => {
+const ItemCard = ({ data, images, icons, scheduleStatus, onClick }) => {
+    const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
+import PropTypes from 'prop-types'
+import { useSelector } from 'react-redux'
+
+// material-ui
+import { styled } from '@mui/material/styles'
+import { Box, Chip, Grid, Stack, Tooltip, Typography, useTheme } from '@mui/material'
+
+// project imports
+import MainCard from '@/ui-component/cards/MainCard'
+import MoreItemsTooltip from '../tooltip/MoreItemsTooltip'
+import ScheduleStatusBadge from '@/ui-component/extended/ScheduleStatusBadge'
+
+const CardWrapper = styled(MainCard)(({ theme }) => ({
+    background: theme.palette.card.main,
+    color: theme.darkTextPrimary,
+    overflow: 'auto',
+    position: 'relative',
+    boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)',
+    cursor: 'pointer',
+    '&:hover': {
+        background: theme.palette.card.hover,
+        boxShadow: '0 2px 14px 0 rgb(32 40 45 / 20%)'
+    },
+    height: '100%',
+    minHeight: '160px',
+    maxHeight: '300px',
+    width: '100%',
+    overflowWrap: 'break-word',
+    whiteSpace: 'pre-line'
+}))
+
+// ===========================|| CONTRACT CARD ||=========================== //
+const formatProviderLabel = (provider) => {
+    if (provider === 'whatsapp') return 'WhatsApp'
+    if (provider === 'instagram') return 'Instagram'
+    if (provider === 'telegram') return 'Telegram'
+    return provider
+}
+
+const ItemCard = ({ data, images, icons, scheduleStatus, onClick, channelBindings }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -129,74 +172,88 @@ const ItemCard = ({ data, images, icons, onClick, channelBindings }) => {
                             </span>
                         )}
                     </Box>
-                    {(images?.length > 0 || icons?.length > 0) && (
+                    {(images?.length > 0 || icons?.length > 0 || scheduleStatus?.isScheduled) && (
                         <Box
                             sx={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'start',
+                                justifyContent: 'space-between',
                                 gap: 1
                             }}
                         >
-                            {[
-                                ...(images || []).map((img) => ({ type: 'image', src: img.imageSrc, label: img.label })),
-                                ...(icons || []).map((ic) => ({ type: 'icon', icon: ic.icon, color: ic.color, label: ic.name }))
-                            ]
-                                .slice(0, 3)
-                                .map((item, index) => (
-                                    <Tooltip key={item.src || index} title={item.label} placement='top'>
-                                        {item.type === 'image' ? (
-                                            <Box
-                                                sx={{
-                                                    width: 30,
-                                                    height: 30,
-                                                    borderRadius: '50%',
-                                                    backgroundColor: customization.isDarkMode
-                                                        ? theme.palette.common.white
-                                                        : theme.palette.grey[300] + 75
-                                                }}
-                                            >
-                                                <img
-                                                    style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
-                                                    alt=''
-                                                    src={item.src}
-                                                />
-                                            </Box>
-                                        ) : (
-                                            <div
-                                                style={{
-                                                    width: 30,
-                                                    height: 30,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}
-                                            >
-                                                <item.icon size={25} color={item.color} />
-                                            </div>
-                                        )}
-                                    </Tooltip>
-                                ))}
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1,
+                                    flex: 1,
+                                    minWidth: 0,
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                {[
+                                    ...(images || []).map((img) => ({ type: 'image', src: img.imageSrc, label: img.label })),
+                                    ...(icons || []).map((ic) => ({ type: 'icon', icon: ic.icon, color: ic.color, label: ic.name }))
+                                ]
+                                    .slice(0, 3)
+                                    .map((item, index) => (
+                                        <Tooltip key={item.src || index} title={item.label} placement='top'>
+                                            {item.type === 'image' ? (
+                                                <Box
+                                                    sx={{
+                                                        width: 30,
+                                                        height: 30,
+                                                        borderRadius: '50%',
+                                                        backgroundColor: customization.isDarkMode
+                                                            ? theme.palette.common.white
+                                                            : theme.palette.grey[300] + 75
+                                                    }}
+                                                >
+                                                    <img
+                                                        style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
+                                                        alt=''
+                                                        src={item.src}
+                                                    />
+                                                </Box>
+                                            ) : (
+                                                <div
+                                                    style={{
+                                                        width: 30,
+                                                        height: 30,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}
+                                                >
+                                                    <item.icon size={25} color={item.color} />
+                                                </div>
+                                            )}
+                                        </Tooltip>
+                                    ))}
 
-                            {(images?.length || 0) + (icons?.length || 0) > 3 && (
-                                <MoreItemsTooltip
-                                    images={[
-                                        ...(images?.slice(3) || []),
-                                        ...(icons?.slice(Math.max(0, 3 - (images?.length || 0))) || []).map((ic) => ({ label: ic.name }))
-                                    ]}
-                                >
-                                    <Typography
-                                        sx={{
-                                            alignItems: 'center',
-                                            display: 'flex',
-                                            fontSize: '.9rem',
-                                            fontWeight: 200
-                                        }}
+                                {(images?.length || 0) + (icons?.length || 0) > 3 && (
+                                    <MoreItemsTooltip
+                                        images={[
+                                            ...(images?.slice(3) || []),
+                                            ...(icons?.slice(Math.max(0, 3 - (images?.length || 0))) || []).map((ic) => ({
+                                                label: ic.name
+                                            }))
+                                        ]}
                                     >
-                                        + {(images?.length || 0) + (icons?.length || 0) - 3} More
-                                    </Typography>
-                                </MoreItemsTooltip>
-                            )}
+                                        <Typography
+                                            sx={{
+                                                alignItems: 'center',
+                                                display: 'flex',
+                                                fontSize: '.9rem',
+                                                fontWeight: 200
+                                            }}
+                                        >
+                                            + {(images?.length || 0) + (icons?.length || 0) - 3} More
+                                        </Typography>
+                                    </MoreItemsTooltip>
+                                )}
+                            </Box>
+                            <ScheduleStatusBadge scheduleStatus={scheduleStatus} />
                         </Box>
                     )}
                 </Grid>
@@ -210,7 +267,198 @@ ItemCard.propTypes = {
     images: PropTypes.array,
     icons: PropTypes.array,
     onClick: PropTypes.func,
-    channelBindings: PropTypes.array
+    channelBindings: PropTypes.array,
+    scheduleStatus: PropTypes.object,
+    onClick: PropTypes.func
+}
+
+export default ItemCard
+
+    return (
+        <CardWrapper content={false} onClick={onClick} sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}>
+            <Box sx={{ height: '100%', p: 2.25 }}>
+                <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 3 }}>
+                    <Box display='flex' flexDirection='column' sx={{ width: '100%' }}>
+                        <div
+                            style={{
+                                width: '100%',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                overflow: 'hidden'
+                            }}
+                        >
+                            {data.iconSrc && (
+                                <div
+                                    style={{
+                                        width: 35,
+                                        height: 35,
+                                        display: 'flex',
+                                        flexShrink: 0,
+                                        marginRight: 10,
+                                        borderRadius: '50%',
+                                        backgroundImage: `url(${data.iconSrc})`,
+                                        backgroundSize: 'contain',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'center center'
+                                    }}
+                                ></div>
+                            )}
+                            {!data.iconSrc && data.color && (
+                                <div
+                                    style={{
+                                        width: 35,
+                                        height: 35,
+                                        display: 'flex',
+                                        flexShrink: 0,
+                                        marginRight: 10,
+                                        borderRadius: '50%',
+                                        background: data.color
+                                    }}
+                                ></div>
+                            )}
+                            <Typography
+                                sx={{
+                                    display: '-webkit-box',
+                                    fontSize: '1.25rem',
+                                    fontWeight: 500,
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    textOverflow: 'ellipsis',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                {data.templateName || data.name}
+                            </Typography>
+                        </div>
+                        {channelBindings?.length > 0 && (
+                            <Stack direction='row' spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap', mt: 1 }}>
+                                {channelBindings.slice(0, 2).map((binding, index) => (
+                                    <Chip
+                                        key={`${binding.provider}-${index}`}
+                                        size='small'
+                                        variant='outlined'
+                                        label={formatProviderLabel(binding.provider)}
+                                    />
+                                ))}
+                                {channelBindings.length > 2 && (
+                                    <Chip size='small' variant='outlined' label={`+${channelBindings.length - 2}`} />
+                                )}
+                            </Stack>
+                        )}
+                        {data.description && (
+                            <span
+                                style={{
+                                    display: '-webkit-box',
+                                    marginTop: 10,
+                                    overflowWrap: 'break-word',
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: 'vertical',
+                                    textOverflow: 'ellipsis',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                {data.description}
+                            </span>
+                        )}
+                    </Box>
+                    {(images?.length > 0 || icons?.length > 0 || scheduleStatus?.isScheduled) && (
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 1
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1,
+                                    flex: 1,
+                                    minWidth: 0,
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                {[
+                                    ...(images || []).map((img) => ({ type: 'image', src: img.imageSrc, label: img.label })),
+                                    ...(icons || []).map((ic) => ({ type: 'icon', icon: ic.icon, color: ic.color, label: ic.name }))
+                                ]
+                                    .slice(0, 3)
+                                    .map((item, index) => (
+                                        <Tooltip key={item.src || index} title={item.label} placement='top'>
+                                            {item.type === 'image' ? (
+                                                <Box
+                                                    sx={{
+                                                        width: 30,
+                                                        height: 30,
+                                                        borderRadius: '50%',
+                                                        backgroundColor: customization.isDarkMode
+                                                            ? theme.palette.common.white
+                                                            : theme.palette.grey[300] + 75
+                                                    }}
+                                                >
+                                                    <img
+                                                        style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
+                                                        alt=''
+                                                        src={item.src}
+                                                    />
+                                                </Box>
+                                            ) : (
+                                                <div
+                                                    style={{
+                                                        width: 30,
+                                                        height: 30,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}
+                                                >
+                                                    <item.icon size={25} color={item.color} />
+                                                </div>
+                                            )}
+                                        </Tooltip>
+                                    ))}
+
+                                {(images?.length || 0) + (icons?.length || 0) > 3 && (
+                                    <MoreItemsTooltip
+                                        images={[
+                                            ...(images?.slice(3) || []),
+                                            ...(icons?.slice(Math.max(0, 3 - (images?.length || 0))) || []).map((ic) => ({
+                                                label: ic.name
+                                            }))
+                                        ]}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                alignItems: 'center',
+                                                display: 'flex',
+                                                fontSize: '.9rem',
+                                                fontWeight: 200
+                                            }}
+                                        >
+                                            + {(images?.length || 0) + (icons?.length || 0) - 3} More
+                                        </Typography>
+                                    </MoreItemsTooltip>
+                                )}
+                            </Box>
+                            <ScheduleStatusBadge scheduleStatus={scheduleStatus} />
+                        </Box>
+                    )}
+                </Grid>
+            </Box>
+        </CardWrapper>
+    )
+}
+
+ItemCard.propTypes = {
+    data: PropTypes.object,
+    images: PropTypes.array,
+    icons: PropTypes.array,
+    onClick: PropTypes.func,
+    scheduleStatus: PropTypes.object,
+    channelBindings: PropTypes.array,
 }
 
 export default ItemCard

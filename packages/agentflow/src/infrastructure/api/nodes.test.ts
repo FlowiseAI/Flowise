@@ -17,23 +17,23 @@ describe('bindNodesApi', () => {
     const api = bindNodesApi(mockClient)
 
     describe('getAllNodes', () => {
-        it('should call GET /nodes', async () => {
+        it('should call GET /nodes with client=agentflowsdk', async () => {
             const mockNodes = [{ name: 'llmAgentflow', label: 'LLM' }]
             ;(mockClient.get as jest.Mock).mockResolvedValue({ data: mockNodes })
 
             const result = await api.getAllNodes()
-            expect(mockClient.get).toHaveBeenCalledWith('/nodes')
+            expect(mockClient.get).toHaveBeenCalledWith('/nodes', { params: { client: 'agentflowsdk' } })
             expect(result).toEqual(mockNodes)
         })
     })
 
     describe('getNodeByName', () => {
-        it('should call GET /nodes/:name', async () => {
+        it('should call GET /nodes/:name with client=agentflowsdk', async () => {
             const mockNode = { name: 'llmAgentflow', label: 'LLM' }
             ;(mockClient.get as jest.Mock).mockResolvedValue({ data: mockNode })
 
             const result = await api.getNodeByName('llmAgentflow')
-            expect(mockClient.get).toHaveBeenCalledWith('/nodes/llmAgentflow')
+            expect(mockClient.get).toHaveBeenCalledWith('/nodes/llmAgentflow', { params: { client: 'agentflowsdk' } })
             expect(result).toEqual(mockNode)
         })
     })

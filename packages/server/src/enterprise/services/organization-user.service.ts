@@ -3,9 +3,11 @@ import { DataSource, Not, QueryRunner } from 'typeorm'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { sanitizeUser } from '../../utils/sanitize.util'
 import { OrganizationUser, OrganizationUserStatus } from '../database/entities/organization-user.entity'
 import { Organization } from '../database/entities/organization.entity'
 import { GeneralRole } from '../database/entities/role.entity'
+import { User } from '../database/entities/user.entity'
 import { WorkspaceUser } from '../database/entities/workspace-user.entity'
 import { Workspace } from '../database/entities/workspace.entity'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
@@ -178,7 +180,7 @@ export class OrganizationUserService {
                 // get the user's name and email
                 const userDetails = await this.userService.readUserById(organizationOwner[0].userId, queryRunner)
                 if (userDetails) {
-                    user.user = userDetails
+                    user.user = sanitizeUser(userDetails) as User
                 }
             }
         }
@@ -222,6 +224,8 @@ export class OrganizationUserService {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, OrganizationUserErrorMessage.ORGANIZATION_USER_ALREADY_EXISTS)
         const role = await this.roleService.readRoleIsGeneral(data.roleId, queryRunner)
         if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
+        if (role.name === GeneralRole.OWNER)
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, RoleErrorMessage.INVALID_ROLE_PERMISSIONS)
         const createdBy = await this.userService.readUserById(data.createdBy, queryRunner)
         if (!createdBy) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
 
@@ -290,6 +294,8 @@ export class OrganizationUserService {
         if (newOrganizationUser.roleId) {
             const role = await this.roleService.readRoleIsGeneral(newOrganizationUser.roleId, queryRunner)
             if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
+            if (role.name === GeneralRole.OWNER && organizationUser.roleId !== newOrganizationUser.roleId)
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, RoleErrorMessage.INVALID_ROLE_PERMISSIONS)
         }
 
         if (newOrganizationUser.status) this.validateOrganizationUserStatus(newOrganizationUser.status)

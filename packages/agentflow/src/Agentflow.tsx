@@ -2,10 +2,11 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRe
 import ReactFlow, { Background, Controls, MiniMap, ReactFlowProvider, useEdgesState, useNodesState } from 'reactflow'
 
 import { Alert, Snackbar } from '@mui/material'
-import { IconSparkles } from '@tabler/icons-react'
+import { IconRefreshAlert, IconSparkles } from '@tabler/icons-react'
 
 import { tokens } from './core/theme'
 import type { AgentFlowInstance, AgentflowProps, FlowData, FlowDataCallback, FlowEdge, FlowNode } from './core/types'
+import { initNode, resolveNodeType } from './core/utils'
 import { applyValidationErrorsToNodes, validateFlow } from './core/validation'
 import {
     AgentflowHeader,
@@ -40,6 +41,7 @@ function AgentflowCanvas({
     showDefaultHeader = true,
     enableGenerator = true,
     showDefaultPalette = true,
+    canvasActions,
     renderHeader,
     renderNodePalette
 }: {
@@ -51,6 +53,7 @@ function AgentflowCanvas({
     showDefaultHeader?: boolean
     showDefaultPalette?: boolean
     enableGenerator?: boolean
+    canvasActions?: AgentflowProps['canvasActions']
     renderHeader?: AgentflowProps['renderHeader']
     renderNodePalette?: AgentflowProps['renderNodePalette']
 }) {
@@ -62,7 +65,10 @@ function AgentflowCanvas({
         setReactFlowInstance,
         closeEditDialog,
         registerLocalStateSetters,
-        registerOnFlowChange
+        registerOnFlowChange,
+        setComponentNodes,
+        syncNodes,
+        hasOutdatedNodes
     } = useAgentflowContext()
     const { isDarkMode } = useConfigContext()
     const agentflow = useAgentflow()
@@ -80,8 +86,10 @@ function AgentflowCanvas({
         }
     }, [isDarkMode])
 
-    const [nodes, setLocalNodes, onNodesChange] = useNodesState(initialFlow?.nodes || [])
-    const [edges, setLocalEdges, onEdgesChange] = useEdgesState(initialFlow?.edges || [])
+    const safeInitialNodes = Array.isArray(initialFlow?.nodes) ? initialFlow.nodes : []
+    const safeInitialEdges = Array.isArray(initialFlow?.edges) ? initialFlow.edges : []
+    const [nodes, setLocalNodes, onNodesChange] = useNodesState(safeInitialNodes)
+    const [edges, setLocalEdges, onEdgesChange] = useEdgesState(safeInitialEdges)
     const [showGenerateDialog, setShowGenerateDialog] = useState(false)
 
     // Constraint violation snackbar state
@@ -96,7 +104,36 @@ function AgentflowCanvas({
     }, [])
 
     // Load available nodes
-    const { availableNodes } = useFlowNodes()
+    const { availableNodes, isLoading: isNodesLoading } = useFlowNodes()
+
+    useEffect(() => {
+        if (!isNodesLoading && availableNodes.length > 0) {
+            setComponentNodes(availableNodes)
+        }
+    }, [availableNodes, isNodesLoading, setComponentNodes])
+
+    // Auto-add Start node when creating a new (empty) canvas.
+    // Only runs once: when availableNodes first loads and the canvas has no initial flow.
+    const hasInitialFlow = safeInitialNodes.length > 0
+    const startNodeInitialized = useRef(false)
+    useEffect(() => {
+        if (hasInitialFlow || startNodeInitialized.current) return
+        if (availableNodes.length === 0) return
+
+        const startNodeDef = availableNodes.find((n) => n.name === 'startAgentflow')
+        if (!startNodeDef) return
+
+        startNodeInitialized.current = true
+        const startNodeId = 'startAgentflow_0'
+        const startNodeData = initNode(startNodeDef, startNodeId, true)
+        const startNode: FlowNode = {
+            id: startNodeId,
+            type: resolveNodeType(startNodeDef.type ?? ''),
+            position: { x: 100, y: 100 },
+            data: { ...startNodeData, label: 'Start' }
+        }
+        setLocalNodes([startNode])
+    }, [hasInitialFlow, availableNodes, setLocalNodes])
 
     // Register local state setters with context on mount
     useEffect(() => {
@@ -239,21 +276,57 @@ function AgentflowCanvas({
                                 position: 'absolute',
                                 left: showDefaultPalette ? 70 : 20, // 70px offset = ~10px gap between buttons
                                 top: 20,
-                                zIndex: 1001
+                                zIndex: tokens.zIndex.canvasButton
                             }}
                         >
                             <IconSparkles />
                         </StyledFab>
                     )}
 
-                    {/* Validation Feedback - positioned at top right */}
+                    {/* Sync Nodes FAB - orange button matching V2, shown when outdated nodes exist */}
+                    {!readOnly && hasOutdatedNodes && (
+                        <StyledFab
+                            size='small'
+                            aria-label='Sync Nodes'
+                            title='Sync Nodes'
+                            onClick={syncNodes}
+                            sx={{
+                                position: 'absolute',
+                                left: 20 + (showDefaultPalette ? 50 : 0) + (enableGenerator ? 50 : 0),
+                                top: 20,
+                                zIndex: tokens.zIndex.canvasButton,
+                                background: tokens.colors.semantic.syncNodesFab,
+                                color: 'white',
+                                '&:hover': {
+                                    background: tokens.colors.semantic.syncNodesFab,
+                                    backgroundImage: 'linear-gradient(rgb(0 0 0/10%) 0 0)'
+                                }
+                            }}
+                        >
+                            <IconRefreshAlert />
+                        </StyledFab>
+                    )}
+
+                    {/* Canvas action buttons - positioned at top right */}
                     {!readOnly && (
-                        <ValidationFeedback
-                            nodes={nodes as FlowNode[]}
-                            edges={edges as FlowEdge[]}
-                            availableNodes={availableNodes}
-                            setNodes={setLocalNodes as React.Dispatch<React.SetStateAction<FlowNode[]>>}
-                        />
+                        <div
+                            style={{
+                                position: 'absolute',
+                                right: 20,
+                                top: 20,
+                                zIndex: tokens.zIndex.canvasButton,
+                                display: 'flex',
+                                gap: 8
+                            }}
+                        >
+                            <ValidationFeedback
+                                nodes={nodes as FlowNode[]}
+                                edges={edges as FlowEdge[]}
+                                availableNodes={availableNodes}
+                                setNodes={setLocalNodes as React.Dispatch<React.SetStateAction<FlowNode[]>>}
+                            />
+                            {canvasActions}
+                        </div>
                     )}
 
                     <ReactFlow
@@ -342,7 +415,8 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
         renderHeader,
         renderNodePalette,
         showDefaultHeader = true,
-        showDefaultPalette = true
+        showDefaultPalette = true,
+        canvasActions
     } = props
 
     return (
@@ -368,6 +442,7 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
                     showDefaultPalette={showDefaultPalette}
                     renderHeader={renderHeader}
                     renderNodePalette={renderNodePalette}
+                    canvasActions={canvasActions}
                 />
             </ReactFlowProvider>
         </AgentflowProvider>
@@ -390,6 +465,7 @@ const AgentflowCanvasWithRef = forwardRef<
         enableGenerator?: boolean
         renderHeader?: AgentflowProps['renderHeader']
         renderNodePalette?: AgentflowProps['renderNodePalette']
+        canvasActions?: AgentflowProps['canvasActions']
     }
 >(function AgentflowCanvasWithRef(props, ref) {
     const agentflow = useAgentflow()

@@ -1,0 +1,102 @@
+{
+    "name": "@flowiseai/observe",
+    "version": "0.0.0-dev.1",
+    "description": "Embeddable React components for observing AI agent executions, evaluations, and runtime activity",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/FlowiseAI/Flowise.git",
+        "directory": "packages/observe"
+    },
+    "homepage": "https://github.com/FlowiseAI/Flowise/tree/main/packages/observe#readme",
+    "bugs": {
+        "url": "https://github.com/FlowiseAI/Flowise/issues"
+    },
+    "keywords": [
+        "flowise",
+        "flowiseai",
+        "observe",
+        "executions",
+        "observability",
+        "react",
+        "llm",
+        "ai",
+        "agent"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org"
+    },
+    "main": "./dist/index.umd.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.umd.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "sideEffects": false,
+    "scripts": {
+        "build": "tsc && vite build",
+        "clean": "rimraf dist",
+        "dev": "vite",
+        "dev:example": "vite --config examples/vite.config.ts",
+        "format": "prettier --write \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+        "format:check": "prettier --check \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+        "lint": "eslint \"{src,examples}/**/*.{js,jsx,ts,tsx,json,md}\" \"*.md\"",
+        "lint:fix": "eslint \"{src,examples}/**/*.{js,jsx,ts,tsx,json,md}\" \"*.md\" --fix",
+        "nuke": "pnpm clean && rimraf node_modules .turbo",
+        "prepublishOnly": "npm run clean && npm run build",
+        "test": "jest",
+        "test:coverage": "jest --coverage",
+        "test:watch": "jest --watch"
+    },
+    "peerDependencies": {
+        "@emotion/react": "^11.10.0",
+        "@emotion/styled": "^11.10.0",
+        "@mui/icons-material": "^5.0.0",
+        "@mui/material": "^5.15.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "dependencies": {
+        "@mui/x-tree-view": "^7.25.0",
+        "@tabler/icons-react": "^3.7.0",
+        "axios": "1.15.0",
+        "date-fns": "^3.6.0",
+        "flowise-react-json-view": "^1.21.7",
+        "lodash": "^4.17.21",
+        "react-markdown": "^9.0.1",
+        "react-syntax-highlighter": "15.5.0",
+        "remark-gfm": "^4.0.0"
+    },
+    "devDependencies": {
+        "@testing-library/jest-dom": "^6.6.3",
+        "@testing-library/react": "^14.3.1",
+        "@testing-library/user-event": "^14.5.2",
+        "@types/jest": "^29.5.14",
+        "@types/lodash": "^4.14.195",
+        "@types/react": "^18.2.0",
+        "@types/react-dom": "^18.2.0",
+        "@types/react-syntax-highlighter": "15.5.13",
+        "@typescript-eslint/eslint-plugin": "^8.18.2",
+        "@typescript-eslint/parser": "^8.18.2",
+        "@vitejs/plugin-react": "^4.2.0",
+        "eslint-import-resolver-typescript": "4.4.4",
+        "eslint-plugin-import": "^2.29.0",
+        "eslint-plugin-markdown": "^3.0.1",
+        "eslint-plugin-simple-import-sort": "^12.0.0",
+        "jest": "^29.7.0",
+        "jest-environment-jsdom": "^29.7.0",
+        "rimraf": "^5.0.5",
+        "ts-jest": "^29.3.2",
+        "typescript": "^5.4.5",
+        "vite": "^5.0.2",
+        "vite-plugin-dts": "^3.7.0"
+    }
+}

@@ -7,6 +7,7 @@ import { SqlDatabase } from '@langchain/classic/sql_db'
 import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, getInputVariables, transformBracesWithColon } from '../../../src/utils'
+import { validateSQLitePath } from '../../../src/validator'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
@@ -223,7 +224,7 @@ const getSQLDBChain = async (
         databaseType === 'sqlite'
             ? {
                   type: databaseType,
-                  database: url
+                  database: validateSQLitePath(url)
               }
             : ({
                   type: databaseType,

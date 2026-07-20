@@ -17,10 +17,16 @@ import { WorkspaceUser } from '../database/entities/workspace-user.entity'
 import { OrganizationUserService } from '../services/organization-user.service'
 import { RoleService } from '../services/role.service'
 import { WorkspaceService } from '../services/workspace.service'
+import { assertQueryOrganizationMatchesActiveOrg, getLoggedInUser, userMayManageOrgUsers } from '../utils/tenantRequestGuards'
 
 export class OrganizationUserController {
     public async create(req: Request, res: Response, next: NextFunction) {
         try {
+            if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
+            req.body.organizationId = req.user.activeOrganizationId
+            req.body.createdBy = req.user.id
+
             const organizationUserservice = new OrganizationUserService()
             const totalOrgUsers = await organizationUserservice.readOrgUsersCountByOrgId(req.body.organizationId)
             const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
@@ -35,10 +41,13 @@ export class OrganizationUserController {
     public async read(req: Request, res: Response, next: NextFunction) {
         let queryRunner
         try {
+            const user = getLoggedInUser(req)
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             const query = req.query as OrganizationUserQuery
             const organizationUserservice = new OrganizationUserService()
+
+            assertQueryOrganizationMatchesActiveOrg(user, query.organizationId)
 
             let organizationUser:
                 | {
@@ -58,15 +67,32 @@ export class OrganizationUserController {
                     queryRunner
                 )
             } else if (query.organizationId && query.roleId) {
+                if (!userMayManageOrgUsers(user)) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
                 organizationUser = await organizationUserservice.readOrganizationUserByOrganizationIdRoleId(
                     query.organizationId,
                     query.roleId,
                     queryRunner
                 )
             } else if (query.organizationId) {
+                if (!userMayManageOrgUsers(user)) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
                 organizationUser = await organizationUserservice.readOrganizationUserByOrganizationId(query.organizationId, queryRunner)
             } else if (query.userId) {
-                organizationUser = await organizationUserservice.readOrganizationUserByUserId(query.userId, queryRunner)
+                if (query.userId !== user.id && !userMayManageOrgUsers(user)) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
+                if (query.userId === user.id) {
+                    organizationUser = await organizationUserservice.readOrganizationUserByUserId(query.userId, queryRunner)
+                } else {
+                    organizationUser = await organizationUserservice.readOrganizationUserByOrganizationIdUserId(
+                        user.activeOrganizationId,
+                        query.userId,
+                        queryRunner
+                    )
+                }
             } else {
                 throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
             }
@@ -81,6 +107,11 @@ export class OrganizationUserController {
 
     public async update(req: Request, res: Response, next: NextFunction) {
         try {
+            if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
+            req.body.organizationId = req.user.activeOrganizationId
+            req.body.updatedBy = req.user.id
+
             const organizationUserService = new OrganizationUserService()
             const organizationUser = await organizationUserService.updateOrganizationUser(req.body)
             return res.status(StatusCodes.OK).json(organizationUser)
@@ -95,9 +126,15 @@ export class OrganizationUserController {
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             const currentPlatform = getRunningExpressApp().identityManager.getPlatformType()
             await queryRunner.connect()
+
+            if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
             const query = req.query as Partial<OrganizationUser>
             if (!query.organizationId) {
                 throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Organization ID is required')
+            }
+            if (query.organizationId !== req.user.activeOrganizationId) {
+                throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
             }
             if (!query.userId) {
                 throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'User ID is required')
@@ -117,7 +154,11 @@ export class OrganizationUserController {
                 })
                 if (personalWorkspaces.length === 1)
                     // delete personal workspace
-                    await workspaceService.deleteWorkspaceById(queryRunner, personalWorkspaces[0].workspaceId)
+                    await workspaceService.deleteWorkspaceById(
+                        queryRunner,
+                        personalWorkspaces[0].workspaceId,
+                        req.user.activeOrganizationId
+                    )
                 // remove user from other workspces
                 organizationUser = await organizationUserService.deleteOrganizationUser(queryRunner, query.organizationId, query.userId)
                 // soft delete user because they might workspace might created by them

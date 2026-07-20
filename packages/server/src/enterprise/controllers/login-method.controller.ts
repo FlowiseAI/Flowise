@@ -12,6 +12,7 @@ import AzureSSO from '../sso/AzureSSO'
 import GithubSSO from '../sso/GithubSSO'
 import GoogleSSO from '../sso/GoogleSSO'
 import { decrypt } from '../utils/encryption.util'
+import { assertQueryOrganizationMatchesActiveOrg, getLoggedInUser } from '../utils/tenantRequestGuards'
 
 export class LoginMethodController {
     constructor() {
@@ -37,6 +38,10 @@ export class LoginMethodController {
     public async create(req: Request, res: Response, next: NextFunction) {
         try {
             this.assertEnterprisePlatform()
+
+            const user = getLoggedInUser(req)
+            assertQueryOrganizationMatchesActiveOrg(user, req.body.organizationId)
+
             const loginMethodService = new LoginMethodService()
             const loginMethod = await loginMethodService.createLoginMethod(req.body)
             return res.status(StatusCodes.CREATED).json(loginMethod)
@@ -86,10 +91,7 @@ export class LoginMethodController {
         let queryRunner
         try {
             this.assertEnterprisePlatform()
-            const user = (req as any).user
-            if (!user?.activeOrganizationId) {
-                throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
-            }
+            const user = getLoggedInUser(req)
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             const query = req.query as Partial<LoginMethod>
@@ -135,6 +137,10 @@ export class LoginMethodController {
     public async update(req: Request, res: Response, next: NextFunction) {
         try {
             this.assertEnterprisePlatform()
+
+            const user = getLoggedInUser(req)
+            assertQueryOrganizationMatchesActiveOrg(user, req.body.organizationId)
+
             const loginMethodService = new LoginMethodService()
             const loginMethod = await loginMethodService.createOrUpdateConfig(req.body)
             if (loginMethod?.status === 'OK' && loginMethod?.organizationId) {

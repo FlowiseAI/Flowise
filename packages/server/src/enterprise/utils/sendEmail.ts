@@ -8,6 +8,17 @@ const SMTP_HOST = process.env.SMTP_HOST
 const SMTP_PORT = parseInt(process.env.SMTP_PORT as string, 10)
 const SMTP_USER = process.env.SMTP_USER
 const SMTP_PASSWORD = process.env.SMTP_PASSWORD
+
+export const isSmtpConfigured = (): boolean => {
+    const port = parseInt(process.env.SMTP_PORT as string, 10)
+    return Boolean(
+        process.env.SMTP_HOST?.trim() &&
+            process.env.SMTP_USER?.trim() &&
+            process.env.SMTP_PASSWORD?.trim() &&
+            process.env.SMTP_PORT &&
+            !Number.isNaN(port)
+    )
+}
 const SENDER_EMAIL = process.env.SENDER_EMAIL
 const SMTP_SECURE = process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : true
 const TLS = process.env.ALLOW_UNAUTHORIZED_CERTS ? { rejectUnauthorized: false } : undefined
@@ -99,6 +110,21 @@ const sendPasswordResetEmail = async (email: string, resetLink: string) => {
     })
 }
 
+const sendEmailChangeConfirmationEmail = async (email: string, confirmLink: string, newEmail: string) => {
+    const template = getEmailTemplate('confirm_email_change.hbs')
+    const compiled = handlebars.compile(template)
+    const htmlToSend = compiled({ confirmLink, newEmail })
+    const textContent = `Confirm your email change to ${newEmail}: ${confirmLink}`
+
+    await transporter.sendMail({
+        from: SENDER_EMAIL || '"FlowiseAI Team" <team@mail.flowiseai.com>',
+        to: email,
+        subject: 'Confirm your email address change',
+        text: textContent,
+        html: htmlToSend
+    })
+}
+
 const sendVerificationEmailForCloud = async (email: string, verificationLink: string) => {
     let htmlToSend
     let textContent
@@ -117,4 +143,4 @@ const sendVerificationEmailForCloud = async (email: string, verificationLink: st
     })
 }
 
-export { sendWorkspaceAdd, sendWorkspaceInvite, sendPasswordResetEmail, sendVerificationEmailForCloud }
+export { sendWorkspaceAdd, sendWorkspaceInvite, sendPasswordResetEmail, sendVerificationEmailForCloud, sendEmailChangeConfirmationEmail }

@@ -47,6 +47,11 @@ import { AddChannelAccountAndAgentChannel1767000000000 } from './1767000000000-A
 import { AddChannelInboundMessage1767100000000 } from './1767100000000-AddChannelInboundMessage'
 
 import { AddReasonContentToChatMessage1764759496768 } from './1764759496768-AddReasonContentToChatMessage'
+import { AddWebhookSecretToChatFlow1776240000002 } from './1776240000002-AddWebhookSecretToChatFlow'
+import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
+import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
+import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
+
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mysql/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/mysql/1720230151484-AddWorkspace'
 import { AddWorkspaceShared1726654922034 } from '../../../enterprise/database/migrations/mysql/1726654922034-AddWorkspaceShared'
@@ -117,6 +122,10 @@ export const mysqlMigrations = [
     FixDocumentStoreFileChunkLongText1765000000000,
     AddApiKeyPermission1765360298674,
     AddChannelAccountAndAgentChannel1767000000000,
-    AddChannelInboundMessage1767100000000
-    AddReasonContentToChatMessage1764759496768
+    AddChannelInboundMessage1767100000000,
+    AddReasonContentToChatMessage1764759496768,
+    AddWebhookSecretToChatFlow1776240000002,
+    AddCustomMcpServer1766000000000,
+    AddMcpServerConfigToChatFlow1767000000000,
+    AddScheduleEntities1772000000000
 ]

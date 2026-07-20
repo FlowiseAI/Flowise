@@ -19,7 +19,7 @@ import { styled, useTheme } from '@mui/material/styles'
 import { tooltipClasses } from '@mui/material/Tooltip'
 import { IconArrowsMaximize, IconVariable } from '@tabler/icons-react'
 
-import type { InputAnchor, InputParam, NodeData } from '@/core/types'
+import type { InputAnchor, InputParam, NodeData, StateUpdate } from '@/core/types'
 
 import ArrayInput from './ArrayInput'
 import { CodeInput } from './CodeInput'
@@ -27,10 +27,13 @@ import { Dropdown } from './Dropdown'
 import { ExpandTextDialog } from './ExpandTextDialog'
 import { JsonInput } from './JsonInput'
 import { RichTextEditor } from './RichTextEditor.lazy'
-import type { VariableItem } from './SelectVariable'
-import { SelectVariable } from './SelectVariable'
+import { StateKeyValueInput } from './StateKeyValueInput'
 import { SwitchInput } from './SwitchInput'
 import { TooltipWithParser } from './TooltipWithParser'
+import { toSuggestionItems } from './toSuggestionItems'
+import { VariableInput } from './VariableInput'
+import type { VariableItem } from './VariablePicker'
+import { VariablePicker } from './VariablePicker'
 
 const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -45,6 +48,7 @@ export interface AsyncInputProps {
     disabled: boolean
     onChange: (newValue: string) => void
     nodeName?: string
+    nodeId?: string
     inputValues?: Record<string, unknown>
 }
 
@@ -86,7 +90,7 @@ export interface NodeInputHandlerProps {
     arrayIndex?: number | null
     /** For array-based configs: the parent array InputParam definition. */
     parentArrayParam?: InputParam | null
-    /** Variable items for the SelectVariable popover (injected from features layer). */
+    /** Variable items for the VariablePicker popover (injected from features layer). */
     variableItems?: VariableItem[]
 }
 
@@ -178,6 +182,11 @@ export function NodeInputHandler({
         ['string', 'password', 'code'].includes(inputParam?.type ?? '')
     )
 
+    const suggestionItems = useMemo(
+        () => (inputParam?.acceptVariable ? toSuggestionItems(variableItems) : undefined),
+        [inputParam?.acceptVariable, variableItems]
+    )
+
     const renderInput = () => {
         if (!inputParam) return null
 
@@ -185,15 +194,31 @@ export function NodeInputHandler({
 
         switch (inputParam.type) {
             case 'string':
-                if (isExpandable) {
+                // When acceptVariable is enabled and suggestions are available, use VariableInput
+                // which provides inline {{ autocomplete
+                if (suggestionItems && suggestionItems.length > 0) {
                     return (
-                        <RichTextEditor
+                        <VariableInput
                             value={typeof value === 'string' ? value : ''}
-                            onChange={(html) => handleDataChange(html)}
+                            onChange={(v) => handleDataChange(v)}
                             placeholder={inputParam.placeholder}
                             disabled={disabled}
-                            rows={inputParam.rows || 4}
+                            rows={inputParam.rows}
+                            suggestionItems={suggestionItems}
                         />
+                    )
+                }
+                if (isExpandable) {
+                    return (
+                        <Box sx={{ mt: 1 }}>
+                            <RichTextEditor
+                                value={typeof value === 'string' ? value : ''}
+                                onChange={(html) => handleDataChange(html)}
+                                placeholder={inputParam.placeholder}
+                                disabled={disabled}
+                                rows={inputParam.rows || 4}
+                            />
+                        </Box>
                     )
                 }
                 return (
@@ -281,11 +306,11 @@ export function NodeInputHandler({
 
             case 'json': {
                 const jsonStr = typeof value === 'string' ? value : JSON.stringify(value || {})
-                if (inputParam.acceptVariable && variableItems && variableItems.length > 0) {
+                if (inputParam.acceptVariable) {
                     // acceptVariable: show a button that opens a dialog with JsonInput + variable support
                     return (
                         <Button
-                            sx={{ borderRadius: 25, width: '100%', mb: 0, mt: 2 }}
+                            sx={{ borderRadius: 25, width: '100%', mb: 0, mt: 1 }}
                             variant='outlined'
                             disabled={disabled}
                             onClick={() => setJsonDialogOpen(true)}
@@ -301,23 +326,33 @@ export function NodeInputHandler({
             case 'code':
                 return (
                     <>
+                        {inputParam.codeExample && !disabled && (
+                            <Button
+                                size='small'
+                                variant='outlined'
+                                sx={{ mb: 1, textTransform: 'none' }}
+                                onClick={() => handleDataChange(inputParam.codeExample)}
+                            >
+                                See Example
+                            </Button>
+                        )}
                         <CodeInput
                             value={typeof value === 'string' ? value : ''}
                             onChange={(code) => handleDataChange(code)}
                             language={inputParam.codeLanguage}
                             disabled={disabled}
                         />
-                        {inputParam.codeExample && !disabled && (
-                            <Button
-                                size='small'
-                                variant='text'
-                                sx={{ mt: 0.5, textTransform: 'none' }}
-                                onClick={() => handleDataChange(inputParam.codeExample)}
-                            >
-                                See Example
-                            </Button>
-                        )}
                     </>
+                )
+
+            case 'updateFlowState':
+                return (
+                    <StateKeyValueInput
+                        value={Array.isArray(value) ? (value as StateUpdate[]) : []}
+                        onChange={(v) => handleDataChange(v)}
+                        disabled={disabled}
+                        suggestionItems={suggestionItems}
+                    />
                 )
 
             case 'array':
@@ -331,6 +366,7 @@ export function NodeInputHandler({
                         AsyncInputComponent={AsyncInputComponent}
                         ConfigInputComponent={ConfigInputComponent}
                         onConfigChange={onConfigChange}
+                        variableItems={variableItems}
                     />
                 )
 
@@ -345,6 +381,7 @@ export function NodeInputHandler({
                             disabled={disabled}
                             onChange={(v) => handleDataChange(v)}
                             nodeName={data.name}
+                            nodeId={data.id}
                             inputValues={data.inputs as Record<string, unknown> | undefined}
                         />
                         {inputParam.loadConfig && ConfigInputComponent && value && onConfigChange && (
@@ -370,6 +407,7 @@ export function NodeInputHandler({
                         disabled={disabled}
                         onChange={(v) => handleDataChange(v)}
                         nodeName={data.name}
+                        nodeId={data.id}
                         inputValues={data.inputs as Record<string, unknown> | undefined}
                     />
                 )
@@ -444,12 +482,15 @@ export function NodeInputHandler({
                             </Typography>
                             <div style={{ flexGrow: 1 }} />
                             {showVariableButton && (
-                                <Tooltip title='Select variable'>
+                                <Tooltip title={suggestionItems?.length ? 'Type {{ to select variables' : 'Select variable'}>
                                     <IconButton
                                         size='small'
                                         sx={{ height: 25, width: 25 }}
                                         disabled={disabled}
-                                        onClick={(e) => setVariableAnchorEl(e.currentTarget)}
+                                        onClick={(e) =>
+                                            (inputParam?.type !== 'string' || !suggestionItems?.length) &&
+                                            setVariableAnchorEl(e.currentTarget)
+                                        }
                                     >
                                         <IconVariable size={20} style={{ color: theme.palette.info.main }} />
                                     </IconButton>
@@ -486,6 +527,7 @@ export function NodeInputHandler({
                     disabled={disabled}
                     inputType={inputParam?.type}
                     language={inputParam?.type === 'code' ? inputParam.codeLanguage : undefined}
+                    suggestionItems={suggestionItems}
                     onConfirm={handleExpandConfirm}
                     onCancel={() => setExpandOpen(false)}
                 />
@@ -500,11 +542,11 @@ export function NodeInputHandler({
                     transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                     slotProps={{ paper: { sx: { width: 320, maxHeight: 400 } } }}
                 >
-                    <SelectVariable items={variableItems!} onSelect={handleVariableSelect} />
+                    <VariablePicker items={variableItems!} onSelect={handleVariableSelect} />
                 </Popover>
             )}
 
-            {inputParam?.type === 'json' && inputParam.acceptVariable && variableItems && variableItems.length > 0 && (
+            {inputParam?.type === 'json' && inputParam.acceptVariable && (
                 <Dialog open={jsonDialogOpen} onClose={() => setJsonDialogOpen(false)} fullWidth maxWidth='sm'>
                     <DialogTitle>{inputParam.label}</DialogTitle>
                     <DialogContent>

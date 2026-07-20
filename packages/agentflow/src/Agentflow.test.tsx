@@ -6,13 +6,16 @@
 import { createRef } from 'react'
 
 import { fireEvent, render, waitFor } from '@testing-library/react'
+import mockAxios from 'axios'
 
-import type { AgentFlowInstance, FlowData } from './core/types'
+import type { AgentFlowInstance, AgentflowProps, FlowData } from './core/types'
 import { Agentflow } from './Agentflow'
 
 // Mock external dependencies - implementations in __mocks__/
 jest.mock('reactflow')
 jest.mock('axios')
+
+const mockGet = mockAxios.get as jest.Mock
 
 // Mock GenerateFlowDialog to expose callbacks for testing
 jest.mock('./features/generator', () => ({
@@ -425,6 +428,111 @@ describe('Agentflow Component', () => {
         })
     })
 
+    describe('Canvas Actions', () => {
+        it('should render canvasActions content in the canvas', async () => {
+            const { getByTestId } = render(
+                <Agentflow {...defaultProps} canvasActions={<button data-testid='custom-action'>My Button</button>} />
+            )
+
+            await waitFor(() => {
+                expect(getByTestId('custom-action')).toBeInTheDocument()
+            })
+        })
+
+        it('should not render canvasActions in read-only mode', async () => {
+            const { container, queryByTestId } = render(
+                <Agentflow {...defaultProps} readOnly={true} canvasActions={<button data-testid='custom-action'>My Button</button>} />
+            )
+
+            await waitFor(() => {
+                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
+            })
+
+            expect(queryByTestId('custom-action')).not.toBeInTheDocument()
+        })
+    })
+
+    describe('Sync Nodes FAB', () => {
+        const outdatedFlow: FlowData = {
+            nodes: [
+                {
+                    id: 'startAgentflow_0',
+                    type: 'agentflowNode',
+                    position: { x: 0, y: 0 },
+                    data: {
+                        id: 'startAgentflow_0',
+                        name: 'startAgentflow',
+                        label: 'Start',
+                        version: 1.0,
+                        color: '#7EE787',
+                        outputAnchors: []
+                    }
+                }
+            ],
+            edges: [],
+            viewport: { x: 0, y: 0, zoom: 1 }
+        }
+
+        beforeEach(() => {
+            mockGet.mockImplementation((url: string) => {
+                if (typeof url === 'string' && url.includes('/nodes')) {
+                    return Promise.resolve({
+                        data: [
+                            {
+                                name: 'startAgentflow',
+                                label: 'Start',
+                                type: 'Start',
+                                category: 'Agent Flows',
+                                description: 'Start node',
+                                baseClasses: ['Start'],
+                                inputs: [],
+                                outputs: [],
+                                version: 2.0 // newer than flow node at 1.0
+                            }
+                        ]
+                    })
+                }
+                return Promise.resolve({ data: [] })
+            })
+        })
+
+        afterEach(() => {
+            mockGet.mockImplementation(() => Promise.resolve({ data: [] }))
+        })
+
+        it('shows Sync Nodes FAB when flow has outdated nodes', async () => {
+            const { container } = render(<Agentflow apiBaseUrl='https://example.com' initialFlow={outdatedFlow} />)
+
+            await waitFor(() => {
+                expect(container.querySelector('[aria-label="Sync Nodes"]')).toBeInTheDocument()
+            })
+        })
+
+        it('does not show Sync Nodes FAB in readOnly mode even when nodes are outdated', async () => {
+            const { container } = render(<Agentflow apiBaseUrl='https://example.com' initialFlow={outdatedFlow} readOnly />)
+
+            await waitFor(() => {
+                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
+            })
+
+            expect(container.querySelector('[aria-label="Sync Nodes"]')).not.toBeInTheDocument()
+        })
+
+        it('does not show Sync Nodes FAB when all nodes are up to date', async () => {
+            const upToDateFlow: FlowData = {
+                ...outdatedFlow,
+                nodes: [{ ...outdatedFlow.nodes[0], data: { ...outdatedFlow.nodes[0].data, version: 2.0 } }]
+            }
+            const { container } = render(<Agentflow apiBaseUrl='https://example.com' initialFlow={upToDateFlow} />)
+
+            await waitFor(() => {
+                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
+            })
+
+            expect(container.querySelector('[aria-label="Sync Nodes"]')).not.toBeInTheDocument()
+        })
+    })
+
     describe('Imperative Ref', () => {
         it('should expose agentflow instance via ref', async () => {
             const ref = createRef<AgentFlowInstance>()
@@ -480,6 +588,108 @@ describe('Agentflow Component', () => {
             unmount()
 
             expect(document.getElementById('agentflow-css-variables')).not.toBeInTheDocument()
+        })
+    })
+
+    describe('Auto Start Node Initialization', () => {
+        const startNodeSchema = {
+            name: 'startAgentflow',
+            label: 'Start',
+            type: 'Start',
+            category: 'Agent Flows',
+            description: 'Start node',
+            baseClasses: ['Start'],
+            inputs: [],
+            outputs: [],
+            version: 1
+        }
+
+        beforeEach(() => {
+            // Mock API to return a startAgentflow node definition
+            mockGet.mockImplementation((url: string) => {
+                if (typeof url === 'string' && url.includes('/nodes')) {
+                    return Promise.resolve({ data: [startNodeSchema] })
+                }
+                return Promise.resolve({ data: [] })
+            })
+        })
+
+        afterEach(() => {
+            // Restore default mock (empty array)
+            mockGet.mockImplementation(() => Promise.resolve({ data: [] }))
+        })
+
+        /** Helper: render without initialFlow and assert Start node via ref */
+        const renderAndGetNodes = async (initialFlow?: FlowData | null) => {
+            const ref = createRef<AgentFlowInstance>()
+            const props: Record<string, unknown> = { apiBaseUrl: 'https://example.com', ref }
+            if (initialFlow !== undefined) props.initialFlow = initialFlow
+
+            render(<Agentflow {...(props as unknown as AgentflowProps)} />)
+
+            await waitFor(() => {
+                expect(ref.current).toBeDefined()
+                const flow = ref.current!.getFlow()
+                expect(flow.nodes.length).toBeGreaterThan(0)
+            })
+            return ref.current!.getFlow().nodes
+        }
+
+        it('should auto-add Start node when initialFlow is undefined', async () => {
+            const nodes = await renderAndGetNodes()
+            expect(nodes).toHaveLength(1)
+            expect(nodes[0].id).toBe('startAgentflow_0')
+            expect(nodes[0].data.name).toBe('startAgentflow')
+            expect(nodes[0].data.label).toBe('Start')
+        })
+
+        it('should auto-add Start node when initialFlow is null', async () => {
+            const nodes = await renderAndGetNodes(null)
+            expect(nodes).toHaveLength(1)
+            expect(nodes[0].data.name).toBe('startAgentflow')
+        })
+
+        it('should auto-add Start node when initialFlow has empty nodes', async () => {
+            const emptyFlow: FlowData = { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } }
+            const nodes = await renderAndGetNodes(emptyFlow)
+            expect(nodes).toHaveLength(1)
+            expect(nodes[0].data.name).toBe('startAgentflow')
+        })
+
+        it('should auto-add Start node when initialFlow is empty object', async () => {
+            const nodes = await renderAndGetNodes({} as FlowData)
+            expect(nodes).toHaveLength(1)
+            expect(nodes[0].data.name).toBe('startAgentflow')
+        })
+
+        it('should handle initialFlow with unrelated fields without errors', async () => {
+            const illegalFlow = { foo: 'bar', baz: 123 } as unknown as FlowData
+            const nodes = await renderAndGetNodes(illegalFlow)
+
+            expect(nodes).toHaveLength(1)
+            expect(nodes[0].data.name).toBe('startAgentflow')
+        })
+
+        it('should handle initialFlow with wrong types for nodes/edges without crashing', async () => {
+            const illegalFlow = { nodes: 'not-an-array', edges: 42 } as unknown as FlowData
+            const nodes = await renderAndGetNodes(illegalFlow)
+
+            // Non-array nodes/edges are safely ignored, auto-init adds Start node
+            expect(nodes).toHaveLength(1)
+            expect(nodes[0].data.name).toBe('startAgentflow')
+        })
+
+        it('should not auto-add Start node when initialFlow has nodes', async () => {
+            const ref = createRef<AgentFlowInstance>()
+            render(<Agentflow {...defaultProps} initialFlow={mockFlow} ref={ref} />)
+
+            await waitFor(() => {
+                expect(ref.current).toBeDefined()
+            })
+            const nodes = ref.current!.getFlow().nodes
+            // Should only have the one node from mockFlow, no duplicate Start added
+            const startNodes = nodes.filter((n) => n.data.name === 'startAgentflow')
+            expect(startNodes).toHaveLength(1)
         })
     })
 })

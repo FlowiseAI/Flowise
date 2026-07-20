@@ -250,7 +250,7 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
         try {
             await vectorstoreApi.deleteUpsertHistory(selected)
             enqueueSnackbar({
-                message: 'Succesfully deleted upsert history',
+                message: 'Successfully deleted upsert history',
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',

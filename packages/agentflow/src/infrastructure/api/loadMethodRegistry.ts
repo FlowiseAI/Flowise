@@ -3,7 +3,6 @@ import type { CredentialsApi } from './credentials'
 import type { EmbeddingsApi } from './embeddings'
 import type { ChatModelsApi } from './models'
 import type { NodesApi } from './nodes'
-import type { RuntimeStateApi } from './runtimeState'
 import type { StoresApi } from './stores'
 import type { ToolsApi } from './tools'
 
@@ -14,7 +13,6 @@ export interface ApiServices {
     credentialsApi: CredentialsApi
     storesApi: StoresApi
     embeddingsApi: EmbeddingsApi
-    runtimeStateApi: RuntimeStateApi
     nodesApi: NodesApi
 }
 
@@ -32,11 +30,12 @@ export interface ApiServices {
  * - `listStores` — fetches document stores via `POST /node-load-method/agentAgentflow`
  * - `listVectorStores` — fetches vector stores via `POST /node-load-method/agentAgentflow`
  * - `listEmbeddings` — fetches embedding models via `POST /node-load-method/agentAgentflow`
- * - `listRuntimeStateKeys` — fetches runtime state keys via `POST /node-load-method/agentAgentflow`
+ * - `listRuntimeStateKeys` — resolved client-side from flow nodes (see entry comment for details)
  * - `listFlows` — fetches all chatflows/agentflows via `GET /chatflows`; returns `{ label: name, name: id, description: type }`
  * - `listCredentials` — fetches credentials filtered by `params.name` via `GET /credentials?credentialName=<name>`
  * - `listActions` — fetches available actions for a node (e.g. Composio, MCP tools) via `POST /node-load-method/{nodeName}`;
- *   requires `params.nodeName` and accepts optional `params.inputs` forwarded as `currentNode.inputs`
+ *   requires `params.nodeName` and `params.inputs`; extracts `credential` from inputs and sends it at the top level
+ *   so the server can decrypt the credential from the database (needed for authenticated tools like MCPs)
  * - `listTables` — fetches available tables for a node (e.g. AWSDynamoDBKVStorage) via `POST /node-load-method/{nodeName}`;
  *   requires `params.nodeName` and accepts optional `params.inputs` forwarded as `currentNode.inputs`
  *
@@ -61,7 +60,21 @@ export const loadMethodRegistry: Record<string, (_apis: ApiServices, _params?: R
     listStores: (apis) => apis.storesApi.getStores(),
     listVectorStores: (apis) => apis.storesApi.getVectorStores(),
     listEmbeddings: (apis) => apis.embeddingsApi.getEmbeddings(),
-    listRuntimeStateKeys: (apis) => apis.runtimeStateApi.getRuntimeStateKeys(),
+    listRuntimeStateKeys: (_apis, params) => {
+        // The legacy UI (AsyncDropdown.jsx) doesn't have access to the full flow state,
+        // so it sends previousNodes to the server where Agent.listRuntimeStateKeys()
+        // finds the Start node and extracts its startState keys.
+        //
+        // The SDK has AgentflowContext with state.nodes available via useAgentflowContext(),
+        // so AsyncInput calls getDefinedStateKeys(state.nodes) directly and passes the
+        // result here as params.stateKeys. Benefits over the server round-trip:
+        // - No latency: keys appear instantly as you edit, no save-then-refetch cycle
+        // - Scans all nodes: picks up keys from agentUpdateState, llmUpdateState, etc.,
+        //   not just the Start node's startState
+        // - Works offline: the examples app doesn't need a running server
+        const stateKeys = (params?.stateKeys ?? []) as string[]
+        return Promise.resolve(stateKeys.map((key) => ({ label: key, name: key })))
+    },
     listFlows: async (apis) => {
         const chatflows = await apis.chatflowsApi.getAllChatflows()
         return chatflows.map((cf) => ({
@@ -76,6 +89,15 @@ export const loadMethodRegistry: Record<string, (_apis: ApiServices, _params?: R
             return Promise.reject(new Error('`listCredentials` requires a string `name` parameter.'))
         }
         return apis.credentialsApi.getCredentialsByName(name)
+    },
+    listActions: (apis, params) => {
+        const nodeName = params?.nodeName
+        if (typeof nodeName !== 'string') {
+            return Promise.reject(new Error('`listActions` requires a string "nodeName" parameter.'))
+        }
+        const inputs = (params?.inputs as Record<string, unknown>) ?? {}
+        const credential = (inputs.credential as string) || (inputs['FLOWISE_CREDENTIAL_ID'] as string) || ''
+        return apis.nodesApi.loadNodeMethod(nodeName, 'listActions', { credential, inputs, currentNode: { inputs } })
     }
 }
 
@@ -101,7 +123,7 @@ export function getLoadMethod(name: string): (_apis: ApiServices, _params?: Reco
                 return Promise.reject(new Error(`loadMethod "${name}" requires a string "nodeName" parameter.`))
             }
             const inputs = (params?.inputs as Record<string, unknown>) ?? {}
-            return apis.nodesApi.loadNodeMethod(nodeName, name, { currentNode: { inputs } })
+            return apis.nodesApi.loadNodeMethod(nodeName, name, { inputs, currentNode: { inputs } })
         })
     )
 }

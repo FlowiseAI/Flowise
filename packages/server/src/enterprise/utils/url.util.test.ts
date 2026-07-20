@@ -100,11 +100,11 @@ describe('URL Security Utilities', () => {
             expect(result).toBe('http://localhost:3000/verify?token=xyz789')
         })
 
-        it('should handle complex tokens', () => {
+        it('should encode tokens for use in query strings', () => {
             process.env.APP_URL = 'https://example.com'
             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0'
             const result = getSecureTokenLink('/register', token)
-            expect(result).toBe(`https://example.com/register?token=${token}`)
+            expect(result).toBe(`https://example.com/register?token=${encodeURIComponent(token)}`)
         })
     })
 

@@ -15,10 +15,17 @@ import { RoleErrorMessage, RoleService } from '../services/role.service'
 import { UserErrorMessage, UserService } from '../services/user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from '../services/workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from '../services/workspace.service'
+import { assertQueryOrganizationMatchesActiveOrg, assertWorkspaceIdAccessibleToUser, getLoggedInUser } from '../utils/tenantRequestGuards'
 
 export class WorkspaceController {
     public async create(req: Request, res: Response, next: NextFunction) {
         try {
+            if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
+            req.body.organizationId = req.user.activeOrganizationId
+            req.body.createdBy = req.user.id
+            req.body.existingWorkspaceId = req.body.existingWorkspaceId ? req.user.activeWorkspaceId : undefined
+
             const workspaceUserService = new WorkspaceUserService()
             const newWorkspace = await workspaceUserService.createWorkspace(req.body)
             return res.status(StatusCodes.CREATED).json(newWorkspace)
@@ -30,10 +37,13 @@ export class WorkspaceController {
     public async read(req: Request, res: Response, next: NextFunction) {
         let queryRunner
         try {
+            const user = getLoggedInUser(req)
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             const query = req.query as Partial<Workspace>
             const workspaceService = new WorkspaceService()
+
+            assertQueryOrganizationMatchesActiveOrg(user, query.organizationId)
 
             let workspace:
                 | Workspace
@@ -42,9 +52,15 @@ export class WorkspaceController {
                       userCount: number
                   })[]
             if (query.id) {
+                await assertWorkspaceIdAccessibleToUser(user, query.id, queryRunner)
                 workspace = await workspaceService.readWorkspaceById(query.id, queryRunner)
             } else if (query.organizationId) {
                 workspace = await workspaceService.readWorkspaceByOrganizationId(query.organizationId, queryRunner)
+                if (!user.isOrganizationAdmin && Array.isArray(workspace)) {
+                    const allowed = new Set((user.assignedWorkspaces ?? []).map((w) => w.id))
+                    if (user.activeWorkspaceId) allowed.add(user.activeWorkspaceId)
+                    workspace = workspace.filter((w) => allowed.has(w.id))
+                }
             } else {
                 throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
             }
@@ -125,7 +141,7 @@ export class WorkspaceController {
                 activeOrganizationSubscriptionId: subscriptionId,
                 activeOrganizationCustomerId: customerId,
                 activeOrganizationProductId: productId,
-                isOrganizationAdmin: workspaceUser.roleId === ownerRole.id,
+                isOrganizationAdmin: organizationUser.roleId === ownerRole.id,
                 activeWorkspaceId: workspace.id,
                 activeWorkspace: workspace.name,
                 assignedWorkspaces,
@@ -169,6 +185,11 @@ export class WorkspaceController {
 
     public async update(req: Request, res: Response, next: NextFunction) {
         try {
+            if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
+            req.body.organizationId = req.user.activeOrganizationId
+            req.body.updatedBy = req.user.id
+
             const workspaceService = new WorkspaceService()
             const workspace = await workspaceService.updateWorkspace(req.body)
             return res.status(StatusCodes.OK).json(workspace)
@@ -180,6 +201,8 @@ export class WorkspaceController {
     public async delete(req: Request, res: Response, next: NextFunction) {
         let queryRunner: QueryRunner | undefined
         try {
+            if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             const workspaceId = req.params.id
@@ -189,7 +212,7 @@ export class WorkspaceController {
             const workspaceService = new WorkspaceService()
             await queryRunner.startTransaction()
 
-            const workspace = await workspaceService.deleteWorkspaceById(queryRunner, workspaceId)
+            const workspace = await workspaceService.deleteWorkspaceById(queryRunner, workspaceId, req.user.activeOrganizationId)
 
             await queryRunner.commitTransaction()
             return res.status(StatusCodes.OK).json(workspace)

@@ -4,6 +4,7 @@ import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOllama } from './FlowiseChatOllama'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 class ChatOllama_ChatModels implements INode {
     label: string
@@ -76,6 +77,14 @@ class ChatOllama_ChatModels implements INode {
                 type: 'boolean',
                 description:
                     'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                default: false,
+                optional: true
+            },
+            {
+                label: 'Think',
+                name: 'think',
+                type: 'boolean',
+                description: 'Whether the model supports reasoning. Only applicable for reasoning models',
                 default: false,
                 optional: true
             },
@@ -240,11 +249,15 @@ class ChatOllama_ChatModels implements INode {
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const jsonMode = nodeData.inputs?.jsonMode as boolean
         const streaming = nodeData.inputs?.streaming as boolean
+        const think = nodeData.inputs?.think as boolean
 
         const cache = nodeData.inputs?.cache as BaseCache
 
+        const activeBaseUrl = baseUrl || 'http://localhost:11434'
+        await checkDenyList(activeBaseUrl)
+
         const obj: ChatOllamaInput & BaseChatModelParams = {
-            baseUrl,
+            baseUrl: activeBaseUrl,
             temperature: parseFloat(temperature),
             model: modelName,
             streaming: streaming ?? true
@@ -264,6 +277,9 @@ class ChatOllama_ChatModels implements INode {
         if (keepAlive) obj.keepAlive = keepAlive
         if (cache) obj.cache = cache
         if (jsonMode) obj.format = 'json'
+
+        if (think === true) obj.think = true
+        else obj.think = false
 
         const multiModalOption: IMultiModalOption = {
             image: {
