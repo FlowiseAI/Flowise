@@ -20,6 +20,12 @@ import { assertQueryOrganizationMatchesActiveOrg, assertWorkspaceIdAccessibleToU
 export class WorkspaceController {
     public async create(req: Request, res: Response, next: NextFunction) {
         try {
+            if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
+            req.body.organizationId = req.user.activeOrganizationId
+            req.body.createdBy = req.user.id
+            req.body.existingWorkspaceId = req.body.existingWorkspaceId ? req.user.activeWorkspaceId : undefined
+
             const workspaceUserService = new WorkspaceUserService()
             const newWorkspace = await workspaceUserService.createWorkspace(req.body)
             return res.status(StatusCodes.CREATED).json(newWorkspace)
@@ -135,7 +141,7 @@ export class WorkspaceController {
                 activeOrganizationSubscriptionId: subscriptionId,
                 activeOrganizationCustomerId: customerId,
                 activeOrganizationProductId: productId,
-                isOrganizationAdmin: workspaceUser.roleId === ownerRole.id,
+                isOrganizationAdmin: organizationUser.roleId === ownerRole.id,
                 activeWorkspaceId: workspace.id,
                 activeWorkspace: workspace.name,
                 assignedWorkspaces,
@@ -179,6 +185,11 @@ export class WorkspaceController {
 
     public async update(req: Request, res: Response, next: NextFunction) {
         try {
+            if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
+            req.body.organizationId = req.user.activeOrganizationId
+            req.body.updatedBy = req.user.id
+
             const workspaceService = new WorkspaceService()
             const workspace = await workspaceService.updateWorkspace(req.body)
             return res.status(StatusCodes.OK).json(workspace)
@@ -190,6 +201,8 @@ export class WorkspaceController {
     public async delete(req: Request, res: Response, next: NextFunction) {
         let queryRunner: QueryRunner | undefined
         try {
+            if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             const workspaceId = req.params.id
@@ -199,7 +212,7 @@ export class WorkspaceController {
             const workspaceService = new WorkspaceService()
             await queryRunner.startTransaction()
 
-            const workspace = await workspaceService.deleteWorkspaceById(queryRunner, workspaceId)
+            const workspace = await workspaceService.deleteWorkspaceById(queryRunner, workspaceId, req.user.activeOrganizationId)
 
             await queryRunner.commitTransaction()
             return res.status(StatusCodes.OK).json(workspace)

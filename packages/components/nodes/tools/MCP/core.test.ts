@@ -461,6 +461,22 @@ describe('MCP Security Validations', () => {
     })
 
     describe('validateMCPServerConfig', () => {
+        const originalAllowedCommands = process.env.CUSTOM_MCP_ALLOWED_COMMANDS
+
+        beforeEach(() => {
+            // These tests assume the operator has permitted the common interpreters.
+            // The default (empty) allow-list is exercised separately below.
+            process.env.CUSTOM_MCP_ALLOWED_COMMANDS = 'node,npx,python,python3,docker'
+        })
+
+        afterEach(() => {
+            if (originalAllowedCommands === undefined) {
+                delete process.env.CUSTOM_MCP_ALLOWED_COMMANDS
+            } else {
+                process.env.CUSTOM_MCP_ALLOWED_COMMANDS = originalAllowedCommands
+            }
+        })
+
         it('should validate complete server configuration', () => {
             expect(() => {
                 validateMCPServerConfig({
@@ -554,6 +570,52 @@ describe('MCP Security Validations', () => {
                     args: ['mcp-server.js']
                 })
             }).not.toThrow()
+        })
+
+        describe('command allow-list (CUSTOM_MCP_ALLOWED_COMMANDS)', () => {
+            it('should block every command when the allow-list is empty', () => {
+                delete process.env.CUSTOM_MCP_ALLOWED_COMMANDS
+
+                expect(() => {
+                    validateMCPServerConfig({
+                        command: 'npx',
+                        args: ['@modelcontextprotocol/server-filesystem']
+                    })
+                }).toThrow("Command 'npx' is not allowed. Permitted: (none)")
+            })
+
+            it('should block commands that are not on the allow-list', () => {
+                process.env.CUSTOM_MCP_ALLOWED_COMMANDS = 'python3'
+
+                expect(() => {
+                    validateMCPServerConfig({
+                        command: 'npx',
+                        args: ['safe-arg']
+                    })
+                }).toThrow("Command 'npx' is not allowed. Permitted: python3")
+            })
+
+            it('should allow commands that are on the allow-list', () => {
+                process.env.CUSTOM_MCP_ALLOWED_COMMANDS = 'npx,docker'
+
+                expect(() => {
+                    validateMCPServerConfig({
+                        command: 'npx',
+                        args: ['@modelcontextprotocol/server-filesystem']
+                    })
+                }).not.toThrow()
+            })
+
+            it('should ignore surrounding whitespace in the allow-list entries', () => {
+                process.env.CUSTOM_MCP_ALLOWED_COMMANDS = ' node , npx '
+
+                expect(() => {
+                    validateMCPServerConfig({
+                        command: 'npx',
+                        args: ['server.js']
+                    })
+                }).not.toThrow()
+            })
         })
     })
 })
