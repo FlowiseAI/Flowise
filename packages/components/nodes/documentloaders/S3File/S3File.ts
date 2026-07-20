@@ -8,7 +8,7 @@ import {
     HiResModelName
 } from '@langchain/community/document_loaders/fs/unstructured'
 import { handleDocumentLoaderDocuments, handleDocumentLoaderMetadata, handleDocumentLoaderOutput } from '../../../src/utils'
-import { getAWSCredentialConfig } from '../../../src/awsToolsUtils'
+import { getAWSCredentialConfig, AWSCredentials } from '../../../src/awsToolsUtils'
 import { getSafeFilePath } from '../../../src/validator'
 import { S3Client, GetObjectCommand, HeadObjectCommand, S3ClientConfig } from '@aws-sdk/client-s3'
 import { getRegions, MODEL_TYPE } from '../../../src/modelLoader'
@@ -576,7 +576,7 @@ class S3_DocumentLoaders implements INode {
             omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
         }
 
-        let credentials: S3ClientConfig['credentials'] | undefined
+        let credentials: AWSCredentials | undefined
         if (nodeData.credential) {
             const credentialConfig = await getAWSCredentialConfig(nodeData, options, region)
             credentials = credentialConfig.credentials
