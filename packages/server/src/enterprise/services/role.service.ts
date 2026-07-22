@@ -122,6 +122,8 @@ export class RoleService {
 
         const oldRole = await this.readRoleById(newRole.id, queryRunner)
         if (!oldRole) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
+        if (newRole.organizationId !== oldRole.organizationId)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
         const user = await this.userService.readUserById(newRole.updatedBy, queryRunner)
         if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
         if (newRole.name) this.validateRoleName(newRole.name)

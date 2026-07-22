@@ -510,7 +510,7 @@ export class AccountService {
 
             const personalWorkspaceRole = await this.roleService.readGeneralRoleByName(GeneralRole.PERSONAL_WORKSPACE, queryRunner)
             if (oldWorkspaceUser && oldWorkspaceUser.roleId !== personalWorkspaceRole.id) {
-                await this.workspaceUserService.deleteWorkspaceUser(oldWorkspaceUser.workspaceId, user.id)
+                await this.workspaceUserService.deleteWorkspaceUser(oldWorkspaceUser.workspaceId, user.id, data.workspace.organizationId)
             }
 
             await queryRunner.startTransaction()

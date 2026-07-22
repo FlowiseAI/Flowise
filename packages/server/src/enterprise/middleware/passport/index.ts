@@ -143,7 +143,7 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                     if (!organizationUser)
                         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, OrganizationUserErrorMessage.ORGANIZATION_USER_NOT_FOUND)
                     organizationUser.status = OrganizationUserStatus.ACTIVE
-                    await workspaceUserService.updateWorkspaceUser(workspaceUser, queryRunner)
+                    await workspaceUserService.updateWorkspaceUser(workspaceUser, queryRunner, organizationUser.organizationId)
                     await organizationUserService.updateOrganizationUser(organizationUser)
 
                     const workspaceUsers = await workspaceUserService.readWorkspaceUserByUserId(organizationUser.userId, queryRunner)
@@ -180,7 +180,7 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                         activeOrganizationSubscriptionId: subscriptionId,
                         activeOrganizationCustomerId: customerId,
                         activeOrganizationProductId: productId,
-                        isOrganizationAdmin: workspaceUser.roleId === ownerRole.id,
+                        isOrganizationAdmin: organizationUser.roleId === ownerRole.id,
                         activeWorkspaceId: workspaceUser.workspaceId,
                         activeWorkspace: workspaceUser.workspace.name,
                         assignedWorkspaces,
