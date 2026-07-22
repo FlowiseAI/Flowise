@@ -95,6 +95,10 @@ export class GetTokenPriceTool extends BaseDexPaprikaTool {
         const data = await this.makeRequest(`/networks/${encodeURIComponent(arg.network)}/tokens/${encodeURIComponent(arg.tokenAddress)}`)
         try {
             const parsed = JSON.parse(data)
+            if (parsed === null || typeof parsed !== 'object') {
+                // Not the object response we expect; hand back the raw payload unchanged
+                return data
+            }
             // The long-form project description adds noise without market data value
             delete parsed.description
             return JSON.stringify(parsed)

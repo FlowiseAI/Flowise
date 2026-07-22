@@ -87,6 +87,16 @@ describe('DexPaprika node', () => {
             expect(parsed.description).toBeUndefined()
         })
 
+        it('should return the raw payload unchanged when the response is not a JSON object', async () => {
+            // A null or primitive body must not crash the description-stripping step
+            mockJsonResponse('null')
+
+            const tool = new GetTokenPriceTool()
+            const result = await tool._call({ network: 'ethereum', tokenAddress: '0x0' })
+
+            expect(result).toBe('null')
+        })
+
         it('should throw a descriptive error on a non-OK response', async () => {
             mockJsonResponse('', false, 404, 'Not Found')
 
