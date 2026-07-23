@@ -120,3 +120,5 @@ apps/*/
 .claude/settings.local.json
 .claude/agent-memory/*
 
+# sqlite
+dev-sqlite/database.sqlite
