@@ -5,6 +5,8 @@ import moment from 'moment'
 import { styled } from '@mui/material/styles'
 import {
     Box,
+    Chip,
+    IconButton,
     Paper,
     Skeleton,
     Table,
@@ -14,6 +16,7 @@ import {
     TableHead,
     TableRow,
     TableSortLabel,
+    Tooltip,
     useTheme,
     Checkbox
 } from '@mui/material'
@@ -86,7 +89,7 @@ const getIconColor = (state) => {
     }
 }
 
-export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSelectionChange }) => {
+export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSelectionChange, onAbortExecution }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -198,6 +201,7 @@ export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSe
                                     Created
                                 </TableSortLabel>
                             </StyledTableCell>
+                            <StyledTableCell>Actions</StyledTableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -205,6 +209,9 @@ export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSe
                             <>
                                 <StyledTableRow>
                                     <StyledTableCell padding='checkbox'>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
+                                    <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
                                     <StyledTableCell>
@@ -283,6 +290,58 @@ export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSe
                                             <StyledTableCell onClick={() => onExecutionRowClick(row)}>
                                                 {moment(row.createdDate).format('MMM D, YYYY h:mm A')}
                                             </StyledTableCell>
+                                            <StyledTableCell>
+                                                {row.state === 'INPROGRESS' && (
+                                                    <Tooltip title='Abort Execution'>
+                                                        <IconButton
+                                                            size='small'
+                                                            color='error'
+                                                            onClick={(event) => {
+                                                                event.stopPropagation()
+                                                                onAbortExecution && onAbortExecution(row.id)
+                                                            }}
+                                                        >
+                                                            <StopCircleIcon fontSize='small' />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                )}
+                                                {row.state === 'FINISHED' && (
+                                                    <Chip
+                                                        icon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
+                                                        label='Finished'
+                                                        size='small'
+                                                        color='success'
+                                                        variant='outlined'
+                                                    />
+                                                )}
+                                                {(row.state === 'ERROR' || row.state === 'TIMEOUT') && (
+                                                    <Chip
+                                                        icon={<ErrorIcon sx={{ fontSize: 16 }} />}
+                                                        label={row.state === 'ERROR' ? 'Error' : 'Timeout'}
+                                                        size='small'
+                                                        color='error'
+                                                        variant='outlined'
+                                                    />
+                                                )}
+                                                {row.state === 'TERMINATED' && (
+                                                    <Chip
+                                                        icon={<ErrorIcon sx={{ fontSize: 16 }} />}
+                                                        label='Terminated'
+                                                        size='small'
+                                                        color='error'
+                                                        variant='outlined'
+                                                    />
+                                                )}
+                                                {row.state === 'STOPPED' && (
+                                                    <Chip
+                                                        icon={<StopCircleIcon sx={{ fontSize: 16 }} />}
+                                                        label='Stopped'
+                                                        size='small'
+                                                        color='warning'
+                                                        variant='outlined'
+                                                    />
+                                                )}
+                                            </StyledTableCell>
                                         </StyledTableRow>
                                     )
                                 })}
@@ -300,6 +359,7 @@ ExecutionsListTable.propTypes = {
     isLoading: PropTypes.bool,
     onExecutionRowClick: PropTypes.func,
     onSelectionChange: PropTypes.func,
+    onAbortExecution: PropTypes.func,
     className: PropTypes.string
 }
 
