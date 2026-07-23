@@ -5,6 +5,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import chatflowsService from '../../services/chatflows'
 import textToSpeechService from '../../services/text-to-speech'
 import { databaseEntities } from '../../utils'
+import { verifyChatflowAccess } from '../../utils/chatflowAccess'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 const generateTextToSpeech = async (req: Request, res: Response) => {
@@ -195,6 +196,9 @@ const abortTextToSpeech = async (req: Request, res: Response) => {
 
         const appServer = getRunningExpressApp()
 
+        // Authorization: verify the caller has access to this chatflow
+        await verifyChatflowAccess(chatflowId, req.user)
+
         // Abort the TTS generation using existing pool
         const ttsAbortId = `tts_${chatId}_${chatMessageId}`
         appServer.abortControllerPool.abort(ttsAbortId)
@@ -211,7 +215,8 @@ const abortTextToSpeech = async (req: Request, res: Response) => {
 
         res.json({ message: 'TTS stream aborted successfully', chatId, chatMessageId })
     } catch (error) {
-        res.status(500).json({
+        const status = error instanceof InternalFlowiseError ? error.statusCode : StatusCodes.INTERNAL_SERVER_ERROR
+        res.status(status).json({
             error: error instanceof Error ? error.message : 'Failed to abort TTS stream'
         })
     }
