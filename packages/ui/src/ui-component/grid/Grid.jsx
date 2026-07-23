@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import { DataGrid } from '@mui/x-data-grid'
 
-export const Grid = ({ columns, rows, style, disabled = false, onRowUpdate }) => {
+export const Grid = ({ columns, rows, style, disabled = false, onRowUpdate, apiRef }) => {
     const handleProcessRowUpdate = (newRow) => {
         onRowUpdate(newRow)
         return newRow
@@ -12,6 +12,7 @@ export const Grid = ({ columns, rows, style, disabled = false, onRowUpdate }) =>
             {rows && columns && (
                 <div style={{ marginTop: 10, height: 300, width: '100%', ...style }}>
                     <DataGrid
+                        apiRef={apiRef}
                         processRowUpdate={handleProcessRowUpdate}
                         isCellEditable={() => {
                             return !disabled
@@ -31,5 +32,6 @@ Grid.propTypes = {
     columns: PropTypes.array,
     style: PropTypes.any,
     disabled: PropTypes.bool,
-    onRowUpdate: PropTypes.func
+    onRowUpdate: PropTypes.func,
+    apiRef: PropTypes.any
 }
