@@ -489,6 +489,118 @@ describe('checkDenyList - HTTP_ALLOW_LIST', () => {
     })
 })
 
+describe('checkDenyList - HTTP_ALLOW_LIST URL rules', () => {
+    const dnsMock = jest.requireMock('dns/promises') as { lookup: jest.Mock }
+
+    beforeEach(() => {
+        delete process.env.HTTP_ALLOW_LIST
+        delete process.env.HTTP_SECURITY_CHECK
+        // Hostnames resolve to a Docker-internal private IP by default so any
+        // request that isn't allow-listed is blocked by the deny list.
+        dnsMock.lookup.mockResolvedValue([{ address: '172.18.0.2', family: 4 }] as never)
+    })
+
+    afterEach(() => {
+        jest.clearAllMocks()
+        delete process.env.HTTP_ALLOW_LIST
+        delete process.env.HTTP_SECURITY_CHECK
+    })
+
+    it('allows a full URL rule when protocol, host, port, and path all match', async () => {
+        process.env.HTTP_ALLOW_LIST = 'http://mcp-server:8000/mcp'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).resolves.toBeUndefined()
+    })
+
+    it('allows a subpath of a full URL rule (path-prefix at segment boundary)', async () => {
+        process.env.HTTP_ALLOW_LIST = 'http://mcp-server:8000/mcp'
+        await expect(checkDenyList('http://mcp-server:8000/mcp/tools')).resolves.toBeUndefined()
+    })
+
+    it('blocks a sibling path that shares the prefix but not the segment boundary', async () => {
+        // A rule for "/mcp" must NOT allow "/mcp-admin"
+        process.env.HTTP_ALLOW_LIST = 'http://mcp-server:8000/mcp'
+        await expect(checkDenyList('http://mcp-server:8000/mcp-admin')).rejects.toThrow()
+    })
+
+    it('blocks when a full URL rule specifies http but the target is https', async () => {
+        process.env.HTTP_ALLOW_LIST = 'http://mcp-server:8000/mcp'
+        await expect(checkDenyList('https://mcp-server:8000/mcp')).rejects.toThrow()
+    })
+
+    it('blocks when the port differs from the full URL rule', async () => {
+        process.env.HTTP_ALLOW_LIST = 'http://mcp-server:8000/mcp'
+        await expect(checkDenyList('http://mcp-server:9000/mcp')).rejects.toThrow()
+    })
+
+    it('scheme-less rule with port allows both http and https on that port', async () => {
+        process.env.HTTP_ALLOW_LIST = 'mcp-server:8000/mcp'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).resolves.toBeUndefined()
+        await expect(checkDenyList('https://mcp-server:8000/mcp')).resolves.toBeUndefined()
+    })
+
+    it('scheme-less port rule blocks the same host on a different port', async () => {
+        process.env.HTTP_ALLOW_LIST = 'mcp-server:8000'
+        await expect(checkDenyList('http://mcp-server:9000/mcp')).rejects.toThrow()
+    })
+
+    it('treats a trailing dot in the rule hostname as equivalent (FQDN normalization)', async () => {
+        process.env.HTTP_ALLOW_LIST = 'mcp-server.'
+        await expect(checkDenyList('http://mcp-server/mcp')).resolves.toBeUndefined()
+    })
+
+    it('canonicalizes IPv6 in the rule so 0:0:0:0:0:0:0:1 matches ::1', async () => {
+        process.env.HTTP_ALLOW_LIST = '0:0:0:0:0:0:0:1'
+        // ::1 is in the default deny list; the allow list must bypass it.
+        await expect(checkDenyList('http://[::1]/mcp')).resolves.toBeUndefined()
+    })
+
+    it('silently ignores rules with credentials', async () => {
+        process.env.HTTP_ALLOW_LIST = 'http://user:pass@mcp-server:8000/mcp'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).rejects.toThrow()
+    })
+
+    it('silently ignores rules with a query string', async () => {
+        process.env.HTTP_ALLOW_LIST = 'http://mcp-server:8000/mcp?token=abc'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).rejects.toThrow()
+    })
+
+    it('silently ignores rules with a fragment', async () => {
+        process.env.HTTP_ALLOW_LIST = 'http://mcp-server:8000/mcp#frag'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).rejects.toThrow()
+    })
+
+    it('silently ignores rules with unsupported protocols like ftp://', async () => {
+        process.env.HTTP_ALLOW_LIST = 'ftp://mcp-server:8000/mcp'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).rejects.toThrow()
+    })
+
+    it('falls through to a later allow list entry when an earlier one does not match', async () => {
+        process.env.HTTP_ALLOW_LIST = 'http://other:8000/foo,http://mcp-server:8000/mcp'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).resolves.toBeUndefined()
+    })
+
+    it('allows a bracketed IPv6 rule with port and path', async () => {
+        // fd00::1 falls inside the fc00::/7 ULA deny range, so the allow list must bypass it.
+        process.env.HTTP_ALLOW_LIST = '[fd00::1]:8080/mcp'
+        await expect(checkDenyList('http://[fd00::1]:8080/mcp')).resolves.toBeUndefined()
+    })
+
+    it('an explicit http rule matches a target on its default port 80', async () => {
+        process.env.HTTP_ALLOW_LIST = 'http://mcp-server/mcp'
+        await expect(checkDenyList('http://mcp-server/mcp')).resolves.toBeUndefined()
+    })
+
+    it('an explicit http rule blocks a target on a non-default port', async () => {
+        process.env.HTTP_ALLOW_LIST = 'http://mcp-server/mcp'
+        await expect(checkDenyList('http://mcp-server:8000/mcp')).rejects.toThrow()
+    })
+
+    it('an explicit https rule matches a target on its default port 443', async () => {
+        process.env.HTTP_ALLOW_LIST = 'https://mcp-server/mcp'
+        await expect(checkDenyList('https://mcp-server/mcp')).resolves.toBeUndefined()
+    })
+})
+
 jest.mock('node-fetch', () => jest.fn())
 
 describe('resolveAndValidate - HTTP_ALLOW_LIST (via secureFetch)', () => {
