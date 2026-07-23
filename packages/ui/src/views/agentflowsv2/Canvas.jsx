@@ -217,6 +217,7 @@ const AgentflowCanvas = () => {
     }
 
     const handleSaveFlow = (chatflowName) => {
+        if (createNewChatflowApi.loading) return
         if (reactFlowInstance) {
             const nodes = reactFlowInstance.getNodes().map((node) => {
                 const nodeData = cloneDeep(node.data)
@@ -707,6 +708,7 @@ const AgentflowCanvas = () => {
                         <CanvasHeader
                             chatflow={chatflow}
                             handleSaveFlow={handleSaveFlow}
+                            isSaving={createNewChatflowApi.loading}
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
                             isAgentCanvas={true}
