@@ -18,6 +18,7 @@ import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import openAISVG from '@/assets/images/openai.svg'
 import assemblyAIPng from '@/assets/images/assemblyai.png'
 import localAiPng from '@/assets/images/localai.png'
+import funASRPng from '@/assets/images/funasr.png'
 import azureSvg from '@/assets/images/azure_openai.svg'
 import groqPng from '@/assets/images/groq.png'
 
@@ -34,7 +35,8 @@ const SpeechToTextType = {
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
     LOCALAI_STT: 'localAISTT',
     AZURE_COGNITIVE: 'azureCognitive',
-    GROQ_WHISPER: 'groqWhisper'
+    GROQ_WHISPER: 'groqWhisper',
+    FUNASR_STT: 'funASRSTT'
 }
 
 // Weird quirk - the key must match the name property value.
@@ -141,6 +143,43 @@ const speechToTextProviders = {
                 type: 'number',
                 step: 0.1,
                 description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
+                optional: true
+            }
+        ]
+    },
+    [SpeechToTextType.FUNASR_STT]: {
+        label: 'FunASR',
+        name: SpeechToTextType.FUNASR_STT,
+        icon: funASRPng,
+        url: 'https://www.funasr.com/openai-api.html',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['funASRApi'],
+                optional: true
+            },
+            {
+                label: 'Base URL',
+                name: 'baseUrl',
+                type: 'string',
+                description: 'OpenAI-compatible FunASR API base URL',
+                default: 'http://127.0.0.1:8000/v1'
+            },
+            {
+                label: 'Model',
+                name: 'model',
+                type: 'string',
+                description: 'Model name sent to the FunASR transcription endpoint',
+                default: 'sensevoice'
+            },
+            {
+                label: 'Language',
+                name: 'language',
+                type: 'string',
+                description: 'Optional language hint, such as zh, en, yue, ja, or ko',
+                placeholder: 'auto',
                 optional: true
             }
         ]
@@ -480,7 +519,13 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
             )}
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton
-                    disabled={selectedProvider !== 'none' && !speechToText[selectedProvider]?.credentialId}
+                    disabled={
+                        selectedProvider !== 'none' &&
+                        speechToTextProviders[selectedProvider].inputs.some(
+                            (inputParam) => inputParam.type === 'credential' && !inputParam.optional
+                        ) &&
+                        !speechToText[selectedProvider]?.credentialId
+                    }
                     variant='contained'
                     onClick={onSave}
                     sx={{ minWidth: 100 }}
