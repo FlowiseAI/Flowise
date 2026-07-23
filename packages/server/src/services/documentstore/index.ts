@@ -785,8 +785,12 @@ const saveProcessingLoader = async (
             if (!data.splitterId) data.splitterId = found.splitterId
             if (!data.splitterName) data.splitterName = found.splitterName
             if (!data.splitterConfig) data.splitterConfig = found.splitterConfig
-            if (found.credential) {
-                data.credential = found.credential
+            // Only fall back to the existing credential if no new credential was provided
+            // either directly or inside loaderConfig
+            if (!data.credential && !data.loaderConfig?.credential && !data.loaderConfig?.FLOWISE_CREDENTIAL_ID) {
+                if (found.credential) {
+                    data.credential = found.credential
+                }
             }
 
             let loader: IDocumentStoreLoader = {
@@ -801,7 +805,12 @@ const saveProcessingLoader = async (
                 totalChars: 0,
                 status: DocumentStoreStatus.SYNCING
             }
-            if (data.credential) {
+            // Sync top-level credential from loaderConfig if present,
+            // ensuring it stays in sync when the user updates credentials via the UI
+            const credentialFromConfig = data.loaderConfig?.credential || data.loaderConfig?.FLOWISE_CREDENTIAL_ID
+            if (credentialFromConfig) {
+                loader.credential = credentialFromConfig
+            } else if (data.credential) {
                 loader.credential = data.credential
             }
 
@@ -820,7 +829,11 @@ const saveProcessingLoader = async (
                 totalChars: 0,
                 status: DocumentStoreStatus.SYNCING
             }
-            if (data.credential) {
+            // Sync top-level credential from loaderConfig if present
+            const newCredentialFromConfig = data.loaderConfig?.credential || data.loaderConfig?.FLOWISE_CREDENTIAL_ID
+            if (newCredentialFromConfig) {
+                loader.credential = newCredentialFromConfig
+            } else if (data.credential) {
                 loader.credential = data.credential
             }
             existingLoaders.push(loader)
