@@ -45,6 +45,7 @@ import { AES, enc } from 'crypto-js'
 
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
+import { ConversationSummaryBufferState } from '../database/entities/ConversationSummaryBufferState'
 import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
 import { Assistant } from '../database/entities/Assistant'
@@ -95,6 +96,7 @@ if (USE_AWS_SECRETS_MANAGER) {
 export const databaseEntities: IDatabaseEntity = {
     ChatFlow: ChatFlow,
     ChatMessage: ChatMessage,
+    ConversationSummaryBufferState: ConversationSummaryBufferState,
     Tool: Tool,
     Credential: Credential,
     Lead: Lead,
@@ -764,6 +766,7 @@ export const buildFlow = async ({
  * @param {string} sessionId
  * @param {string} memoryType
  * @param {string} isClearFromViewMessageDialog
+ * @param {string} chatflowid
  */
 export const clearSessionMemory = async (
     reactFlowNodes: IReactFlowNode[],
@@ -773,7 +776,8 @@ export const clearSessionMemory = async (
     orgId?: string,
     sessionId?: string,
     memoryType?: string,
-    isClearFromViewMessageDialog?: string
+    isClearFromViewMessageDialog?: string,
+    chatflowid?: string
 ) => {
     for (const node of reactFlowNodes) {
         if (node.data.category !== 'Memory' && node.data.type !== 'OpenAIAssistant') continue
@@ -784,7 +788,7 @@ export const clearSessionMemory = async (
         const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
         const newNodeInstance = new nodeModule.nodeClass()
-        const options: ICommonObject = { orgId, chatId, appDataSource, databaseEntities, logger }
+        const options: ICommonObject = { orgId, chatId, chatflowid, appDataSource, databaseEntities, logger }
 
         // SessionId always take priority first because it is the sessionId used for 3rd party memory node
         if (sessionId && node.data.inputs) {

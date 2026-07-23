@@ -30,6 +30,7 @@ import {
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
 import { sanitizeAllowedUploadMimeTypesFromConfig } from '../../utils/fileValidation'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { invalidateConversationSummaryBufferStates } from '../../utils/conversationSummaryBufferState'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import { updateStorageUsage } from '../../utils/quotaUsage'
@@ -139,6 +140,9 @@ const deleteChatflow = async (
 
         // Delete all chat messages
         await appServer.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: chatflowId })
+
+        // Delete all persisted conversation summary buffer states
+        await invalidateConversationSummaryBufferStates(appServer.AppDataSource, chatflowId)
 
         // Delete all chat feedback
         await appServer.AppDataSource.getRepository(ChatMessageFeedback).delete({ chatflowid: chatflowId })
