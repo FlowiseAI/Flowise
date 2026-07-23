@@ -141,7 +141,8 @@ class ChatOpenAICustom_ChatModels implements INode {
             modelName,
             openAIApiKey,
             apiKey: openAIApiKey,
-            streaming: streaming ?? true
+            streaming: streaming ?? true,
+            __includeRawResponse: true
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)

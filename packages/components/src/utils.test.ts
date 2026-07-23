@@ -3,8 +3,10 @@ import {
     convertRequireToImport,
     COMMONJS_REQUIRE_REGEX,
     IMPORT_EXTRACTION_REGEX,
-    executeJavaScriptCode
+    executeJavaScriptCode,
+    extractStreamingChunkContent
 } from './utils'
+import { AIMessageChunk } from '@langchain/core/messages'
 
 describe('removeInvalidImageMarkdown', () => {
     describe('strips non-http/https image markdown', () => {
@@ -233,6 +235,88 @@ describe('Import extraction regex (utils.ts line 1596 pattern)', () => {
 
     it('returns empty array when there are no imports', () => {
         expect(extractModules('console.log("hello")')).toEqual([])
+    })
+})
+
+describe('extractStreamingChunkContent', () => {
+    it('separates vLLM/OpenAI-compatible reasoning_content from visible text', () => {
+        const chunk = new AIMessageChunk({
+            content: '',
+            additional_kwargs: {
+                reasoning_content: 'I should inspect the inputs.'
+            }
+        })
+
+        expect(extractStreamingChunkContent(chunk)).toEqual({
+            text: '',
+            reasoning: 'I should inspect the inputs.'
+        })
+    })
+
+    it('extracts reasoning deltas from preserved OpenAI-compatible raw responses', () => {
+        const chunk = new AIMessageChunk({
+            content: '',
+            additional_kwargs: {
+                __raw_response: {
+                    choices: [
+                        {
+                            delta: {
+                                reasoning: 'Raw reasoning.',
+                                reasoning_content: ' Raw content.'
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+
+        expect(extractStreamingChunkContent(chunk)).toEqual({
+            text: '',
+            reasoning: 'Raw reasoning. Raw content.'
+        })
+    })
+
+    it('ignores empty role and usage chunks', () => {
+        expect(
+            extractStreamingChunkContent(
+                new AIMessageChunk({
+                    content: '',
+                    additional_kwargs: {
+                        __raw_response: {
+                            choices: [
+                                {
+                                    delta: {
+                                        role: 'assistant'
+                                    }
+                                }
+                            ],
+                            usage: {
+                                prompt_tokens: 1,
+                                completion_tokens: 0
+                            }
+                        }
+                    }
+                })
+            )
+        ).toEqual({
+            text: '',
+            reasoning: ''
+        })
+    })
+
+    it('preserves visible text extraction while collecting reasoning content blocks', () => {
+        const chunk = new AIMessageChunk({
+            content: [
+                { type: 'reasoning', reasoning: 'First think.' },
+                { type: 'text_delta', text: 'Final ' },
+                { type: 'text', text: 'answer.' }
+            ] as any
+        })
+
+        expect(extractStreamingChunkContent(chunk)).toEqual({
+            text: 'Final answer.',
+            reasoning: 'First think.'
+        })
     })
 })
 

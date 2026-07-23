@@ -38,7 +38,8 @@ import {
     convertMultiOptionsToStringArray,
     processTemplateVariables,
     configureStructuredOutput,
-    extractResponseContent
+    extractResponseContent,
+    extractStreamingChunkContent
 } from '../../../src/utils'
 import { sanitizeFileName } from '../../../src/validator'
 import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
@@ -1876,61 +1877,38 @@ class Agent_Agentflow implements INode {
         try {
             for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
                 if (sseStreamer && !isStructuredOutput) {
-                    let content = ''
+                    const { text: content, reasoning } = extractStreamingChunkContent(chunk, { includeCodeExecution: true })
 
-                    if (chunk.contentBlocks?.length) {
-                        for (const block of chunk.contentBlocks) {
-                            if (isLastNode) {
-                                // As soon as we see the first non-reasoning block, send last thinking event with duration
-                                if (block.type !== 'reasoning' && wasThinking && !sentLastThinkingEvent && thinkingStartTime != null) {
-                                    thinkingDuration = Math.round((Date.now() - thinkingStartTime) / 1000)
-                                    sseStreamer.streamThinkingEvent(chatId, '', thinkingDuration)
-                                    sentLastThinkingEvent = true
-                                }
-                                if (block.type === 'reasoning' && (block as { reasoning?: string }).reasoning) {
-                                    if (!thinkingStartTime) {
-                                        thinkingStartTime = Date.now()
-                                    }
-                                    wasThinking = true
-                                    const reasoningContent = (block as { reasoning: string }).reasoning
-                                    sseStreamer.streamThinkingEvent(chatId, reasoningContent)
-                                    reasonContent += reasoningContent
-                                }
+                    if (reasoning) {
+                        reasonContent += reasoning
+                        if (isLastNode) {
+                            if (!thinkingStartTime) {
+                                thinkingStartTime = Date.now()
                             }
+                            wasThinking = true
+                            sseStreamer.streamThinkingEvent(chatId, reasoning)
                         }
                     }
 
-                    if (typeof chunk === 'string') {
-                        content = chunk
-                    } else if (Array.isArray(chunk.content) && chunk.content.length > 0) {
-                        content = chunk.content
-                            .map((item: any) => {
-                                if ((item.text && !item.type) || (item.type === 'text' && item.text)) {
-                                    return item.text
-                                } else if (item.type === 'executableCode' && item.executableCode) {
-                                    const language = item.executableCode.language?.toLowerCase() || 'python'
-                                    return `\n\`\`\`${language}\n${item.executableCode.code}\n\`\`\`\n`
-                                } else if (item.type === 'codeExecutionResult' && item.codeExecutionResult) {
-                                    const outcome = item.codeExecutionResult.outcome || 'OUTCOME_OK'
-                                    const output = item.codeExecutionResult.output || ''
-                                    if (outcome === 'OUTCOME_OK' && output) {
-                                        return `**Code Output:**\n\`\`\`\n${output}\n\`\`\`\n`
-                                    } else if (outcome !== 'OUTCOME_OK') {
-                                        return `**Code Execution Error:**\n\`\`\`\n${output}\n\`\`\`\n`
-                                    }
-                                }
-                                return ''
-                            })
-                            .filter((text: string) => text)
-                            .join('')
-                    } else if (chunk.content) {
-                        content = chunk.content.toString()
+                    if (content && isLastNode && wasThinking && !sentLastThinkingEvent && thinkingStartTime != null) {
+                        thinkingDuration = Math.round((Date.now() - thinkingStartTime) / 1000)
+                        sseStreamer.streamThinkingEvent(chatId, '', thinkingDuration)
+                        sentLastThinkingEvent = true
                     }
-                    sseStreamer.streamTokenEvent(chatId, content)
+
+                    if (content) {
+                        sseStreamer.streamTokenEvent(chatId, content)
+                    }
                 }
 
                 const messageChunk = typeof chunk === 'string' ? new AIMessageChunk(chunk) : chunk
                 response = response.concat(messageChunk)
+            }
+
+            if (sseStreamer && !isStructuredOutput && isLastNode && wasThinking && !sentLastThinkingEvent && thinkingStartTime != null) {
+                thinkingDuration = Math.round((Date.now() - thinkingStartTime) / 1000)
+                sseStreamer.streamThinkingEvent(chatId, '', thinkingDuration)
+                sentLastThinkingEvent = true
             }
         } catch (error) {
             console.error('Error during streaming:', error)
