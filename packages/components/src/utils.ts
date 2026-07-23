@@ -117,6 +117,15 @@ const defaultAllowExternalDependencies = ['axios', 'node-fetch']
 
 export const defaultAllowBuiltInDep = ['assert', 'buffer', 'crypto', 'events', 'path', 'querystring', 'timers', 'url', 'zlib']
 
+const safeJsonParse = (input: string) => {
+    if (!input || input.trim() === '') return null
+    try {
+        return JSON.parse(input)
+    } catch {
+        return null
+    }
+}
+
 /**
  * Get base classes of components
  *
@@ -958,13 +967,8 @@ export const convertBaseMessagetoIMessage = (messages: BaseMessage[]): IMessage[
  * @returns {string[]}
  */
 export const convertMultiOptionsToStringArray = (inputString: string): string[] => {
-    let ArrayString: string[] = []
-    try {
-        ArrayString = JSON.parse(inputString)
-    } catch (e) {
-        ArrayString = []
-    }
-    return ArrayString
+    const parsed = safeJsonParse(inputString)
+    return Array.isArray(parsed) ? parsed : []
 }
 
 /**
@@ -1362,7 +1366,8 @@ export const parseDocumentLoaderMetadata = (metadata: object | string): object =
     if (!metadata) return {}
 
     if (typeof metadata !== 'object') {
-        return JSON.parse(metadata)
+        const parsed = safeJsonParse(metadata)
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
     }
 
     return metadata
@@ -1866,7 +1871,8 @@ export const processTemplateVariables = (state: ICommonObject, finalOutput: any)
             if (match) {
                 try {
                     // Parse the response if it's JSON
-                    const jsonResponse = typeof finalOutput === 'string' ? JSON.parse(finalOutput) : finalOutput
+                    const jsonResponse =
+                        typeof finalOutput === 'string' ? safeJsonParse(finalOutput) ?? finalOutput : finalOutput
                     // Get the value using lodash get
                     const path = match[1]
                     const value = get(jsonResponse, path)
