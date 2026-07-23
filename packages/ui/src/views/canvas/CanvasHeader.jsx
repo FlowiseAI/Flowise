@@ -261,6 +261,14 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
         }
     }
 
+    const handleBackClick = () => {
+        if (window.history.state && window.history.state.idx > 0) {
+            navigate(-1)
+        } else {
+            navigate('/', { replace: true })
+        }
+    }
+
     const onUploadFile = (file) => {
         setSettingsOpen(false)
         handleLoadFlow(file)
@@ -401,7 +409,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
             <Stack flexDirection='row' justifyContent='space-between' sx={{ width: '100%' }}>
                 <Stack flexDirection='row' sx={{ width: '100%', maxWidth: '50%' }}>
                     <Box>
-                        <ButtonBase title='Back' sx={{ borderRadius: '50%' }}>
+                        <ButtonBase title='Back' sx={{ borderRadius: '50%' }} onClick={handleBackClick}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
@@ -416,13 +424,6 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                     }
                                 }}
                                 color='inherit'
-                                onClick={() => {
-                                    if (window.history.state && window.history.state.idx > 0) {
-                                        navigate(-1)
-                                    } else {
-                                        navigate('/', { replace: true })
-                                    }
-                                }}
                             >
                                 <IconChevronLeft stroke={1.5} size='1.3rem' />
                             </Avatar>
@@ -445,7 +446,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                 </Typography>
                                 {chatflow?.id && (
                                     <Available permission={savePermission}>
-                                        <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }}>
+                                        <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }} onClick={() => setEditingFlowName(true)}>
                                             <Avatar
                                                 variant='rounded'
                                                 sx={{
@@ -461,7 +462,6 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                                     }
                                                 }}
                                                 color='inherit'
-                                                onClick={() => setEditingFlowName(true)}
                                             >
                                                 <IconPencil stroke={1.5} size='1.3rem' />
                                             </Avatar>
@@ -489,7 +489,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                         }
                                     }}
                                 />
-                                <ButtonBase title='Save Name' sx={{ borderRadius: '50%' }}>
+                                <ButtonBase title='Save Name' sx={{ borderRadius: '50%' }} onClick={submitFlowName}>
                                     <Avatar
                                         variant='rounded'
                                         sx={{
@@ -505,12 +505,11 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                             }
                                         }}
                                         color='inherit'
-                                        onClick={submitFlowName}
                                     >
                                         <IconCheck stroke={1.5} size='1.3rem' />
                                     </Avatar>
                                 </ButtonBase>
-                                <ButtonBase title='Cancel' sx={{ borderRadius: '50%' }}>
+                                <ButtonBase title='Cancel' sx={{ borderRadius: '50%' }} onClick={() => setEditingFlowName(false)}>
                                     <Avatar
                                         variant='rounded'
                                         sx={{
@@ -526,7 +525,6 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                             }
                                         }}
                                         color='inherit'
-                                        onClick={() => setEditingFlowName(false)}
                                     >
                                         <IconX stroke={1.5} size='1.3rem' />
                                     </Avatar>
@@ -571,7 +569,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                         </Tooltip>
                     )}
                     {chatflow?.id && (
-                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
+                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }} onClick={onAPIDialogClick}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
@@ -586,14 +584,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                     }
                                 }}
                                 color='inherit'
-                                onClick={onAPIDialogClick}
                             >
                                 <IconCode stroke={1.5} size='1.3rem' />
                             </Avatar>
                         </ButtonBase>
                     )}
                     <Available permission={savePermission}>
-                        <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
+                        <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }} onClick={onSaveChatflowClick}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
@@ -608,13 +605,12 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                     }
                                 }}
                                 color='inherit'
-                                onClick={onSaveChatflowClick}
                             >
                                 <IconDeviceFloppy stroke={1.5} size='1.3rem' />
                             </Avatar>
                         </ButtonBase>
                     </Available>
-                    <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
+                    <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }} onClick={() => setSettingsOpen(!isSettingsOpen)}>
                         <Avatar
                             variant='rounded'
                             sx={{
@@ -628,7 +624,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                     color: theme.palette.canvasHeader.settingsLight
                                 }
                             }}
-                            onClick={() => setSettingsOpen(!isSettingsOpen)}
+                            color='inherit'
                         >
                             <IconSettings stroke={1.5} size='1.3rem' />
                         </Avatar>
