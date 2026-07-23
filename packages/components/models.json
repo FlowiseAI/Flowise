@@ -2769,6 +2769,26 @@
             "name": "voyageAIEmbeddings",
             "models": [
                 {
+                    "label": "voyage-3.5",
+                    "name": "voyage-3.5",
+                    "description": "Latest general-purpose embedding model with top retrieval quality."
+                },
+                {
+                    "label": "voyage-3.5-lite",
+                    "name": "voyage-3.5-lite",
+                    "description": "Lightweight version of voyage-3.5, optimized for latency and cost."
+                },
+                {
+                    "label": "voyage-multimodal-3.5",
+                    "name": "voyage-multimodal-3.5",
+                    "description": "Multimodal embedding model for text and image retrieval."
+                },
+                {
+                    "label": "voyage-multimodal-3",
+                    "name": "voyage-multimodal-3",
+                    "description": "Multimodal embedding model for text and image retrieval."
+                },
+                {
                     "label": "voyage-3",
                     "name": "voyage-3",
                     "description": "High-performance embedding model with excellent retrieval quality, 32K token context, and 1024 dimension size."
@@ -2777,6 +2797,16 @@
                     "label": "voyage-3-lite",
                     "name": "voyage-3-lite",
                     "description": "Lightweight embedding model optimized for low latency and cost, 32K token context, and 512 dimension size."
+                },
+                {
+                    "label": "voyage-3-large",
+                    "name": "voyage-3-large",
+                    "description": "Large embedding model with higher dimension size for improved retrieval quality."
+                },
+                {
+                    "label": "voyage-code-3",
+                    "name": "voyage-code-3",
+                    "description": "Optimized for code retrieval and understanding."
                 },
                 {
                     "label": "voyage-2",
@@ -3214,6 +3244,48 @@
                 {
                     "label": "us-west-2",
                     "name": "us-west-2"
+                }
+            ]
+        }
+    ],
+    "reranker": [
+        {
+            "name": "voyageAIRerankRetriever",
+            "models": [
+                {
+                    "label": "rerank-2.5",
+                    "name": "rerank-2.5",
+                    "description": "Latest general-purpose reranker with top relevance quality."
+                },
+                {
+                    "label": "rerank-2.5-lite",
+                    "name": "rerank-2.5-lite",
+                    "description": "Lightweight version of rerank-2.5, optimized for latency and cost."
+                },
+                {
+                    "label": "rerank-2",
+                    "name": "rerank-2",
+                    "description": "General-purpose reranker model."
+                },
+                {
+                    "label": "rerank-2-lite",
+                    "name": "rerank-2-lite",
+                    "description": "Lightweight version of rerank-2, optimized for latency and cost."
+                },
+                {
+                    "label": "rerank-1",
+                    "name": "rerank-1",
+                    "description": "Legacy general-purpose reranker. Kept for backward compatibility."
+                },
+                {
+                    "label": "rerank-lite-2",
+                    "name": "rerank-lite-2",
+                    "description": "Legacy lightweight reranker. Kept for backward compatibility."
+                },
+                {
+                    "label": "rerank-lite-1",
+                    "name": "rerank-lite-1",
+                    "description": "Legacy lightweight reranker. Kept for backward compatibility."
                 }
             ]
         }
