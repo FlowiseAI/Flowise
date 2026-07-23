@@ -32,6 +32,8 @@
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
         "@anthropic-ai/sdk": "^0.73.0",
+        "@solana/spl-token": "^0.4.0",
+        "@solana/web3.js": "^1.87.0",
         "@apidevtools/json-schema-ref-parser": "^11.7.0",
         "@arizeai/openinference-instrumentation-langchain": "^2.0.0",
         "@aws-sdk/client-bedrock": "^3.1014.0",
@@ -130,6 +132,7 @@
         "dotenv": "^16.0.0",
         "epub2": "^3.0.2",
         "exa-js": "^1.0.12",
+        "ethers": "^6.9.0",
         "express": "^4.17.3",
         "faiss-node": "^0.5.1",
         "fast-json-patch": "^3.1.1",
