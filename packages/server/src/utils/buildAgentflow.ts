@@ -46,7 +46,8 @@ import {
     CURRENT_DATE_TIME_VAR_PREFIX,
     _removeCredentialId,
     validateHistorySchema,
-    LOOP_COUNT_VAR_PREFIX
+    LOOP_COUNT_VAR_PREFIX,
+    getExecutableFlowData
 } from '.'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { Variable } from '../database/entities/Variable'
@@ -1521,6 +1522,35 @@ const checkForMultipleStartNodes = (startingNodeIds: string[], isRecursive: bool
     }
 }
 
+const getDisabledNodeLabel = (node?: IReactFlowNode) => {
+    if (!node) return ''
+    return node.data?.label || node.data?.name || node.id
+}
+
+const logDisabledFlowHalt = (orgId: string, allNodes: IReactFlowNode[], disabledNodeIds: Set<string>) => {
+    if (!disabledNodeIds.size) return
+
+    const nodeById = new Map(allNodes.map((node) => [node.id, node]))
+    const haltedNodes: string[] = []
+    const downstreamNodes: string[] = []
+
+    for (const nodeId of disabledNodeIds) {
+        const node = nodeById.get(nodeId)
+        const disabledBy = node?.data?.disabledBy as string | undefined
+        const formattedNode = `${getDisabledNodeLabel(node)} (${nodeId})`
+        const nodeIsPersistedDisabled = node?.data?.disabled === true || String(node?.data?.disabled) === 'true'
+
+        if (!nodeIsPersistedDisabled || (disabledBy && disabledNodeIds.has(disabledBy))) downstreamNodes.push(formattedNode)
+        else haltedNodes.push(formattedNode)
+    }
+
+    logger.info(
+        `[server]: [${orgId}]: Flow execution halted at disabled node(s): ${haltedNodes.join(', ') || 'unknown'}${
+            downstreamNodes.length ? `. Downstream skipped: ${downstreamNodes.join(', ')}` : ''
+        }`
+    )
+}
+
 const parseFormStringToJson = (formString: string): Record<string, string> => {
     const result: Record<string, string> = {}
     const lines = formString.split('\n')
@@ -1590,8 +1620,19 @@ export const executeAgentFlow = async ({
     /*** Get chatflows and prepare data  ***/
     const flowData = chatflow.flowData
     const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
-    const nodes = (parsedFlowData.nodes || []).filter((node) => node.data.name !== 'stickyNoteAgentflow')
-    const edges = parsedFlowData.edges
+    const executableFlowData = getExecutableFlowData(
+        (parsedFlowData.nodes || []).filter((node) => node.data.name !== 'stickyNoteAgentflow'),
+        parsedFlowData.edges || []
+    )
+    const nodes = executableFlowData.nodes
+    const edges = executableFlowData.edges
+    if (executableFlowData.disabledNodeIds.size) {
+        logDisabledFlowHalt(
+            orgId,
+            (parsedFlowData.nodes || []).filter((node) => node.data.name !== 'stickyNoteAgentflow'),
+            executableFlowData.disabledNodeIds
+        )
+    }
     const { graph, nodeDependencies } = constructGraphs(nodes, edges)
     const { graph: reversedGraph } = constructGraphs(nodes, edges, { isReversed: true })
     const startNode = nodes.find((node) => node.data.name === 'startAgentflow')

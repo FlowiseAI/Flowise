@@ -68,6 +68,13 @@ describe('validateFlowData', () => {
         expect(results).toEqual([])
     })
 
+    it('skips disabled nodes', () => {
+        const nodes = [makeNode('n1', 'chatAgent', [{ name: 'model', label: 'Model' }], {})]
+        nodes[0].data.disabled = true
+        const results = validateFlowData(nodes, [], emptyComponentNodes)
+        expect(results).toEqual([])
+    })
+
     // --- Required parameters ---
 
     it('flags missing required parameter', () => {

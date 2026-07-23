@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux'
 import { SET_DIRTY } from '@/store/actions'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import { IconX } from '@tabler/icons-react'
+import { isNodeExplicitlyDisabled } from '@/utils/disabledNodes'
 
 function EdgeLabel({ transform, isHumanInput, label, color }) {
     return (
@@ -36,10 +37,25 @@ EdgeLabel.propTypes = {
 
 const foreignObjectSize = 40
 
-const AgentFlowEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data, markerEnd, selected }) => {
+const AgentFlowEdge = ({
+    id,
+    source,
+    target,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+    data,
+    markerEnd,
+    selected
+}) => {
     const [isHovered, setIsHovered] = useState(false)
-    const { deleteEdge } = useContext(flowContext)
+    const { deleteEdge, reactFlowInstance } = useContext(flowContext)
     const dispatch = useDispatch()
+    const nodes = reactFlowInstance?.getNodes?.() || []
+    const isDisabledEdge = nodes.some((node) => (node.id === source || node.id === target) && isNodeExplicitlyDisabled(node))
 
     const onEdgeClick = (evt, id) => {
         evt.stopPropagation()
@@ -90,7 +106,8 @@ const AgentFlowEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition,
                     stroke: `url(#${gradientId})`,
                     filter: selected ? 'drop-shadow(0 0 3px rgba(0,0,0,0.3))' : 'none',
                     cursor: 'pointer',
-                    opacity: selected ? 1 : 0.75,
+                    opacity: isDisabledEdge ? 0.35 : selected ? 1 : 0.75,
+                    strokeDasharray: isDisabledEdge ? '6 4' : 'none',
                     fill: 'none'
                 }}
                 d={edgePath}
@@ -178,6 +195,8 @@ const AgentFlowEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition,
 
 AgentFlowEdge.propTypes = {
     id: PropTypes.string,
+    source: PropTypes.string,
+    target: PropTypes.string,
     sourceX: PropTypes.number,
     sourceY: PropTypes.number,
     targetX: PropTypes.number,

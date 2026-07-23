@@ -20,12 +20,14 @@ jest.mock('../styled', () => ({
 
 const mockDeleteNode = jest.fn()
 const mockDuplicateNode = jest.fn()
+const mockToggleNodeDisabled = jest.fn()
 const mockOpenNodeEditor = jest.fn()
 
 jest.mock('@/infrastructure/store', () => ({
     useAgentflowContext: () => ({
         deleteNode: mockDeleteNode,
-        duplicateNode: mockDuplicateNode
+        duplicateNode: mockDuplicateNode,
+        toggleNodeDisabled: mockToggleNodeDisabled
     }),
     useConfigContext: () => ({ isDarkMode: false })
 }))
@@ -39,7 +41,8 @@ jest.mock('@mui/material/styles', () => ({
         palette: {
             primary: { main: '#1976d2' },
             error: { main: '#d32f2f' },
-            info: { main: '#0288d1' }
+            info: { main: '#0288d1' },
+            warning: { main: '#ed6c02' }
         }
     })
 }))
@@ -57,6 +60,8 @@ jest.mock('@tabler/icons-react', () => ({
     IconCopy: () => <svg />,
     IconEdit: () => <svg />,
     IconInfoCircle: () => <svg />,
+    IconPlayerPause: () => <svg />,
+    IconPlayerPlay: () => <svg />,
     IconTrash: () => <svg />
 }))
 
@@ -97,6 +102,7 @@ describe('NodeToolbarActions', () => {
             renderToolbar({ nodeName: 'llmAgentflow' })
             expect(screen.getByTitle('Duplicate')).toBeInTheDocument()
             expect(screen.getByTitle('Edit')).toBeInTheDocument()
+            expect(screen.getByTitle('Disable')).toBeInTheDocument()
             expect(screen.getByTitle('Delete')).toBeInTheDocument()
         })
 
@@ -104,14 +110,21 @@ describe('NodeToolbarActions', () => {
             renderToolbar({ nodeName: 'startAgentflow' })
             expect(screen.queryByTitle('Duplicate')).not.toBeInTheDocument()
             expect(screen.getByTitle('Edit')).toBeInTheDocument()
+            expect(screen.getByTitle('Disable')).toBeInTheDocument()
             expect(screen.getByTitle('Delete')).toBeInTheDocument()
         })
 
         it('hides Edit for stickyNoteAgentflow', () => {
             renderToolbar({ nodeName: 'stickyNoteAgentflow' })
             expect(screen.queryByTitle('Edit')).not.toBeInTheDocument()
+            expect(screen.queryByTitle('Disable')).not.toBeInTheDocument()
             expect(screen.getByTitle('Duplicate')).toBeInTheDocument()
             expect(screen.getByTitle('Delete')).toBeInTheDocument()
+        })
+
+        it('renders Enable when node is disabled', () => {
+            renderToolbar({ disabled: true })
+            expect(screen.getByTitle('Enable')).toBeInTheDocument()
         })
 
         it('renders Info button when onInfoClick is provided', () => {
@@ -138,6 +151,13 @@ describe('NodeToolbarActions', () => {
             renderToolbar()
             await user.click(screen.getByTitle('Delete'))
             expect(mockDeleteNode).toHaveBeenCalledWith('node-1')
+        })
+
+        it('calls toggleNodeDisabled when Disable is clicked', async () => {
+            const user = userEvent.setup()
+            renderToolbar()
+            await user.click(screen.getByTitle('Disable'))
+            expect(mockToggleNodeDisabled).toHaveBeenCalledWith('node-1')
         })
 
         it('calls openNodeEditor when Edit is clicked', async () => {
