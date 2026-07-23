@@ -63,6 +63,7 @@ describe('AdanosMarketSentiment', () => {
 
     it.each([
         [{ operation: 'stock_sentiment' }, /symbol is required/],
+        [{ operation: 'stock_sentiment', symbol: 'AAPL/USD' }, /Invalid stock ticker/],
         [{ operation: 'crypto_sentiment', symbol: 'BTC/USD' }, /Invalid crypto symbol/],
         [{ operation: 'trending', from: '2026-02-30' }, /YYYY-MM-DD/],
         [{ operation: 'trending', from: '2026-07-01', to: '2026-06-30' }, /from must not be after to/],

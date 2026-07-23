@@ -31,12 +31,24 @@ const adanosInputSchema = z
         limit: z.number().int().min(1).max(100).default(20).describe('Maximum results for trending')
     })
     .superRefine((input, context) => {
-        if ((input.operation === 'stock_sentiment' || input.operation === 'crypto_sentiment') && !input.symbol?.trim()) {
-            context.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: `symbol is required for ${input.operation}`,
-                path: ['symbol']
-            })
+        if (input.operation === 'stock_sentiment' || input.operation === 'crypto_sentiment') {
+            if (!input.symbol?.trim()) {
+                context.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: `symbol is required for ${input.operation}`,
+                    path: ['symbol']
+                })
+            } else {
+                const crypto = input.operation === 'crypto_sentiment'
+                const pattern = crypto ? CRYPTO_PATTERN : STOCK_PATTERN
+                if (!pattern.test(input.symbol.trim())) {
+                    context.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        message: `Invalid ${crypto ? 'crypto symbol' : 'stock ticker'}`,
+                        path: ['symbol']
+                    })
+                }
+            }
         }
         if (input.from && input.to && input.from > input.to) {
             context.addIssue({
@@ -49,13 +61,8 @@ const adanosInputSchema = z
 
 type AdanosInput = z.infer<typeof adanosInputSchema>
 
-function normalizeSymbol(value: string, crypto: boolean): string {
-    const normalized = value.trim().toUpperCase()
-    const pattern = crypto ? CRYPTO_PATTERN : STOCK_PATTERN
-    if (!pattern.test(normalized)) {
-        throw new Error(`Invalid ${crypto ? 'crypto symbol' : 'stock ticker'}`)
-    }
-    return normalized.replace(/^\$/, '')
+function normalizeSymbol(value: string): string {
+    return value.trim().toUpperCase().replace(/^\$/, '')
 }
 
 function buildRequest(input: AdanosInput): { path: string; params: Record<string, string | number> } {
@@ -66,12 +73,12 @@ function buildRequest(input: AdanosInput): { path: string; params: Record<string
     switch (input.operation) {
         case 'stock_sentiment':
             return {
-                path: `/${input.source}/stocks/v1/stock/${normalizeSymbol(input.symbol ?? '', false)}`,
+                path: `/${input.source}/stocks/v1/stock/${normalizeSymbol(input.symbol ?? '')}`,
                 params
             }
         case 'crypto_sentiment':
             return {
-                path: `/reddit/crypto/v1/token/${normalizeSymbol(input.symbol ?? '', true)}`,
+                path: `/reddit/crypto/v1/token/${normalizeSymbol(input.symbol ?? '')}`,
                 params
             }
         case 'trending':
