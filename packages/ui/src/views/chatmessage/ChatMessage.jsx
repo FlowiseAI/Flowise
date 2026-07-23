@@ -871,7 +871,11 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         handleSubmit(undefined, question, undefined, {
             type: fbType,
             startNodeId: actionData?.nodeId,
-            feedback
+            feedback,
+            childFlowId: actionData?.childFlowId,
+            childExecutionId: actionData?.childExecutionId,
+            childChatId: actionData?.childChatId,
+            childNodeId: actionData?.childNodeId
         })
     }
 
