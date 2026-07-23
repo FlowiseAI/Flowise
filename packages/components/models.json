@@ -2194,6 +2194,36 @@
             ]
         },
         {
+            "name": "chatXAI",
+            "models": [
+                {
+                    "label": "grok-4",
+                    "name": "grok-4",
+                    "description": "Most capable Grok model with advanced reasoning"
+                },
+                {
+                    "label": "grok-3",
+                    "name": "grok-3",
+                    "description": "Flagship model for enterprise and general-purpose tasks"
+                },
+                {
+                    "label": "grok-3-mini",
+                    "name": "grok-3-mini",
+                    "description": "Lightweight Grok model, faster and more cost-effective"
+                },
+                {
+                    "label": "grok-2-vision-1212",
+                    "name": "grok-2-vision-1212",
+                    "description": "Grok 2 with image understanding"
+                },
+                {
+                    "label": "grok-2-1212",
+                    "name": "grok-2-1212",
+                    "description": "Grok 2 text model"
+                }
+            ]
+        },
+        {
             "name": "chatMistralAI",
             "models": [
                 {
