@@ -454,7 +454,7 @@ class LLM_Agentflow implements INode {
             // Configure structured output if specified
             const isStructuredOutput = _llmStructuredOutput && Array.isArray(_llmStructuredOutput) && _llmStructuredOutput.length > 0
             if (isStructuredOutput) {
-                llmNodeInstance = configureStructuredOutput(llmNodeInstance, _llmStructuredOutput)
+                llmNodeInstance = configureStructuredOutput(llmNodeInstance, _llmStructuredOutput, true)
             }
 
             // Initialize response and determine if streaming is possible
@@ -492,6 +492,48 @@ class LLM_Agentflow implements INode {
                 )
             } else {
                 response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+
+                // With structured output, withStructuredOutput({ includeRaw: true }) returns { raw, parsed }.
+                // Continue with the parsed structured object (as before), but re-attach the raw AIMessage's
+                // usage_metadata and response_metadata so token usage/cost tracking and downstream metadata
+                // features keep working. Do NOT fall back to the raw message as the response value — the
+                // structured-field copy below would then pollute the output with internal LangChain props.
+                if (
+                    isStructuredOutput &&
+                    response &&
+                    typeof response === 'object' &&
+                    'parsed' in response &&
+                    'raw' in response
+                ) {
+                    const rawMessage = (response as any).raw
+                    if ((response as any).parsed == null) {
+                        // structured parsing failed — surface the error (matches prior throw-on-parse-failure)
+                        throw (response as any).parsing_error ?? new Error('Structured output parsing failed')
+                    }
+                    response = (response as any).parsed
+                    // Guard: a structured schema could resolve to a primitive — Object.defineProperty would
+                    // throw on a non-object. Attach as NON-enumerable so the structured-field copy / content
+                    // serialization below isn't polluted, while prepareOutputObject can still read
+                    // response.usage_metadata / .response_metadata.
+                    if (response && typeof response === 'object' && Object.isExtensible(response)) {
+                        if (rawMessage?.usage_metadata) {
+                            Object.defineProperty(response, 'usage_metadata', {
+                                value: rawMessage.usage_metadata,
+                                enumerable: false,
+                                writable: true,
+                                configurable: true
+                            })
+                        }
+                        if (rawMessage?.response_metadata) {
+                            Object.defineProperty(response, 'response_metadata', {
+                                value: rawMessage.response_metadata,
+                                enumerable: false,
+                                writable: true,
+                                configurable: true
+                            })
+                        }
+                    }
+                }
 
                 // Stream whole response back to UI if this is the last node
                 if (isLastNode && options.sseStreamer) {
