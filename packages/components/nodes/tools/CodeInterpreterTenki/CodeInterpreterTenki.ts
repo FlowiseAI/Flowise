@@ -53,12 +53,6 @@ class Code_Interpreter_Tenki_Tools implements INode {
                 rows: 4,
                 description: 'Specify the description of the tool',
                 default: DESC
-            },
-            {
-                label: 'Project ID',
-                name: 'projectId',
-                type: 'string',
-                description: 'The Tenki project ID the sandbox session is created under'
             }
         ]
     }
@@ -66,7 +60,6 @@ class Code_Interpreter_Tenki_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const toolDesc = nodeData.inputs?.toolDesc as string
         const toolName = nodeData.inputs?.toolName as string
-        const projectId = nodeData.inputs?.projectId as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const tenkiApiKey = getCredentialParam('tenkiApiKey', credentialData, nodeData)
@@ -75,7 +68,6 @@ class Code_Interpreter_Tenki_Tools implements INode {
             description: toolDesc ?? DESC,
             name: toolName ?? NAME,
             apiKey: tenkiApiKey,
-            projectId,
             schema: z.object({
                 input: z.string().describe('Python code to be executed in the sandbox environment')
             })
@@ -88,7 +80,6 @@ type TenkiToolInput = {
     name: string
     description: string
     apiKey: string
-    projectId: string
     schema: any
 }
 
@@ -100,7 +91,6 @@ export class TenkiTool extends StructuredTool {
     name = NAME
     description = DESC
     apiKey: string
-    projectId: string
     schema
 
     constructor(options: TenkiToolParams & TenkiToolInput) {
@@ -108,7 +98,6 @@ export class TenkiTool extends StructuredTool {
         this.description = options.description
         this.name = options.name
         this.apiKey = options.apiKey
-        this.projectId = options.projectId
         this.schema = options.schema
     }
 
@@ -117,7 +106,6 @@ export class TenkiTool extends StructuredTool {
             name: options.name,
             description: options.description,
             apiKey: options.apiKey,
-            projectId: options.projectId,
             schema: options.schema
         })
     }
@@ -131,7 +119,7 @@ export class TenkiTool extends StructuredTool {
         let session: Session | undefined
         try {
             const sandbox = new TenkiSandbox({ authToken: this.apiKey })
-            session = await sandbox.create({ projectId: this.projectId, cpuCores: 1, memoryMb: 2048 })
+            session = await sandbox.create({ cpuCores: 1, memoryMb: 2048 })
 
             const result = await session.run(['python3', '-c', arg.input as string])
 
