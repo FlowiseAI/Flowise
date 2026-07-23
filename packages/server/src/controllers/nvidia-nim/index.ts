@@ -3,6 +3,8 @@ import { NextFunction, Request, Response } from 'express'
 
 const { NimContainerManager } = require('flowise-nim-container-manager')
 
+const NVIDIA_NIM_TOKEN_TIMEOUT_MS = 10000
+
 const getToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const headers = {
@@ -14,7 +16,7 @@ const getToken = async (req: Request, res: Response, next: NextFunction) => {
             pdi: '0x1234567890abcdeg',
             access_policy_name: 'nim-dev'
         }
-        const response = await axios.post('https://nts.ngc.nvidia.com/v1/token', data, { headers })
+        const response = await axios.post('https://nts.ngc.nvidia.com/v1/token', data, { headers, timeout: NVIDIA_NIM_TOKEN_TIMEOUT_MS })
         const responseJson = response.data
         return res.json(responseJson)
     } catch (error) {
