@@ -2227,6 +2227,32 @@ class Agent_Agentflow implements INode {
             response.tool_calls.splice(response.tool_calls.indexOf(toolCall), 1)
         }
 
+        // Ensure raw OpenAI-compatible tool_calls are preserved for providers
+        // that require provider-specific fields (e.g. thought_signature) on follow-up turns.
+        if (response.tool_calls?.length) {
+            const existingRawToolCalls = (response.additional_kwargs as any)?.tool_calls
+            const mergedRawToolCalls = response.tool_calls.map((toolCall: any) => {
+                const existing = Array.isArray(existingRawToolCalls)
+                    ? existingRawToolCalls.find((raw: any) => raw?.id && toolCall?.id && raw.id === toolCall.id)
+                    : undefined
+                if (existing) return existing
+                return {
+                    id: toolCall.id,
+                    type: 'function',
+                    function: {
+                        name: toolCall.name,
+                        arguments: JSON.stringify(toolCall.args ?? {}),
+                        ...(toolCall?.thought_signature ? { thought_signature: toolCall.thought_signature } : {}),
+                        ...(toolCall?.thoughtSignature ? { thought_signature: toolCall.thoughtSignature } : {})
+                    }
+                }
+            })
+            response.additional_kwargs = {
+                ...(response.additional_kwargs ?? {}),
+                tool_calls: mergedRawToolCalls
+            }
+        }
+
         // Add LLM response with tool calls to messages
         messages.push(response)
 
@@ -2606,6 +2632,32 @@ class Agent_Agentflow implements INode {
 
         for (const toolCall of toBeRemovedToolCalls) {
             response.tool_calls.splice(response.tool_calls.indexOf(toolCall), 1)
+        }
+
+        // Ensure raw OpenAI-compatible tool_calls are preserved for providers
+        // that require provider-specific fields (e.g. thought_signature) on follow-up turns.
+        if (response.tool_calls?.length) {
+            const existingRawToolCalls = (response.additional_kwargs as any)?.tool_calls
+            const mergedRawToolCalls = response.tool_calls.map((toolCall: any) => {
+                const existing = Array.isArray(existingRawToolCalls)
+                    ? existingRawToolCalls.find((raw: any) => raw?.id && toolCall?.id && raw.id === toolCall.id)
+                    : undefined
+                if (existing) return existing
+                return {
+                    id: toolCall.id,
+                    type: 'function',
+                    function: {
+                        name: toolCall.name,
+                        arguments: JSON.stringify(toolCall.args ?? {}),
+                        ...(toolCall?.thought_signature ? { thought_signature: toolCall.thought_signature } : {}),
+                        ...(toolCall?.thoughtSignature ? { thought_signature: toolCall.thoughtSignature } : {})
+                    }
+                }
+            })
+            response.additional_kwargs = {
+                ...(response.additional_kwargs ?? {}),
+                tool_calls: mergedRawToolCalls
+            }
         }
 
         // Add LLM response with tool calls to messages
