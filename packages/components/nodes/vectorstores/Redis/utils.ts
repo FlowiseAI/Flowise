@@ -27,5 +27,38 @@ export const escapeAllStrings = (obj: object) => {
 }
 
 export const unEscapeSpecialChars = (str: string) => {
-    return str.replaceAll('\\-', '-')
+    // RediSearch special characters that need to be unescaped
+    // https://redis.io/docs/latest/develop/interact/search-and-query/advanced/concepts/special-characters/
+    const specialChars = [
+        '\\-', '-',
+        '\\,', ',',
+        '\\<', '<',
+        '\\>', '>',
+        '\\{', '{',
+        '\\}', '}',
+        '\\[', '[',
+        '\\]', ']',
+        '\"', '"',
+        "\'", "'",
+        '\\:', ':',
+        '\\;', ';',
+        '\\!', '!',
+        '\\@', '@',
+        '\\#', '#',
+        '\\$', '$',
+        '\\%', '%',
+        '\\^', '^',
+        '\\&', '&',
+        '\\*', '*',
+        '\\(', '(',
+        '\\)', ')',
+        '\\+', '+',
+        '\\=', '=',
+        '\\~', '~',
+    ]
+    
+    for (let i = 0; i < specialChars.length; i += 2) {
+        str = str.replaceAll(specialChars[i], specialChars[i + 1])
+    }
+    return str
 }
