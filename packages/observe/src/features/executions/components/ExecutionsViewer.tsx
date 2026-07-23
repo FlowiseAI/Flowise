@@ -38,11 +38,11 @@ const EXECUTION_STATES: Array<ExecutionState | ''> = ['', 'INPROGRESS', 'FINISHE
 
 /**
  * Top-level executions list + detail drawer.
- * When agentflowId is provided: scoped view (filters list + hides agentflow-name filter).
- * When agentflowId is omitted: full cross-agent list.
+ * When agentflowIds is non-empty: scoped view (filters list + hides agentflow-name filter).
+ * When omitted or empty: full cross-agent list.
  */
 export function ExecutionsViewer({
-    agentflowId,
+    agentflowIds,
     allowDelete = false,
     pollInterval = 3000,
     onHumanInput,
@@ -88,15 +88,22 @@ export function ExecutionsViewer({
     // Delete confirmation
     const [deleteTarget, setDeleteTarget] = useState<Execution | null>(null)
 
+    // Stable signature for the agentflowIds prop — guards against consumers passing a fresh
+    // array literal on every render (which would otherwise re-fire fetchExecutions endlessly).
+    // The callback re-derives the array from this key so it doesn't close over the prop reference.
+    const agentflowIdsKey = agentflowIds?.join(',') ?? ''
+
     const fetchExecutions = useCallback(async () => {
         setIsLoading(true)
         setError(null)
         try {
+            const propIds = agentflowIdsKey ? agentflowIdsKey.split(',') : []
             const result = await api.getAllExecutions({
                 page: page + 1, // API is 1-based
                 limit: pageSize,
-                agentflowId: agentflowId ?? filters.agentflowId,
-                ...filters
+                ...filters,
+                // Prop wins over filter state when set, so a scoped consumer can't be widened.
+                agentflowIds: propIds.length > 0 ? propIds : filters.agentflowIds
             })
             setRows(result.data)
             setTotal(result.total)
@@ -105,7 +112,7 @@ export function ExecutionsViewer({
         } finally {
             setIsLoading(false)
         }
-    }, [api, page, pageSize, agentflowId, filters])
+    }, [api, page, pageSize, agentflowIdsKey, filters])
 
     useEffect(() => {
         fetchExecutions()
@@ -149,7 +156,7 @@ export function ExecutionsViewer({
         }
     }
 
-    const isScoped = !!agentflowId
+    const isScoped = !!agentflowIds?.length
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
