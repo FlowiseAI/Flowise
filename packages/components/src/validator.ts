@@ -32,11 +32,36 @@ export const isValidURL = (url: string): boolean => {
 }
 
 /**
+ * Returns the list of absolute Unix paths that are explicitly allowed for folder operations.
+ *
+ * Set FLOWISE_ALLOWED_FOLDER_PATHS to a comma-separated list of absolute paths, e.g.:
+ *   FLOWISE_ALLOWED_FOLDER_PATHS=/data/documents,/mnt/shared
+ *
+ * Only absolute paths are accepted; relative entries are ignored.
+ * This is the targeted alternative to disabling all traversal safety with
+ * PATH_TRAVERSAL_SAFETY=false.
+ */
+const getAllowedFolderPaths = (): string[] => {
+    const raw = process.env.FLOWISE_ALLOWED_FOLDER_PATHS
+    if (!raw) return []
+    return raw
+        .split(',')
+        .map((p) => p.trim())
+        .filter((p) => p !== '' && path.isAbsolute(p))
+        .map((p) => {
+            const normalized = path.normalize(p)
+            // Strip trailing separator so startsWith checks work correctly,
+            // but never strip the root '/' itself.
+            return normalized.length > 1 && normalized.endsWith(path.sep) ? normalized.slice(0, -1) : normalized
+        })
+}
+
+/**
  * Validates if a string contains path traversal attempts
- * @param {string} path The string to validate
+ * @param {inputPath} inputPath The string to validate
  * @returns {boolean} True if path traversal detected, false otherwise
  */
-export const isPathTraversal = (path: string): boolean => {
+export const isPathTraversal = (inputPath: string): boolean => {
     // PATH_TRAVERSAL_SAFETY defaults to true; must be explicitly set to 'false' to disable
     if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
         return false
@@ -44,21 +69,40 @@ export const isPathTraversal = (path: string): boolean => {
 
     // Normalize %2e → . before checking for .. to catch mixed-encoding bypasses
     // e.g. .%2e/, %2e./, %2e%2e all become ../
-    if (/\.\./.test(path.replace(/%2e/gi, '.'))) {
+    if (/\.\./.test(inputPath.replace(/%2e/gi, '.'))) {
         return true
     }
 
-    const dangerousPatterns = [
+    // These patterns are always dangerous regardless of FLOWISE_ALLOWED_FOLDER_PATHS
+    const alwaysDangerousPatterns = [
         /%2f/i, // URL encoded /
         /%5c/i, // URL encoded \ (Windows path)
         /\0/, // Null bytes
         /%00/i, // URL encoded null byte
         /^\s*[a-zA-Z]:[/\\]/, // Windows absolute paths (C:\, C:/) with optional leading whitespace
-        /^\\\\[^\\]/, // UNC paths (\\server\)
-        /^\// // Absolute Unix paths (/etc, /data, /root, etc.)
+        /^\\\\[^\\]/ // UNC paths (\\server\)
     ]
 
-    return dangerousPatterns.some((pattern) => pattern.test(path))
+    if (alwaysDangerousPatterns.some((pattern) => pattern.test(inputPath))) {
+        return true
+    }
+
+    // Absolute Unix paths are blocked by default.
+    // Exception: if the path starts with one of the entries in FLOWISE_ALLOWED_FOLDER_PATHS
+    // it is considered explicitly trusted by the operator and is allowed through.
+    if (/^\//.test(inputPath)) {
+        const allowedPaths = getAllowedFolderPaths()
+        if (allowedPaths.length > 0) {
+            const normalizedInput = path.normalize(inputPath)
+            const isExplicitlyAllowed = allowedPaths.some(
+                (allowed) => normalizedInput === allowed || normalizedInput.startsWith(allowed + path.sep)
+            )
+            if (isExplicitlyAllowed) return false
+        }
+        return true
+    }
+
+    return false
 }
 
 /**
