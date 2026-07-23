@@ -7,7 +7,8 @@ import type { ReadableStream } from 'node:stream/web'
 
 const TextToSpeechType = {
     OPENAI_TTS: 'openai',
-    ELEVEN_LABS_TTS: 'elevenlabs'
+    ELEVEN_LABS_TTS: 'elevenlabs',
+    MINIMAX_TTS: 'minimax'
 }
 
 export const convertTextToSpeechStream = async (
@@ -98,6 +99,118 @@ export const convertTextToSpeechStream = async (
                             await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 40, abortController, () => {
                                 streamDestroyed = true
                             })
+                            break
+                        }
+
+                        case TextToSpeechType.MINIMAX_TTS: {
+                            onStart('mp3')
+
+                            const apiKey = credentialData.miniMaxApiKey
+                            if (!apiKey) {
+                                throw new Error('MiniMax API Key is required')
+                            }
+
+                            const voiceId = textToSpeechConfig.voice || 'English_expressive_narrator'
+                            const model = textToSpeechConfig.model || 'speech-2.8-hd'
+
+                            const requestBody: Record<string, unknown> = {
+                                model: model,
+                                text: text,
+                                stream: true,
+                                language_boost: 'auto',
+                                output_format: 'hex',
+                                voice_setting: {
+                                    voice_id: voiceId,
+                                    speed: textToSpeechConfig.speed ?? 1.0,
+                                    vol: textToSpeechConfig.vol ?? 1.0,
+                                    pitch: textToSpeechConfig.pitch ?? 0
+                                },
+                                audio_setting: {
+                                    format: 'mp3',
+                                    sample_rate: 32000,
+                                    bitrate: 128000,
+                                    channel: 1
+                                }
+                            }
+
+                            const response = await fetch('https://api.minimax.io/v1/t2a_v2', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    Authorization: `Bearer ${apiKey}`
+                                },
+                                body: JSON.stringify(requestBody),
+                                signal: abortController.signal
+                            })
+
+                            if (!response.ok) {
+                                const errorText = await response.text()
+                                throw new Error(`MiniMax TTS API error: ${response.status} - ${errorText}`)
+                            }
+
+                            if (!response.body) {
+                                throw new Error('Failed to get response stream from MiniMax')
+                            }
+
+                            const reader = response.body.getReader()
+                            const decoder = new TextDecoder()
+                            let sseBuffer = ''
+
+                            const processMinimaxStream = async () => {
+                                for (;;) {
+                                    if (abortController.signal.aborted) {
+                                        reader.cancel()
+                                        streamDestroyed = true
+                                        reject(new Error('TTS generation aborted'))
+                                        return
+                                    }
+
+                                    const { done, value } = await reader.read()
+                                    if (done) break
+
+                                    sseBuffer += decoder.decode(value, { stream: true })
+                                    const lines = sseBuffer.split('\n')
+                                    sseBuffer = lines.pop() || ''
+
+                                    for (const line of lines) {
+                                        const trimmedLine = line.trim()
+                                        if (!trimmedLine || trimmedLine.startsWith(':')) {
+                                            continue
+                                        }
+
+                                        if (trimmedLine.startsWith('data:')) {
+                                            const jsonStr = trimmedLine.slice(5).trim()
+                                            if (!jsonStr) continue
+
+                                            try {
+                                                const eventData = JSON.parse(jsonStr)
+
+                                                if (eventData.base_resp?.status_code !== 0) {
+                                                    const errorMsg = eventData.base_resp?.status_msg || 'Unknown error'
+                                                    reject(new Error(`MiniMax TTS error: ${errorMsg}`))
+                                                    return
+                                                }
+
+                                                if (eventData.data?.audio) {
+                                                    const audioChunk = Buffer.from(eventData.data.audio, 'hex')
+                                                    onChunk(audioChunk)
+                                                }
+
+                                                if (eventData.data?.status === 2) {
+                                                    break
+                                                }
+                                            } catch {
+                                                // Skip malformed JSON
+                                            }
+                                        }
+                                    }
+                                }
+
+                                onEnd()
+                                resolve()
+                            }
+
+                            await processMinimaxStream()
                             break
                         }
                     }
@@ -232,6 +345,18 @@ export const getVoices = async (provider: string, credentialId: string, options:
                 name: voice.name,
                 category: voice.category
             }))
+        }
+
+        case TextToSpeechType.MINIMAX_TTS: {
+            return [
+                // English voices (official recommended)
+                { id: 'English_expressive_narrator', name: 'Expressive Narrator', category: 'English' },
+                { id: 'English_Graceful_Lady', name: 'Graceful Lady', category: 'English' },
+                { id: 'English_Insightful_Speaker', name: 'Insightful Speaker', category: 'English' },
+                { id: 'English_radiant_girl', name: 'Radiant Girl', category: 'English' },
+                { id: 'English_Persuasive_Man', name: 'Persuasive Man', category: 'English' },
+                { id: 'English_Lucky_Robot', name: 'Lucky Robot', category: 'English' }
+            ]
         }
 
         default:
