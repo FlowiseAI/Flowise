@@ -8,6 +8,10 @@ const getSpecificChatflow = (id) => client.get(`/chatflows/${id}`)
 
 const getSpecificChatflowFromPublicEndpoint = (id) => client.get(`/public-chatflows/${id}`)
 
+// Resolve which workspace owns a flow, but only if the current user is a member (404 otherwise). Used to
+// auto-switch the active workspace when opening a flow URL that lives in another (member) workspace.
+const getChatflowWorkspace = (id) => client.get(`/chatflows/resolve-workspace/${id}`)
+
 const createNewChatflow = (body) => client.post(`/chatflows`, body)
 
 const updateChatflow = (id, body) => client.put(`/chatflows/${id}`, body)
@@ -39,6 +43,7 @@ export default {
     getAllAgentflows,
     getSpecificChatflow,
     getSpecificChatflowFromPublicEndpoint,
+    getChatflowWorkspace,
     createNewChatflow,
     updateChatflow,
     deleteChatflow,
