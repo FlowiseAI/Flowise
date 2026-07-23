@@ -493,4 +493,8 @@ export interface IHumanInput {
     type: 'proceed' | 'reject'
     startNodeId: string
     feedback?: string
+    childFlowId?: string
+    childExecutionId?: string
+    childChatId?: string
+    childNodeId?: string
 }
