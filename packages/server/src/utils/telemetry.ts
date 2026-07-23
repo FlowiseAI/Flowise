@@ -15,7 +15,10 @@ export class Telemetry {
     postHog?: PostHog
 
     constructor() {
-        if (process.env.POSTHOG_PUBLIC_API_KEY) {
+        // Respect DISABLE_FLOWISE_TELEMETRY env var / CLI flag for opt-out
+        if (process.env.DISABLE_FLOWISE_TELEMETRY === 'true' || process.env.DISABLE_FLOWISE_TELEMETRY === '1') {
+            this.postHog = undefined
+        } else if (process.env.POSTHOG_PUBLIC_API_KEY) {
             this.postHog = new PostHog(process.env.POSTHOG_PUBLIC_API_KEY)
         } else {
             this.postHog = undefined
