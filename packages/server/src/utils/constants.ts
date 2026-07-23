@@ -168,3 +168,15 @@ export const LICENSE_QUOTAS = {
     STORAGE_LIMIT: 'quota:storage',
     ADDITIONAL_SEATS_LIMIT: 'quota:additionalSeats'
 } as const
+
+export const SUPPORTED_FILE_LOADERS = [
+    'csvFile',
+    'jsonFile',
+    'jsonlFile',
+    'pdfFile',
+    'txtFile',
+    'docFile',
+    'docxFile',
+    'pptxFile',
+    'xlsxFile'
+]
