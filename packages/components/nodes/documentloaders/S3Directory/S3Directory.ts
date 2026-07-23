@@ -18,6 +18,9 @@ import { TextSplitter } from '@langchain/textsplitters'
 import { CSVLoader } from '../Csv/CsvLoader'
 import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
 import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
+
+const isS3FileKey = (key?: string): key is string => Boolean(key && !key.endsWith('/'))
+
 class S3_DocumentLoaders implements INode {
     label: string
     name: string
@@ -185,7 +188,7 @@ class S3_DocumentLoaders implements INode {
                 })
             )
 
-            const keys: string[] = (listObjectsOutput?.Contents ?? []).filter((item) => item.Key && item.ETag).map((item) => item.Key!)
+            const keys: string[] = (listObjectsOutput?.Contents ?? []).filter((item) => isS3FileKey(item.Key) && item.ETag).map((item) => item.Key!)
 
             await Promise.all(
                 keys.map(async (key) => {
@@ -291,4 +294,4 @@ class S3_DocumentLoaders implements INode {
         }
     }
 }
-module.exports = { nodeClass: S3_DocumentLoaders }
+module.exports = { nodeClass: S3_DocumentLoaders, isS3FileKey }
