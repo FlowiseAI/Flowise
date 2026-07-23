@@ -191,6 +191,14 @@ class AzureChatOpenAI_ChatModels implements INode {
                 optional: true,
                 description: 'Default headers to include with every request to the API.',
                 additionalParams: true
+            },
+            {
+                label: 'Additional Body Params (JSON)',
+                name: 'extraBody',
+                type: 'json',
+                optional: true,
+                description: "Additional fields to merge into the request body sent to the API. Equivalent to OpenAI SDK's `extra_body`.",
+                additionalParams: true
             }
         ]
     }
@@ -214,6 +222,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         const topP = nodeData.inputs?.topP as string
         const basePath = nodeData.inputs?.basepath as string
         const baseOptions = nodeData.inputs?.baseOptions
+        const extraBody = nodeData.inputs?.extraBody
         const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.Chat.ChatCompletionReasoningEffort | null
         const reasoningSummary = nodeData.inputs?.reasoningSummary as 'auto' | 'concise' | 'detailed' | null
 
@@ -263,6 +272,15 @@ class AzureChatOpenAI_ChatModels implements INode {
                 reasoning.summary = reasoningSummary
             }
             obj.reasoning = reasoning
+        }
+
+        if (extraBody) {
+            try {
+                const parsedExtraBody = typeof extraBody === 'object' ? extraBody : JSON.parse(extraBody)
+                obj.modelKwargs = { ...obj.modelKwargs, ...parsedExtraBody }
+            } catch (exception) {
+                throw new Error("Invalid JSON in the AzureChatOpenAI's Additional Body Params: " + exception)
+            }
         }
 
         const multiModalOption: IMultiModalOption = {

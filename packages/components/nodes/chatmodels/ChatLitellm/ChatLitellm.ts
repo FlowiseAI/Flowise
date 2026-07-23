@@ -101,6 +101,15 @@ class ChatLitellm_ChatModels implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Additional Body Params (JSON)',
+                name: 'extraBody',
+                type: 'json',
+                optional: true,
+                description:
+                    "Additional fields to merge into the request body sent to the API. Equivalent to OpenAI SDK's `extra_body`. Useful for LiteLLM proxy features or backend-specific parameters.",
+                additionalParams: true
             }
         ]
     }
@@ -115,6 +124,7 @@ class ChatLitellm_ChatModels implements INode {
         const topP = nodeData.inputs?.topP as string
         const timeout = nodeData.inputs?.timeout as string
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        const extraBody = nodeData.inputs?.extraBody
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('litellmApiKey', credentialData, nodeData)
@@ -140,6 +150,15 @@ class ChatLitellm_ChatModels implements INode {
         if (apiKey) {
             obj.openAIApiKey = apiKey
             obj.apiKey = apiKey
+        }
+
+        if (extraBody) {
+            try {
+                const parsedExtraBody = typeof extraBody === 'object' ? extraBody : JSON.parse(extraBody)
+                obj.modelKwargs = { ...obj.modelKwargs, ...parsedExtraBody }
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatLitellm's Additional Body Params: " + exception)
+            }
         }
 
         const multiModalOption: IMultiModalOption = {
