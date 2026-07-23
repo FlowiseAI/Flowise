@@ -6,6 +6,22 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
 import { checkDenyList, secureFetch } from '../../../src/httpSecurity'
 
+export type MCPTrustVerifierContext = {
+    transportType: 'stdio' | 'sse' | 'http'
+    serverParams: StdioServerParameters | any
+    serverUrl?: string
+    toolName: string
+    input: unknown
+}
+
+export type MCPTrustVerifierDecision =
+    | boolean
+    | { allowed?: boolean; action?: 'allow' | 'warn' | 'deny'; reason?: string; metadata?: unknown }
+    | null
+    | undefined
+
+export type MCPTrustVerifier = (context: MCPTrustVerifierContext) => MCPTrustVerifierDecision | Promise<MCPTrustVerifierDecision>
+
 export class MCPToolkit extends BaseToolkit {
     tools: Tool[] = []
     _tools: ListToolsResult | null = null
@@ -16,6 +32,8 @@ export class MCPToolkit extends BaseToolkit {
     transportType: 'stdio' | 'sse' | 'http'
     /** Per-invocation HTTP headers injected at tools/call time; overrides static toolkit headers for the same names. */
     getToolCallHeaders?: () => Promise<Record<string, string>>
+    /** Optional policy hook that can allow, warn, or deny an MCP tool call before dispatch. */
+    trustVerifier?: MCPTrustVerifier
     constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse' | 'http') {
         super()
         this.serverParams = serverParams
@@ -142,6 +160,41 @@ export class MCPToolkit extends BaseToolkit {
     }
 }
 
+const assertMCPToolCallTrusted = async (toolkit: MCPToolkit, toolName: string, input: unknown): Promise<void> => {
+    if (!toolkit.trustVerifier) return
+
+    const decision = await toolkit.trustVerifier({
+        transportType: toolkit.transportType,
+        serverParams: toolkit.serverParams,
+        serverUrl: toolkit.serverParams?.url,
+        toolName,
+        input
+    })
+
+    const action =
+        typeof decision === 'boolean'
+            ? decision
+                ? 'allow'
+                : 'deny'
+            : decision == null
+              ? 'deny'
+              : decision.action ?? (decision.allowed === false ? 'deny' : 'allow')
+
+    if (action === 'warn') {
+        console.warn(
+            `MCP trust verifier warning for tool "${toolName}"${
+                typeof decision === 'object' && decision != null && decision.reason ? `: ${decision.reason}` : ''
+            }`
+        )
+        return
+    }
+
+    if (action === 'deny') {
+        const reason = typeof decision === 'object' && decision != null && decision.reason ? `: ${decision.reason}` : ''
+        throw new Error(`MCP tool call blocked by trust verifier for "${toolName}"${reason}`)
+    }
+}
+
 export async function MCPTool({
     toolkit,
     name,
@@ -155,6 +208,8 @@ export async function MCPTool({
 }): Promise<Tool> {
     return tool(
         async (input): Promise<string> => {
+            await assertMCPToolCallTrusted(toolkit, name, input)
+
             // Create a new client for this request
             const toolCallHeaders = await toolkit.getToolCallHeaders?.()
             const client = await toolkit.createClient(toolCallHeaders)
