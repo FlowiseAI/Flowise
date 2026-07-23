@@ -1708,6 +1708,20 @@
                     "description": "Command R+ – complex RAG, multi-step tool use",
                     "input_cost": 0.0000025,
                     "output_cost": 0.00001
+                },
+                {
+                    "label": "c4ai-aya-expanse-32b",
+                    "name": "c4ai-aya-expanse-32b",
+                    "description": "Aya Expanse 32B – multilingual across 23 languages, 128k context",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.0000015
+                },
+                {
+                    "label": "c4ai-aya-vision-32b",
+                    "name": "c4ai-aya-vision-32b",
+                    "description": "Aya Vision 32B – multilingual across 23 languages (image input not yet wired in ChatCohere node)",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.0000015
                 }
             ]
         },
