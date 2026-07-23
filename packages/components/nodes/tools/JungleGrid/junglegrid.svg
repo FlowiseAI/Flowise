@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Jungle Grid">
+  <rect width="64" height="64" rx="12" fill="#12372A"/>
+  <path d="M14 18h36v28H14z" fill="none" stroke="#6EE7B7" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M26 18v28M38 18v28M14 32h36" stroke="#6EE7B7" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="26" cy="32" r="5" fill="#F8FAFC"/>
+  <circle cx="38" cy="32" r="5" fill="#F8FAFC"/>
+</svg>
