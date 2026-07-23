@@ -1,7 +1,13 @@
 import { AnalyticHandler } from '../../../src/handler'
 import { ICommonObject, IMessage, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
-import { getPastChatHistoryImageMessages, getUniqueImageMessages, processMessagesWithImages, revertBase64ImagesToFileRefs } from '../utils'
+import {
+    createTokenCounter,
+    getPastChatHistoryImageMessages,
+    getUniqueImageMessages,
+    processMessagesWithImages,
+    revertBase64ImagesToFileRefs
+} from '../utils'
 import { CONDITION_AGENT_SYSTEM_PROMPT, DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { findBestScenarioIndex } from './matchScenario'
@@ -608,10 +614,11 @@ class ConditionAgent_Agentflow implements INode {
         abortController: AbortController
     ): Promise<void> {
         const maxTokenLimit = (nodeData.inputs?.conditionAgentMemoryMaxTokenLimit as number) || 2000
+        const countTokens = createTokenCounter(llmNodeInstance)
 
         // Convert past messages to a format suitable for token counting
         const messagesString = pastMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
-        const tokenCount = await llmNodeInstance.getNumTokens(messagesString)
+        const tokenCount = await countTokens(messagesString)
 
         if (tokenCount > maxTokenLimit) {
             // Calculate how many messages to summarize (messages that exceed the token limit)
@@ -626,7 +633,7 @@ class ConditionAgent_Agentflow implements INode {
                     messagesToSummarize.push(poppedMessage)
                     // Recalculate token count for remaining messages
                     const remainingMessagesString = remainingMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
-                    currBufferLength = await llmNodeInstance.getNumTokens(remainingMessagesString)
+                    currBufferLength = await countTokens(remainingMessagesString)
                 }
             }
 
