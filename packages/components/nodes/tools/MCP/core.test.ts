@@ -1,4 +1,6 @@
 import {
+    MCPToolkit,
+    MCPTool,
     validateCommandFlags,
     validateCommandInjection,
     validateArgsForLocalFileAccess,
@@ -7,6 +9,67 @@ import {
 } from './core'
 
 describe('MCP Security Validations', () => {
+    describe('MCPTool call boundary', () => {
+        it('creates a per-call client with invocation headers and dispatches tools/call', async () => {
+            const request = jest.fn().mockResolvedValue({ content: [{ type: 'text', text: 'ok' }] })
+            const close = jest.fn().mockResolvedValue(undefined)
+            const toolkit = new MCPToolkit({ url: 'https://example.com/mcp' }, 'http')
+            toolkit.getToolCallHeaders = jest.fn().mockResolvedValue({ Authorization: 'Bearer per-call' })
+            jest.spyOn(toolkit, 'createClient').mockResolvedValue({ request, close } as any)
+
+            const mcpTool = await MCPTool({
+                toolkit,
+                name: 'lookup_customer',
+                description: 'Lookup a customer',
+                argsSchema: {
+                    type: 'object',
+                    properties: {
+                        customerId: { type: 'string' }
+                    }
+                }
+            })
+
+            const result = await mcpTool.invoke({ customerId: 'cust_123' })
+
+            expect(result).toBe(JSON.stringify([{ type: 'text', text: 'ok' }]))
+            expect(toolkit.getToolCallHeaders).toHaveBeenCalledTimes(1)
+            expect(toolkit.createClient).toHaveBeenCalledWith({ Authorization: 'Bearer per-call' })
+            expect(request).toHaveBeenCalledWith(
+                {
+                    method: 'tools/call',
+                    params: {
+                        name: 'lookup_customer',
+                        arguments: { customerId: 'cust_123' }
+                    }
+                },
+                expect.anything()
+            )
+            expect(close).toHaveBeenCalledTimes(1)
+        })
+
+        it('closes the per-call client when tools/call fails', async () => {
+            const request = jest.fn().mockRejectedValue(new Error('tool failed'))
+            const close = jest.fn().mockResolvedValue(undefined)
+            const toolkit = new MCPToolkit({ url: 'https://example.com/mcp' }, 'http')
+            jest.spyOn(toolkit, 'createClient').mockResolvedValue({ request, close } as any)
+
+            const mcpTool = await MCPTool({
+                toolkit,
+                name: 'lookup_customer',
+                description: 'Lookup a customer',
+                argsSchema: {
+                    type: 'object',
+                    properties: {
+                        customerId: { type: 'string' }
+                    }
+                }
+            })
+
+            await expect(mcpTool.invoke({ customerId: 'cust_123' })).rejects.toThrow('tool failed')
+            expect(close).toHaveBeenCalledTimes(1)
+        })
+    })
+
     describe('validateCommandFlags', () => {
         describe('npx command', () => {
             it('should block -c flag', () => {
