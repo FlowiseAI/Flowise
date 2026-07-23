@@ -51,6 +51,13 @@ const getLocalStorageKeyName = (name, isAgentCanvas) => {
     return (isAgentCanvas ? 'agentcanvas' : 'chatflowcanvas') + '_' + name
 }
 
+const formatProviderLabel = (provider) => {
+    if (provider === 'whatsapp') return 'WhatsApp'
+    if (provider === 'instagram') return 'Instagram'
+    if (provider === 'telegram') return 'Telegram'
+    return provider
+}
+
 export const FlowListTable = ({
     data,
     images = {},
@@ -63,7 +70,8 @@ export const FlowListTable = ({
     isAgentCanvas,
     isAgentflowV2,
     currentPage,
-    pageLimit
+    pageLimit,
+    channelBindingsByFlowId = {}
 }) => {
     const { hasPermission } = useAuth()
     const isActionsAvailable = isAgentCanvas
@@ -127,10 +135,13 @@ export const FlowListTable = ({
                             <StyledTableCell style={{ width: '25%' }} key='1'>
                                 Category
                             </StyledTableCell>
-                            <StyledTableCell style={{ width: '30%' }} key='2'>
+                            <StyledTableCell style={{ width: '25%' }} key='2'>
                                 Nodes
                             </StyledTableCell>
-                            <StyledTableCell style={{ width: '15%' }} key='3'>
+                            <StyledTableCell style={{ width: '20%' }} key='3'>
+                                Channels
+                            </StyledTableCell>
+                            <StyledTableCell style={{ width: '15%' }} key='4'>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
                                     direction={order}
@@ -140,7 +151,7 @@ export const FlowListTable = ({
                                 </TableSortLabel>
                             </StyledTableCell>
                             {isActionsAvailable && (
-                                <StyledTableCell style={{ width: '10%' }} key='4'>
+                                <StyledTableCell style={{ width: '10%' }} key='5'>
                                     Actions
                                 </StyledTableCell>
                             )}
@@ -162,6 +173,9 @@ export const FlowListTable = ({
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
                                     {isActionsAvailable && (
                                         <StyledTableCell>
                                             <Skeleton variant='text' />
@@ -169,6 +183,9 @@ export const FlowListTable = ({
                                     )}
                                 </StyledTableRow>
                                 <StyledTableRow>
+                                    <StyledTableCell>
+                                        <Skeleton variant='text' />
+                                    </StyledTableCell>
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
@@ -323,10 +340,34 @@ export const FlowListTable = ({
                                             )}
                                         </StyledTableCell>
                                         <StyledTableCell key='3'>
+                                            <Stack direction='row' spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
+                                                {(channelBindingsByFlowId[row.id] || []).slice(0, 2).map((binding, index) => (
+                                                    <Chip
+                                                        key={`${binding.provider}-${index}`}
+                                                        size='small'
+                                                        variant='outlined'
+                                                        label={formatProviderLabel(binding.provider)}
+                                                    />
+                                                ))}
+                                                {(channelBindingsByFlowId[row.id] || []).length > 2 && (
+                                                    <Chip
+                                                        size='small'
+                                                        variant='outlined'
+                                                        label={`+${(channelBindingsByFlowId[row.id] || []).length - 2}`}
+                                                    />
+                                                )}
+                                                {(channelBindingsByFlowId[row.id] || []).length === 0 && (
+                                                    <Typography variant='caption' color='text.secondary'>
+                                                        None
+                                                    </Typography>
+                                                )}
+                                            </Stack>
+                                        </StyledTableCell>
+                                        <StyledTableCell key='4'>
                                             {moment(row.updatedDate).format('MMMM Do, YYYY HH:mm:ss')}
                                         </StyledTableCell>
                                         {isActionsAvailable && (
-                                            <StyledTableCell key='4'>
+                                            <StyledTableCell key='5'>
                                                 <Stack
                                                     direction={{ xs: 'column', sm: 'row' }}
                                                     spacing={1}
@@ -368,5 +409,6 @@ FlowListTable.propTypes = {
     isAgentCanvas: PropTypes.bool,
     isAgentflowV2: PropTypes.bool,
     currentPage: PropTypes.number,
-    pageLimit: PropTypes.number
+    pageLimit: PropTypes.number,
+    channelBindingsByFlowId: PropTypes.object
 }

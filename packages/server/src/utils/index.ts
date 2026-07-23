@@ -54,6 +54,8 @@ import { CachePool } from '../CachePool'
 import { Variable } from '../database/entities/Variable'
 import { DocumentStore } from '../database/entities/DocumentStore'
 import { DocumentStoreFileChunk } from '../database/entities/DocumentStoreFileChunk'
+import { ChannelAccount } from '../database/entities/ChannelAccount'
+import { AgentChannel } from '../database/entities/AgentChannel'
 import { CustomMcpServer } from '../database/entities/CustomMcpServer'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
@@ -102,6 +104,8 @@ export const databaseEntities: IDatabaseEntity = {
     Variable: Variable,
     DocumentStore: DocumentStore,
     DocumentStoreFileChunk: DocumentStoreFileChunk,
+    ChannelAccount: ChannelAccount,
+    AgentChannel: AgentChannel,
     CustomMcpServer: CustomMcpServer
 }
 

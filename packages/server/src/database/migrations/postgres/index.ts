@@ -41,6 +41,9 @@ import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowT
 import { AddTextToSpeechToChatFlow1759419194331 } from './1759419194331-AddTextToSpeechToChatFlow'
 import { AddChatFlowNameIndex1759424903973 } from './1759424903973-AddChatFlowNameIndex'
 import { AddApiKeyPermission1765360298674 } from './1765360298674-AddApiKeyPermission'
+import { AddChannelAccountAndAgentChannel1767000000000 } from './1767000000000-AddChannelAccountAndAgentChannel'
+import { AddChannelInboundMessage1767100000000 } from './1767100000000-AddChannelInboundMessage'
+
 import { AddReasonContentToChatMessage1764759496768 } from './1764759496768-AddReasonContentToChatMessage'
 import { AddWebhookSecretToChatFlow1776240000001 } from './1776240000001-AddWebhookSecretToChatFlow'
 import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
@@ -114,6 +117,8 @@ export const postgresMigrations = [
     AddTextToSpeechToChatFlow1759419194331,
     AddChatFlowNameIndex1759424903973,
     AddApiKeyPermission1765360298674,
+    AddChannelAccountAndAgentChannel1767000000000,
+    AddChannelInboundMessage1767100000000,
     AddReasonContentToChatMessage1764759496768,
     AddWebhookSecretToChatFlow1776240000001,
     AddCustomMcpServer1766000000000,

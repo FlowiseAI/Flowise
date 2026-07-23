@@ -39,6 +39,9 @@ import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowT
 import { AddTextToSpeechToChatFlow1759419136055 } from './1759419136055-AddTextToSpeechToChatFlow'
 import { AddChatFlowNameIndex1759424923093 } from './1759424923093-AddChatFlowNameIndex'
 import { AddApiKeyPermission1765360298674 } from './1765360298674-AddApiKeyPermission'
+import { AddChannelAccountAndAgentChannel1767000000000 } from './1767000000000-AddChannelAccountAndAgentChannel'
+import { AddChannelInboundMessage1767100000000 } from './1767100000000-AddChannelInboundMessage'
+
 import { AddReasonContentToChatMessage1764759496768 } from './1764759496768-AddReasonContentToChatMessage'
 import { AddWebhookSecretToChatFlow1776240000000 } from './1776240000000-AddWebhookSecretToChatFlow'
 import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
@@ -110,6 +113,8 @@ export const sqliteMigrations = [
     AddTextToSpeechToChatFlow1759419136055,
     AddChatFlowNameIndex1759424923093,
     AddApiKeyPermission1765360298674,
+    AddChannelAccountAndAgentChannel1767000000000,
+    AddChannelInboundMessage1767100000000,
     AddReasonContentToChatMessage1764759496768,
     AddWebhookSecretToChatFlow1776240000000,
     AddCustomMcpServer1766000000000,
