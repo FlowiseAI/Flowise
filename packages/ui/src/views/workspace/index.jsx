@@ -23,7 +23,11 @@ import {
     Typography,
     Dialog,
     DialogContent,
-    CircularProgress
+    CircularProgress,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -231,6 +235,7 @@ const Workspaces = () => {
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [search, setSearch] = useState('')
+    const [sortBy, setSortBy] = useState('name')
     const dispatch = useDispatch()
     const { error, setError } = useError()
     const [isLoading, setLoading] = useState(true)
@@ -346,7 +351,33 @@ const Workspaces = () => {
     }
 
     function filterWorkspaces(data) {
-        return data.name.toLowerCase().indexOf(search.toLowerCase()) > -1
+        const searchLower = search.toLowerCase()
+        return (
+            data.name.toLowerCase().indexOf(searchLower) > -1 ||
+            (data.description && data.description.toLowerCase().indexOf(searchLower) > -1)
+        )
+    }
+
+    function sortWorkspaces(workspacesToSort) {
+        const sorted = [...workspacesToSort]
+        switch (sortBy) {
+            case 'name':
+                return sorted.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }))
+            case 'createdDate':
+                return sorted.sort((a, b) => {
+                    const dateA = new Date(a.createdDate || 0)
+                    const dateB = new Date(b.createdDate || 0)
+                    return dateA - dateB
+                })
+            case 'updatedDate':
+                return sorted.sort((a, b) => {
+                    const dateA = new Date(a.updatedDate || 0)
+                    const dateB = new Date(b.updatedDate || 0)
+                    return dateB - dateA // descending order for updated (most recent first)
+                })
+            default:
+                return sorted
+        }
     }
 
     useEffect(() => {
@@ -408,7 +439,23 @@ const Workspaces = () => {
                             onSearchChange={onSearchChange}
                             search={true}
                             title='Workspaces'
-                            searchPlaceholder='Search Workspaces'
+                            searchPlaceholder='Search Workspaces (name or description)'
+                            filters={
+                                <FormControl sx={{ minWidth: 150, display: { xs: 'none', sm: 'flex' } }} size='small' variant='outlined'>
+                                    <InputLabel id='sort-label'>Sort By</InputLabel>
+                                    <Select
+                                        labelId='sort-label'
+                                        id='sort-select'
+                                        value={sortBy}
+                                        onChange={(e) => setSortBy(e.target.value)}
+                                        label='Sort By'
+                                    >
+                                        <MenuItem value='name'>Name (A-Z)</MenuItem>
+                                        <MenuItem value='createdDate'>Creation Date</MenuItem>
+                                        <MenuItem value='updatedDate'>Last Updated</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            }
                         >
                             <StyledPermissionButton
                                 permissionId={'workspace:create'}
@@ -493,7 +540,7 @@ const Workspaces = () => {
                                             </>
                                         ) : (
                                             <>
-                                                {workspaces.filter(filterWorkspaces).map((ds, index) => (
+                                                {sortWorkspaces(workspaces.filter(filterWorkspaces)).map((ds, index) => (
                                                     <ShowWorkspaceRow
                                                         key={index}
                                                         workspace={ds}
