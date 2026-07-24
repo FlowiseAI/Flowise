@@ -7,7 +7,7 @@ import { SqlDatabase } from '@langchain/classic/sql_db'
 import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, getInputVariables, transformBracesWithColon } from '../../../src/utils'
-import { validateSQLitePath } from '../../../src/validator'
+import { assertReadOnlySqlStatement, validateSQLitePath } from '../../../src/validator'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
@@ -67,7 +67,9 @@ class SqlDatabaseChain_Chains implements INode {
                 label: 'Connection string or file path (sqlite only)',
                 name: 'url',
                 type: 'string',
-                placeholder: '127.0.0.1:5432/chinook'
+                placeholder: '127.0.0.1:5432/chinook',
+                warning:
+                    'This chain executes LLM-generated SQL directly against the database. For SQLite, only point this at a trusted, disposable database file — queries are restricted to read-only SELECT/WITH statements, but the underlying file should not be shared with other sensitive data.'
             },
             {
                 label: 'Include Tables',
@@ -231,6 +233,17 @@ const getSQLDBChain = async (
                   url: url
               } as DataSourceOptions)
     )
+
+    if (databaseType === 'sqlite') {
+        // Restrict every query run against this connection - including langchain's own
+        // schema introspection and the LLM-generated query - to a single read-only
+        // SELECT/WITH statement. See assertReadOnlySqlStatement for why.
+        const originalQuery = datasource.query.bind(datasource)
+        datasource.query = (async (sql: string, parameters?: any[], queryRunner?: any) => {
+            assertReadOnlySqlStatement(sql)
+            return originalQuery(sql, parameters, queryRunner)
+        }) as typeof datasource.query
+    }
 
     const db = await SqlDatabase.fromDataSourceParams({
         appDataSource: datasource,
