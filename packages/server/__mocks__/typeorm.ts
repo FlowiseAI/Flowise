@@ -29,6 +29,7 @@ module.exports = {
     JoinColumn: decorator,
     Unique: decorator,
     DataSource: jest.fn(),
+    Equal: findOperator('equal'),
     In: findOperator('in'),
     Between: findOperator('between'),
     MoreThanOrEqual: findOperator('moreThanOrEqual'),
