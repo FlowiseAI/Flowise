@@ -1,5 +1,6 @@
 import { DataSourceOptions } from 'typeorm'
 import { VectorStoreDriver } from './Base'
+import { resolvePostgresSSL } from '../sslConfig'
 import { FLOWISE_CHATID, ICommonObject } from '../../../../src'
 import { sanitizeDataSourceOptions } from '../../../../src/sanitizeDataSourceOptions'
 import { TypeORMVectorStore, TypeORMVectorStoreArgs, TypeORMVectorStoreDocument } from '@langchain/community/vectorstores/typeorm'
@@ -36,7 +37,10 @@ export class TypeORMDriver extends VectorStoreDriver {
                 type: 'postgres',
                 host: this.getHost(),
                 port: this.getPort(),
-                ssl: this.getSSL(),
+                // A user-supplied `ssl` in Additional Configuration (e.g. a custom CA or
+                // rejectUnauthorized flag for AWS RDS / corporate CAs) takes precedence over
+                // the boolean SSL toggle; see resolvePostgresSSL. Falls back to the toggle.
+                ssl: resolvePostgresSSL(additionalConfiguration, this.getSSL()),
                 username: user, // Required by TypeORMVectorStore
                 user: user, // Required by Pool in similaritySearchVectorWithScore
                 password: password,
