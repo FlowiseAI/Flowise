@@ -1,4 +1,5 @@
 import {
+    assertReadOnlySqlStatement,
     getSafeFilePath,
     isPathTraversal,
     isUnsafeFilePath,
@@ -793,6 +794,52 @@ describe('getSafeFilePath', () => {
 
         it('returns the resolved (escaping) path without throwing', () => {
             expect(() => getSafeFilePath(base, '../escape.txt')).not.toThrow()
+        })
+    })
+})
+
+describe('assertReadOnlySqlStatement', () => {
+    describe('accepts read-only statements', () => {
+        it.each([
+            ['simple select', 'SELECT * FROM users'],
+            ['select with trailing semicolon', 'SELECT id FROM users;'],
+            ['lowercase select', 'select id from users'],
+            ['select with where clause', "SELECT id FROM users WHERE name = 'bob'"],
+            ['cte with with clause', 'WITH t AS (SELECT 1) SELECT * FROM t'],
+            [
+                'sqlite introspection query using pragma_table_info as a table-valued function',
+                "SELECT m.name AS table_name, p.name AS column_name FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type = 'table'"
+            ]
+        ])('should not throw for %s', (_desc, sql) => {
+            expect(() => assertReadOnlySqlStatement(sql)).not.toThrow()
+        })
+    })
+
+    describe('rejects write / dangerous statements', () => {
+        it.each([
+            ['attach database', "ATTACH DATABASE '/etc/chromium/exploit.conf' AS x"],
+            ['vacuum into', "VACUUM INTO '/etc/chromium/exploit.conf'"],
+            ['bare pragma statement', 'PRAGMA journal_mode=WAL'],
+            ['stacked statements', 'SELECT 1; DROP TABLE users'],
+            ['stacked statements with attach', "SELECT 1; ATTACH DATABASE '/etc/chromium/exploit.conf' AS x"],
+            ['insert', "INSERT INTO users (name) VALUES ('evil')"],
+            ['update', "UPDATE users SET name = 'evil'"],
+            ['delete', 'DELETE FROM users'],
+            ['drop table', 'DROP TABLE users'],
+            ['load_extension call', "SELECT load_extension('/tmp/evil.so')"],
+            ['load_extension call mixed case', "SELECT LOAD_EXTENSION('/tmp/evil.so')"]
+        ])('should throw for %s', (_desc, sql) => {
+            expect(() => assertReadOnlySqlStatement(sql)).toThrow()
+        })
+    })
+
+    describe('invalid input', () => {
+        it.each([
+            ['empty string', ''],
+            ['undefined', undefined],
+            ['null', null]
+        ])('should throw for %s', (_desc, sql) => {
+            expect(() => assertReadOnlySqlStatement(sql as any)).toThrow()
         })
     })
 })

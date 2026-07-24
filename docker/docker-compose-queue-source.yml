@@ -19,15 +19,17 @@ services:
         ports:
             - '${PORT}:${PORT}'
         volumes:
-            # Mount local .flowise to container's default location
-            - ../.flowise:/root/.flowise
+            # Mount local .flowise to container's default location.
+            # Container runs as the non-root `node` user, whose home is /home/node.
+            # Ensure the host directory is writable by that user (e.g. `chown -R 1000:1000 ../.flowise` on Linux hosts).
+            - ../.flowise:/home/node/.flowise
         environment:
             # --- Essential Flowise Vars ---
             - PORT=${PORT:-3000}
-            - DATABASE_PATH=/root/.flowise
-            - SECRETKEY_PATH=/root/.flowise
-            - LOG_PATH=/root/.flowise/logs
-            - BLOB_STORAGE_PATH=/root/.flowise/storage
+            - DATABASE_PATH=/home/node/.flowise
+            - SECRETKEY_PATH=/home/node/.flowise
+            - LOG_PATH=/home/node/.flowise/logs
+            - BLOB_STORAGE_PATH=/home/node/.flowise/storage
             # --- Queue Vars (Main Instance) ---
             - MODE=queue
             - QUEUE_NAME=flowise-queue # Ensure this matches worker
@@ -43,15 +45,16 @@ services:
             context: .. # Build context is still the root
             dockerfile: docker/worker/Dockerfile # Ensure this path is correct
         volumes:
-            # Mount same local .flowise to worker
-            - ../.flowise:/root/.flowise
+            # Mount same local .flowise to worker.
+            # Container runs as the non-root `node` user, whose home is /home/node.
+            - ../.flowise:/home/node/.flowise
         environment:
             # --- Essential Flowise Vars ---
             - WORKER_PORT=${WORKER_PORT:-5566} # Port for worker healthcheck
-            - DATABASE_PATH=/root/.flowise
-            - SECRETKEY_PATH=/root/.flowise
-            - LOG_PATH=/root/.flowise/logs
-            - BLOB_STORAGE_PATH=/root/.flowise/storage
+            - DATABASE_PATH=/home/node/.flowise
+            - SECRETKEY_PATH=/home/node/.flowise
+            - LOG_PATH=/home/node/.flowise/logs
+            - BLOB_STORAGE_PATH=/home/node/.flowise/storage
             # --- Queue Vars (Main Instance) ---
             - MODE=queue
             - QUEUE_NAME=flowise-queue # Ensure this matches worker
