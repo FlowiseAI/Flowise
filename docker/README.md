@@ -13,12 +13,14 @@ Starts Flowise from [DockerHub Image](https://hub.docker.com/r/flowiseai/flowise
 
 If you like to persist your data (flows, logs, credentials, storage), set these variables in the `.env` file inside `docker` folder:
 
--   DATABASE_PATH=/root/.flowise
--   LOG_PATH=/root/.flowise/logs
--   SECRETKEY_PATH=/root/.flowise
--   BLOB_STORAGE_PATH=/root/.flowise/storage
+-   DATABASE_PATH=/home/node/.flowise
+-   LOG_PATH=/home/node/.flowise/logs
+-   SECRETKEY_PATH=/home/node/.flowise
+-   BLOB_STORAGE_PATH=/home/node/.flowise/storage
 
 Flowise also support different environment variables to configure your instance. Read [more](https://docs.flowiseai.com/configuration/environment-variables)
+
+> The container runs as the non-root `node` user (uid 1000), whose home directory is `/home/node`. If you bind-mount a host directory (e.g. `~/.flowise`) for persistence, make sure it's writable by that user - on Linux hosts this may require `chown -R 1000:1000 ~/.flowise`.
 
 ## Queue Mode:
 

@@ -19,11 +19,13 @@ services:
         ports:
             - '${PORT:-3000}:${PORT:-3000}'
         volumes:
-            - ~/.flowise:/root/.flowise
+            # Container runs as the non-root `node` user, whose home is /home/node.
+            # Ensure the host directory is writable by that user (e.g. `chown -R 1000:1000 ~/.flowise` on Linux hosts).
+            - ~/.flowise:/home/node/.flowise
         environment:
             # --- Essential Flowise Vars ---
             - PORT=${PORT:-3000}
-            - DATABASE_PATH=${DATABASE_PATH:-/root/.flowise}
+            - DATABASE_PATH=${DATABASE_PATH:-/home/node/.flowise}
             - DATABASE_TYPE=${DATABASE_TYPE}
             - DATABASE_PORT=${DATABASE_PORT}
             - DATABASE_HOST=${DATABASE_HOST}
@@ -182,11 +184,12 @@ services:
         container_name: flowise-worker
         restart: always
         volumes:
-            - ~/.flowise:/root/.flowise
+            # Container runs as the non-root `node` user, whose home is /home/node.
+            - ~/.flowise:/home/node/.flowise
         environment:
             # --- Essential Flowise Vars ---
             - WORKER_PORT=${WORKER_PORT:-5566}
-            - DATABASE_PATH=${DATABASE_PATH:-/root/.flowise}
+            - DATABASE_PATH=${DATABASE_PATH:-/home/node/.flowise}
             - DATABASE_TYPE=${DATABASE_TYPE}
             - DATABASE_PORT=${DATABASE_PORT}
             - DATABASE_HOST=${DATABASE_HOST}

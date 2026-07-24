@@ -45,5 +45,11 @@ ENV WORKER_PORT=5566
 # Expose port (can be overridden by env var)
 EXPOSE ${WORKER_PORT}
 
+# Give the node user ownership of the application files (node:*-alpine already has this user)
+RUN chown -R node:node /usr/src /app
+
+# Switch to non-root user
+USER node
+
 # Start healthcheck in background and flowise worker in foreground
 CMD ["/bin/sh", "-c", "node /app/healthcheck/healthcheck.js & sleep 5 && pnpm run start-worker"]
