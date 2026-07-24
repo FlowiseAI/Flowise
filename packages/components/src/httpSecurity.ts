@@ -49,6 +49,192 @@ function getHttpDenyList(): string[] {
 }
 
 /**
+ * A parsed HTTP_ALLOW_LIST entry.
+ *
+ * - `protocol` is set only when the rule explicitly includes `http://` or `https://`.
+ *   Scheme-less rules match either protocol.
+ * - `port` is set when the rule pins a specific port (either an explicit protocol,
+ *   whose default port is derived, or a scheme-less rule with an explicit `:port`).
+ *   Undefined `port` means any port is accepted.
+ * - `pathname` is `/` for rules without a path, otherwise the path prefix (matched
+ *   at path-segment boundaries — see `isPathAllowed`).
+ */
+export interface HttpAllowRule {
+    protocol?: 'http:' | 'https:'
+    hostname: string
+    port?: string
+    pathname: string
+}
+
+function normalizeHostname(hostname: string): string {
+    let normalized = hostname.trim().toLowerCase()
+
+    // URL.hostname may retain brackets around IPv6 addresses.
+    if (normalized.startsWith('[') && normalized.endsWith(']')) {
+        normalized = normalized.slice(1, -1)
+    }
+
+    // Treat fully qualified names with trailing dots as equivalent.
+    if (normalized.endsWith('.')) {
+        normalized = normalized.slice(0, -1)
+    }
+
+    return normalized
+}
+
+function normalizePathname(pathname: string): string {
+    if (!pathname || pathname === '/') return '/'
+    const normalized = pathname.replace(/\/+$/, '')
+    return normalized || '/'
+}
+
+function getEffectiveHttpPort(url: URL): string | null {
+    if (url.protocol === 'http:') return url.port || '80'
+    if (url.protocol === 'https:') return url.port || '443'
+    return null
+}
+
+function isPathAllowed(targetPathname: string, allowedPathname: string): boolean {
+    const target = normalizePathname(targetPathname)
+    const allowed = normalizePathname(allowedPathname)
+
+    // A rule without a path allows every path on the destination.
+    if (allowed === '/') return true
+
+    // Require a path-segment boundary so a rule for "/mcp" does not also allow "/mcp-admin".
+    return target === allowed || target.startsWith(`${allowed}/`)
+}
+
+function hasExplicitHttpProtocol(entry: string): boolean {
+    const normalized = entry.toLowerCase()
+    return normalized.startsWith('http://') || normalized.startsWith('https://')
+}
+
+function hasExplicitPort(entry: string): boolean {
+    // Only used for entries without a protocol. Extract the authority before any path, query, or fragment.
+    const authority = entry.split(/[/?#]/, 1)[0]
+
+    if (authority.startsWith('[')) {
+        const closingBracketIndex = authority.indexOf(']')
+        if (closingBracketIndex === -1) return false
+        const remainder = authority.slice(closingBracketIndex + 1)
+        return remainder.startsWith(':') && remainder.length > 1
+    }
+
+    const colonIndex = authority.lastIndexOf(':')
+    return colonIndex !== -1 && colonIndex < authority.length - 1
+}
+
+/**
+ * Parses a single HTTP_ALLOW_LIST entry. Returns null for empty, malformed, or
+ * unsupported entries (non-http/https protocol, credentials, query/fragment) —
+ * such entries silently grant no access. Callers should validate user input at
+ * submission or startup so bad entries can be reported.
+ *
+ * Supported entry shapes:
+ *   example.internal
+ *   example.internal:8080
+ *   example.internal/mcp
+ *   example.internal:8080/mcp
+ *   10.20.30.40
+ *   10.20.30.40:8080/mcp
+ *   [fd00::1]:8080/mcp
+ *   http://example.internal:8080/mcp
+ *   https://example.internal/mcp
+ */
+export function parseHttpAllowRule(entry: string): HttpAllowRule | null {
+    const trimmed = entry.trim()
+    if (!trimmed) return null
+
+    const hasExplicitProtocol = hasExplicitHttpProtocol(trimmed)
+
+    // Bare IPv4/IPv6 (no port, no path) — canonicalize so equivalent representations match.
+    // For example, "0:0:0:0:0:0:0:1" and "::1" normalize to the same value.
+    if (!hasExplicitProtocol && ipaddr.isValid(trimmed)) {
+        return {
+            hostname: ipaddr.parse(trimmed).toString().toLowerCase(),
+            pathname: '/'
+        }
+    }
+
+    // URL removes default ports during parsing. Track whether a scheme-less rule
+    // explicitly included a port so ":80" is not mistakenly treated as any-port.
+    const schemeLessRuleHasExplicitPort = !hasExplicitProtocol && hasExplicitPort(trimmed)
+
+    let allowed: URL
+    try {
+        // The injected "http://" scheme is only used to make the URL parser accept
+        // scheme-less entries; the parsed protocol is not used for matching in that case.
+        allowed = new URL(hasExplicitProtocol ? trimmed : `http://${trimmed}`)
+    } catch {
+        return null
+    }
+
+    if (allowed.protocol !== 'http:' && allowed.protocol !== 'https:') return null
+
+    // Credentials, queries, and fragments are not valid destination authorization rules.
+    if (allowed.username || allowed.password) return null
+    if (allowed.search || allowed.hash) return null
+
+    let port: string | undefined
+    if (hasExplicitProtocol) {
+        // Explicit protocol with no port restricts the rule to that protocol's default port.
+        const effectivePort = getEffectiveHttpPort(allowed)
+        if (!effectivePort) return null
+        port = effectivePort
+    } else if (schemeLessRuleHasExplicitPort) {
+        // Injected parsing protocol is HTTP, so an explicitly provided port that
+        // URL normalized away must have been 80.
+        port = allowed.port || '80'
+    }
+
+    return {
+        protocol: hasExplicitProtocol ? (allowed.protocol as 'http:' | 'https:') : undefined,
+        hostname: normalizeHostname(allowed.hostname),
+        port,
+        pathname: normalizePathname(allowed.pathname)
+    }
+}
+
+/**
+ * Checks whether `target` is authorized by any entry in the HTTP allow list.
+ * Non-http/https targets are never authorized here.
+ */
+export function isHttpAllowListed(target: URL, allowList: string[]): boolean {
+    const targetPort = getEffectiveHttpPort(target)
+    if (!targetPort) return false
+
+    const targetHostname = normalizeHostname(target.hostname)
+
+    return allowList.some((entry) => {
+        const allowed = parseHttpAllowRule(entry)
+        if (!allowed) return false
+        if (allowed.hostname !== targetHostname) return false
+
+        // Enforce protocol only when the rule explicitly included it.
+        if (allowed.protocol && allowed.protocol !== target.protocol) return false
+
+        // A rule without a port allows any HTTP or HTTPS port.
+        if (allowed.port && allowed.port !== targetPort) return false
+
+        return isPathAllowed(target.pathname, allowed.pathname)
+    })
+}
+
+/**
+ * Reads the raw HTTP_ALLOW_LIST env variable and returns the trimmed, non-empty
+ * entries. Parsing and matching happen in `isHttpAllowListed` / `parseHttpAllowRule`.
+ */
+function getHttpAllowList(): string[] {
+    const raw = process.env.HTTP_ALLOW_LIST
+    if (!raw) return []
+    return raw
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+}
+
+/**
  * Checks if an IP address is in the deny list
  * @param ip - IP address to check
  * @param denyList - Array of denied IP addresses/CIDR ranges
@@ -114,14 +300,23 @@ export function isDeniedIP(ip: string, denyList: string[]): void {
 }
 
 /**
- * Checks if a URL is allowed based on HTTP_DENY_LIST environment variable.
+ * Checks if a URL is allowed based on HTTP_DENY_LIST / HTTP_ALLOW_LIST environment variables.
+ * URLs matching any HTTP_ALLOW_LIST entry bypass the deny list entirely, which lets
+ * Docker-internal or other trusted private services connect without disabling
+ * global SSRF protection via HTTP_SECURITY_CHECK=false. See `parseHttpAllowRule` for
+ * supported entry formats (hostname, hostname:port, hostname/path, full URLs, etc).
  * @param url - URL to check
  * @throws Error if URL hostname resolves to a denied IP
  */
 export async function checkDenyList(url: string): Promise<void> {
     const httpDenyList = getHttpDenyList()
+    const httpAllowList = getHttpAllowList()
 
     const urlObj = new URL(url)
+
+    // Explicitly allowed URLs bypass the deny list.
+    if (isHttpAllowListed(urlObj, httpAllowList)) return
+
     let hostname = urlObj.hostname
     // Strip IPv6 brackets if present
     if (hostname.startsWith('[') && hostname.endsWith(']')) {
@@ -294,6 +489,7 @@ type ResolvedTarget = {
 
 async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     const denyList = getHttpDenyList()
+    const allowList = getHttpAllowList()
 
     const u = new URL(url)
     let hostname = u.hostname
@@ -303,8 +499,11 @@ async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     }
     const protocol: 'http' | 'https' = u.protocol === 'https:' ? 'https' : 'http'
 
+    // Explicitly allowed URLs bypass the deny list.
+    const isAllowed = isHttpAllowListed(u, allowList)
+
     if (ipaddr.isValid(hostname)) {
-        isDeniedIP(hostname, denyList)
+        if (!isAllowed) isDeniedIP(hostname, denyList)
         return {
             hostname,
             ip: hostname,
@@ -318,8 +517,10 @@ async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
         throw new Error(`DNS resolution failed for ${hostname}`)
     }
 
-    for (const r of records) {
-        isDeniedIP(r.address, denyList)
+    if (!isAllowed) {
+        for (const r of records) {
+            isDeniedIP(r.address, denyList)
+        }
     }
 
     const chosen = records.find((r) => r.family === 4) ?? records[0]
