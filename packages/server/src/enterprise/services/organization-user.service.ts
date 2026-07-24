@@ -3,9 +3,11 @@ import { DataSource, Not, QueryRunner } from 'typeorm'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { sanitizeUser } from '../../utils/sanitize.util'
 import { OrganizationUser, OrganizationUserStatus } from '../database/entities/organization-user.entity'
 import { Organization } from '../database/entities/organization.entity'
 import { GeneralRole } from '../database/entities/role.entity'
+import { User } from '../database/entities/user.entity'
 import { WorkspaceUser } from '../database/entities/workspace-user.entity'
 import { Workspace } from '../database/entities/workspace.entity'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
@@ -178,7 +180,7 @@ export class OrganizationUserService {
                 // get the user's name and email
                 const userDetails = await this.userService.readUserById(organizationOwner[0].userId, queryRunner)
                 if (userDetails) {
-                    user.user = userDetails
+                    user.user = sanitizeUser(userDetails) as User
                 }
             }
         }
