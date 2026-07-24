@@ -185,6 +185,7 @@
         "winston": "^3.9.0",
         "ws": "^8.18.0",
         "xlsx": "0.18.5",
+        "yauzl": "^3.2.0",
         "zod": "^3.25.76 || ^4",
         "zod-to-json-schema": "^3.24.6"
     },
@@ -198,6 +199,7 @@
         "@types/object-hash": "^3.0.2",
         "@types/papaparse": "^5.3.15",
         "@types/pg": "^8.10.2",
+        "@types/yauzl": "^2.10.3",
         "@types/ws": "^8.5.3",
         "gulp": "^4.0.2",
         "jest": "^29.7.0",
