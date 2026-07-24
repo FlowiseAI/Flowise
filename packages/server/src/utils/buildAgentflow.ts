@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
-import { cloneDeep, get } from 'lodash'
+import { cloneDeep, get, isEqual } from 'lodash'
 import TurndownService from 'turndown'
 import {
     AnalyticHandler,
@@ -1405,6 +1405,189 @@ const executeNode = async ({
             }
         }
 
+        // Handle parallel node with concurrent branch execution
+        if (reactFlowNode.data.name === 'parallelAgentflow') {
+            // Get child nodes for this parallel block
+            const childNodes = nodes.filter((node) => node.parentNode === nodeId)
+
+            if (childNodes.length > 0) {
+                logger.debug(`  🔀 Found ${childNodes.length} child nodes for parallel block`)
+
+                const childEdges = edges.filter((edge: IReactFlowEdge) => {
+                    const sourceNode = nodes.find((n) => n.id === edge.source)
+                    const targetNode = nodes.find((n) => n.id === edge.target)
+                    return sourceNode?.parentNode === nodeId && targetNode?.parentNode === nodeId
+                })
+
+                // Branch roots = child nodes with no incoming edge from another child node in this block
+                const { graph: childGraph, nodeDependencies: childNodeDependencies } = constructGraphs(childNodes, childEdges)
+                const { startingNodeIds: branchRootIds } = getStartingNode(childNodeDependencies)
+
+                // Collect every node reachable from each root to form that branch's node/edge subset
+                const branches = branchRootIds.map((rootId, branchIndex) => {
+                    const visited = new Set<string>()
+                    const queue = [rootId]
+                    while (queue.length > 0) {
+                        const current = queue.shift() as string
+                        if (visited.has(current)) continue
+                        visited.add(current)
+                        for (const next of childGraph[current] || []) {
+                            if (!visited.has(next)) queue.push(next)
+                        }
+                    }
+                    return {
+                        branchIndex,
+                        nodes: childNodes.filter((n) => visited.has(n.id)),
+                        edges: childEdges.filter((e) => visited.has(e.source) && visited.has(e.target))
+                    }
+                })
+
+                logger.debug(`  🔀 Processing parallel node with ${branches.length} branch(es)`)
+
+                if (branches.length > 0) {
+                    // Snapshot state once before any branch starts so concurrent branches never race on a shared object
+                    const stateSnapshot = cloneDeep(agentflowRuntime.state || {})
+
+                    const branchSettled = await Promise.allSettled(
+                        branches.map(async (branch) => {
+                            const parallelFlowData: IReactFlowObject = {
+                                nodes: branch.nodes,
+                                edges: branch.edges,
+                                viewport: { x: 0, y: 0, zoom: 1 }
+                            }
+
+                            const parallelChatflow = {
+                                ...chatflow,
+                                flowData: JSON.stringify(parallelFlowData)
+                            }
+
+                            // Each branch gets its own runtime wrapping an independent state clone
+                            const branchAgentflowRuntime = { ...agentflowRuntime, state: cloneDeep(stateSnapshot) }
+
+                            const subFlowResult = await executeAgentFlow({
+                                componentNodes,
+                                incomingInput,
+                                chatflow: parallelChatflow,
+                                chatId,
+                                evaluationRunId,
+                                appDataSource,
+                                usageCacheManager,
+                                telemetry,
+                                cachePool,
+                                sseStreamer,
+                                baseURL,
+                                isInternal,
+                                uploadedFilesContent,
+                                fileUploads,
+                                signal: abortController,
+                                isRecursive: true,
+                                parentExecutionId,
+                                iterationContext: {
+                                    ...iterationContext,
+                                    branchIndex: branch.branchIndex,
+                                    sessionId,
+                                    agentflowRuntime: branchAgentflowRuntime
+                                },
+                                orgId,
+                                workspaceId,
+                                subscriptionId,
+                                productId
+                            })
+
+                            return { branchIndex: branch.branchIndex, subFlowResult }
+                        })
+                    )
+
+                    const branchResults: Array<{ branchIndex: number; content?: string; error?: string }> = []
+                    const updatedState: ICommonObject = cloneDeep(agentflowRuntime.state || {})
+
+                    branchSettled.forEach((settled, idx) => {
+                        const branchIndex = branches[idx].branchIndex
+
+                        if (settled.status === 'fulfilled') {
+                            const { subFlowResult } = settled.value
+
+                            if (subFlowResult?.agentFlowExecutedData) {
+                                const branchExecutedData = subFlowResult.agentFlowExecutedData.map((data: IAgentflowExecutedData) => ({
+                                    ...data,
+                                    data: {
+                                        ...data.data,
+                                        branchIndex,
+                                        parentNodeId: data.data.parentNodeId || reactFlowNode.data.id
+                                    }
+                                }))
+                                agentFlowExecutedData.push(...branchExecutedData)
+                            }
+
+                            // Shallow-merge each branch's final state back into parent, in branch-index order.
+                            // Only apply keys the branch actually changed relative to its starting snapshot -
+                            // every branch's copy still carries the OTHER keys at their pre-parallel baseline value,
+                            // so blindly spreading the whole object would let a later branch's untouched keys
+                            // stomp an earlier branch's real update to that same key.
+                            if (
+                                subFlowResult?.agentflowRuntime &&
+                                subFlowResult.agentflowRuntime.state &&
+                                Object.keys(subFlowResult.agentflowRuntime.state).length > 0
+                            ) {
+                                const branchState = subFlowResult.agentflowRuntime.state
+                                for (const key of Object.keys(branchState)) {
+                                    if (!isEqual(branchState[key], stateSnapshot[key])) {
+                                        updatedState[key] = branchState[key]
+                                    }
+                                }
+                            }
+
+                            branchResults.push({ branchIndex, content: subFlowResult?.text })
+                        } else {
+                            const errorMessage = getErrorMessage(settled.reason)
+                            console.error(`  ❌ Error in parallel branch ${branchIndex + 1}: ${errorMessage}`)
+                            branchResults.push({ branchIndex, error: errorMessage })
+
+                            // Recover partial execution data from the rejected branch so it's still visible in the UI
+                            const branchExecutedData = (settled.reason as { agentFlowExecutedData?: IAgentflowExecutedData[] })
+                                ?.agentFlowExecutedData
+                            if (branchExecutedData) {
+                                const mappedData = branchExecutedData.map((data: IAgentflowExecutedData) => ({
+                                    ...data,
+                                    data: {
+                                        ...data.data,
+                                        branchIndex,
+                                        parentNodeId: data.data.parentNodeId || reactFlowNode.data.id
+                                    }
+                                }))
+                                agentFlowExecutedData.push(...mappedData)
+                            }
+                        }
+                    })
+
+                    agentflowRuntime.state = updatedState
+                    results.state = updatedState
+
+                    if (parentExecutionId) {
+                        try {
+                            logger.debug(`  📝 Updating parent execution ${parentExecutionId} with parallel branch data`)
+                            await updateExecution(appDataSource, parentExecutionId, workspaceId, {
+                                executionData: JSON.stringify(agentFlowExecutedData)
+                            })
+                        } catch (error) {
+                            console.error(`  ❌ Error updating parent execution: ${getErrorMessage(error)}`)
+                        }
+                    }
+
+                    results.output = {
+                        ...(results.output || {}),
+                        branchResults,
+                        content: branchResults
+                            .map((b) => (b.error ? `[Branch ${b.branchIndex + 1} Error]: ${b.error}` : b.content))
+                            .filter(Boolean)
+                            .join('\n')
+                    }
+
+                    logger.debug(`  📊 Completed all parallel branches. Total: ${branchResults.length}`)
+                }
+            }
+        }
+
         // Stop going through the current route if the node is a human task
         if (!humanInput && reactFlowNode.data.name === 'humanInputAgentflow') {
             const humanInputAction = {
@@ -2204,7 +2387,11 @@ export const executeAgentFlow = async ({
                 await analyticHandlers.onChainError(parentTraceIds, errorMessage, true)
             }
 
-            throw new Error(errorMessage)
+            // Attach the executed data accumulated so far so callers (e.g. parallel branch handling)
+            // can still surface partial results from a branch that threw
+            const executionError = new Error(errorMessage) as Error & { agentFlowExecutedData?: IAgentflowExecutedData[] }
+            executionError.agentFlowExecutedData = agentFlowExecutedData
+            throw executionError
         }
 
         logger.debug(`/////////////////////////////////////////////////////////////////////////////`)
