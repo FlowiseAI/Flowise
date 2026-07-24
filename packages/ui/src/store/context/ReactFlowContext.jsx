@@ -1,7 +1,7 @@
 import { createContext, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
-import { getUniqueNodeId, showHideInputParams } from '@/utils/genericHelper'
+import { getUniqueNodeId, showHideInputParams, normalizeStickyNoteNodes } from '@/utils/genericHelper'
 import { cloneDeep, isEqual } from 'lodash'
 import { SET_DIRTY } from '@/store/actions'
 
@@ -239,7 +239,7 @@ export const ReactFlowContext = ({ children }) => {
                 }
             }
 
-            reactFlowInstance.setNodes([...nodes, duplicatedNode])
+            reactFlowInstance.setNodes(normalizeStickyNoteNodes([...nodes, duplicatedNode]))
             dispatch({ type: SET_DIRTY })
         }
     }
