@@ -30,6 +30,7 @@
         "@tiptap/extension-code-block-lowlight": "^3.20.4",
         "@tiptap/extension-mention": "^3.20.4",
         "@tiptap/extension-placeholder": "^3.20.4",
+        "@tiptap/extension-table": "^3.20.4",
         "@tiptap/markdown": "^3.20.4",
         "@tiptap/pm": "^3.20.4",
         "@tiptap/react": "^3.20.4",
