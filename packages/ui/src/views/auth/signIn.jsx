@@ -206,11 +206,7 @@ const SignInPage = () => {
                         <Typography variant='h1'>Sign In</Typography>
                         {isCloud && (
                             <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
-                                Don&apos;t have an account?{' '}
-                                <Link style={{ color: `${theme.palette.primary.main}` }} to='/register'>
-                                    Sign up for free
-                                </Link>
-                                .
+                                New sign-ups are currently closed.
                             </Typography>
                         )}
                         {isEnterpriseLicensed && (
