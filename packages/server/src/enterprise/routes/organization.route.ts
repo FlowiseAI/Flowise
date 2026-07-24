@@ -1,4 +1,5 @@
 import express from 'express'
+import { IdentityManager } from '../../IdentityManager'
 import { OrganizationController } from '../controllers/organization.controller'
 
 const router = express.Router()
@@ -16,11 +17,19 @@ router.get('/customer-default-source', organizationController.getCustomerWithDef
 
 router.get('/additional-seats-proration', organizationController.getAdditionalSeatsProration)
 
-router.post('/update-additional-seats', organizationController.updateAdditionalSeats)
+router.post(
+    '/update-additional-seats',
+    IdentityManager.disableForCloud('Plan changes are currently disabled.'),
+    organizationController.updateAdditionalSeats
+)
 
 router.get('/plan-proration', organizationController.getPlanProration)
 
-router.post('/update-subscription-plan', organizationController.updateSubscriptionPlan)
+router.post(
+    '/update-subscription-plan',
+    IdentityManager.disableForCloud('Plan changes are currently disabled.'),
+    organizationController.updateSubscriptionPlan
+)
 
 router.get('/get-current-usage', organizationController.getCurrentUsage)
 

@@ -197,7 +197,8 @@ export class AccountService {
                 break
             case Platform.CLOUD: {
                 const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
-                if (user && (user.status === UserStatus.ACTIVE || user.status === UserStatus.UNVERIFIED))
+                if (!user) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'New registrations are currently closed.')
+                if (user.status === UserStatus.ACTIVE || user.status === UserStatus.UNVERIFIED)
                     throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_EMAIL_ALREADY_EXISTS)
 
                 if (!data.user.email) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_EMAIL)
@@ -364,6 +365,8 @@ export class AccountService {
             data.role = role
             const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
             if (!user) {
+                if (this.identityManager.isCloud())
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Inviting new users is currently disabled.')
                 await checkUsageLimit('users', subscriptionId, getRunningExpressApp().usageCacheManager, totalOrgUsers + 1)
 
                 // generate a temporary token

@@ -289,6 +289,16 @@ export class IdentityManager {
         }
     }
 
+    public static disableForCloud(message: string) {
+        return (_req: Request, res: Response, next: NextFunction) => {
+            const identityManager = getRunningExpressApp().identityManager
+            if (identityManager.isCloud()) {
+                return res.status(403).json({ message })
+            }
+            return next()
+        }
+    }
+
     public async createStripeCustomerPortalSession(req: Request) {
         if (!this.stripeManager) {
             throw new Error('Stripe manager is not initialized')
