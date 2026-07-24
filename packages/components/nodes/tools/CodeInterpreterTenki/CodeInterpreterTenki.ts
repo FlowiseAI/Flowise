@@ -11,6 +11,12 @@ It should be in python format NOT markdown. \
 The code should NOT be wrapped in backticks.`
 const NAME = 'code_interpreter'
 
+// Kill a single execution after this long, and cap the sandbox lifetime so an
+// orphaned session (e.g. the Flowise process exiting mid-run) can't linger to
+// Tenki's default expiry.
+const RUN_TIMEOUT_MS = 120_000
+const MAX_SANDBOX_DURATION_MS = 5 * 60 * 1000
+
 class Code_Interpreter_Tenki_Tools implements INode {
     label: string
     name: string
@@ -53,6 +59,12 @@ class Code_Interpreter_Tenki_Tools implements INode {
                 rows: 4,
                 description: 'Specify the description of the tool',
                 default: DESC
+            },
+            {
+                label: 'Project ID',
+                name: 'projectId',
+                type: 'string',
+                description: 'The Tenki project ID the sandbox session is created under'
             }
         ]
     }
@@ -60,6 +72,7 @@ class Code_Interpreter_Tenki_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const toolDesc = nodeData.inputs?.toolDesc as string
         const toolName = nodeData.inputs?.toolName as string
+        const projectId = nodeData.inputs?.projectId as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const tenkiApiKey = getCredentialParam('tenkiApiKey', credentialData, nodeData)
@@ -68,6 +81,7 @@ class Code_Interpreter_Tenki_Tools implements INode {
             description: toolDesc ?? DESC,
             name: toolName ?? NAME,
             apiKey: tenkiApiKey,
+            projectId,
             schema: z.object({
                 input: z.string().describe('Python code to be executed in the sandbox environment')
             })
@@ -80,6 +94,7 @@ type TenkiToolInput = {
     name: string
     description: string
     apiKey: string
+    projectId: string
     schema: any
 }
 
@@ -91,6 +106,7 @@ export class TenkiTool extends StructuredTool {
     name = NAME
     description = DESC
     apiKey: string
+    projectId: string
     schema
 
     constructor(options: TenkiToolParams & TenkiToolInput) {
@@ -98,6 +114,7 @@ export class TenkiTool extends StructuredTool {
         this.description = options.description
         this.name = options.name
         this.apiKey = options.apiKey
+        this.projectId = options.projectId
         this.schema = options.schema
     }
 
@@ -106,6 +123,7 @@ export class TenkiTool extends StructuredTool {
             name: options.name,
             description: options.description,
             apiKey: options.apiKey,
+            projectId: options.projectId,
             schema: options.schema
         })
     }
@@ -119,9 +137,25 @@ export class TenkiTool extends StructuredTool {
         let session: Session | undefined
         try {
             const sandbox = new TenkiSandbox({ authToken: this.apiKey })
-            session = await sandbox.create({ cpuCores: 1, memoryMb: 2048 })
+            session = await sandbox.create({
+                projectId: this.projectId,
+                cpuCores: 1,
+                memoryMb: 2048,
+                maxDurationMs: MAX_SANDBOX_DURATION_MS
+            })
 
-            const result = await session.run(['python3', '-c', arg.input as string])
+            const handle = session.run(['python3', '-c', arg.input as string])
+            let timeoutId: ReturnType<typeof setTimeout> | undefined
+            const result = await Promise.race([
+                handle,
+                new Promise<never>((_, reject) => {
+                    timeoutId = setTimeout(() => {
+                        void handle.kill().catch(() => {})
+                        reject(new Error(`Execution timed out after ${RUN_TIMEOUT_MS / 1000}s and was killed`))
+                    }, RUN_TIMEOUT_MS)
+                })
+            ])
+            clearTimeout(timeoutId)
 
             const stdout = new TextDecoder().decode(result.stdout).trim()
             const stderr = new TextDecoder().decode(result.stderr).trim()
@@ -131,9 +165,12 @@ export class TenkiTool extends StructuredTool {
             }
             return stdout || stderr || '(no output)'
         } catch (e) {
-            return typeof e === 'string' ? e : JSON.stringify(e, null, 2)
+            const message = e instanceof Error ? e.message : typeof e === 'string' ? e : String(e)
+            return `Error executing code in Tenki sandbox: ${message}`
         } finally {
-            if (session) await session.close()
+            if (session) {
+                await session.close().catch(() => {})
+            }
         }
     }
 }
