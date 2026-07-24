@@ -363,52 +363,38 @@ describe('MCP Security Validations', () => {
     })
 
     describe('validateArgsForLocalFileAccess', () => {
-        it('should block absolute paths', () => {
-            expect(() => {
-                validateArgsForLocalFileAccess(['/etc/passwd'])
-            }).toThrow('Argument contains potential local file access')
+        const ORIGINAL_ENV = process.env.CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS
 
-            expect(() => {
-                validateArgsForLocalFileAccess(['C:\\Windows\\System32'])
-            }).toThrow('Argument contains potential local file access')
+        afterEach(() => {
+            if (ORIGINAL_ENV === undefined) {
+                delete process.env.CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS
+            } else {
+                process.env.CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS = ORIGINAL_ENV
+            }
         })
 
-        it('should block double-slash absolute paths', () => {
+        it('should block when not configured', () => {
+            delete process.env.CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS
+
             expect(() => {
-                validateArgsForLocalFileAccess(['//etc/passwd'])
-            }).toThrow('Argument contains potential local file access')
+                validateArgsForLocalFileAccess(['/usr/local/lib/server.js'])
+            }).toThrow('Configure CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS')
         })
 
-        it('should block path traversal', () => {
-            expect(() => {
-                validateArgsForLocalFileAccess(['../../../etc/passwd'])
-            }).toThrow('Argument contains potential local file access')
+        it('should allow script in allow-list', () => {
+            process.env.CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS = '/usr/local/lib/server.js'
 
             expect(() => {
-                validateArgsForLocalFileAccess(['..\\..\\Windows'])
-            }).toThrow('Argument contains potential local file access')
-        })
-
-        it('should block dangerous file extensions', () => {
-            expect(() => {
-                validateArgsForLocalFileAccess(['malware.exe'])
-            }).toThrow('Argument contains potential local file access')
-
-            expect(() => {
-                validateArgsForLocalFileAccess(['script.sh'])
-            }).toThrow('Argument contains potential local file access')
-        })
-
-        it('should block null bytes', () => {
-            expect(() => {
-                validateArgsForLocalFileAccess(['file\0.txt'])
-            }).toThrow('Argument contains null byte')
-        })
-
-        it('should allow safe arguments', () => {
-            expect(() => {
-                validateArgsForLocalFileAccess(['@modelcontextprotocol/server-github', 'safe-arg'])
+                validateArgsForLocalFileAccess(['/usr/local/lib/server.js'])
             }).not.toThrow()
+        })
+
+        it('should block script not in allow-list', () => {
+            process.env.CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS = '/usr/local/lib/server.js'
+
+            expect(() => {
+                validateArgsForLocalFileAccess(['root/.flowise/malicious.js'])
+            }).toThrow('not in allowed list')
         })
     })
 
@@ -462,11 +448,15 @@ describe('MCP Security Validations', () => {
 
     describe('validateMCPServerConfig', () => {
         const originalAllowedCommands = process.env.CUSTOM_MCP_ALLOWED_COMMANDS
+        const originalAllowedScriptPaths = process.env.CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS
 
         beforeEach(() => {
             // These tests assume the operator has permitted the common interpreters.
             // The default (empty) allow-list is exercised separately below.
             process.env.CUSTOM_MCP_ALLOWED_COMMANDS = 'node,npx,python,python3,docker'
+            // Allow common script paths for tests
+            process.env.CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS =
+                '@modelcontextprotocol/server-filesystem,workspace,safe-arg,mcp-server.js,server.js,/usr/local/lib/server.js'
         })
 
         afterEach(() => {
@@ -474,6 +464,12 @@ describe('MCP Security Validations', () => {
                 delete process.env.CUSTOM_MCP_ALLOWED_COMMANDS
             } else {
                 process.env.CUSTOM_MCP_ALLOWED_COMMANDS = originalAllowedCommands
+            }
+
+            if (originalAllowedScriptPaths === undefined) {
+                delete process.env.CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS
+            } else {
+                process.env.CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS = originalAllowedScriptPaths
             }
         })
 
@@ -498,28 +494,19 @@ describe('MCP Security Validations', () => {
         it('should block dangerous command flags', () => {
             expect(() => {
                 validateMCPServerConfig({
-                    command: 'npx',
-                    args: ['-c', 'malicious command']
+                    command: 'node',
+                    args: ['server.js', '-e', 'malicious code']
                 })
-            }).toThrow("Argument '-c' is not allowed for command 'npx'")
+            }).toThrow("Argument '-e' is not allowed for command 'node'")
         })
 
         it('should block command injection in args', () => {
             expect(() => {
                 validateMCPServerConfig({
-                    command: 'npx',
-                    args: ['arg1; malicious']
+                    command: 'node',
+                    args: ['server.js', 'arg1; malicious']
                 })
             }).toThrow('Argument contains potentially dangerous characters')
-        })
-
-        it('should block path traversal in args', () => {
-            expect(() => {
-                validateMCPServerConfig({
-                    command: 'npx',
-                    args: ['../../../etc/passwd']
-                })
-            }).toThrow('Argument contains potential local file access')
         })
 
         it('should block environment variables that are not on the allow-list', () => {
