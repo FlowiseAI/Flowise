@@ -82,6 +82,8 @@ export class UserService {
 
     public async createNewUser(data: Partial<User>, queryRunner: QueryRunner) {
         const user = await this.readUserByEmail(data.email, queryRunner)
+        if (!user && getRunningExpressApp().identityManager.isCloud())
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'New registrations are currently closed.')
         if (user) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.USER_EMAIL_ALREADY_EXISTS)
         if (data.credential) data.credential = this.encryptUserCredential(data.credential)
         if (!data.name) data.name = data.email

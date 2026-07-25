@@ -7,7 +7,7 @@ import { sanitizeUser } from '../../utils/sanitize.util'
 import { OrganizationUser, OrganizationUserStatus } from '../database/entities/organization-user.entity'
 import { Organization } from '../database/entities/organization.entity'
 import { GeneralRole } from '../database/entities/role.entity'
-import { User } from '../database/entities/user.entity'
+import { User, UserStatus } from '../database/entities/user.entity'
 import { WorkspaceUser } from '../database/entities/workspace-user.entity'
 import { Workspace } from '../database/entities/workspace.entity'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
@@ -214,6 +214,11 @@ export class OrganizationUserService {
     public async createOrganizationUser(data: Partial<OrganizationUser>) {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
+
+        const user = await this.userService.readUserById(data.userId, queryRunner)
+        if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+        if (user.status !== UserStatus.ACTIVE && getRunningExpressApp().identityManager.isCloud())
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'New registrations are currently closed.')
 
         const { organization, organizationUser } = await this.readOrganizationUserByOrganizationIdUserId(
             data.organizationId,

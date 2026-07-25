@@ -366,7 +366,7 @@ export class AccountService {
             const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
             if (!user) {
                 if (this.identityManager.isCloud())
-                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Inviting new users is currently disabled.')
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'New registrations are currently closed.')
                 await checkUsageLimit('users', subscriptionId, getRunningExpressApp().usageCacheManager, totalOrgUsers + 1)
 
                 // generate a temporary token
@@ -416,6 +416,8 @@ export class AccountService {
 
                 return data
             }
+            if (user.status !== UserStatus.ACTIVE && this.identityManager.isCloud())
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'New registrations are currently closed.')
             const { organizationUser } = await this.organizationUserService.readOrganizationUserByOrganizationIdUserId(
                 data.workspace.organizationId,
                 user.id,
