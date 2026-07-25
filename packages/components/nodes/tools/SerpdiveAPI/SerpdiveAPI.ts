@@ -39,11 +39,12 @@ class SerpdiveAPI_Tools implements INode {
                 type: 'options',
                 options: [
                     { label: 'Mako (fast, lean)', name: 'mako' },
+                    { label: 'Krill (free, unlimited)', name: 'krill' },
                     { label: 'Moby (full pages)', name: 'moby' }
                 ],
                 default: 'mako',
                 description:
-                    'Retrieval depth. Mako returns the fact-carrying sentences of each source (1 credit), Moby the full readable content of every page (1.5 credits)',
+                    'Retrieval depth. Mako returns the fact-carrying sentences of each source (1 credit), Krill a smaller set of them for free under fair use (one request at a time, low priority, no written answer), Moby the full readable content of every page (1.5 credits)',
                 additionalParams: true,
                 optional: true
             },
