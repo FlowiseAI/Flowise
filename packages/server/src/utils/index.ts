@@ -1096,6 +1096,24 @@ export const replaceInputsWithConfig = (
 ) => {
     const types = 'inputs'
 
+    // Pre-process overrideConfig: if a key matches a variable override (custom variable),
+    // move it to overrideConfig.vars so getGlobalVariable can resolve it properly.
+    // This allows users to pass overrideConfig: { myVariable: "value" } instead of
+    // overrideConfig: { vars: { myVariable: "value" } }
+    if (variableOverrides && variableOverrides.length > 0) {
+        if (!overrideConfig['vars']) {
+            overrideConfig['vars'] = {}
+        }
+        for (const configKey of Object.keys(overrideConfig)) {
+            if (configKey === 'analytics' || configKey === 'vars' || configKey === 'sessionId') continue
+            const varOverride = variableOverrides.find((v) => v.name === configKey)
+            if (varOverride?.enabled) {
+                overrideConfig['vars'][configKey] = overrideConfig[configKey]
+                delete overrideConfig[configKey]
+            }
+        }
+    }
+
     const isParameterEnabled = (nodeType: string, paramName: string): boolean => {
         if (!nodeOverrides[nodeType]) return false
         const parameter = nodeOverrides[nodeType].find((param: any) => param.name === paramName)
