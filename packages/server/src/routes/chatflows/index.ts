@@ -31,7 +31,7 @@ router.put(
 )
 
 // DELETE
-router.delete(['/', '/:id'], checkAnyPermission('chatflows:delete,agentflows:delete'), chatflowsController.deleteChatflow)
+router.delete(['/', '/:id'], checkAnyPermission('chatflows:delete,agentflows:delete,assistants:delete'), chatflowsController.deleteChatflow)
 
 // WEBHOOK SECRET
 router.post('/:id/webhook-secret', checkAnyPermission('chatflows:update,agentflows:update'), chatflowsController.setWebhookSecret)

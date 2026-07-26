@@ -1,10 +1,75 @@
-import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
+import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
 import { checkDenyList, secureFetch } from '../../../src/httpSecurity'
+
+const DEFAULT_MCP_TOOL_DESCRIPTION_MAX_LENGTH = 1024
+const DEFAULT_MCP_TOOL_NAME_MAX_LENGTH = 128
+
+function getMCPToolDescriptionMaxLength(): number {
+    const parsed = Number(process.env.CUSTOM_MCP_TOOL_DESCRIPTION_MAX_LENGTH)
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MCP_TOOL_DESCRIPTION_MAX_LENGTH
+}
+
+function getMCPToolNameMaxLength(): number {
+    const parsed = Number(process.env.CUSTOM_MCP_TOOL_NAME_MAX_LENGTH)
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MCP_TOOL_NAME_MAX_LENGTH
+}
+
+const MCP_INJECTION_PATTERNS: ReadonlyArray<RegExp> = [
+    /\bCRITICAL\b/,
+    /\bMANDATORY\b/,
+    /\bYOU\s+MUST\b/i,
+    /\bMUST\s+(?:call|use|invoke|execute|run|send)\b/i,
+    /ignore\s+(?:previous|all|above|prior)\s+(?:instructions?|prompts?|rules?)/i,
+    /disregard\s+(?:the\s+)?(?:above|previous|prior|system)/i,
+    /override\s+(?:the\s+)?(?:system|prompt|instructions?)/i,
+    /forget\s+(?:your|the|all)\s+(?:instructions?|prompts?|rules?)/i,
+    /before\s+(?:using|calling|invoking)\s+any\s+other/i,
+    /call\s+this\s+tool\s+first/i,
+    /send\s+(?:the\s+)?user(?:'s|s)?\s+(?:message|input|data|conversation)/i,
+    /security\s+compliance/i,
+    /required\s+for\s+(?:compliance|security|auditing)/i
+]
+
+export function sanitizeMCPToolDescription(description: string): string {
+    const maxLen = getMCPToolDescriptionMaxLength()
+    // Strip C0 control chars (except \t \n \r) and DEL
+    // eslint-disable-next-line no-control-regex
+    let cleaned = description.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Strip zero-width and directional override unicode characters used in hidden prompt injection
+    cleaned = cleaned.replace(/[\u200B-\u200D\u2028\u2029\u202A-\u202E\u2060\uFEFF]/gu, '')
+    if (cleaned.length > maxLen) {
+        cleaned = cleaned.slice(0, maxLen)
+    }
+    for (const pattern of MCP_INJECTION_PATTERNS) {
+        if (pattern.test(cleaned)) {
+            console.warn(
+                `[MCP Security] Suspicious instruction-injection pattern detected in tool description. ` +
+                    `Pattern: ${pattern}. Description snippet: "${cleaned.slice(0, 120)}"`
+            )
+            break
+        }
+    }
+    return cleaned
+}
+
+export function sanitizeMCPToolName(name: string): string {
+    const maxLen = getMCPToolNameMaxLength()
+    const trimmed = name.trim()
+    // Allow alphanumeric, underscore, hyphen — matches MCP spec and existing CustomMcpServerTool.formatToolName
+    const cleaned = trimmed.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, maxLen)
+    if (cleaned !== trimmed) {
+        console.warn(
+            `[MCP Security] Tool name sanitized from "${name.slice(0, 64)}" to "${cleaned.slice(0, 64)}". ` +
+                `Non-conforming MCP server may indicate a misconfigured or malicious server.`
+        )
+    }
+    return cleaned
+}
 
 export class MCPToolkit extends BaseToolkit {
     tools: Tool[] = []
@@ -125,10 +190,12 @@ export class MCPToolkit extends BaseToolkit {
                 throw new Error('Client is not initialized')
             }
             const argsSchema = tool.inputSchema ?? { type: 'object', properties: {} }
+            const safeName = sanitizeMCPToolName(tool.name)
+            const safeDescription = sanitizeMCPToolDescription(tool.description || tool.name)
             return await MCPTool({
                 toolkit: this,
-                name: tool.name,
-                description: tool.description || tool.name,
+                name: safeName,
+                description: safeDescription,
                 argsSchema
             })
         })
@@ -179,49 +246,17 @@ export async function MCPTool({
 }
 
 export const validateArgsForLocalFileAccess = (args: string[]): void => {
-    const dangerousPatterns = [
-        // Absolute paths
-        /^\//, // Unix absolute paths starting with /
-        /^[a-zA-Z]:\\/, // Windows absolute paths like C:\
+    const allowedScriptPaths = (process.env.CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
 
-        // Relative paths that could escape current directory
-        /\.\.\//, // Parent directory traversal with ../
-        /\.\.\\/, // Parent directory traversal with ..\
-        /^\.\./, // Starting with ..
+    const scriptArg = args[0]
 
-        // Local file access patterns
-        /^\.\//, // Current directory with ./
-        /^~\//, // Home directory with ~/
-        /^file:\/\//, // File protocol
+    if (allowedScriptPaths.length === 0)
+        throw new Error('Custom MCP script execution disabled. Configure CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS environment variable.')
 
-        // Common file extensions that shouldn't be accessed
-        /\.(exe|bat|cmd|sh|ps1|vbs|scr|com|pif|dll|sys)$/i,
-
-        // File flags and options that could access local files
-        /^--?(?:file|input|output|config|load|save|import|export|read|write)=/i,
-        /^--?(?:file|input|output|config|load|save|import|export|read|write)$/i
-    ]
-
-    for (const arg of args) {
-        if (typeof arg !== 'string') continue
-
-        // Check for dangerous patterns
-        for (const pattern of dangerousPatterns) {
-            if (pattern.test(arg)) {
-                throw new Error(`Argument contains potential local file access: "${arg}"`)
-            }
-        }
-
-        // Check for null bytes
-        if (arg.includes('\0')) {
-            throw new Error(`Argument contains null byte: "${arg}"`)
-        }
-
-        // Check for very long paths that might be used for buffer overflow attacks
-        if (arg.length > 1000) {
-            throw new Error(`Argument is suspiciously long (${arg.length} characters): "${arg.substring(0, 100)}..."`)
-        }
-    }
+    if (!allowedScriptPaths.includes(scriptArg)) throw new Error('Custom MCP script path not in allowed list.')
 }
 
 export const validateCommandInjection = (args: string[]): void => {
@@ -249,12 +284,21 @@ export const validateCommandInjection = (args: string[]): void => {
     }
 }
 
+/**
+ * Validates user-supplied env vars against the operator-controlled allow-list in
+ * `CUSTOM_MCP_ALLOWED_ENV_VARS` (comma-separated names). Empty = none allowed.
+ */
 export const validateEnvironmentVariables = (env: Record<string, any>): void => {
-    const dangerousEnvVars = ['PATH', 'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH', 'NODE_OPTIONS']
+    const allowedEnvVars = new Set(
+        (process.env.CUSTOM_MCP_ALLOWED_ENV_VARS ?? '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+    )
 
     for (const [key, value] of Object.entries(env)) {
-        if (dangerousEnvVars.includes(key)) {
-            throw new Error(`Environment variable '${key}' modification is not allowed`)
+        if (!allowedEnvVars.has(key)) {
+            throw new Error(`Environment variable '${key}' is not allowed. Permitted: ${[...allowedEnvVars].join(', ') || '(none)'}`)
         }
 
         if (typeof value === 'string' && value.includes('\0')) {
@@ -362,17 +406,33 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
     }
 }
 
+/**
+ * Validates a user-supplied MCP server configuration against operator-controlled allow-lists.
+ *
+ * For stdio configs, the command must appear in the `CUSTOM_MCP_ALLOWED_COMMANDS` allow-list
+ * (comma-separated, empty = none allowed). The list is empty by default, so no command can run
+ * until an operator explicitly opts in. To enable local/custom stdio MCP servers, set
+ * `CUSTOM_MCP_PROTOCOL=stdio` and `CUSTOM_MCP_ALLOWED_COMMANDS` in your env file
+ * (see docker/.env.example, docker/worker/.env.example, packages/server/.env.example).
+ */
 export const validateMCPServerConfig = (serverParams: any): void => {
     // Validate the entire server configuration
     if (!serverParams || typeof serverParams !== 'object') {
         throw new Error('Invalid server configuration')
     }
 
-    // Command allowlist - only allow specific safe commands
-    const allowedCommands = ['node', 'npx', 'python', 'python3', 'docker']
+    if (serverParams.cwd != null) {
+        throw new Error('cwd parameter is not allowed in MCP server configuration')
+    }
+
+    // Command allowlist - operator-controlled via CUSTOM_MCP_ALLOWED_COMMANDS (empty = none allowed)
+    const allowedCommands = (process.env.CUSTOM_MCP_ALLOWED_COMMANDS ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
 
     if (serverParams.command && !allowedCommands.includes(serverParams.command)) {
-        throw new Error(`Command '${serverParams.command}' is not allowed. Allowed commands: ${allowedCommands.join(', ')}`)
+        throw new Error(`Command '${serverParams.command}' is not allowed. Permitted: ${allowedCommands.join(', ') || '(none)'}`)
     }
 
     // Validate arguments if present

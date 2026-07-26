@@ -1,6 +1,15 @@
-import { isPathTraversal, isUnsafeFilePath, validateMimeTypeAndExtensionMatch, validateVectorStorePath } from './validator'
+import {
+    getSafeFilePath,
+    isPathTraversal,
+    isUnsafeFilePath,
+    isValidURL,
+    validateMimeTypeAndExtensionMatch,
+    validateVectorStorePath,
+    validateSQLitePath
+} from './validator'
 import path from 'path'
 import { getUserHome } from './utils'
+import * as utils from './utils'
 
 describe('isPathTraversal', () => {
     describe('returns true for dangerous patterns', () => {
@@ -463,6 +472,327 @@ describe('validateVectorStorePath', () => {
         it('should return default path when undefined', () => {
             const userHome = getUserHome()
             expect(validateVectorStorePath(undefined)).toBe(path.join(userHome, '.flowise', 'vectorstore'))
+        })
+    })
+})
+
+describe('validateSQLitePath', () => {
+    const userHome = getUserHome()
+    const defaultFlowiseDir = path.join(userHome, '.flowise')
+
+    describe('valid paths', () => {
+        it('should resolve a simple filename to ~/.flowise/<filename>', () => {
+            const result = validateSQLitePath('mydb.sqlite')
+            expect(result).toBe(path.join(defaultFlowiseDir, 'mydb.sqlite'))
+        })
+
+        it('should resolve a relative subdirectory path within ~/.flowise', () => {
+            const result = validateSQLitePath('dbs/mydb.sqlite')
+            expect(result).toBe(path.join(defaultFlowiseDir, 'dbs', 'mydb.sqlite'))
+        })
+
+        it('should accept an absolute path within ~/.flowise', () => {
+            const absolutePath = path.join(defaultFlowiseDir, 'mydb.sqlite')
+            const result = validateSQLitePath(absolutePath)
+            expect(result).toBe(absolutePath)
+        })
+
+        it('should accept an absolute path in a nested directory within ~/.flowise', () => {
+            const absolutePath = path.join(defaultFlowiseDir, 'dbs', 'project', 'mydb.sqlite')
+            const result = validateSQLitePath(absolutePath)
+            expect(result).toBe(absolutePath)
+        })
+
+        it('should return an absolute path for any valid input', () => {
+            const result = validateSQLitePath('test.db')
+            expect(path.isAbsolute(result)).toBe(true)
+        })
+    })
+
+    describe('empty / missing path', () => {
+        it('should throw when path is undefined', () => {
+            expect(() => validateSQLitePath(undefined)).toThrow('Invalid SQLite path: database path is required')
+        })
+
+        it('should throw when path is empty string', () => {
+            expect(() => validateSQLitePath('')).toThrow('Invalid SQLite path: database path is required')
+        })
+
+        it('should throw when path is whitespace only', () => {
+            expect(() => validateSQLitePath('   ')).toThrow('Invalid SQLite path: database path is required')
+        })
+    })
+
+    describe('path traversal attacks', () => {
+        it.each([
+            ['..', 'bare double-dot'],
+            ['../etc/passwd', 'path traversal to /etc'],
+            ['../../../../../../etc/passwd', 'multiple levels of traversal'],
+            ['dbs/../../etc/passwd', 'traversal in middle of path'],
+            ['..\\..\\windows\\system32', 'Windows-style traversal']
+        ])('should reject %s (%s)', (maliciousPath) => {
+            expect(() => validateSQLitePath(maliciousPath)).toThrow('Invalid SQLite path: path traversal attempt detected')
+        })
+    })
+
+    describe('encoded path traversal', () => {
+        it.each([
+            ['%2e%2e/etc/passwd', 'URL-encoded ..'],
+            ['%2e%2e%2fetc', 'URL-encoded ../etc'],
+            ['path%2f%2e%2e%2fetc', 'URL-encoded mid-path traversal'],
+            ['path%5c%2e%2e%5cetc', 'URL-encoded Windows traversal']
+        ])('should reject %s (%s)', (encodedPath) => {
+            expect(() => validateSQLitePath(encodedPath)).toThrow('Invalid SQLite path: encoded path traversal attempt detected')
+        })
+    })
+
+    describe('control characters and null bytes', () => {
+        it('should reject path with null byte', () => {
+            expect(() => validateSQLitePath('db\0.sqlite')).toThrow('Invalid SQLite path: null bytes or control characters detected')
+        })
+
+        it('should reject path with control character', () => {
+            expect(() => validateSQLitePath('db\x01.sqlite')).toThrow('Invalid SQLite path: null bytes or control characters detected')
+        })
+    })
+
+    describe('disallowed absolute paths', () => {
+        it('should reject Windows absolute path (C:\\)', () => {
+            expect(() => validateSQLitePath('C:\\Windows\\System32\\db.sqlite')).toThrow(
+                'Invalid SQLite path: Windows absolute paths are not allowed'
+            )
+        })
+
+        it('should reject UNC path (\\\\server\\share)', () => {
+            expect(() => validateSQLitePath('\\\\server\\share\\db.sqlite')).toThrow('Invalid SQLite path: UNC paths are not allowed')
+        })
+
+        it('should reject /etc paths (RCE attack vector)', () => {
+            expect(() => validateSQLitePath('/etc/chromium/exploit.conf')).toThrow(/Invalid SQLite path:/)
+        })
+
+        it('should reject /tmp path', () => {
+            expect(() => validateSQLitePath('/tmp/db.sqlite')).toThrow(/Invalid SQLite path:/)
+        })
+
+        it('should reject path to frontend build directory (XSS attack vector)', () => {
+            expect(() => validateSQLitePath('/usr/local/lib/node_modules/flowise/node_modules/flowise-ui/build/xss.html')).toThrow(
+                /Invalid SQLite path:/
+            )
+        })
+
+        it('should reject path to home directory outside .flowise', () => {
+            const outsidePath = path.join(userHome, 'Documents', 'db.sqlite')
+            expect(() => validateSQLitePath(outsidePath)).toThrow(/Invalid SQLite path: path must be within/)
+        })
+    })
+
+    describe('DATABASE_PATH allowlist', () => {
+        const originalDatabasePath = process.env.DATABASE_PATH
+
+        afterEach(() => {
+            if (originalDatabasePath === undefined) {
+                delete process.env.DATABASE_PATH
+            } else {
+                process.env.DATABASE_PATH = originalDatabasePath
+            }
+        })
+
+        it('should accept database file under DATABASE_PATH when set', () => {
+            const customBase = path.join(userHome, 'custom-flowise-data')
+            process.env.DATABASE_PATH = customBase
+            const dbPath = path.join(customBase, 'database.sqlite')
+            expect(validateSQLitePath(dbPath)).toBe(path.resolve(dbPath))
+        })
+
+        it('should still reject paths outside DATABASE_PATH and .flowise', () => {
+            process.env.DATABASE_PATH = path.join(userHome, 'custom-flowise-data')
+            expect(() => validateSQLitePath('/etc/chromium/exploit.conf')).toThrow(/Invalid SQLite path:/)
+        })
+    })
+
+    describe('PATH_TRAVERSAL_SAFETY=false bypasses all checks', () => {
+        beforeEach(() => {
+            process.env.PATH_TRAVERSAL_SAFETY = 'false'
+        })
+        afterEach(() => {
+            delete process.env.PATH_TRAVERSAL_SAFETY
+        })
+
+        it('should allow arbitrary absolute Unix path', () => {
+            expect(validateSQLitePath('/tmp/db.sqlite')).toBe('/tmp/db.sqlite')
+        })
+
+        it('should allow path to /etc (would be blocked normally)', () => {
+            expect(validateSQLitePath('/etc/chromium/exploit.conf')).toBe('/etc/chromium/exploit.conf')
+        })
+
+        it('should allow path containing ..', () => {
+            const result = validateSQLitePath('../db.sqlite')
+            expect(typeof result).toBe('string')
+        })
+
+        it('should return default when undefined', () => {
+            expect(validateSQLitePath(undefined)).toBe(path.join(defaultFlowiseDir, 'database.sqlite'))
+        })
+
+        it('should resolve relative path within .flowise when no absolute path given', () => {
+            const result = validateSQLitePath('test.db')
+            expect(result).toBe(path.join(defaultFlowiseDir, 'test.db'))
+        })
+    })
+
+    describe('Windows case-insensitive path comparison', () => {
+        // Simulate Windows: getUserHome() returns mixed-case path, user supplies lowercase version.
+        // path.normalize() on Unix preserves casing, so this exercises the toLowerCase branch.
+        beforeEach(() => {
+            Object.defineProperty(process, 'platform', { value: 'win32', configurable: true })
+            jest.spyOn(utils, 'getUserHome').mockReturnValue('/Users/TestUser')
+        })
+
+        afterEach(() => {
+            Object.defineProperty(process, 'platform', { value: 'darwin', configurable: true })
+            jest.restoreAllMocks()
+        })
+
+        it('should accept a valid path whose casing differs from the allowed directory', () => {
+            // allowedDir = /Users/TestUser/.flowise (mixed case from getUserHome mock)
+            // user input  = /users/testuser/.flowise/mydb.sqlite (all lowercase)
+            const result = validateSQLitePath('/users/testuser/.flowise/mydb.sqlite')
+            expect(result).toBe('/users/testuser/.flowise/mydb.sqlite')
+        })
+
+        it('should still reject a path outside .flowise even after case normalisation', () => {
+            expect(() => validateSQLitePath('/users/testuser/documents/mydb.sqlite')).toThrow(/Invalid SQLite path:/)
+        })
+    })
+})
+
+describe('isValidURL', () => {
+    describe('accepts valid http/https URLs', () => {
+        it.each([
+            ['bare http host', 'http://localhost:3000'],
+            ['https with path', 'https://flowise.example.com/api'],
+            ['http with port and path', 'http://192.168.1.1:3000/api/v1'],
+            ['https with query string', 'https://example.com/search?q=hello']
+        ])('should accept %s', (_desc, url) => {
+            expect(isValidURL(url)).toBe(true)
+        })
+    })
+
+    describe('rejects non-http(s) protocols', () => {
+        it.each([
+            ['file protocol', 'file:///etc/passwd'],
+            ['javascript protocol', 'javascript:alert(1)'],
+            ['ftp protocol', 'ftp://example.com'],
+            ['data URI', 'data:text/html,<script>alert(1)</script>']
+        ])('should reject %s', (_desc, url) => {
+            expect(isValidURL(url)).toBe(false)
+        })
+    })
+
+    describe('rejects URLs with hash fragments (CVE-2022-24785 bypass entry point)', () => {
+        it.each([
+            ['plain hash', 'http://localhost:3000/#section'],
+            ['hash with injection payload', 'https://evil.com/#";\nrequire("child_process").exec("id");//'],
+            ['hash with quote escape', 'http://localhost:3000/#";malicious;//']
+        ])('should reject %s', (_desc, url) => {
+            expect(isValidURL(url)).toBe(false)
+        })
+    })
+
+    describe('rejects URLs containing JS string-breaking characters', () => {
+        it.each([
+            ['double quote', 'http://localhost:3000/path"suffix'],
+            ['single quote', "http://localhost:3000/path'suffix"],
+            ['backtick', 'http://localhost:3000/path`suffix'],
+            ['backslash', 'http://localhost:3000/path\\suffix'],
+            ['newline', 'http://localhost:3000/path\nsuffix'],
+            ['carriage return', 'http://localhost:3000/path\rsuffix'],
+            ['tab', 'http://localhost:3000/path\tsuffix']
+        ])('should reject URL with %s', (_desc, url) => {
+            expect(isValidURL(url)).toBe(false)
+        })
+    })
+
+    describe('rejects malformed or empty inputs', () => {
+        it.each([
+            ['empty string', ''],
+            ['not a URL', 'not-a-url'],
+            ['relative path', '/api/v1/prediction/abc']
+        ])('should reject %s', (_desc, url) => {
+            expect(isValidURL(url)).toBe(false)
+        })
+    })
+})
+
+describe('getSafeFilePath', () => {
+    const base = path.resolve('/tmp/s3fileloader-abc123')
+
+    describe('returns a contained absolute path for safe keys', () => {
+        it.each([
+            ['simple filename', 'report.pdf'],
+            ['nested key', 'documents/2024/report.pdf'],
+            ['internal dot-dot that stays inside', 'a/b/../c.txt'],
+            ['leading ./', './notes.txt'],
+            ['name starting with dot-dot (not traversal)', '..foo.txt'],
+            ['triple dot name', '...'],
+            ['dot-dot prefixed dir', '..hidden/file.txt'],
+            ['encoded space in legitimate key', 'my%20report.pdf']
+        ])('should resolve %s within base', (_desc, key) => {
+            const resolved = getSafeFilePath(base, key)
+            const relative = path.relative(base, resolved)
+            expect(path.isAbsolute(resolved)).toBe(true)
+            expect(relative === '..' || relative.startsWith('..' + path.sep)).toBe(false)
+            expect(path.isAbsolute(relative)).toBe(false)
+        })
+    })
+
+    describe('throws on path traversal / absolute keys', () => {
+        it.each([
+            ['parent traversal', '../escape.txt'],
+            ['deep traversal', '../../../../tmp/flowise-poc.txt'],
+            ['traversal mid-path', 'a/../../escape.txt'],
+            ['bare dot-dot', '..'],
+            ['absolute unix path', '/etc/cron.d/evil'],
+            ['key resolving to base itself', '.'],
+            ['url-encoded traversal', '%2e%2e%2fescape.txt'],
+            ['url-encoded traversal mixed', '%2e%2e/escape.txt'],
+            ['partially-encoded slash traversal', '..%2f..%2fescape.txt']
+        ])('should reject %s', (_desc, key) => {
+            expect(() => getSafeFilePath(base, key)).toThrow(/path traversal attempt detected/)
+        })
+    })
+
+    describe('throws on null bytes', () => {
+        it.each([
+            ['literal null byte', 'evil\0.txt'],
+            ['encoded null byte', 'evil%00.txt']
+        ])('should reject %s', (_desc, key) => {
+            expect(() => getSafeFilePath(base, key)).toThrow(/null byte detected/)
+        })
+    })
+
+    describe('throws on missing/invalid keys', () => {
+        it.each([
+            ['empty string', ''],
+            ['undefined', undefined],
+            ['null', null]
+        ])('should reject %s', (_desc, key) => {
+            expect(() => getSafeFilePath(base, key as any)).toThrow(/key is required/)
+        })
+    })
+
+    describe('PATH_TRAVERSAL_SAFETY=false bypasses the containment check', () => {
+        beforeEach(() => {
+            process.env.PATH_TRAVERSAL_SAFETY = 'false'
+        })
+        afterEach(() => {
+            delete process.env.PATH_TRAVERSAL_SAFETY
+        })
+
+        it('returns the resolved (escaping) path without throwing', () => {
+            expect(() => getSafeFilePath(base, '../escape.txt')).not.toThrow()
         })
     })
 })

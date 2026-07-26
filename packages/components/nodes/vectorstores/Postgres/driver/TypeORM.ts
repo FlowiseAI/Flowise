@@ -1,6 +1,7 @@
 import { DataSourceOptions } from 'typeorm'
 import { VectorStoreDriver } from './Base'
 import { FLOWISE_CHATID, ICommonObject } from '../../../../src'
+import { sanitizeDataSourceOptions } from '../../../../src/sanitizeDataSourceOptions'
 import { TypeORMVectorStore, TypeORMVectorStoreArgs, TypeORMVectorStoreDocument } from '@langchain/community/vectorstores/typeorm'
 import { VectorStore } from '@langchain/core/vectorstores'
 import { Document } from '@langchain/core/documents'
@@ -27,6 +28,7 @@ export class TypeORMDriver extends VectorStoreDriver {
                 } catch (exception) {
                     throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
                 }
+                additionalConfiguration = sanitizeDataSourceOptions(additionalConfiguration)
             }
 
             this._postgresConnectionOptions = {

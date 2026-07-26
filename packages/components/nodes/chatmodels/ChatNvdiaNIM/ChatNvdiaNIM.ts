@@ -2,6 +2,7 @@ import { BaseCache } from '@langchain/core/caches'
 import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 class ChatNvdiaNIM_ChatModels implements INode {
     label: string
@@ -157,6 +158,8 @@ class ChatNvdiaNIM_ChatModels implements INode {
                 throw new Error("Invalid JSON in the Chat NVIDIA NIM's baseOptions: " + exception)
             }
         }
+
+        if (basePath) await checkDenyList(basePath)
 
         if (basePath || parsedBaseOptions) {
             obj.configuration = {

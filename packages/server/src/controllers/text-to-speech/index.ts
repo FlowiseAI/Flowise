@@ -38,6 +38,12 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             } else {
                 // Fallback: get workspaceId from chatflow when req.user.activeWorkspaceId is not set (from whitelist API)
                 chatflow = await chatflowsService.getChatflowById(chatflowId)
+                if (!chatflow.isPublic) {
+                    throw new InternalFlowiseError(
+                        StatusCodes.UNAUTHORIZED,
+                        `Error: textToSpeechController.generateTextToSpeech - unauthorized access to non-public chatflow!`
+                    )
+                }
                 workspaceId = chatflow.workspaceId
             }
 
@@ -198,13 +204,6 @@ const abortTextToSpeech = async (req: Request, res: Response) => {
         // Abort the TTS generation using existing pool
         const ttsAbortId = `tts_${chatId}_${chatMessageId}`
         appServer.abortControllerPool.abort(ttsAbortId)
-
-        // Also abort the main chat flow AbortController for auto-TTS
-        const chatFlowAbortId = `${chatflowId}_${chatId}`
-        if (appServer.abortControllerPool.get(chatFlowAbortId)) {
-            appServer.abortControllerPool.abort(chatFlowAbortId)
-            appServer.sseStreamer.streamMetadataEvent(chatId, { chatId, chatMessageId })
-        }
 
         // Send abort event to client
         appServer.sseStreamer.streamTTSAbortEvent(chatId, chatMessageId)

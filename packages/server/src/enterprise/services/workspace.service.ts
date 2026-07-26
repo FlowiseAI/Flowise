@@ -137,7 +137,8 @@ export class WorkspaceService {
         await queryRunner.connect()
 
         const oldWorkspaceData = await this.readWorkspaceById(newWorkspaceData.id, queryRunner)
-        if (!oldWorkspaceData) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)
+        if (!oldWorkspaceData || oldWorkspaceData.organizationId !== newWorkspaceData.organizationId)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)
         const user = await this.userService.readUserById(newWorkspaceData.updatedBy, queryRunner)
         if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
         if (newWorkspaceData.name) {
@@ -161,9 +162,10 @@ export class WorkspaceService {
         return updateWorkspace
     }
 
-    public async deleteWorkspaceById(queryRunner: QueryRunner, workspaceId: string) {
+    public async deleteWorkspaceById(queryRunner: QueryRunner, workspaceId: string, activeOrganizationId: string) {
         const workspace = await this.readWorkspaceById(workspaceId, queryRunner)
-        if (!workspace) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)
+        if (!workspace || workspace.organizationId !== activeOrganizationId)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)
 
         // First get all related entities that need to be deleted
         const chatflows = await queryRunner.manager.findBy(ChatFlow, { workspaceId })

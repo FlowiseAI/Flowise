@@ -4,21 +4,21 @@
 # Run image
 # docker run -d -p 3000:3000 flowise
 
-FROM node:20-alpine
+FROM node:24-alpine
 
 # Install system dependencies and build tools
 RUN apk update && \
     apk add --no-cache \
-        libc6-compat \
-        python3 \
-        make \
-        g++ \
-        build-base \
-        cairo-dev \
-        pango-dev \
-        chromium \
-        curl && \
-    npm install -g pnpm
+    libc6-compat \
+    python3 \
+    make \
+    g++ \
+    build-base \
+    cairo-dev \
+    pango-dev \
+    chromium \
+    curl && \
+    npm install -g pnpm@10.26.0
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser

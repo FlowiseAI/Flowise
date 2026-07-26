@@ -9,12 +9,15 @@ import { UsageCacheManager } from '../../UsageCacheManager'
 import { ChatFlow, EnumChatflowType } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
+import { ScheduleTriggerType } from '../../database/entities/ScheduleRecord'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { Workspace } from '../../enterprise/database/entities/workspace.entity'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { ScheduleBeat } from '../../schedule/ScheduleBeat'
 import documentStoreService from '../../services/documentstore'
+import scheduleService from '../../services/schedule'
 import {
     constructGraphs,
     decryptCredentialData,
@@ -24,16 +27,13 @@ import {
     getTelemetryFlowObj,
     isFlowValidForStream
 } from '../../utils'
-import { sanitizeAllowedUploadMimeTypesFromConfig } from '../../utils/fileValidation'
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
-import { sanitizeFlowDataForPublicEndpoint } from '../../utils/sanitizeFlowData'
+import { sanitizeAllowedUploadMimeTypesFromConfig } from '../../utils/fileValidation'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import { updateStorageUsage } from '../../utils/quotaUsage'
-import { ScheduleTriggerType } from '../../database/entities/ScheduleRecord'
-import scheduleService from '../../services/schedule'
-import { ScheduleBeat } from '../../schedule/ScheduleBeat'
+import { sanitizeFlowDataForPublicEndpoint } from '../../utils/sanitizeFlowData'
 
 export const enum ChatflowErrorMessage {
     INVALID_CHATFLOW_TYPE = 'Invalid Chatflow Type',
@@ -119,11 +119,18 @@ const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any
     }
 }
 
-const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: string): Promise<any> => {
+const deleteChatflow = async (
+    chatflowId: string,
+    orgId: string,
+    workspaceId: string,
+    userPermittedTypes: EnumChatflowType[]
+): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
 
         const chatflow = await getChatflowById(chatflowId, workspaceId)
+        if (!userPermittedTypes.includes(chatflow.type as EnumChatflowType))
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, `You do not have permission to delete this chatflow type`)
 
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
 

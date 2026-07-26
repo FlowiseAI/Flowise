@@ -43,20 +43,12 @@ export class S3StorageProvider extends BaseStorageProvider {
         }
 
         const s3Config: S3ClientConfig = {
-            region: region,
-            forcePathStyle: forcePathStyle
-        }
-
-        // Only include endpoint if customURL is not empty
-        if (customURL && customURL.trim() !== '') {
-            s3Config.endpoint = customURL
-        }
-
-        if (accessKeyId && accessKeyId.trim() !== '' && secretAccessKey && secretAccessKey.trim() !== '') {
-            s3Config.credentials = {
-                accessKeyId: accessKeyId,
-                secretAccessKey: secretAccessKey
-            }
+            region,
+            forcePathStyle,
+            ...(customURL && customURL.trim() !== '' ? { endpoint: customURL } : {}),
+            ...(accessKeyId && accessKeyId.trim() !== '' && secretAccessKey && secretAccessKey.trim() !== ''
+                ? { credentials: { accessKeyId, secretAccessKey } }
+                : {})
         }
 
         const s3Client = new S3Client(s3Config)

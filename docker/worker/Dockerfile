@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:24-alpine
 
 RUN apk add --update libc6-compat python3 make g++
 # needed for pdfjs-dist
@@ -8,7 +8,7 @@ RUN apk add --no-cache build-base cairo-dev pango-dev
 RUN apk add --no-cache chromium curl
 
 #install PNPM globally
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10.26.0
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser

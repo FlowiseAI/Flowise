@@ -1,20 +1,20 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { QueryRunner } from 'typeorm'
-import { ChatFlow } from '../../database/entities/ChatFlow'
+import { ChatFlow, EnumChatflowType } from '../../database/entities/ChatFlow'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from '../../enterprise/services/workspace-user.service'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { ChatflowType } from '../../Interface'
+import { ScheduleBeat } from '../../schedule/ScheduleBeat'
 import apiKeyService from '../../services/apikey'
 import chatflowsService from '../../services/chatflows'
+import scheduleService from '../../services/schedule'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { getPageAndLimitParams } from '../../utils/pagination'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import { RateLimiterManager } from '../../utils/rateLimit'
 import { sanitizeFlowDataForPublicEndpoint } from '../../utils/sanitizeFlowData'
-import scheduleService from '../../services/schedule'
-import { ScheduleBeat } from '../../schedule/ScheduleBeat'
 import { stripProtectedFields } from '../../utils/stripProtectedFields'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
@@ -66,7 +66,22 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
                 `Error: chatflowsController.deleteChatflow - workspace ${workspaceId} not found!`
             )
         }
-        const apiResponse = await chatflowsService.deleteChatflow(req.params.id, orgId, workspaceId)
+        const userPermittedTypes: EnumChatflowType[] = []
+        const permissions = req.user!.permissions
+        if (req.user?.isOrganizationAdmin) {
+            userPermittedTypes.push(EnumChatflowType.CHATFLOW)
+            userPermittedTypes.push(EnumChatflowType.AGENTFLOW)
+            userPermittedTypes.push(EnumChatflowType.MULTIAGENT)
+            userPermittedTypes.push(EnumChatflowType.ASSISTANT)
+        } else {
+            if (permissions.includes(`chatflows:delete`)) userPermittedTypes.push(EnumChatflowType.CHATFLOW)
+            if (permissions.includes(`agentflows:delete`)) userPermittedTypes.push(EnumChatflowType.AGENTFLOW)
+            if (permissions.includes(`agentflows:delete`)) userPermittedTypes.push(EnumChatflowType.MULTIAGENT)
+            if (permissions.includes(`assistants:delete`)) userPermittedTypes.push(EnumChatflowType.ASSISTANT)
+            if (userPermittedTypes.length === 0)
+                throw new InternalFlowiseError(StatusCodes.FORBIDDEN, `You do not have permission to delete any chatflow types`)
+        }
+        const apiResponse = await chatflowsService.deleteChatflow(req.params.id, orgId, workspaceId, userPermittedTypes)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

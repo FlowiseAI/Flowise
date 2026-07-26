@@ -1829,16 +1829,25 @@ export const getMemorySessionId = (
     if (!isInternal) {
         // Provided in API body - incomingInput.overrideConfig: { sessionId: 'abc' }
         if (incomingInput.overrideConfig?.sessionId) {
-            return incomingInput.overrideConfig?.sessionId
+            if (typeof incomingInput.overrideConfig.sessionId !== 'string') {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid sessionId: must be a string')
+            }
+            return incomingInput.overrideConfig.sessionId
         }
         // Provided in API body - incomingInput.chatId
         if (incomingInput.chatId) {
+            if (typeof incomingInput.chatId !== 'string') {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid chatId: must be a string')
+            }
             return incomingInput.chatId
         }
     }
 
     // Hard-coded sessionId in UI
     if (memoryNode && memoryNode.data.inputs?.sessionId) {
+        if (typeof memoryNode.data.inputs.sessionId !== 'string') {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid sessionId: must be a string')
+        }
         return memoryNode.data.inputs.sessionId
     }
 

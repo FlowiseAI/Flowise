@@ -1,3 +1,10 @@
+jest.mock('flowise-components', () => ({}))
+jest.mock('../../utils/getRunningExpressApp', () => ({ getRunningExpressApp: jest.fn() }))
+jest.mock('../../utils/logger', () => ({
+    __esModule: true,
+    default: { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() }
+}))
+
 import { validateFlowData, IValidationResult } from './index'
 import type { IComponentNodes, IReactFlowNode, IReactFlowEdge } from '../../Interface'
 

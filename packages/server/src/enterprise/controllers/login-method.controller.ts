@@ -162,6 +162,11 @@ export class LoginMethodController {
     public async testConfig(req: Request, res: Response, next: NextFunction) {
         let queryRunner
         try {
+            this.assertEnterprisePlatform()
+
+            const user = getLoggedInUser(req)
+            assertQueryOrganizationMatchesActiveOrg(user, req.body.organizationId)
+
             const providers = req.body.providers as { config: Record<string, unknown> }[]
             const providerName = req.body.providerName as string
             const organizationId = req.body.organizationId as string | undefined
