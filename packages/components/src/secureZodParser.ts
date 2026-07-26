@@ -640,6 +640,8 @@ export class SecureZodSchemaParser {
                             zodType = (zodType as z.ZodString).max(modifier.args[0])
                         } else if (zodType._def?.typeName === 'ZodArray') {
                             zodType = (zodType as z.ZodArray<any>).max(modifier.args[0])
+                        } else if (zodType._def?.typeName === 'ZodNumber') {
+                            zodType = (zodType as z.ZodNumber).max(modifier.args[0])
                         }
                     }
                     break
@@ -649,6 +651,8 @@ export class SecureZodSchemaParser {
                             zodType = (zodType as z.ZodString).min(modifier.args[0])
                         } else if (zodType._def?.typeName === 'ZodArray') {
                             zodType = (zodType as z.ZodArray<any>).min(modifier.args[0])
+                        } else if (zodType._def?.typeName === 'ZodNumber') {
+                            zodType = (zodType as z.ZodNumber).min(modifier.args[0])
                         }
                     }
                     break
