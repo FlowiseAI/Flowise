@@ -6,6 +6,71 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
 import { checkDenyList, secureFetch } from '../../../src/httpSecurity'
 
+const DEFAULT_MCP_TOOL_DESCRIPTION_MAX_LENGTH = 1024
+const DEFAULT_MCP_TOOL_NAME_MAX_LENGTH = 128
+
+function getMCPToolDescriptionMaxLength(): number {
+    const parsed = Number(process.env.CUSTOM_MCP_TOOL_DESCRIPTION_MAX_LENGTH)
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MCP_TOOL_DESCRIPTION_MAX_LENGTH
+}
+
+function getMCPToolNameMaxLength(): number {
+    const parsed = Number(process.env.CUSTOM_MCP_TOOL_NAME_MAX_LENGTH)
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MCP_TOOL_NAME_MAX_LENGTH
+}
+
+const MCP_INJECTION_PATTERNS: ReadonlyArray<RegExp> = [
+    /\bCRITICAL\b/,
+    /\bMANDATORY\b/,
+    /\bYOU\s+MUST\b/i,
+    /\bMUST\s+(?:call|use|invoke|execute|run|send)\b/i,
+    /ignore\s+(?:previous|all|above|prior)\s+(?:instructions?|prompts?|rules?)/i,
+    /disregard\s+(?:the\s+)?(?:above|previous|prior|system)/i,
+    /override\s+(?:the\s+)?(?:system|prompt|instructions?)/i,
+    /forget\s+(?:your|the|all)\s+(?:instructions?|prompts?|rules?)/i,
+    /before\s+(?:using|calling|invoking)\s+any\s+other/i,
+    /call\s+this\s+tool\s+first/i,
+    /send\s+(?:the\s+)?user(?:'s|s)?\s+(?:message|input|data|conversation)/i,
+    /security\s+compliance/i,
+    /required\s+for\s+(?:compliance|security|auditing)/i
+]
+
+export function sanitizeMCPToolDescription(description: string): string {
+    const maxLen = getMCPToolDescriptionMaxLength()
+    // Strip C0 control chars (except \t \n \r) and DEL
+    // eslint-disable-next-line no-control-regex
+    let cleaned = description.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Strip zero-width and directional override unicode characters used in hidden prompt injection
+    cleaned = cleaned.replace(/[\u200B-\u200D\u2028\u2029\u202A-\u202E\u2060\uFEFF]/gu, '')
+    if (cleaned.length > maxLen) {
+        cleaned = cleaned.slice(0, maxLen)
+    }
+    for (const pattern of MCP_INJECTION_PATTERNS) {
+        if (pattern.test(cleaned)) {
+            console.warn(
+                `[MCP Security] Suspicious instruction-injection pattern detected in tool description. ` +
+                    `Pattern: ${pattern}. Description snippet: "${cleaned.slice(0, 120)}"`
+            )
+            break
+        }
+    }
+    return cleaned
+}
+
+export function sanitizeMCPToolName(name: string): string {
+    const maxLen = getMCPToolNameMaxLength()
+    const trimmed = name.trim()
+    // Allow alphanumeric, underscore, hyphen — matches MCP spec and existing CustomMcpServerTool.formatToolName
+    const cleaned = trimmed.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, maxLen)
+    if (cleaned !== trimmed) {
+        console.warn(
+            `[MCP Security] Tool name sanitized from "${name.slice(0, 64)}" to "${cleaned.slice(0, 64)}". ` +
+                `Non-conforming MCP server may indicate a misconfigured or malicious server.`
+        )
+    }
+    return cleaned
+}
+
 export class MCPToolkit extends BaseToolkit {
     tools: Tool[] = []
     _tools: ListToolsResult | null = null
@@ -125,10 +190,12 @@ export class MCPToolkit extends BaseToolkit {
                 throw new Error('Client is not initialized')
             }
             const argsSchema = tool.inputSchema ?? { type: 'object', properties: {} }
+            const safeName = sanitizeMCPToolName(tool.name)
+            const safeDescription = sanitizeMCPToolDescription(tool.description || tool.name)
             return await MCPTool({
                 toolkit: this,
-                name: tool.name,
-                description: tool.description || tool.name,
+                name: safeName,
+                description: safeDescription,
                 argsSchema
             })
         })
@@ -352,6 +419,10 @@ export const validateMCPServerConfig = (serverParams: any): void => {
     // Validate the entire server configuration
     if (!serverParams || typeof serverParams !== 'object') {
         throw new Error('Invalid server configuration')
+    }
+
+    if (serverParams.cwd != null) {
+        throw new Error('cwd parameter is not allowed in MCP server configuration')
     }
 
     // Command allowlist - operator-controlled via CUSTOM_MCP_ALLOWED_COMMANDS (empty = none allowed)
