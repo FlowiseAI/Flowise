@@ -20,6 +20,7 @@ import assemblyAIPng from '@/assets/images/assemblyai.png'
 import localAiPng from '@/assets/images/localai.png'
 import azureSvg from '@/assets/images/azure_openai.svg'
 import groqPng from '@/assets/images/groq.png'
+import greenPTSVG from '@/assets/images/greenpt.svg'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -34,7 +35,8 @@ const SpeechToTextType = {
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
     LOCALAI_STT: 'localAISTT',
     AZURE_COGNITIVE: 'azureCognitive',
-    GROQ_WHISPER: 'groqWhisper'
+    GROQ_WHISPER: 'groqWhisper',
+    GREENPT_TRANSCRIBE: 'greenPTTranscribe'
 }
 
 // Weird quirk - the key must match the name property value.
@@ -233,6 +235,58 @@ const speechToTextProviders = {
                 step: 0.1,
                 description:
                     'The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.',
+                optional: true
+            }
+        ]
+    },
+    [SpeechToTextType.GREENPT_TRANSCRIBE]: {
+        label: 'GreenPT',
+        name: SpeechToTextType.GREENPT_TRANSCRIBE,
+        icon: greenPTSVG,
+        url: 'https://docs.greenpt.ai/audio-prerecorded',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['greenPTApi']
+            },
+            {
+                label: 'Model',
+                name: 'model',
+                type: 'options',
+                options: [
+                    {
+                        label: 'GreenS Pro',
+                        name: 'green-s-pro'
+                    },
+                    {
+                        label: 'GreenS',
+                        name: 'green-s'
+                    }
+                ],
+                default: 'green-s-pro'
+            },
+            {
+                label: 'Language',
+                name: 'language',
+                type: 'string',
+                description: 'Language code such as en, de, or multi. GreenS Pro supports multilingual transcription with multi.',
+                placeholder: 'en',
+                optional: true
+            },
+            {
+                label: 'Punctuate',
+                name: 'punctuate',
+                type: 'boolean',
+                default: true,
+                optional: true
+            },
+            {
+                label: 'Smart Format',
+                name: 'smartFormat',
+                type: 'boolean',
+                default: true,
                 optional: true
             }
         ]

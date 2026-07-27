@@ -5,13 +5,15 @@ import { AssemblyAI } from 'assemblyai'
 import { getFileFromStorage } from './storageUtils'
 import axios from 'axios'
 import Groq from 'groq-sdk'
+import { transcribeWithGreenPT } from './greenpt'
 
 const SpeechToTextType = {
     OPENAI_WHISPER: 'openAIWhisper',
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
     LOCALAI_STT: 'localAISTT',
     AZURE_COGNITIVE: 'azureCognitive',
-    GROQ_WHISPER: 'groqWhisper'
+    GROQ_WHISPER: 'groqWhisper',
+    GREENPT_TRANSCRIBE: 'greenPTTranscribe'
 }
 
 export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
@@ -125,6 +127,8 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                 }
                 break
             }
+            case SpeechToTextType.GREENPT_TRANSCRIBE:
+                return transcribeWithGreenPT(audio_file, upload.type, speechToTextConfig, credentialData.greenPTApiKey)
         }
     } else {
         throw new Error('Speech to text is not selected, but found a recorded audio file. Please fix the chain.')
