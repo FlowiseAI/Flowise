@@ -843,7 +843,8 @@ function propagateSkippedInput({
     nodes,
     edges,
     nodeExecutionQueue,
-    waitingNodes
+    waitingNodes,
+    visited = new Set<string>()
 }: {
     sourceId: string
     targetId: string
@@ -852,43 +853,52 @@ function propagateSkippedInput({
     edges: IReactFlowEdge[]
     nodeExecutionQueue: INodeQueue[]
     waitingNodes: Map<string, IWaitingNode>
+    visited?: Set<string>
 }) {
-    let waitingNode = waitingNodes.get(targetId)
-    if (!waitingNode) {
-        waitingNode = setupNodeDependencies(targetId, edges, nodes)
-        waitingNodes.set(targetId, waitingNode)
-    }
+    if (visited.has(targetId)) return
+    visited.add(targetId)
 
-    if (!waitingNode.receivedInputs.has(sourceId)) {
-        waitingNode.receivedInputs.set(sourceId, null)
-    }
+    try {
+        let waitingNode = waitingNodes.get(targetId)
+        if (!waitingNode) {
+            waitingNode = setupNodeDependencies(targetId, edges, nodes)
+            waitingNodes.set(targetId, waitingNode)
+        }
 
-    if (!hasReceivedRequiredInputs(waitingNode)) return
+        if (!waitingNode.receivedInputs.has(sourceId)) {
+            waitingNode.receivedInputs.set(sourceId, null)
+        }
 
-    waitingNodes.delete(targetId)
-    const combinedInputs = combineNodeInputs(waitingNode.receivedInputs)
+        if (!hasReceivedRequiredInputs(waitingNode)) return
 
-    if (combinedInputs === null) {
-        for (const downstreamId of graph[targetId] || []) {
-            propagateSkippedInput({
-                sourceId: targetId,
-                targetId: downstreamId,
-                graph,
-                nodes,
-                edges,
-                nodeExecutionQueue,
-                waitingNodes
+        waitingNodes.delete(targetId)
+        const combinedInputs = combineNodeInputs(waitingNode.receivedInputs)
+
+        if (combinedInputs === null) {
+            for (const downstreamId of graph[targetId] || []) {
+                propagateSkippedInput({
+                    sourceId: targetId,
+                    targetId: downstreamId,
+                    graph,
+                    nodes,
+                    edges,
+                    nodeExecutionQueue,
+                    waitingNodes,
+                    visited
+                })
+            }
+            return
+        }
+
+        if (!nodeExecutionQueue.some((queuedNode) => queuedNode.nodeId === targetId)) {
+            nodeExecutionQueue.push({
+                nodeId: targetId,
+                data: combinedInputs,
+                inputs: Object.fromEntries(waitingNode.receivedInputs)
             })
         }
-        return
-    }
-
-    if (!nodeExecutionQueue.some((queuedNode) => queuedNode.nodeId === targetId)) {
-        nodeExecutionQueue.push({
-            nodeId: targetId,
-            data: combinedInputs,
-            inputs: Object.fromEntries(waitingNode.receivedInputs)
-        })
+    } finally {
+        visited.delete(targetId)
     }
 }
 

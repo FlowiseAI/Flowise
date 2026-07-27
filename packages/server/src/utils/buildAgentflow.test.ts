@@ -202,4 +202,52 @@ describe('executeAgentFlow converging conditional paths', () => {
         expect(resumedRun.agentFlowExecutedData.map((data: any) => data.nodeId)).toContain(mergeId)
         expect(resumedRun.text).toBe('merge executed')
     })
+
+    it('stops skipped-input propagation when an unselected branch contains a cycle', async () => {
+        const dataSource = makeDataSource()
+        const conditionId = 'conditionAgentflow_cycle'
+        const selectedId = 'llmAgentflow_selected'
+        const loopAId = 'llmAgentflow_loop_a'
+        const loopBId = 'llmAgentflow_loop_b'
+
+        const nodes = [
+            makeNode('startAgentflow_cycle', 'startAgentflow', 'Start', { content: 'start' }),
+            makeNode(conditionId, 'conditionAgentflow', 'Condition', {
+                conditions: [
+                    { type: 'string', value1: 'x', operation: 'notEmpty', isFulfilled: true },
+                    { type: 'string', value1: '', operation: 'notEmpty', isFulfilled: false }
+                ],
+                content: 'selected terminal branch'
+            }),
+            makeNode(selectedId, 'llmAgentflow', 'Selected Node', { content: 'selected branch executed' }),
+            makeNode(loopAId, 'llmAgentflow', 'Loop A', { content: 'loop a' }),
+            makeNode(loopBId, 'llmAgentflow', 'Loop B', { content: 'loop b' })
+        ]
+        const edges = [
+            makeEdge('startAgentflow_cycle', conditionId),
+            makeEdge(conditionId, selectedId, 0),
+            makeEdge(conditionId, loopAId, 1),
+            makeEdge(loopAId, loopBId),
+            makeEdge(loopBId, loopAId)
+        ]
+        const chatflow = {
+            id: 'flow-cycle',
+            name: 'Skipped cyclic branch',
+            flowData: JSON.stringify({ nodes, edges, viewport: { x: 0, y: 0, zoom: 1 } }),
+            workspaceId: WORKSPACE_ID
+        } as any
+
+        const result = await executeAgentFlow({
+            ...baseRuntimeParams,
+            appDataSource: dataSource as any,
+            chatflow,
+            incomingInput: {
+                question: 'start',
+                overrideConfig: { sessionId: SESSION_ID }
+            }
+        } as any)
+
+        expect(result.agentFlowExecutedData.map((data: any) => data.nodeId)).toEqual(['startAgentflow_cycle', conditionId, selectedId])
+        expect(result.text).toBe('selected branch executed')
+    })
 })
