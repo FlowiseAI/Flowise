@@ -13,7 +13,10 @@ RUN apk add --no-cache git python3 py3-pip make g++ build-base cairo-dev pango-d
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 # Install latest Flowise globally (specific version can be set: flowise@1.0.0)
-RUN npm install -g flowise
+# npm dedupe is required after install: npm's overrides resolver does not
+# consistently collapse every duplicate of an overridden package in one pass
+# on a tree this size/complexity
+RUN npm install -g flowise && npm --prefix "$(npm root -g)/flowise" dedupe
 
 # Stage 2: Runtime stage
 FROM node:${NODE_VERSION}-alpine
