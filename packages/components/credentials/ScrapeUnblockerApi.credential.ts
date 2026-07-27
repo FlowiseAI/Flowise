@@ -12,7 +12,7 @@ class ScrapeUnblockerApiCredential implements INodeCredential {
         this.name = 'scrapeUnblockerApi'
         this.version = 1.0
         this.description =
-            'Get your API key from the <a target="_blank" href="https://www.scrapeunblocker.com">ScrapeUnblocker</a> dashboard.'
+            'Get your API key from the <a target="_blank" href="https://www.scrapeunblocker.com?utm_source=flowise&utm_medium=integration&utm_campaign=flowise-loader">ScrapeUnblocker</a> dashboard.'
         this.inputs = [
             {
                 label: 'ScrapeUnblocker API Key',
