@@ -4,6 +4,8 @@ import { Cache, createCache } from 'cache-manager'
 import { MODE } from './Interface'
 import { LICENSE_QUOTAS } from './utils/constants'
 import { StripeManager } from './StripeManager'
+import { InternalFlowiseError } from './errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 const DISABLED_QUOTAS = {
     [LICENSE_QUOTAS.PREDICTIONS_LIMIT]: 0,
@@ -100,6 +102,7 @@ export class UsageCacheManager {
 
         // If not in cache, retrieve from Stripe
         const subscription = await stripeManager.getStripe().subscriptions.retrieve(subscriptionId)
+        if (subscription.status === 'canceled') throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Subscription is canceled')
 
         // Update subscription data cache
         await this.updateSubscriptionDataToCache(subscriptionId, { subsriptionDetails: stripeManager.getSubscriptionObject(subscription) })
@@ -123,6 +126,7 @@ export class UsageCacheManager {
 
         // If not in cache, retrieve from Stripe
         const subscription = await stripeManager.getStripe().subscriptions.retrieve(subscriptionId)
+        if (subscription.status === 'canceled') throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Subscription is canceled')
         const items = subscription.items.data
         if (items.length === 0) {
             return DISABLED_QUOTAS
