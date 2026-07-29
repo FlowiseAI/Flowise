@@ -26,7 +26,8 @@ export const enum UserErrorMessage {
     USER_FOUND_MULTIPLE = 'User Found Multiple',
     INCORRECT_USER_EMAIL_OR_CREDENTIALS = 'Incorrect Email or Password',
     PASSWORDS_DO_NOT_MATCH = 'Passwords do not match',
-    EMAIL_CHANGE_USE_CONFIRM_LINK = 'Use the confirm email change link from your email to complete this action.'
+    EMAIL_CHANGE_USE_CONFIRM_LINK = 'Use the confirm email change link from your email to complete this action.',
+    USER_INVITED_PENDING_ACTIVATION = 'You have a pending invitation. Please check your email and complete the invitation to activate your account before signing in.'
 }
 export class UserService {
     private telemetry: Telemetry
