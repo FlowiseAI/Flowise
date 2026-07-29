@@ -12,8 +12,9 @@ RUN apk add --no-cache git python3 py3-pip make g++ build-base cairo-dev pango-d
 # Skip downloading Chrome for Puppeteer (saves build time)
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
-# Install latest Flowise globally (specific version can be set: flowise@1.0.0)
-RUN npm install -g flowise
+# Install specific Flowise version to match release tag (update FLOWISE_VERSION on each release)
+ARG FLOWISE_VERSION=3.1.3
+RUN npm install -g flowise@${FLOWISE_VERSION}
 
 # Stage 2: Runtime stage
 FROM node:${NODE_VERSION}-alpine
