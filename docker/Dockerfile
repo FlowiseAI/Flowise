@@ -1,8 +1,11 @@
 # Node.js version (overridable via build-arg from CI)
 ARG NODE_VERSION=24
+ARG FLOWISE_VERSION=latest
 
 # Stage 1: Build stage
 FROM node:${NODE_VERSION}-alpine AS build
+
+ARG FLOWISE_VERSION
 
 USER root
 
@@ -12,8 +15,8 @@ RUN apk add --no-cache git python3 py3-pip make g++ build-base cairo-dev pango-d
 # Skip downloading Chrome for Puppeteer (saves build time)
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
-# Install latest Flowise globally (specific version can be set: flowise@1.0.0)
-RUN npm install -g flowise
+# Install the package version that the image will be tagged with.
+RUN npm install -g "flowise@${FLOWISE_VERSION}"
 
 # Stage 2: Runtime stage
 FROM node:${NODE_VERSION}-alpine

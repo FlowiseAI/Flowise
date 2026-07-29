@@ -88,6 +88,7 @@ jobs:
                   platforms: ${{ matrix.platform }}
                   build-args: |
                       NODE_VERSION=${{ needs.prepare.outputs.node_version }}
+                      FLOWISE_VERSION=${{ needs.prepare.outputs.tag_version }}
                   outputs: type=image,name=${{ matrix.image }},push-by-digest=true,name-canonical=true,push=true
 
             - name: Export digest
@@ -145,3 +146,16 @@ jobs:
             - name: Inspect image
               run: |
                   docker buildx imagetools inspect ${{ matrix.image }}:${{ needs.prepare.outputs.tag_version }}
+
+            - name: Verify Flowise package version
+              if: matrix.image == 'flowiseai/flowise' && needs.prepare.outputs.tag_version != 'latest'
+              run: |
+                  expected="${{ needs.prepare.outputs.tag_version }}"
+                  expected="${expected#v}"
+                  actual=$(docker run --rm --entrypoint flowise "${{ matrix.image }}:${{ needs.prepare.outputs.tag_version }}" --version)
+                  echo "Expected Flowise version: ${expected}"
+                  echo "Image reports: ${actual}"
+                  if [[ "${actual}" != "flowise/${expected} "* ]]; then
+                      echo "::error::Image package version does not match tag ${{ needs.prepare.outputs.tag_version }}"
+                      exit 1
+                  fi
