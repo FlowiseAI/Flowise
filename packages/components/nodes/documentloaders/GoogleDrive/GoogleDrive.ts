@@ -443,6 +443,16 @@ class GoogleDrive_DocumentLoaders implements INode {
         let nextPageToken: string | undefined
 
         do {
+            const remainingFiles = maxFiles - files.length
+
+            // The file budget can be exhausted before the do-while condition is re-checked
+            // (e.g. after recursing into subfolders). Stop here rather than issuing another
+            // request: Google Drive rejects a pageSize outside [1, 1000] with a 400 (Bad Request),
+            // which is the failure reported for recursive subfolder listings.
+            if (remainingFiles <= 0) {
+                break
+            }
+
             let query = `'${folderId}' in parents and trashed = false`
 
             // Add file type filter if specified
@@ -453,7 +463,7 @@ class GoogleDrive_DocumentLoaders implements INode {
 
             const url = new URL('https://www.googleapis.com/drive/v3/files')
             url.searchParams.append('q', query)
-            url.searchParams.append('pageSize', Math.min(maxFiles - files.length, 1000).toString())
+            url.searchParams.append('pageSize', Math.min(Math.max(remainingFiles, 1), 1000).toString())
             url.searchParams.append(
                 'fields',
                 'nextPageToken, files(id, name, mimeType, size, createdTime, modifiedTime, parents, webViewLink, driveId)'
@@ -495,6 +505,11 @@ class GoogleDrive_DocumentLoaders implements INode {
             if (includeSubfolders) {
                 for (const file of data.files) {
                     if (file.mimeType === 'application/vnd.google-apps.folder') {
+                        // Skip recursion once the file budget is exhausted so the child call is
+                        // never asked for a non-positive pageSize (which Drive rejects with a 400).
+                        if (maxFiles - files.length <= 0) {
+                            break
+                        }
                         const subfolderFiles = await this.getFilesFromFolder(
                             file.id,
                             accessToken,
