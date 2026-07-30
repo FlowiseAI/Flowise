@@ -61,23 +61,11 @@ abstract class SSOBase {
                 if (getRunningExpressApp().identityManager.getPlatformType() === Platform.ENTERPRISE) {
                     throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
                 }
-                // no user found, register the user
-                const data: any = {
-                    user: {
-                        email: email,
-                        name: profile.displayName || email,
-                        status: UserStatus.ACTIVE,
-                        credential: undefined
-                    }
-                }
-                if (getRunningExpressApp().identityManager.getPlatformType() === Platform.CLOUD) {
-                    const accountService = new AccountService()
-                    const newAccount = await accountService.register(data)
-                    wu = newAccount.workspaceUser
-                    wu.workspace = newAccount.workspace
-                    user = newAccount.user
-                }
+                if (getRunningExpressApp().identityManager.getPlatformType() === Platform.CLOUD)
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'New registrations are currently closed.')
             } else {
+                if (user.status !== UserStatus.ACTIVE && getRunningExpressApp().identityManager.getPlatformType() === Platform.CLOUD)
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'New registrations are currently closed.')
                 if (user.status === UserStatus.INVITED) {
                     const data: any = {
                         user: {

@@ -28,4 +28,10 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 COPY --from=build /usr/local/lib/node_modules /usr/local/lib/node_modules
 COPY --from=build /usr/local/bin /usr/local/bin
 
+# Give the node user ownership of the installed package (node:*-alpine already has this user)
+RUN chown -R node:node /usr/local/lib/node_modules /usr/local/bin
+
+# Switch to non-root user
+USER node
+
 ENTRYPOINT ["flowise", "start"]

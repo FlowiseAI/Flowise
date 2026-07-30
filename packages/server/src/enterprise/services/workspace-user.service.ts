@@ -13,6 +13,7 @@ import { OrganizationErrorMessage, OrganizationService } from './organization.se
 import { RoleErrorMessage, RoleService } from './role.service'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
+import { UserStatus } from '../database/entities/user.entity'
 
 export const enum WorkspaceUserErrorMessage {
     INVALID_WORKSPACE_USER_SATUS = 'Invalid Workspace User Status',
@@ -225,6 +226,11 @@ export class WorkspaceUserService {
     public async createWorkspaceUser(data: Partial<WorkspaceUser>, activeOrganizationId: string) {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
+
+        const user = await this.userService.readUserById(data.userId, queryRunner)
+        if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+        if (user.status !== UserStatus.ACTIVE && getRunningExpressApp().identityManager.isCloud())
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'New registrations are currently closed.')
 
         const { workspace, workspaceUser } = await this.readWorkspaceUserByWorkspaceIdUserId(data.workspaceId, data.userId, queryRunner)
         if (workspace.organizationId !== activeOrganizationId)
