@@ -1,3 +1,7 @@
+## ⚠️ IMPORTANT NOTICE: PRODUCT SUNSET ⚠️
+
+Flowise is officially being sunset and will soon cease active maintenance or support. As a result, **we are no longer accepting new security vulnerability reports for this repository.** You can find more information [here](https://flowiseai.com/sunset).
+
 ### Responsible Disclosure Policy
 
 At Flowise, we prioritize security and continuously work to safeguard our systems. However, vulnerabilities can still exist. If you identify a security issue, please report it to us so we can address it promptly. Your cooperation helps us better protect our platform and users.
