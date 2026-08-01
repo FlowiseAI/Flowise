@@ -43,7 +43,7 @@ class Deepseek_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'deepseek-chat'
+                default: 'deepseek-v4-flash'
             },
             {
                 label: 'Temperature',
