@@ -22,14 +22,14 @@ const MarkdownTable = Table.extend({
     renderMarkdown: (node, h) => {
         const rows =
             node.content?.map((rowNode) =>
-                (rowNode.content || []).map((cellNode) => {
-                    const text = (cellNode.content || [])
+                (rowNode.content || []).map((cellNode) =>
+                    (cellNode.content || [])
                         .map((childNode) => h.renderChildren(childNode))
                         .join(' ')
                         .replace(/\s+/g, ' ')
                         .trim()
-                    return { text, isHeader: cellNode.type === 'tableHeader' }
-                })
+                        .replace(/\|/g, '\\|')
+                )
             ) || []
         const columnCount = rows.reduce((max, row) => Math.max(max, row.length), 0)
 
@@ -38,15 +38,14 @@ const MarkdownTable = Table.extend({
         const renderRow = (row = []) =>
             `| ${new Array(columnCount)
                 .fill(0)
-                .map((_, index) => row[index]?.text || '')
+                .map((_, index) => row[index] || '')
                 .join(' | ')} |`
 
         const headerRow = rows[0] || []
-        const hasHeader = headerRow.some((cell) => cell.isHeader)
-        const bodyRows = hasHeader ? rows.slice(1) : rows
+        const bodyRows = rows.slice(1)
 
         return [
-            renderRow(hasHeader ? headerRow : []),
+            renderRow(headerRow),
             `| ${new Array(columnCount).fill('---').join(' | ')} |`,
             ...bodyRows.map(renderRow)
         ].join('\n')
