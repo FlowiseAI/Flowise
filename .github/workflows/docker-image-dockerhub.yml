@@ -44,11 +44,11 @@ jobs:
             matrix:
                 include:
                     - image: flowiseai/flowise
-                      dockerfile: ./docker/Dockerfile
+                      dockerfile: ./Dockerfile
                       platform: linux/amd64
                       runner: ubuntu-latest
                     - image: flowiseai/flowise
-                      dockerfile: ./docker/Dockerfile
+                      dockerfile: ./Dockerfile
                       platform: linux/arm64
                       runner: ubuntu-24.04-arm
                     - image: flowiseai/flowise-worker

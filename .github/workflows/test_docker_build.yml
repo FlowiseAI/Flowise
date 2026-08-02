@@ -9,6 +9,7 @@ on:
         branches:
             - '*'
     workflow_dispatch:
+
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -16,4 +17,57 @@ jobs:
             PUPPETEER_SKIP_DOWNLOAD: true
         steps:
             - uses: actions/checkout@v6
-            - run: docker build --no-cache -t flowise .
+
+            - name: Verify Docker Hub release Dockerfiles
+              run: |
+                  python - <<'PY'
+                  from pathlib import Path
+                  import re
+
+                  workflow = Path('.github/workflows/docker-image-dockerhub.yml').read_text()
+                  entries = re.findall(
+                      r'^\s+- image: (?P<image>\S+)\s+dockerfile: (?P<dockerfile>\S+)',
+                      workflow,
+                      re.MULTILINE,
+                  )
+                  expected = [
+                      ('flowiseai/flowise', './Dockerfile'),
+                      ('flowiseai/flowise', './Dockerfile'),
+                      ('flowiseai/flowise-worker', 'docker/worker/Dockerfile'),
+                      ('flowiseai/flowise-worker', 'docker/worker/Dockerfile'),
+                  ]
+                  if sorted(entries) != sorted(expected):
+                      raise SystemExit(
+                          f'Docker Hub workflow Dockerfile mapping changed: expected {expected}, got {entries}'
+                      )
+                  print('Docker Hub release Dockerfile mapping is pinned to the intended build files.')
+                  PY
+
+            - name: Build Docker image
+              run: docker build --no-cache -t flowise .
+
+            - name: Start container
+              run: |
+                  docker run -d --name "flowise-test-${GITHUB_RUN_ID}" -p 127.0.0.1:3000:3000 flowise
+
+            - name: Wait for health check
+              run: |
+                  echo "Waiting for Flowise to become ready..."
+                  for i in $(seq 1 18); do
+                      if curl -sf http://127.0.0.1:3000/api/v1/ping | grep -qx "pong"; then
+                          echo "Flowise is up and responding."
+                          exit 0
+                      fi
+                      echo "Attempt $i/18: not ready yet, waiting 5s..."
+                      sleep 5
+                  done
+                  echo "Flowise failed to respond within 90 seconds."
+                  exit 1
+
+            - name: Print container logs on failure
+              if: failure()
+              run: docker logs "flowise-test-${GITHUB_RUN_ID}" || true
+
+            - name: Cleanup
+              if: always()
+              run: docker rm -f "flowise-test-${GITHUB_RUN_ID}" || true
