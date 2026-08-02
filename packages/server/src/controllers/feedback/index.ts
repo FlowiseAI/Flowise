@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import chatflowsService from '../../services/chatflows'
 import feedbackService from '../../services/feedback'
 import { validateFeedbackForCreation, validateFeedbackForUpdate } from '../../services/feedback/validation'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
@@ -12,7 +13,21 @@ const getAllChatMessageFeedback = async (req: Request, res: Response, next: Next
                 `Error: feedbackController.getAllChatMessageFeedback - id not provided!`
             )
         }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: feedbackController.getAllChatMessageFeedback - workspace ${workspaceId} not found!`
+            )
+        }
         const chatflowid = req.params.id
+        const chatflow = await chatflowsService.getChatflowByIdForWorkspace(chatflowid, workspaceId)
+        if (!chatflow) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: feedbackController.getAllChatMessageFeedback - chatflow ${chatflowid} not found in workspace ${workspaceId}`
+            )
+        }
         const chatId = req.query?.chatId as string | undefined
         const sortOrder = req.query?.order as string | undefined
         const startDate = req.query?.startDate as string | undefined
