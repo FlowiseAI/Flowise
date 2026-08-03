@@ -7,7 +7,7 @@ import { IconCheck, IconInfoCircle, IconPencil, IconX } from '@tabler/icons-reac
 
 import { ConditionBuilder, MessagesInput, NodeInputHandler, ScenariosInput, StructuredOutputBuilder } from '@/atoms'
 import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
-import { buildDynamicOutputAnchors, evaluateFieldVisibility } from '@/core/utils'
+import { applyVisibleFieldDefaults, buildDynamicOutputAnchors, evaluateFieldVisibility } from '@/core/utils'
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 
 import { AsyncInput } from './AsyncInput'
@@ -103,10 +103,10 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
     const onCustomDataChange = ({ inputParam, newValue }: { inputParam: InputParam; newValue: unknown }) => {
         if (!data) return
 
-        const updatedInputValues = {
+        const updatedInputValues = applyVisibleFieldDefaults(inputParams, {
             ...data.inputs,
             [inputParam.name]: newValue
-        }
+        })
 
         const updatedParams = evaluateFieldVisibility(inputParams, updatedInputValues)
         setInputParams(updatedParams)
@@ -129,6 +129,16 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
             const cleanedEdges = cleanupOrphanedEdges(newValue.length)
             updateNodeData(data.id, { inputs: updatedInputValues, outputAnchors }, cleanedEdges)
             setData({ ...data, inputs: updatedInputValues, outputAnchors })
+            return
+        }
+
+        // For credential inputs, also set the top-level `credential` field.
+        // Server-side node execution reads nodeData.credential (not inputs.FLOWISE_CREDENTIAL_ID)
+        // to fetch credential data via getCredentialData(), so both must be kept in sync.
+        if (inputParam.type === 'credential') {
+            const credentialId = typeof newValue === 'string' ? newValue : ''
+            updateNodeData(data.id, { inputs: updatedInputValues, credential: credentialId })
+            setData({ ...data, inputs: updatedInputValues, credential: credentialId })
             return
         }
 
@@ -342,6 +352,7 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                                         disabled={dialogProps.disabled}
                                         onDataChange={onCustomDataChange}
                                         itemParameters={arrayItemParameters[inputParam.name]}
+                                        variableItems={variableItems}
                                     />
                                 )
                             }
@@ -367,6 +378,7 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                                         inputParam={inputParam}
                                         data={data}
                                         disabled={dialogProps.disabled}
+                                        variableItems={variableItems}
                                         onDataChange={onCustomDataChange}
                                     />
                                 )

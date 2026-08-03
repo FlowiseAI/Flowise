@@ -2,12 +2,17 @@ import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Role } from '../database/entities/role.entity'
-import { RoleService } from '../services/role.service'
+import { RoleErrorMessage, RoleService } from '../services/role.service'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { GeneralErrorMessage } from '../../utils/constants'
+import { assertQueryOrganizationMatchesActiveOrg, getLoggedInUser } from '../utils/tenantRequestGuards'
 
 export class RoleController {
     public async create(req: Request, res: Response, next: NextFunction) {
         try {
+            const user = getLoggedInUser(req)
+            assertQueryOrganizationMatchesActiveOrg(user, req.body.organizationId)
+
             const roleService = new RoleService()
             const newRole = await roleService.createRole(req.body)
             return res.status(StatusCodes.CREATED).json(newRole)
@@ -19,6 +24,7 @@ export class RoleController {
     public async read(req: Request, res: Response, next: NextFunction) {
         let queryRunner
         try {
+            const user = getLoggedInUser(req)
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             const query = req.query as Partial<Role>
@@ -26,8 +32,20 @@ export class RoleController {
 
             let role: Role | Role[] | null | (Role & { userCount: number })[]
             if (query.id) {
-                role = await roleService.readRoleById(query.id, queryRunner)
+                const oneRole = await roleService.readRoleById(query.id, queryRunner)
+                if (!oneRole) {
+                    throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
+                }
+                if (oneRole.organizationId != null) {
+                    if (!user.activeOrganizationId || oneRole.organizationId !== user.activeOrganizationId) {
+                        throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                    }
+                }
+                role = oneRole
             } else if (query.organizationId) {
+                if (!user.activeOrganizationId || query.organizationId !== user.activeOrganizationId) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
                 role = await roleService.readRoleByOrganizationId(query.organizationId, queryRunner)
             } else {
                 role = await roleService.readRoleByGeneral(queryRunner)
@@ -43,6 +61,9 @@ export class RoleController {
 
     public async update(req: Request, res: Response, next: NextFunction) {
         try {
+            const user = getLoggedInUser(req)
+            assertQueryOrganizationMatchesActiveOrg(user, req.body.organizationId)
+
             const roleService = new RoleService()
             const role = await roleService.updateRole(req.body)
             return res.status(StatusCodes.OK).json(role)

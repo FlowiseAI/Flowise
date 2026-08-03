@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 
 import { TooltipWithParser } from './TooltipWithParser'
 
@@ -21,7 +21,9 @@ describe('TooltipWithParser', () => {
 
         // Hover over the button to trigger the tooltip
         const button = screen.getByRole('button')
-        button.focus()
+        act(() => {
+            button.focus()
+        })
 
         expect(await screen.findByRole('tooltip')).toHaveTextContent('<b>Bold</b> text')
     })

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
 
 // material-ui
-import { Button, IconButton, OutlinedInput, Box, List, InputAdornment } from '@mui/material'
+import { Button, IconButton, OutlinedInput, Box, List, InputAdornment, Typography } from '@mui/material'
 import { IconX, IconTrash, IconPlus, IconBulb } from '@tabler/icons-react'
 
 // Project import
@@ -133,28 +133,24 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
 
     return (
         <>
-            <div
-                style={{
+            <Box
+                sx={{
                     display: 'flex',
-                    flexDirection: 'column',
-                    borderRadius: 10,
-                    background: '#d8f3dc',
-                    padding: 10
+                    alignItems: 'center',
+                    gap: 1.25,
+                    borderRadius: '8px',
+                    bgcolor: 'rgba(34, 197, 94, 0.08)',
+                    border: '1px solid',
+                    borderColor: 'rgba(34, 197, 94, 0.2)',
+                    px: 1.75,
+                    py: 1.25
                 }}
             >
-                <div
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center'
-                    }}
-                >
-                    <IconBulb size={30} color='#2d6a4f' />
-                    <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>
-                        Starter prompts will only be shown when there is no messages on the chat
-                    </span>
-                </div>
-            </div>
+                <IconBulb size={20} color='#16a34a' style={{ flexShrink: 0 }} />
+                <Typography sx={{ color: 'text.secondary', fontSize: '0.8125rem', lineHeight: 1.5 }}>
+                    Starter prompts will only be shown when there are no messages on the chat
+                </Typography>
+            </Box>
             <Box sx={{ '& > :not(style)': { m: 1 }, pt: 2 }}>
                 <List>
                     {inputFields.map((data, index) => {
@@ -199,9 +195,11 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
                     })}
                 </List>
             </Box>
-            <StyledButton variant='contained' onClick={onSave}>
-                Save
-            </StyledButton>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
+                <StyledButton variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
+                    Save
+                </StyledButton>
+            </Box>
         </>
     )
 }

@@ -641,14 +641,16 @@ const TextToSpeech = ({ dialogProps }) => {
                     </Box>
                 </>
             )}
-            <StyledButton
-                style={{ marginBottom: 10, marginTop: 10 }}
-                disabled={selectedProvider !== 'none' && !textToSpeech?.[selectedProvider]?.credentialId}
-                variant='contained'
-                onClick={onSave}
-            >
-                Save
-            </StyledButton>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
+                <StyledButton
+                    disabled={selectedProvider !== 'none' && !textToSpeech?.[selectedProvider]?.credentialId}
+                    variant='contained'
+                    onClick={onSave}
+                    sx={{ minWidth: 100 }}
+                >
+                    Save
+                </StyledButton>
+            </Box>
         </>
     )
 }

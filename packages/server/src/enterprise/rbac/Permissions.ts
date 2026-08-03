@@ -88,6 +88,7 @@ export class Permissions {
 
         const executionsCategory = new PermissionCategory('executions')
         executionsCategory.addPermission(new Permission('executions:view', 'View', true, true, true))
+        executionsCategory.addPermission(new Permission('executions:update', 'Update', true, true, true))
         executionsCategory.addPermission(new Permission('executions:delete', 'Delete', true, true, true))
         this.categories.push(executionsCategory)
 

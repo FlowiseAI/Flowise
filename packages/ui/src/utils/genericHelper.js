@@ -137,7 +137,11 @@ export const initNode = (nodeData, newNodeId, isAgentflow) => {
         'file',
         'folder',
         'tabs',
-        'conditionFunction' // This is a special type for condition functions
+        'conditionFunction', // This is a special type for condition functions
+        'timePicker',
+        'weekDaysPicker',
+        'monthDaysPicker',
+        'datePicker'
     ]
 
     // Inputs
@@ -341,6 +345,14 @@ export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNo
         }
 
         initNewComponentNodeData.outputAnchors[0].options = newOptions
+    }
+
+    // Recompute show/hide visibility against the merged inputs so conditional fields
+    if (initNewComponentNodeData.inputParams) {
+        initNewComponentNodeData.inputParams = showHideInputParams(initNewComponentNodeData)
+    }
+    if (initNewComponentNodeData.inputAnchors) {
+        initNewComponentNodeData.inputAnchors = showHideInputAnchors(initNewComponentNodeData)
     }
 
     return initNewComponentNodeData
@@ -1277,8 +1289,21 @@ const _showHideOperation = (nodeData, inputParam, displayType, index) => {
     })
 }
 
+const _inputsWithDeclaredDefaults = (params, inputs) => {
+    const merged = { ...(inputs ?? {}) }
+    for (let i = 0; i < params.length; i += 1) {
+        const param = params[i]
+        if (!param || param.default === undefined) continue
+        if (merged[param.name] === undefined) {
+            merged[param.name] = param.default
+        }
+    }
+    return merged
+}
+
 export const showHideInputs = (nodeData, inputType, overrideParams, arrayIndex) => {
     const params = overrideParams ?? nodeData[inputType] ?? []
+    const effectiveNodeData = { ...nodeData, inputs: _inputsWithDeclaredDefaults(params, nodeData.inputs) }
 
     for (let i = 0; i < params.length; i += 1) {
         const inputParam = params[i]
@@ -1287,10 +1312,21 @@ export const showHideInputs = (nodeData, inputType, overrideParams, arrayIndex) 
         inputParam.display = true
 
         if (inputParam.show) {
-            _showHideOperation(nodeData, inputParam, 'show', arrayIndex)
+            _showHideOperation(effectiveNodeData, inputParam, 'show', arrayIndex)
         }
         if (inputParam.hide) {
-            _showHideOperation(nodeData, inputParam, 'hide', arrayIndex)
+            _showHideOperation(effectiveNodeData, inputParam, 'hide', arrayIndex)
+        }
+
+        // Filter individual options within dropdowns based on their own show/hide conditions
+        if (inputParam.type === 'options' && inputParam.options) {
+            inputParam.options = inputParam.options.filter((opt) => {
+                if (typeof opt === 'string' || (!opt.show && !opt.hide)) return true
+                const synthetic = { show: opt.show, hide: opt.hide, display: true }
+                if (opt.show) _showHideOperation(nodeData, synthetic, 'show', arrayIndex)
+                if (opt.hide) _showHideOperation(nodeData, synthetic, 'hide', arrayIndex)
+                return synthetic.display !== false
+            })
         }
     }
 
@@ -1303,4 +1339,17 @@ export const showHideInputParams = (nodeData) => {
 
 export const showHideInputAnchors = (nodeData) => {
     return showHideInputs(nodeData, 'inputAnchors')
+}
+
+export const applyVisibleInputDefaults = (params, inputs) => {
+    const result = { ...(inputs ?? {}) }
+    const evaluated = showHideInputs({ inputs: result }, null, params)
+    for (let i = 0; i < evaluated.length; i += 1) {
+        const param = evaluated[i]
+        if (!param || param.default === undefined) continue
+        if (param.display === false) continue
+        if (result[param.name] !== undefined) continue
+        result[param.name] = param.default
+    }
+    return result
 }

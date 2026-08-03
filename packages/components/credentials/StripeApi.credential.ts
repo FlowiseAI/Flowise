@@ -12,7 +12,7 @@ class StripeApi implements INodeCredential {
         this.name = 'stripeApi'
         this.version = 1.0
         this.description =
-            'Refer to <a target="_blank" href="https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens">official guide</a> on how to get accessToken on Airtable'
+            'Refer to <a target="_blank" href="https://docs.stripe.com/keys">official guide</a> on how to get an API key from Stripe'
         this.inputs = [
             {
                 label: 'Stripe API Token',

@@ -32,8 +32,8 @@ describe('createAgentflowTheme', () => {
             expect(theme.palette.divider).toBe(tokens.colors.border.default.light)
         })
 
-        it('should set primary color from agent node color', () => {
-            expect(theme.palette.primary.main).toBe(tokens.colors.nodes.agent)
+        it('should set primary color from palette token', () => {
+            expect(theme.palette.primary.main).toBe(tokens.colors.palette.primary.main)
         })
 
         it('should set custom card palette color', () => {
@@ -135,9 +135,9 @@ describe('createAgentflowTheme', () => {
             expect(theme.typography.h4.fontWeight).toBe(600)
         })
 
-        it('should set h5 to 0.875rem / 600 weight', () => {
+        it('should set h5 to 0.875rem / 500 weight', () => {
             expect(theme.typography.h5.fontSize).toBe('0.875rem')
-            expect(theme.typography.h5.fontWeight).toBe(600)
+            expect(theme.typography.h5.fontWeight).toBe(500)
         })
 
         it('should set h6 to 0.75rem / 500 weight', () => {

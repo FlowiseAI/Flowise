@@ -9,10 +9,11 @@ import Mention from '@tiptap/extension-mention'
 
 export const CustomMention = Mention.extend({
     /**
-     * Render mention nodes as `{{label}}` in plain text output.
+     * Render mention nodes as `{{id}}` in plain text output.
+     * id holds the actual variable value (e.g. node ID); label is display-only.
      */
     renderText({ node }) {
-        return `{{${node.attrs.label ?? node.attrs.id}}}`
+        return `{{${node.attrs.id ?? node.attrs.label}}}`
     },
 
     // ── @tiptap/markdown integration ─────────────────────────────────────────
@@ -52,9 +53,9 @@ export const CustomMention = Mention.extend({
         }
     },
 
-    /** Serialize a mention node back to {{label}} in markdown output. */
+    /** Serialize a mention node back to {{id}} in markdown output. */
     renderMarkdown(node: JSONContent) {
-        return `{{${node.attrs?.label ?? node.attrs?.id}}}`
+        return `{{${node.attrs?.id ?? node.attrs?.label}}}`
     },
 
     /**

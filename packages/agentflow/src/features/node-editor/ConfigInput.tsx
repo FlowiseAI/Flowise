@@ -2,7 +2,7 @@ import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState }
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@mui/material'
-import { alpha, useTheme } from '@mui/material/styles'
+import { useTheme } from '@mui/material/styles'
 import { IconSettings } from '@tabler/icons-react'
 
 import { type AsyncInputProps, NodeInputHandler } from '@/atoms'
@@ -202,7 +202,7 @@ export function ConfigInput({
                 mt: 1,
                 mb: 1,
                 border: 1,
-                borderColor: alpha(theme.palette.grey[900], 0.25),
+                borderColor: theme.palette.divider,
                 borderRadius: 2
             }}
         >

@@ -54,6 +54,7 @@ import { CachePool } from '../CachePool'
 import { Variable } from '../database/entities/Variable'
 import { DocumentStore } from '../database/entities/DocumentStore'
 import { DocumentStoreFileChunk } from '../database/entities/DocumentStoreFileChunk'
+import { CustomMcpServer } from '../database/entities/CustomMcpServer'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -100,7 +101,8 @@ export const databaseEntities: IDatabaseEntity = {
     Assistant: Assistant,
     Variable: Variable,
     DocumentStore: DocumentStore,
-    DocumentStoreFileChunk: DocumentStoreFileChunk
+    DocumentStoreFileChunk: DocumentStoreFileChunk,
+    CustomMcpServer: CustomMcpServer
 }
 
 /**
@@ -566,10 +568,11 @@ export const buildFlow = async ({
 
     const flowData: ICommonObject = {
         chatflowid,
+        chatflowId: chatflowid,
         chatId,
         sessionId,
         chatHistory,
-        ...overrideConfig
+        apiMessageId
     }
     while (nodeQueue.length) {
         const { nodeId, depth } = nodeQueue.shift() as INodeQueue
@@ -1767,6 +1770,17 @@ export const transformToCredentialEntity = async (body: ICredentialReqBody): Pro
  * @param {IComponentCredentials} componentCredentials
  * @returns {ICredentialDataDecrypted}
  */
+const maskUrlPassword = (value: string): string | null => {
+    try {
+        const url = new URL(value)
+        if (!url.password) return null
+        url.password = 'FLOWISE_MASKED'
+        return url.toString().replace('FLOWISE_MASKED', '\u2022\u2022\u2022\u2022\u2022\u2022')
+    } catch {
+        return null
+    }
+}
+
 export const redactCredentialWithPasswordType = (
     componentCredentialName: string,
     decryptedCredentialObj: ICredentialDataDecrypted,
@@ -1774,8 +1788,16 @@ export const redactCredentialWithPasswordType = (
 ): ICredentialDataDecrypted => {
     const plainDataObj = cloneDeep(decryptedCredentialObj)
     for (const cred in plainDataObj) {
-        const inputParam = componentCredentials[componentCredentialName].inputs?.find((inp) => inp.type === 'password' && inp.name === cred)
-        if (inputParam) {
+        const inputs = componentCredentials[componentCredentialName].inputs
+        const inputParam = inputs?.find((inp) => inp.name === cred && (inp.type === 'password' || inp.type === 'url'))
+        if (!inputParam) continue
+        if (inputParam.type === 'url') {
+            const maskedUrl = typeof plainDataObj[cred] === 'string' ? maskUrlPassword(plainDataObj[cred]) : null
+            // Only redact if there was actually a password to mask; otherwise keep URL as-is
+            if (maskedUrl !== null) {
+                plainDataObj[cred] = maskedUrl
+            }
+        } else {
             plainDataObj[cred] = REDACTED_CREDENTIAL_VALUE
         }
     }
@@ -1807,16 +1829,25 @@ export const getMemorySessionId = (
     if (!isInternal) {
         // Provided in API body - incomingInput.overrideConfig: { sessionId: 'abc' }
         if (incomingInput.overrideConfig?.sessionId) {
-            return incomingInput.overrideConfig?.sessionId
+            if (typeof incomingInput.overrideConfig.sessionId !== 'string') {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid sessionId: must be a string')
+            }
+            return incomingInput.overrideConfig.sessionId
         }
         // Provided in API body - incomingInput.chatId
         if (incomingInput.chatId) {
+            if (typeof incomingInput.chatId !== 'string') {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid chatId: must be a string')
+            }
             return incomingInput.chatId
         }
     }
 
     // Hard-coded sessionId in UI
     if (memoryNode && memoryNode.data.inputs?.sessionId) {
+        if (typeof memoryNode.data.inputs.sessionId !== 'string') {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid sessionId: must be a string')
+        }
         return memoryNode.data.inputs.sessionId
     }
 

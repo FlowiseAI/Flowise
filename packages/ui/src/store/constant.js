@@ -114,3 +114,14 @@ export const AGENTFLOW_ICONS = [
         color: '#a3b18a'
     }
 ]
+
+export const MCP_SERVER_STATUS = {
+    PENDING: 'PENDING',
+    AUTHORIZED: 'AUTHORIZED',
+    ERROR: 'ERROR'
+}
+
+export const MCP_AUTH_TYPE = {
+    NONE: 'NONE',
+    CUSTOM_HEADERS: 'CUSTOM_HEADERS'
+}

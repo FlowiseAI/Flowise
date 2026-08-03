@@ -1,6 +1,6 @@
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
-import { getCredentialData, getCredentialParam, getNodeModulesPackagePath } from '../../../../src/utils'
+import { getCredentialData, getCredentialParam } from '../../../../src/utils'
 import { MCPToolkit } from '../core'
 
 class Github_MCP implements INode {
@@ -21,10 +21,10 @@ class Github_MCP implements INode {
         this.name = 'githubMCP'
         this.version = 1.0
         this.type = 'Github MCP Tool'
-        this.icon = 'github.svg'
+        this.icon = 'github.png'
         this.category = 'Tools (MCP)'
         this.description = 'MCP Server for the GitHub API'
-        this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/github'
+        this.documentation = 'https://github.com/github/github-mcp-server'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -38,6 +38,15 @@ class Github_MCP implements INode {
                 type: 'asyncMultiOptions',
                 loadMethod: 'listActions',
                 refresh: true
+            },
+            {
+                label: 'GitHub Enterprise URL',
+                name: 'githubEnterpriseUrl',
+                type: 'string',
+                placeholder: 'https://octocorp.ghe.com',
+                description: 'GitHub Enterprise URL (e.g. https://octocorp.ghe.com)',
+                additionalParams: true,
+                optional: true
             }
         ]
         this.baseClasses = ['Tool']
@@ -87,22 +96,35 @@ class Github_MCP implements INode {
     async getTools(nodeData: INodeData, options: ICommonObject): Promise<Tool[]> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+        const githubEnterpriseUrl = nodeData.inputs?.githubEnterpriseUrl
+
+        let url = 'https://api.githubcopilot.com/mcp/'
+        if (githubEnterpriseUrl) {
+            // Transform e.g. https://octocorp.ghe.com -> https://copilot-api.octocorp.ghe.com/mcp
+            const trimmed = githubEnterpriseUrl.trim().replace(/\/+$/, '')
+            try {
+                const parsed = new URL(trimmed)
+                parsed.hostname = `copilot-api.${parsed.hostname}`
+                parsed.pathname = '/mcp'
+                url = parsed.toString().replace(/\/$/, '')
+            } catch {
+                url = `${trimmed}/mcp`
+            }
+        }
 
         if (!accessToken) {
             throw new Error('Missing Github Access Token')
         }
 
-        const packagePath = getNodeModulesPackagePath('@modelcontextprotocol/server-github/dist/index.js')
-
         const serverParams = {
-            command: 'node',
-            args: [packagePath],
-            env: {
-                GITHUB_PERSONAL_ACCESS_TOKEN: accessToken
+            type: 'http',
+            url,
+            headers: {
+                Authorization: `Bearer ${accessToken}`
             }
         }
 
-        const toolkit = new MCPToolkit(serverParams, 'stdio')
+        const toolkit = new MCPToolkit(serverParams, 'http')
         await toolkit.initialize()
 
         const tools = toolkit.tools ?? []

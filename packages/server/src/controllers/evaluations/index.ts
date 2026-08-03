@@ -29,8 +29,7 @@ const createEvaluation = async (req: Request, res: Response, next: NextFunction)
         const body = req.body
         body.workspaceId = workspaceId
 
-        const httpProtocol = req.get('x-forwarded-proto') || req.get('X-Forwarded-Proto') || req.protocol
-        const baseURL = `${httpProtocol}://${req.get('host')}`
+        const baseURL = `${process.env.APP_URL}`
         const apiResponse = await evaluationsService.createEvaluation(body, baseURL, orgId, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
@@ -54,8 +53,7 @@ const runAgain = async (req: Request, res: Response, next: NextFunction) => {
                 `Error: evaluationsService.runAgain - workspace ${workspaceId} not found!`
             )
         }
-        const httpProtocol = req.get('x-forwarded-proto') || req.get('X-Forwarded-Proto') || req.protocol
-        const baseURL = `${httpProtocol}://${req.get('host')}`
+        const baseURL = `${process.env.APP_URL}`
         const apiResponse = await evaluationsService.runAgain(req.params.id, baseURL, orgId, workspaceId)
         return res.json(apiResponse)
     } catch (error) {

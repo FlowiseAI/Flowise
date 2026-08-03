@@ -212,6 +212,16 @@
     animation: spin 1s linear infinite;
 }
 
+// ==============================|| NATIVE DATE/TIME PICKER (DARK) ||============================== //
+
+.picker-dark input {
+    color-scheme: dark;
+}
+
+.picker-dark input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);

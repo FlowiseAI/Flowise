@@ -1,21 +1,22 @@
 /**
  * Status Indicators Example
  *
- * Demonstrates node status indicators showing execution state:
- * - INPROGRESS: Spinning loader
+ * Demonstrates node execution status badges driven via the AgentFlowInstance ref:
+ * - INPROGRESS: Spinning loader (amber)
  * - FINISHED: Green checkmark
- * - ERROR: Red exclamation
+ * - ERROR: Red exclamation (hover for error message)
  * - STOPPED/TERMINATED: Stop icons
+ * - WAITING_FOR_INPUT: Stop icon
  */
 
 import { useRef, useState } from 'react'
 
-import type { AgentFlowInstance, FlowData, FlowNode } from '@flowiseai/agentflow'
+import type { AgentFlowInstance, ExecutionStatus, FlowData } from '@flowiseai/agentflow'
 import { Agentflow } from '@flowiseai/agentflow'
 
 import { apiBaseUrl, token } from '../config'
 
-const createFlowWithStatuses = (): FlowData => ({
+const initialFlow: FlowData = {
     nodes: [
         {
             id: 'startAgentflow_0',
@@ -25,9 +26,9 @@ const createFlowWithStatuses = (): FlowData => ({
                 id: 'startAgentflow_0',
                 name: 'startAgentflow',
                 label: 'Start',
+                version: 1.3,
                 color: '#7EE787',
                 hideInput: true,
-                status: 'FINISHED',
                 outputAnchors: [{ id: 'startAgentflow_0-output-0', name: 'start', label: 'Start', type: 'start' }]
             }
         },
@@ -38,9 +39,9 @@ const createFlowWithStatuses = (): FlowData => ({
             data: {
                 id: 'llmAgentflow_0',
                 name: 'llmAgentflow',
-                label: 'Processing...',
+                label: 'LLM Node',
+                version: 1.1,
                 color: '#64B5F6',
-                status: 'INPROGRESS',
                 outputAnchors: [{ id: 'llmAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
         },
@@ -51,10 +52,9 @@ const createFlowWithStatuses = (): FlowData => ({
             data: {
                 id: 'llmAgentflow_1',
                 name: 'llmAgentflow',
-                label: 'Failed Task',
+                label: 'Failing Task',
+                version: 1.1,
                 color: '#64B5F6',
-                status: 'ERROR',
-                error: 'API rate limit exceeded. Please try again later.',
                 outputAnchors: [{ id: 'llmAgentflow_1-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
         },
@@ -65,9 +65,9 @@ const createFlowWithStatuses = (): FlowData => ({
             data: {
                 id: 'agentAgentflow_0',
                 name: 'agentAgentflow',
-                label: 'Completed',
+                label: 'Agent Node',
+                version: 3.2,
                 color: '#4DD0E1',
-                status: 'FINISHED',
                 outputAnchors: [{ id: 'agentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
         },
@@ -78,9 +78,9 @@ const createFlowWithStatuses = (): FlowData => ({
             data: {
                 id: 'humanInputAgentflow_0',
                 name: 'humanInputAgentflow',
-                label: 'Stopped',
+                label: 'Human Input',
+                version: 1.0,
                 color: '#6E6EFD',
-                status: 'STOPPED',
                 outputAnchors: [{ id: 'humanInputAgentflow_0-output-0', name: 'proceed', label: 'Proceed', type: 'string' }]
             }
         },
@@ -91,9 +91,9 @@ const createFlowWithStatuses = (): FlowData => ({
             data: {
                 id: 'directReplyAgentflow_0',
                 name: 'directReplyAgentflow',
-                label: 'Pending',
+                label: 'Direct Reply',
+                version: 1.0,
                 color: '#4DDBBB',
-                // No status = pending/not yet executed
                 outputAnchors: [{ id: 'directReplyAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
         }
@@ -137,56 +137,47 @@ const createFlowWithStatuses = (): FlowData => ({
         }
     ],
     viewport: { x: 0, y: 0, zoom: 0.9 }
-})
+}
 
 export function StatusIndicatorsExample() {
-    // Config loaded from environment variables
     const agentflowRef = useRef<AgentFlowInstance>(null)
-    const [flow, setFlow] = useState<FlowData>(createFlowWithStatuses)
+    const [isDarkMode, setIsDarkMode] = useState(false)
 
     const simulateExecution = () => {
-        // Reset all statuses
-        const newNodes: FlowNode[] = flow.nodes.map((node) => ({
-            ...node,
-            data: {
-                ...node.data,
-                status: undefined,
-                error: undefined
-            }
-        }))
-        setFlow({ ...flow, nodes: newNodes })
+        const ref = agentflowRef.current
+        if (!ref) return
 
-        // Simulate step-by-step execution
-        const statuses: Array<{ nodeId: string; status: 'INPROGRESS' | 'FINISHED' | 'ERROR' }> = [
+        // Clear any previous run first
+        ref.clearExecutionState()
+
+        const steps: Array<{ nodeId: string; status: ExecutionStatus; error?: string }> = [
             { nodeId: 'startAgentflow_0', status: 'INPROGRESS' },
             { nodeId: 'startAgentflow_0', status: 'FINISHED' },
             { nodeId: 'llmAgentflow_0', status: 'INPROGRESS' },
             { nodeId: 'llmAgentflow_1', status: 'INPROGRESS' },
             { nodeId: 'llmAgentflow_0', status: 'FINISHED' },
-            { nodeId: 'llmAgentflow_1', status: 'ERROR' },
+            {
+                nodeId: 'llmAgentflow_1',
+                status: 'ERROR',
+                error: 'Client network socket disconnected before secure TLS connection was established.'
+            },
             { nodeId: 'agentAgentflow_0', status: 'INPROGRESS' },
-            { nodeId: 'agentAgentflow_0', status: 'FINISHED' }
+            { nodeId: 'humanInputAgentflow_0', status: 'WAITING_FOR_INPUT' },
+            { nodeId: 'agentAgentflow_0', status: 'FINISHED' },
+            { nodeId: 'humanInputAgentflow_0', status: 'FINISHED' },
+            { nodeId: 'directReplyAgentflow_0', status: 'INPROGRESS' },
+            { nodeId: 'directReplyAgentflow_0', status: 'FINISHED' }
         ]
 
-        statuses.forEach(({ nodeId, status }, index) => {
+        steps.forEach(({ nodeId, status, error }, index) => {
             setTimeout(() => {
-                setFlow((prev) => ({
-                    ...prev,
-                    nodes: prev.nodes.map((node) =>
-                        node.id === nodeId
-                            ? {
-                                  ...node,
-                                  data: {
-                                      ...node.data,
-                                      status,
-                                      error: status === 'ERROR' ? 'Simulated error for demo' : undefined
-                                  }
-                              }
-                            : node
-                    )
-                }))
+                agentflowRef.current?.setNodeExecutionStatus(nodeId, status, error)
             }, (index + 1) * 800)
         })
+    }
+
+    const reset = () => {
+        agentflowRef.current?.clearExecutionState()
     }
 
     return (
@@ -218,7 +209,7 @@ export function StatusIndicatorsExample() {
                     Simulate Execution
                 </button>
                 <button
-                    onClick={() => setFlow(createFlowWithStatuses())}
+                    onClick={reset}
                     style={{
                         padding: '8px 16px',
                         background: '#9e9e9e',
@@ -230,6 +221,19 @@ export function StatusIndicatorsExample() {
                 >
                     Reset
                 </button>
+                <button
+                    onClick={() => setIsDarkMode((d) => !d)}
+                    style={{
+                        padding: '8px 16px',
+                        background: isDarkMode ? '#444' : '#212121',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                </button>
                 <span style={{ color: '#666', fontSize: '14px' }}>Hover over error nodes to see error messages</span>
             </div>
 
@@ -239,9 +243,10 @@ export function StatusIndicatorsExample() {
                     ref={agentflowRef}
                     apiBaseUrl={apiBaseUrl}
                     token={token ?? undefined}
-                    initialFlow={flow}
+                    initialFlow={initialFlow}
                     showDefaultHeader={false}
                     readOnly={true}
+                    isDarkMode={isDarkMode}
                 />
             </div>
         </div>

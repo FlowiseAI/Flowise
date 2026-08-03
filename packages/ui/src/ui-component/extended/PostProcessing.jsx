@@ -179,7 +179,7 @@ const PostProcessing = ({ dialogProps }) => {
                     style={{
                         marginTop: '10px',
                         border: '1px solid',
-                        borderColor: theme.palette.grey['300'],
+                        borderColor: customization.isDarkMode ? 'rgba(255,255,255,0.12)' : theme.palette.grey['300'],
                         borderRadius: '6px',
                         height: '200px',
                         width: '100%'
@@ -196,7 +196,16 @@ const PostProcessing = ({ dialogProps }) => {
                     />
                 </div>
             </Box>
-            <Card sx={{ borderColor: theme.palette.primary[200] + 75, mt: 2, mb: 2 }} variant='outlined'>
+            <Card
+                elevation={0}
+                sx={{
+                    borderRadius: '8px',
+                    border: '1px solid',
+                    borderColor: customization.isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)',
+                    mt: 2,
+                    mb: 2
+                }}
+            >
                 <Accordion
                     disableGutters
                     sx={{
@@ -206,19 +215,61 @@ const PostProcessing = ({ dialogProps }) => {
                     }}
                 >
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography>Available Variables</Typography>
+                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Available Variables</Typography>
                     </AccordionSummary>
                     <AccordionDetails sx={{ p: 0 }}>
-                        <TableContainer component={Paper}>
-                            <Table aria-label='available variables table'>
+                        <TableContainer component={Paper} elevation={0} sx={{ boxShadow: 'none', bgcolor: 'transparent' }}>
+                            <Table size='small' aria-label='available variables table'>
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell sx={{ width: '30%' }}>Variable</TableCell>
-                                        <TableCell sx={{ width: '15%' }}>Type</TableCell>
-                                        <TableCell sx={{ width: '55%' }}>Description</TableCell>
+                                        <TableCell
+                                            sx={{
+                                                width: '30%',
+                                                fontSize: '0.8125rem',
+                                                fontWeight: 600,
+                                                color: 'text.secondary',
+                                                py: 1.5,
+                                                borderColor: customization.isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'
+                                            }}
+                                        >
+                                            Variable
+                                        </TableCell>
+                                        <TableCell
+                                            sx={{
+                                                width: '15%',
+                                                fontSize: '0.8125rem',
+                                                fontWeight: 600,
+                                                color: 'text.secondary',
+                                                py: 1.5,
+                                                borderColor: customization.isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'
+                                            }}
+                                        >
+                                            Type
+                                        </TableCell>
+                                        <TableCell
+                                            sx={{
+                                                width: '55%',
+                                                fontSize: '0.8125rem',
+                                                fontWeight: 600,
+                                                color: 'text.secondary',
+                                                py: 1.5,
+                                                borderColor: customization.isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'
+                                            }}
+                                        >
+                                            Description
+                                        </TableCell>
                                     </TableRow>
                                 </TableHead>
-                                <TableBody>
+                                <TableBody
+                                    sx={{
+                                        '& td': {
+                                            fontSize: '0.8rem',
+                                            py: 1.5,
+                                            borderColor: customization.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'
+                                        },
+                                        '& tr:last-child td': { border: 0 }
+                                    }}
+                                >
                                     <TableRow>
                                         <TableCell>
                                             <code>$flow.rawOutput</code>
@@ -283,11 +334,11 @@ const PostProcessing = ({ dialogProps }) => {
                                         <TableCell>List of artifacts generated during execution</TableCell>
                                     </TableRow>
                                     <TableRow>
-                                        <TableCell sx={{ borderBottom: 'none' }}>
+                                        <TableCell>
                                             <code>$flow.fileAnnotations</code>
                                         </TableCell>
-                                        <TableCell sx={{ borderBottom: 'none' }}>array</TableCell>
-                                        <TableCell sx={{ borderBottom: 'none' }}>File annotations associated with the response</TableCell>
+                                        <TableCell>array</TableCell>
+                                        <TableCell>File annotations associated with the response</TableCell>
                                     </TableRow>
                                 </TableBody>
                             </Table>
@@ -295,14 +346,16 @@ const PostProcessing = ({ dialogProps }) => {
                     </AccordionDetails>
                 </Accordion>
             </Card>
-            <StyledButton
-                style={{ marginBottom: 10, marginTop: 10 }}
-                variant='contained'
-                disabled={!postProcessingFunction || postProcessingFunction?.trim().length === 0}
-                onClick={onSave}
-            >
-                Save
-            </StyledButton>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
+                <StyledButton
+                    variant='contained'
+                    disabled={!postProcessingFunction || postProcessingFunction?.trim().length === 0}
+                    onClick={onSave}
+                    sx={{ minWidth: 100 }}
+                >
+                    Save
+                </StyledButton>
+            </Box>
             <ExpandTextDialog
                 show={showExpandDialog}
                 dialogProps={expandDialogProps}

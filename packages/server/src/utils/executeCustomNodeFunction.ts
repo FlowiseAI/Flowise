@@ -11,13 +11,15 @@ export const executeCustomNodeFunction = async ({
     componentNodes,
     data,
     workspaceId,
-    orgId
+    orgId,
+    canViewVariables
 }: {
     appDataSource: DataSource
     componentNodes: IComponentNodes
     data: any
     workspaceId?: string
     orgId?: string
+    canViewVariables?: boolean
 }) => {
     try {
         const body = data
@@ -43,7 +45,8 @@ export const executeCustomNodeFunction = async ({
                     appDataSource,
                     databaseEntities,
                     workspaceId,
-                    orgId
+                    orgId,
+                    skipVariables: !canViewVariables
                 }
 
                 const returnData = await newNodeInstance.init(nodeData, '', options)

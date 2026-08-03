@@ -26,7 +26,11 @@ import {
     IconWorldWww,
     IconPhoto,
     IconBrandGoogle,
-    IconBrowserCheck
+    IconBrowserCheck,
+    IconMessageCircle,
+    IconClockHour4,
+    IconListDetails,
+    IconWebhook
 } from '@tabler/icons-react'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
@@ -398,6 +402,41 @@ const AgentFlowNode = ({ data }) => {
                                 {data.label}
                             </Typography>
 
+                            {/* Render the icon for "Start" node to help users determine it's started by user's input or schedule */}
+                            {data.name === 'startAgentflow' &&
+                                data.inputs?.startInputType &&
+                                (() => {
+                                    const inputType = data.inputs.startInputType
+                                    const iconMap = {
+                                        chatInput: { icon: <IconMessageCircle size={14} /> },
+                                        formInput: { icon: <IconListDetails size={14} /> },
+                                        scheduleInput: { icon: <IconClockHour4 size={14} /> },
+                                        webhookTrigger: { icon: <IconWebhook size={14} /> }
+                                    }
+                                    const info = iconMap[inputType]
+                                    if (!info) return null
+                                    return (
+                                        <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, alignItems: 'center' }}>
+                                            <Box
+                                                sx={{
+                                                    backgroundColor: customization.isDarkMode
+                                                        ? 'rgba(255, 255, 255, 0.2)'
+                                                        : 'rgba(255, 255, 255, 0.9)',
+                                                    borderRadius: '16px',
+                                                    height: 22,
+                                                    px: 0.9,
+                                                    display: 'flex',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    gap: 0.5
+                                                }}
+                                            >
+                                                {info.icon}
+                                            </Box>
+                                        </Box>
+                                    )
+                                })()}
+
                             {(() => {
                                 // Array of model configs to check and render
                                 const modelConfigs = [
@@ -432,7 +471,9 @@ const AgentFlowNode = ({ data }) => {
                                                     alt={item.model}
                                                 />
                                                 <Typography sx={{ fontSize: '0.7rem', ml: 0.5 }}>
-                                                    {item.config.modelName || item.config.model}
+                                                    {item.config.customModel
+                                                        ? item.config.customModel.replace(/^arn:aws:bedrock:[^:]+:[^:]+:/, '')
+                                                        : item.config.modelName || item.config.model}
                                                 </Typography>
                                             </Box>
                                         </Box>

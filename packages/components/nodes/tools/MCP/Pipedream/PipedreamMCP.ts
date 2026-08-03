@@ -4,7 +4,6 @@ import { getCredentialData, getCredentialParam, getVars, prepareSandboxVars } fr
 import { DataSource } from 'typeorm'
 import { MCPToolkit } from '../core'
 import axios from 'axios'
-import { z, ZodTypeAny } from 'zod'
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js'
 import type { CallToolRequest, CallToolResult, TextContent, Tool as McpTool } from '@modelcontextprotocol/sdk/types.js'
 
@@ -38,17 +37,6 @@ Once the user has connected their account, retry the original request.`
     }
 
     return text
-}
-
-function createSchemaModel(inputSchema: { type: string; properties?: Record<string, any> }): z.ZodObject<any> {
-    if (inputSchema.type !== 'object' || !inputSchema.properties) {
-        throw new Error('Invalid schema type or missing properties')
-    }
-    const schemaProperties = Object.entries(inputSchema.properties).reduce((acc, [key]) => {
-        acc[key] = z.any()
-        return acc
-    }, {} as Record<string, ZodTypeAny>)
-    return z.object(schemaProperties)
 }
 
 async function createPipedreamTool(toolkit: MCPToolkit, name: string, description: string, argsSchema: any): Promise<Tool> {
@@ -345,7 +333,7 @@ class Pipedream_MCP implements INode {
             }
 
             const toolPromises = rawTools.map((t: McpTool) =>
-                createPipedreamTool(toolkit, t.name, t.description || t.name, createSchemaModel(t.inputSchema))
+                createPipedreamTool(toolkit, t.name, t.description || t.name, t.inputSchema ?? { type: 'object', properties: {} })
             )
             const settled = await Promise.allSettled(toolPromises)
             const tools = settled.filter((r): r is PromiseFulfilledResult<Tool> => r.status === 'fulfilled').map((r) => r.value)

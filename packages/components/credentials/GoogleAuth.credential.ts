@@ -36,7 +36,7 @@ class GoogleVertexAuth implements INodeCredential {
     "auth_provider_x509_cert_url": ...,
     "client_x509_cert_url": ...
 }`,
-                type: 'string',
+                type: 'password',
                 rows: 4,
                 optional: true
             },

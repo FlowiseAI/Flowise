@@ -14,6 +14,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 // API
 import executionsApi from '@/api/executions'
 import useApi from '@/hooks/useApi'
+import { Available } from '@/ui-component/rbac/available'
 
 const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
     const portalElement = document.getElementById('portal')
@@ -104,9 +105,11 @@ const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
 
                 {/* Actions */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button color='error' onClick={handleUnshare} sx={{ mr: 1 }}>
-                        Unshare
-                    </Button>
+                    <Available permission='executions:update'>
+                        <Button color='error' onClick={handleUnshare} sx={{ mr: 1 }}>
+                            Unshare
+                        </Button>
+                    </Available>
                     <Button onClick={onClose}>Close</Button>
                 </Box>
             </DialogContent>

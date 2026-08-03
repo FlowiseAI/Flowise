@@ -13,7 +13,7 @@ import { DataSource } from 'typeorm'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 import fetch from 'node-fetch'
 import { flatten, uniqWith, isEqual } from 'lodash'
-import { zodToJsonSchema } from 'zod-to-json-schema'
+import { toolSchemaToJsonSchema } from '../../../src/utils'
 import { AnalyticHandler } from '../../../src/handler'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
@@ -1163,7 +1163,7 @@ interface JSONSchema {
 }
 
 const formatToOpenAIAssistantTool = (tool: any): OpenAI.Beta.FunctionTool => {
-    const parameters = zodToJsonSchema(tool.schema) as JSONSchema
+    const parameters = toolSchemaToJsonSchema(tool.schema) as JSONSchema
 
     // For strict tools, we need to:
     // 1. Set additionalProperties to false

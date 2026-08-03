@@ -125,7 +125,7 @@ class ChatMistral_ChatModels implements INode {
         const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string
         const topP = nodeData.inputs?.topP as string
         const safeMode = nodeData.inputs?.safeMode as boolean
-        const randomSeed = nodeData.inputs?.safeMode as string
+        const randomSeed = nodeData.inputs?.randomSeed as string
         const overrideEndpoint = nodeData.inputs?.overrideEndpoint as string
         const streaming = nodeData.inputs?.streaming as boolean
         const cache = nodeData.inputs?.cache as BaseCache

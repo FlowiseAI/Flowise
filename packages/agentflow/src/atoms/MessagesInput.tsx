@@ -7,8 +7,10 @@ import { IconArrowsMaximize, IconPlus, IconTrash, IconVariable } from '@tabler/i
 import type { InputParam, NodeData } from '@/core/types'
 
 import { ExpandTextDialog } from './ExpandTextDialog'
-import { RichTextEditor } from './RichTextEditor.lazy'
+import { toSuggestionItems } from './toSuggestionItems'
 import { useStableKeys } from './useStableKeys'
+import { VariableInput } from './VariableInput'
+import type { VariableItem } from './VariablePicker'
 
 const MESSAGE_ROLES = [
     { label: 'System', value: 'system' },
@@ -20,7 +22,7 @@ const MESSAGE_ROLES = [
 type MessageRole = (typeof MESSAGE_ROLES)[number]['value']
 
 export interface MessageEntry {
-    role: MessageRole
+    role: MessageRole | ''
     content: string
 }
 
@@ -28,6 +30,8 @@ export interface MessagesInputProps {
     inputParam: InputParam
     data: NodeData
     disabled?: boolean
+    /** Variable items for `{{ }}` autocomplete in message content fields. */
+    variableItems?: VariableItem[]
     onDataChange?: (params: { inputParam: InputParam; newValue: unknown }) => void
 }
 
@@ -36,7 +40,7 @@ export interface MessagesInputProps {
  * Each entry has a role dropdown (system/assistant/developer/user)
  * and a multiline content textarea with variable support ({{ variable }} syntax).
  */
-export function MessagesInput({ inputParam, data, disabled = false, onDataChange }: MessagesInputProps) {
+export function MessagesInput({ inputParam, data, disabled = false, variableItems, onDataChange }: MessagesInputProps) {
     const theme = useTheme()
 
     const messages = useMemo(
@@ -45,6 +49,8 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
     )
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(messages.length, 'message')
+
+    const suggestionItems = useMemo(() => toSuggestionItems(variableItems), [variableItems])
 
     const handleRoleChange = useCallback(
         (index: number, role: string) => {
@@ -71,7 +77,7 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
     )
 
     const handleAddMessage = useCallback(() => {
-        const newMessage: MessageEntry = { role: 'user', content: '' }
+        const newMessage: MessageEntry = { role: '', content: '' }
         onDataChange?.({ inputParam, newValue: [...messages, newMessage] })
     }, [messages, inputParam, onDataChange])
 
@@ -121,10 +127,11 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
                     key={effectiveKeys[index]}
                     sx={{
                         p: 2,
+                        mx: 2,
                         mt: 2,
                         mb: 1,
                         border: 1,
-                        borderColor: theme.palette.grey[900] + 25,
+                        borderColor: theme.palette.divider,
                         borderRadius: 2,
                         position: 'relative'
                     }}
@@ -200,29 +207,32 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
                                 <IconArrowsMaximize />
                             </IconButton>
                         </div>
-                        <RichTextEditor
+                        <VariableInput
                             value={message.content}
-                            onChange={(html) => handleContentChange(index, html)}
+                            onChange={(v) => handleContentChange(index, v)}
                             placeholder='Message content (supports {{ variable }} syntax)'
                             disabled={disabled}
                             rows={4}
+                            suggestionItems={suggestionItems}
                         />
                     </Box>
                 </Box>
             ))}
 
             {/* Add button */}
-            <Button
-                fullWidth
-                size='small'
-                variant='outlined'
-                disabled={isAddDisabled}
-                sx={{ borderRadius: '16px', mt: 2 }}
-                startIcon={<IconPlus />}
-                onClick={handleAddMessage}
-            >
-                Add {inputParam.label}
-            </Button>
+            <Box sx={{ px: 2, pb: 2 }}>
+                <Button
+                    fullWidth
+                    size='small'
+                    variant='outlined'
+                    disabled={isAddDisabled}
+                    sx={{ borderRadius: '16px', mt: 1 }}
+                    startIcon={<IconPlus />}
+                    onClick={handleAddMessage}
+                >
+                    Add {inputParam.label}
+                </Button>
+            </Box>
 
             {/* Expand content dialog — conditionally mounted so it always initializes fresh */}
             {expandIndex !== null && (
@@ -233,6 +243,7 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
                     placeholder='Message content (supports {{ variable }} syntax)'
                     disabled={disabled}
                     inputType='string'
+                    suggestionItems={suggestionItems}
                     onConfirm={handleExpandConfirm}
                     onCancel={handleExpandCancel}
                 />

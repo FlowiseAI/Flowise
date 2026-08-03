@@ -1,6 +1,7 @@
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { render, screen } from '@testing-library/react'
 import * as TiptapReact from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
 
 import { VariableInput, type VariableInputProps } from './VariableInput'
 
@@ -69,19 +70,121 @@ describe('VariableInput', () => {
         expect(screen.getByTestId('variable-input')).toBeInTheDocument()
     })
 
-    it('initialises the editor with the provided value', () => {
-        // Verify the editor is created with content matching the value prop, so
-        // the editor is not empty on the first render before the sync useEffect fires.
+    it('always initialises the editor with empty content (value is loaded via setContent effect)', () => {
+        // The editor always starts empty; value is loaded once via editor.commands.setContent
+        // after the editor instance is ready — this avoids content flicker on re-renders.
         const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
         renderVariableInput({ value: 'Hello world' })
-        expect(useEditorSpy).toHaveBeenCalledWith(expect.objectContaining({ content: 'Hello world' }))
+        expect(useEditorSpy).toHaveBeenCalledWith(expect.objectContaining({ content: '' }))
         useEditorSpy.mockRestore()
     })
 
-    it('initialises the editor with empty string when value is empty', () => {
+    it('passes autofocus:"end" to useEditor when autoFocus is true', () => {
         const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
-        renderVariableInput({ value: '' })
-        expect(useEditorSpy).toHaveBeenCalledWith(expect.objectContaining({ content: '' }))
+        renderVariableInput({ autoFocus: true })
+        expect(useEditorSpy).toHaveBeenCalledWith(expect.objectContaining({ autofocus: 'end' }))
         useEditorSpy.mockRestore()
+    })
+
+    it('passes autofocus:false to useEditor when autoFocus is false (default)', () => {
+        const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
+        renderVariableInput({ autoFocus: false })
+        expect(useEditorSpy).toHaveBeenCalledWith(expect.objectContaining({ autofocus: false }))
+        useEditorSpy.mockRestore()
+    })
+
+    it('calls onEditorReady with the editor instance after mount', () => {
+        const onEditorReady = jest.fn()
+        renderVariableInput({ onEditorReady })
+        // The mock editor has getHTML/getMarkdown/commands etc.
+        expect(onEditorReady).toHaveBeenCalledWith(expect.objectContaining({ getHTML: expect.any(Function) }))
+    })
+
+    describe('useMarkdown derived from rows — StarterKit link extension', () => {
+        beforeEach(() => {
+            jest.clearAllMocks()
+        })
+
+        it('passes link:false to StarterKit when rows is not set (single-line field)', () => {
+            renderVariableInput({ rows: undefined })
+
+            expect(StarterKit.configure).toHaveBeenCalledWith(expect.objectContaining({ link: false }))
+        })
+
+        it('does not pass link:false to StarterKit when rows is set (multiline/markdown field)', () => {
+            renderVariableInput({ rows: 4 })
+
+            expect(StarterKit.configure).not.toHaveBeenCalledWith(expect.objectContaining({ link: false }))
+        })
+    })
+
+    describe('onUpdate always emits markdown regardless of rows', () => {
+        it('calls onChange with getEditorMarkdown output when rows is not set', () => {
+            const onChange = jest.fn()
+            const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
+            renderVariableInput({ onChange, rows: undefined })
+
+            const config = useEditorSpy.mock.calls[0][0] as { onUpdate: (args: { editor: unknown }) => void }
+            const mockEditor = { getMarkdown: () => 'plain url text', getHTML: jest.fn() }
+            config.onUpdate({ editor: mockEditor })
+
+            expect(onChange).toHaveBeenCalledWith('plain url text')
+            expect(mockEditor.getHTML).not.toHaveBeenCalled()
+            useEditorSpy.mockRestore()
+        })
+
+        it('calls onChange with getEditorMarkdown output when rows is set', () => {
+            const onChange = jest.fn()
+            const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
+            renderVariableInput({ onChange, rows: 4 })
+
+            const config = useEditorSpy.mock.calls[0][0] as { onUpdate: (args: { editor: unknown }) => void }
+            const mockEditor = { getMarkdown: () => '**bold**', getHTML: jest.fn() }
+            config.onUpdate({ editor: mockEditor })
+
+            expect(onChange).toHaveBeenCalledWith('**bold**')
+            expect(mockEditor.getHTML).not.toHaveBeenCalled()
+            useEditorSpy.mockRestore()
+        })
+    })
+
+    describe('XML tag preservation in onUpdate', () => {
+        it('should unescape entity-escaped XML tags before calling onChange', () => {
+            const onChange = jest.fn()
+            const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
+            renderVariableInput({ onChange })
+
+            const config = useEditorSpy.mock.calls[0][0] as { onUpdate: (args: { editor: unknown }) => void }
+            config.onUpdate({ editor: { getMarkdown: () => '&lt;instructions&gt;Be helpful&lt;/instructions&gt;', getHTML: jest.fn() } })
+
+            expect(onChange).toHaveBeenCalledWith('<instructions>Be helpful</instructions>')
+            useEditorSpy.mockRestore()
+        })
+
+        it('should pass through raw XML tags unchanged', () => {
+            const onChange = jest.fn()
+            const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
+            renderVariableInput({ onChange })
+
+            const config = useEditorSpy.mock.calls[0][0] as { onUpdate: (args: { editor: unknown }) => void }
+            config.onUpdate({ editor: { getMarkdown: () => '<question>What?</question>', getHTML: jest.fn() } })
+
+            expect(onChange).toHaveBeenCalledWith('<question>What?</question>')
+            useEditorSpy.mockRestore()
+        })
+
+        it('should preserve XML tags mixed with variables', () => {
+            const onChange = jest.fn()
+            const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
+            renderVariableInput({ onChange })
+
+            const config = useEditorSpy.mock.calls[0][0] as { onUpdate: (args: { editor: unknown }) => void }
+            config.onUpdate({
+                editor: { getMarkdown: () => '&lt;context&gt;{{question}}&lt;/context&gt;', getHTML: jest.fn() }
+            })
+
+            expect(onChange).toHaveBeenCalledWith('<context>{{question}}</context>')
+            useEditorSpy.mockRestore()
+        })
     })
 })

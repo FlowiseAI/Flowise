@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
 import type { RequestInterceptor } from './api'
+import type { ExecutionStatus } from './execution'
 import type { FlowData, FlowDataCallback, FlowNode } from './flow'
 import type { NodeDataSchema } from './node'
 import type { ValidationResult } from './validation'
@@ -59,6 +60,21 @@ export interface AgentflowProps {
     /** Whether the canvas is read-only */
     readOnly?: boolean
 
+    /**
+     * Additional buttons rendered in the top-right canvas overlay, to the right of the built-in
+     * validation FAB. Consumers have full control over content — pass any ReactNode (FABs, icon
+     * buttons, popovers, dialogs, etc.). Hidden when `readOnly` is true.
+     *
+     * @example
+     * // Add a chat button alongside the validation FAB (mirrors legacy v2 pattern)
+     * canvasActions={
+     *   <Fab size="small" color="secondary" onClick={() => setShowChat(true)}>
+     *     <IconMessage />
+     *   </Fab>
+     * }
+     */
+    canvasActions?: ReactNode
+
     /** Custom header renderer - receives save/export handlers */
     renderHeader?: (props: HeaderRenderProps) => ReactNode
 
@@ -110,4 +126,10 @@ export interface AgentFlowInstance {
 
     /** Clear all nodes and edges */
     clear(): void
+
+    /** Update a single node's execution status badge */
+    setNodeExecutionStatus(nodeId: string, status: ExecutionStatus, error?: string): void
+
+    /** Remove all execution status badges from nodes */
+    clearExecutionState(): void
 }

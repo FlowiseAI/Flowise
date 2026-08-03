@@ -1,3 +1,7 @@
+// AGENTFLOW_ICONS registry below is duplicated in
+// packages/observe/src/atoms/NodeIcon.tsx — keep in sync until
+// extracted to packages/shared-ui in FLOWISE-628.
+
 import type { ComponentType } from 'react'
 
 import {

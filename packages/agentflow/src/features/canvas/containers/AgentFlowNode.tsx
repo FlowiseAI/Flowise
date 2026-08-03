@@ -4,7 +4,8 @@ import { Box, Typography } from '@mui/material'
 
 import { tokens } from '@/core/theme/tokens'
 import type { NodeData } from '@/core/types'
-import { useApiContext, useConfigContext } from '@/infrastructure/store'
+import { getNodeVersionWarning } from '@/core/utils'
+import { useAgentflowContext, useApiContext, useConfigContext } from '@/infrastructure/store'
 
 import { NodeIcon } from '../components/NodeIcon'
 import { NodeInputHandle } from '../components/NodeInputHandle'
@@ -12,6 +13,7 @@ import { NodeModelConfigs } from '../components/NodeModelConfigs'
 import { getMinimumNodeHeight, NodeOutputHandles } from '../components/NodeOutputHandles'
 import { NodeStatusIndicator, NodeWarningIndicator } from '../components/NodeStatusIndicator'
 import { NodeToolbarActions } from '../components/NodeToolbarActions'
+import { NodeToolIcons } from '../components/NodeToolIcons'
 import { useOpenNodeEditor } from '../hooks'
 import { useNodeColors } from '../hooks/useNodeColors'
 import { CardWrapper } from '../styled'
@@ -31,8 +33,13 @@ export interface AgentFlowNodeProps {
 function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     const { isDarkMode } = useConfigContext()
     const { apiBaseUrl } = useApiContext()
+    const { executionState, state } = useAgentflowContext()
     const ref = useRef<HTMLDivElement>(null)
     const { openNodeEditor } = useOpenNodeEditor()
+
+    const nodeExecution = executionState?.nodeStates[data.id]
+    const status = nodeExecution?.status ?? data.status
+    const error = nodeExecution?.error ?? data.error
 
     const [isHovered, setIsHovered] = useState(false)
     const [warningMessage, setWarningMessage] = useState('')
@@ -55,10 +62,17 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
 
     useEffect(() => {
         const messages: string[] = []
+
+        const componentNode = state.componentNodes.find((cn) => cn.name === data.name)
+        if (componentNode) {
+            const versionWarning = getNodeVersionWarning(data, componentNode)
+            if (versionWarning) messages.push(versionWarning)
+        }
+
         if (data.warning) messages.push(data.warning)
         if (data.validationErrors?.length) messages.push(...data.validationErrors)
         setWarningMessage(messages.join('\n'))
-    }, [data.name, data.version, data.warning, data.validationErrors])
+    }, [data, data.name, data.version, data.warning, data.validationErrors, state.componentNodes])
 
     return (
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} onDoubleClick={handleDoubleClick}>
@@ -86,7 +100,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                 }}
                 border={false}
             >
-                <NodeStatusIndicator status={data.status} error={data.error} />
+                <NodeStatusIndicator status={status} error={error} />
                 <NodeWarningIndicator message={warningMessage} />
 
                 <Box sx={{ width: '100%' }}>
@@ -106,6 +120,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                                 {data.label}
                             </Typography>
                             <NodeModelConfigs inputs={data.inputs} />
+                            <NodeToolIcons inputs={data.inputs} nodeColor={data.color} />
                         </Box>
                     </Box>
 

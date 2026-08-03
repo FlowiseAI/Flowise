@@ -1,11 +1,13 @@
 import path from 'path'
 import { getBaseClasses, getCredentialData, getCredentialParam, getUserHome } from '../../../src/utils'
+import { validateSQLitePath } from '../../../src/validator'
 import { SaverOptions } from './interface'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { SqliteSaver } from './SQLiteAgentMemory/sqliteSaver'
 import { DataSource } from 'typeorm'
 import { PostgresSaver } from './PostgresAgentMemory/pgSaver'
 import { MySQLSaver } from './MySQLAgentMemory/mysqlSaver'
+import { sanitizeDataSourceOptions } from '../../../src/sanitizeDataSourceOptions'
 
 class AgentMemory_Memory implements INode {
     label: string
@@ -96,6 +98,8 @@ class AgentMemory_Memory implements INode {
                 label: 'Additional Connection Configuration',
                 name: 'additionalConfig',
                 type: 'json',
+                description:
+                    'Optional TypeORM connection options (e.g. ssl, connectTimeout). entities, subscribers, migrations, and extra are not allowed.',
                 additionalParams: true,
                 optional: true
             }
@@ -118,6 +122,7 @@ class AgentMemory_Memory implements INode {
             } catch (exception) {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
+            additionalConfiguration = sanitizeDataSourceOptions(additionalConfiguration)
         }
 
         const threadId = options.sessionId || options.chatId
@@ -129,7 +134,7 @@ class AgentMemory_Memory implements INode {
 
         if (databaseType === 'sqlite') {
             datasourceOptions.database = databaseFilePath
-                ? path.resolve(databaseFilePath)
+                ? validateSQLitePath(databaseFilePath)
                 : path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite')
             const args: SaverOptions = {
                 datasourceOptions,

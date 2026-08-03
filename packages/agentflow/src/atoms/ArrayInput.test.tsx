@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import type { InputParam, NodeData } from '@/core/types'
 
 import { ArrayInput } from './ArrayInput'
+import type { VariableItem } from './VariablePicker'
 
 // --- Mocks ---
 const mockOnDataChange = jest.fn()
@@ -10,13 +11,20 @@ const mockOnDataChange = jest.fn()
 jest.mock('./NodeInputHandler', () => ({
     NodeInputHandler: ({
         inputParam,
-        onDataChange
+        data,
+        onDataChange,
+        variableItems
     }: {
         inputParam: InputParam
         data: NodeData
         onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+        variableItems?: VariableItem[]
     }) => (
-        <div data-testid={`input-handler-${inputParam.name}`}>
+        <div
+            data-testid={`input-handler-${inputParam.name}`}
+            data-inputs={JSON.stringify(data.inputs)}
+            data-variable-items={variableItems ? JSON.stringify(variableItems.map((v) => v.value)) : undefined}
+        >
             <label>{inputParam.label}</label>
             <input data-testid={`input-${inputParam.name}`} onChange={(e) => onDataChange({ inputParam, newValue: e.target.value })} />
         </div>
@@ -302,7 +310,7 @@ describe('ArrayInput', () => {
 
         expect(mockOnDataChange).toHaveBeenCalledWith({
             inputParam: inputParamWithTypes,
-            newValue: [{ str: '', num: 0, bool: false, arr: [] }]
+            newValue: [{ str: '', num: '', bool: false, arr: [] }]
         })
     })
 
@@ -484,5 +492,202 @@ describe('ArrayInput', () => {
         // Delete button should be disabled when at minItems limit
         const deleteButton = screen.getByTitle('Delete')
         expect(deleteButton).toBeDisabled()
+    })
+
+    // Parent inputs are merged into itemData so async load methods inside array items
+    // (e.g. listToolInputArgs) can access parent-level fields like toolAgentflowSelectedTool.
+    it('should merge parent node inputs into itemData so async options inside array items can access parent fields', () => {
+        const dataWithParentField: NodeData = {
+            ...mockNodeData,
+            inputs: {
+                toolAgentflowSelectedTool: 'calculator',
+                toolInputArgs: [{ inputArgName: '', inputArgValue: '' }]
+            }
+        } as NodeData
+
+        const toolInputArgsParam: InputParam = {
+            id: 'toolInputArgs',
+            name: 'toolInputArgs',
+            label: 'Tool Input Arguments',
+            type: 'array',
+            array: [
+                { id: 'inputArgName', name: 'inputArgName', label: 'Input Argument Name', type: 'asyncOptions' } as InputParam,
+                { id: 'inputArgValue', name: 'inputArgValue', label: 'Input Argument Value', type: 'string' } as InputParam
+            ]
+        }
+
+        render(<ArrayInput inputParam={toolInputArgsParam} data={dataWithParentField} onDataChange={mockOnDataChange} />)
+
+        const argNameHandler = screen.getByTestId('input-handler-inputArgName')
+        const inputs = JSON.parse(argNameHandler.getAttribute('data-inputs') ?? '{}')
+
+        // The parent-level field must be visible to the array item's async input
+        expect(inputs.toolAgentflowSelectedTool).toBe('calculator')
+        // The item's own fields are also present
+        expect(inputs.inputArgName).toBe('')
+    })
+})
+
+// ── acceptNodeOutputAsVariable in ArrayInput ────────────────────────────────
+
+describe('ArrayInput – acceptNodeOutputAsVariable', () => {
+    const baseVariableItems: VariableItem[] = [
+        { label: 'question', description: "User's question", category: 'Chat Context', value: '{{question}}' }
+    ]
+
+    it('prepends {{output}} to variableItems when nested param has acceptNodeOutputAsVariable', () => {
+        const inputParam: InputParam = {
+            id: 'updateState',
+            name: 'agentUpdateState',
+            label: 'Update State',
+            type: 'array',
+            acceptVariable: true,
+            array: [
+                { id: 'key', name: 'key', label: 'Key', type: 'string' } as InputParam,
+                {
+                    id: 'value',
+                    name: 'value',
+                    label: 'Value',
+                    type: 'string',
+                    acceptVariable: true,
+                    acceptNodeOutputAsVariable: true
+                } as InputParam
+            ]
+        }
+
+        const data: NodeData = {
+            id: 'node-1',
+            name: 'agentNode',
+            label: 'Agent',
+            inputs: { agentUpdateState: [{ key: 'myKey', value: '' }] }
+        } as NodeData
+
+        render(<ArrayInput inputParam={inputParam} data={data} onDataChange={mockOnDataChange} variableItems={baseVariableItems} />)
+
+        const valueHandler = screen.getByTestId('input-handler-value')
+        const passedItems: string[] = JSON.parse(valueHandler.getAttribute('data-variable-items') ?? '[]')
+        expect(passedItems[0]).toBe('{{output}}')
+        expect(passedItems).toContain('{{question}}')
+    })
+
+    it('does NOT prepend {{output}} when nested param lacks acceptNodeOutputAsVariable', () => {
+        const inputParam: InputParam = {
+            id: 'updateState',
+            name: 'agentUpdateState',
+            label: 'Update State',
+            type: 'array',
+            acceptVariable: true,
+            array: [{ id: 'value', name: 'value', label: 'Value', type: 'string', acceptVariable: true } as InputParam]
+        }
+
+        const data: NodeData = {
+            id: 'node-1',
+            name: 'agentNode',
+            label: 'Agent',
+            inputs: { agentUpdateState: [{ value: '' }] }
+        } as NodeData
+
+        render(<ArrayInput inputParam={inputParam} data={data} onDataChange={mockOnDataChange} variableItems={baseVariableItems} />)
+
+        const valueHandler = screen.getByTestId('input-handler-value')
+        const passedItems: string[] = JSON.parse(valueHandler.getAttribute('data-variable-items') ?? '[]')
+        expect(passedItems).not.toContain('{{output}}')
+        expect(passedItems).toContain('{{question}}')
+    })
+
+    it('includes structured output fields in prepended variables', () => {
+        const inputParam: InputParam = {
+            id: 'updateState',
+            name: 'agentUpdateState',
+            label: 'Update State',
+            type: 'array',
+            array: [
+                {
+                    id: 'value',
+                    name: 'value',
+                    label: 'Value',
+                    type: 'string',
+                    acceptVariable: true,
+                    acceptNodeOutputAsVariable: true
+                } as InputParam
+            ]
+        }
+
+        const data: NodeData = {
+            id: 'node-1',
+            name: 'agentNode',
+            label: 'Agent',
+            inputs: {
+                agentUpdateState: [{ value: '' }],
+                agentStructuredOutput: [{ key: 'sentiment', description: 'Sentiment score' }]
+            }
+        } as NodeData
+
+        render(<ArrayInput inputParam={inputParam} data={data} onDataChange={mockOnDataChange} variableItems={baseVariableItems} />)
+
+        const valueHandler = screen.getByTestId('input-handler-value')
+        const passedItems: string[] = JSON.parse(valueHandler.getAttribute('data-variable-items') ?? '[]')
+        expect(passedItems).toContain('{{output}}')
+        expect(passedItems).toContain('{{output.sentiment}}')
+    })
+
+    it('does not pass variableItems when nested param has no acceptVariable', () => {
+        const inputParam: InputParam = {
+            id: 'updateState',
+            name: 'agentUpdateState',
+            label: 'Update State',
+            type: 'array',
+            array: [{ id: 'key', name: 'key', label: 'Key', type: 'string', acceptNodeOutputAsVariable: true } as InputParam]
+        }
+
+        const data: NodeData = {
+            id: 'node-1',
+            name: 'agentNode',
+            label: 'Agent',
+            inputs: { agentUpdateState: [{ key: '' }] }
+        } as NodeData
+
+        render(<ArrayInput inputParam={inputParam} data={data} onDataChange={mockOnDataChange} variableItems={baseVariableItems} />)
+
+        const keyHandler = screen.getByTestId('input-handler-key')
+        expect(keyHandler.getAttribute('data-variable-items')).toBeNull()
+    })
+})
+
+describe('ArrayInput – loopUpdateState', () => {
+    it('loopUpdateState — renders key and value sub-fields for each item', () => {
+        const loopUpdateStateParam: InputParam = {
+            id: 'loopUpdateState',
+            name: 'loopUpdateState',
+            label: 'Update Flow State',
+            type: 'array',
+            optional: true,
+            acceptVariable: true,
+            array: [
+                { id: 'key', name: 'key', label: 'Key', type: 'asyncOptions' } as InputParam,
+                {
+                    id: 'value',
+                    name: 'value',
+                    label: 'Value',
+                    type: 'string',
+                    acceptVariable: true,
+                    acceptNodeOutputAsVariable: true
+                } as InputParam
+            ]
+        }
+
+        const data: NodeData = {
+            id: 'loop-node-1',
+            name: 'loopAgentflow',
+            label: 'Loop',
+            inputs: { loopUpdateState: [{ key: '', value: '' }] }
+        } as NodeData
+
+        render(<ArrayInput inputParam={loopUpdateStateParam} data={data} onDataChange={mockOnDataChange} />)
+
+        expect(screen.getByTestId('input-handler-key')).toBeInTheDocument()
+        expect(screen.getByTestId('input-handler-value')).toBeInTheDocument()
+        expect(screen.getByText('Key')).toBeInTheDocument()
+        expect(screen.getByText('Value')).toBeInTheDocument()
     })
 })

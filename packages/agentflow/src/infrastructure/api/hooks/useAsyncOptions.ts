@@ -25,8 +25,7 @@ interface UseAsyncOptionsResult {
  * Fetches async option lists from the API using the loadMethodRegistry.
  */
 export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyncOptionsParams): UseAsyncOptionsResult {
-    const { chatflowsApi, chatModelsApi, toolsApi, credentialsApi, storesApi, embeddingsApi, runtimeStateApi, nodesApi, apiBaseUrl } =
-        useApiContext()
+    const { chatflowsApi, chatModelsApi, toolsApi, credentialsApi, storesApi, embeddingsApi, nodesApi, apiBaseUrl } = useApiContext()
 
     const [options, setOptions] = useState<OptionItem[]>([])
     const [loading, setLoading] = useState(true)
@@ -72,7 +71,6 @@ export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyn
                         credentialsApi,
                         storesApi,
                         embeddingsApi,
-                        runtimeStateApi,
                         nodesApi
                     }
                     const stableParams = paramsKey ? (JSON.parse(paramsKey) as Record<string, unknown>) : undefined
@@ -110,7 +108,6 @@ export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyn
         credentialsApi,
         storesApi,
         embeddingsApi,
-        runtimeStateApi,
         nodesApi,
         apiBaseUrl
     ])

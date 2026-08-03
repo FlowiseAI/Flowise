@@ -2,6 +2,7 @@ import * as PropTypes from 'prop-types'
 import { useAuth } from '@/hooks/useAuth'
 import { StyledButton, StyledToggleButton } from '@/ui-component/button/StyledButton'
 import { Button, IconButton, ListItemButton, MenuItem, Tab } from '@mui/material'
+import { LoadingButton } from '@mui/lab'
 
 export const StyledPermissionButton = ({ permissionId, display, ...props }) => {
     const { hasPermission, hasDisplay } = useAuth()
@@ -73,6 +74,16 @@ export const PermissionListItemButton = ({ permissionId, display, ...props }) =>
     return <ListItemButton {...props} />
 }
 
+export const PermissionLoadingButton = ({ permissionId, display, ...props }) => {
+    const { hasPermission, hasDisplay } = useAuth()
+
+    if (!hasPermission(permissionId) || !hasDisplay(display)) {
+        return null
+    }
+
+    return <LoadingButton {...props} />
+}
+
 StyledPermissionButton.propTypes = { permissionId: PropTypes.string, display: PropTypes.array }
 StyledPermissionToggleButton.propTypes = { permissionId: PropTypes.string, display: PropTypes.array }
 PermissionIconButton.propTypes = { permissionId: PropTypes.string, display: PropTypes.array }
@@ -80,3 +91,4 @@ PermissionButton.propTypes = { permissionId: PropTypes.string, display: PropType
 PermissionTab.propTypes = { permissionId: PropTypes.string, display: PropTypes.array }
 PermissionMenuItem.propTypes = { permissionId: PropTypes.string, display: PropTypes.array }
 PermissionListItemButton.propTypes = { permissionId: PropTypes.string, display: PropTypes.array }
+PermissionLoadingButton.propTypes = { permissionId: PropTypes.string, display: PropTypes.array }

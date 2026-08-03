@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import marketplacesService from '../../services/marketplaces'
+import { stripProtectedFields } from '../../utils/stripProtectedFields'
 
 // Get all templates for marketplaces
 const getAllTemplates = async (req: Request, res: Response, next: NextFunction) => {
@@ -52,15 +53,14 @@ const saveCustomTemplate = async (req: Request, res: Response, next: NextFunctio
                 `Error: marketplacesService.saveCustomTemplate - body not provided!`
             )
         }
-        const body = req.body
-        body.workspaceId = req.user?.activeWorkspaceId
-        if (!body.workspaceId) {
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
             throw new InternalFlowiseError(
                 StatusCodes.NOT_FOUND,
-                `Error: marketplacesController.saveCustomTemplate - workspace ${body.workspaceId} not found!`
+                `Error: marketplacesController.saveCustomTemplate - workspace ${workspaceId} not found!`
             )
         }
-        const apiResponse = await marketplacesService.saveCustomTemplate(body)
+        const apiResponse = await marketplacesService.saveCustomTemplate({ ...stripProtectedFields(req.body), workspaceId })
         return res.json(apiResponse)
     } catch (error) {
         next(error)

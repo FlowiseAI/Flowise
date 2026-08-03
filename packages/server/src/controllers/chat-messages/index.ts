@@ -166,7 +166,7 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
             )
         }
         const chatflowid = req.params.id
-        const chatflow = await chatflowsService.getChatflowById(req.params.id, workspaceId)
+        const chatflow = await chatflowsService.getChatflowByIdForWorkspace(req.params.id, workspaceId)
         if (!chatflow) {
             return res.status(404).send('Chatflow not found')
         }

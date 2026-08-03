@@ -19,11 +19,13 @@ services:
         ports:
             - '${PORT:-3000}:${PORT:-3000}'
         volumes:
-            - ~/.flowise:/root/.flowise
+            # Container runs as the non-root `node` user, whose home is /home/node.
+            # Ensure the host directory is writable by that user (e.g. `chown -R 1000:1000 ~/.flowise` on Linux hosts).
+            - ~/.flowise:/home/node/.flowise
         environment:
             # --- Essential Flowise Vars ---
             - PORT=${PORT:-3000}
-            - DATABASE_PATH=${DATABASE_PATH:-/root/.flowise}
+            - DATABASE_PATH=${DATABASE_PATH:-/home/node/.flowise}
             - DATABASE_TYPE=${DATABASE_TYPE}
             - DATABASE_PORT=${DATABASE_PORT}
             - DATABASE_HOST=${DATABASE_HOST}
@@ -76,8 +78,11 @@ services:
             # SETTINGS
             - NUMBER_OF_PROXIES=${NUMBER_OF_PROXIES}
             - CORS_ORIGINS=${CORS_ORIGINS}
+            - MCP_CORS_ORIGINS=${MCP_CORS_ORIGINS}
             - IFRAME_ORIGINS=${IFRAME_ORIGINS}
             - FLOWISE_FILE_SIZE_LIMIT=${FLOWISE_FILE_SIZE_LIMIT}
+            - CUSTOM_MCP_TOOLS_MAX_BYTES=${CUSTOM_MCP_TOOLS_MAX_BYTES}
+            - CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS=${CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS}
             - SHOW_COMMUNITY_NODES=${SHOW_COMMUNITY_NODES}
             - DISABLE_FLOWISE_TELEMETRY=${DISABLE_FLOWISE_TELEMETRY}
             - DISABLED_NODES=${DISABLED_NODES}
@@ -151,10 +156,18 @@ services:
             # SECURITY
             - CUSTOM_MCP_SECURITY_CHECK=${CUSTOM_MCP_SECURITY_CHECK}
             - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
+            - CUSTOM_MCP_ALLOWED_ENV_VARS=${CUSTOM_MCP_ALLOWED_ENV_VARS}
+            - CUSTOM_MCP_ALLOWED_COMMANDS=${CUSTOM_MCP_ALLOWED_COMMANDS}
+            - CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS=${CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS}
             - HTTP_DENY_LIST=${HTTP_DENY_LIST}
             - HTTP_SECURITY_CHECK=${HTTP_SECURITY_CHECK}
             - PATH_TRAVERSAL_SAFETY=${PATH_TRAVERSAL_SAFETY}
             - TRUST_PROXY=${TRUST_PROXY}
+            - OAUTH2_SECURITY_CHECK=${OAUTH2_SECURITY_CHECK}
+            - OAUTH2_ALLOWED_TOKEN_DOMAINS=${OAUTH2_ALLOWED_TOKEN_DOMAINS}
+
+            # SCHEDULE
+            - MIN_SCHEDULE_INTERVAL_SECONDS=${MIN_SCHEDULE_INTERVAL_SECONDS}
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:${PORT:-3000}/api/v1/ping']
             interval: 10s
@@ -172,11 +185,12 @@ services:
         container_name: flowise-worker
         restart: always
         volumes:
-            - ~/.flowise:/root/.flowise
+            # Container runs as the non-root `node` user, whose home is /home/node.
+            - ~/.flowise:/home/node/.flowise
         environment:
             # --- Essential Flowise Vars ---
             - WORKER_PORT=${WORKER_PORT:-5566}
-            - DATABASE_PATH=${DATABASE_PATH:-/root/.flowise}
+            - DATABASE_PATH=${DATABASE_PATH:-/home/node/.flowise}
             - DATABASE_TYPE=${DATABASE_TYPE}
             - DATABASE_PORT=${DATABASE_PORT}
             - DATABASE_HOST=${DATABASE_HOST}
@@ -226,6 +240,8 @@ services:
             - CORS_ORIGINS=${CORS_ORIGINS}
             - IFRAME_ORIGINS=${IFRAME_ORIGINS}
             - FLOWISE_FILE_SIZE_LIMIT=${FLOWISE_FILE_SIZE_LIMIT}
+            - CUSTOM_MCP_TOOLS_MAX_BYTES=${CUSTOM_MCP_TOOLS_MAX_BYTES}
+            - CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS=${CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS}
             - SHOW_COMMUNITY_NODES=${SHOW_COMMUNITY_NODES}
             - DISABLE_FLOWISE_TELEMETRY=${DISABLE_FLOWISE_TELEMETRY}
             - DISABLED_NODES=${DISABLED_NODES}
@@ -299,10 +315,15 @@ services:
             # SECURITY
             - CUSTOM_MCP_SECURITY_CHECK=${CUSTOM_MCP_SECURITY_CHECK}
             - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
+            - CUSTOM_MCP_ALLOWED_ENV_VARS=${CUSTOM_MCP_ALLOWED_ENV_VARS}
+            - CUSTOM_MCP_ALLOWED_COMMANDS=${CUSTOM_MCP_ALLOWED_COMMANDS}
+            - CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS=${CUSTOM_MCP_ALLOWED_ABSOLUTE_SCRIPT_PATHS}
             - HTTP_DENY_LIST=${HTTP_DENY_LIST}
             - HTTP_SECURITY_CHECK=${HTTP_SECURITY_CHECK}
             - PATH_TRAVERSAL_SAFETY=${PATH_TRAVERSAL_SAFETY}
             - TRUST_PROXY=${TRUST_PROXY}
+            - OAUTH2_SECURITY_CHECK=${OAUTH2_SECURITY_CHECK}
+            - OAUTH2_ALLOWED_TOKEN_DOMAINS=${OAUTH2_ALLOWED_TOKEN_DOMAINS}
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:${WORKER_PORT:-5566}/healthz']
             interval: 10s

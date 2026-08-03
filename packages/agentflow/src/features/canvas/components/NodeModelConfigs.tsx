@@ -6,7 +6,7 @@ import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
 interface ModelConfig {
     model?: string
-    config?: { modelName?: string; model?: string }
+    config?: { modelName?: string; model?: string; customModel?: string }
 }
 
 export interface NodeModelConfigsProps {
@@ -54,7 +54,11 @@ function NodeModelConfigsComponent({ inputs }: NodeModelConfigsProps) {
                             src={`${apiBaseUrl}/api/v1/node-icon/${item.model}`}
                             alt={item.model as string}
                         />
-                        <Typography sx={{ fontSize: '0.7rem', ml: 0.5 }}>{item.config?.modelName || item.config?.model}</Typography>
+                        <Typography sx={{ fontSize: '0.7rem', ml: 0.5 }}>
+                            {item.config?.customModel
+                                ? item.config.customModel.replace(/^arn:aws:bedrock:[^:]+:[^:]+:/, '')
+                                : item.config?.modelName || item.config?.model}
+                        </Typography>
                     </Box>
                 </Box>
             ))}

@@ -197,6 +197,47 @@ export const revertBase64ImagesToFileRefs = (messages: BaseMessageLike[]): BaseM
     return updatedMessages
 }
 
+/**
+ * Converts LangChain message/chunk instances into plain JSON objects for clean DB storage.
+ * This avoids persisting large `{ lc, type, kwargs }` blobs and keeps execution-details UI readable.
+ */
+export const normalizeMessagesForStorage = (messages: BaseMessageLike[]): BaseMessageLike[] => {
+    return (messages || []).map((msg: any) => {
+        if (msg?.lc_namespace || typeof msg?._getType === 'function') {
+            const rawType = typeof msg?._getType === 'function' ? msg._getType() : msg?.type
+            const role =
+                rawType === 'ai'
+                    ? 'assistant'
+                    : rawType === 'human'
+                    ? 'user'
+                    : rawType === 'system'
+                    ? 'system'
+                    : rawType === 'tool'
+                    ? 'tool'
+                    : msg?.role || 'assistant'
+
+            const plain: Record<string, any> = {
+                role,
+                content: msg?.content ?? ''
+            }
+
+            if (msg?.name) plain.name = msg.name
+            if (msg?.tool_call_id) plain.tool_call_id = msg.tool_call_id
+            if (Array.isArray(msg?.tool_calls) && msg.tool_calls.length > 0) plain.tool_calls = msg.tool_calls
+
+            if (msg?.additional_kwargs && Object.keys(msg.additional_kwargs).length > 0) {
+                plain.additional_kwargs = msg.additional_kwargs
+            }
+
+            if (msg?.usage_metadata) plain.usage_metadata = msg.usage_metadata
+            if (msg?.id) plain.id = msg.id
+
+            return plain
+        }
+        return msg
+    })
+}
+
 // ─── Handling new image uploads ──────────────────────────────────────────────
 
 /**

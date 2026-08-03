@@ -9,8 +9,7 @@ const forgotPassword = (body) => client.post('/account/forgot-password', body)
 const resetPassword = (body) => client.post('/account/reset-password', body)
 const getBillingData = () => client.post('/account/billing')
 const logout = () => client.post('/account/logout')
-const getBasicAuth = () => client.get('/account/basic-auth')
-const checkBasicAuth = (body) => client.post('/account/basic-auth', body)
+const deleteAccount = (body) => client.delete('/account/delete', { data: body })
 
 export default {
     getBillingData,
@@ -22,6 +21,5 @@ export default {
     forgotPassword,
     resetPassword,
     logout,
-    getBasicAuth,
-    checkBasicAuth
+    deleteAccount
 }

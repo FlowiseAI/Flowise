@@ -5,10 +5,13 @@ export { getUniqueNodeId, getUniqueNodeLabel, initNode, resolveNodeType } from '
 export { generateExportFlowData } from './flowExport'
 
 // Field visibility engine
-export { evaluateFieldVisibility, evaluateParamVisibility, stripHiddenFieldValues } from './fieldVisibility'
+export { applyVisibleFieldDefaults, evaluateFieldVisibility, evaluateParamVisibility, stripHiddenFieldValues } from './fieldVisibility'
 
 // Dynamic output anchor utilities
 export { buildDynamicOutputAnchors, parseOutputHandleIndex } from './dynamicOutputAnchors'
 
 // Variable utilities
-export { getUpstreamNodes } from './variableUtils'
+export { getDefinedStateKeys, getUpstreamNodes } from './variableUtils'
+
+// Node version detection and upgrade utilities
+export { getNodeVersionWarning, isNodeOutdated, upgradeNodeData } from './nodeVersionUtils'

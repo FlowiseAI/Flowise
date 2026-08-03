@@ -23,14 +23,9 @@ import { common, createLowlight } from 'lowlight'
 import { suggestionOptions } from '@/ui-component/input/suggestionOption'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 import { CustomMention } from '@/utils/customMention'
+import { isHtmlContent, escapeXmlTags, unescapeXmlEntities, unescapeXmlTags } from '@/utils/xmlTagUtils'
 
 const lowlight = createLowlight(common)
-
-// Detect if content is legacy HTML (from old getHTML() storage) vs markdown
-const isHtmlContent = (content) => {
-    if (!content || typeof content !== 'string') return false
-    return /<(?:p|div|span|h[1-6]|ul|ol|li|br|code|pre|blockquote|table|strong|em)\b/i.test(content)
-}
 
 // Store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
@@ -221,7 +216,7 @@ const ExpandRichInputDialog = ({ show, dialogProps, onCancel, onInputHintDialogC
             onUpdate: ({ editor }) => {
                 if (!isSwitchingRef.current) {
                     try {
-                        setInputValue(editor.getMarkdown())
+                        setInputValue(unescapeXmlTags(editor.getMarkdown()))
                     } catch {
                         setInputValue(editor.getHTML())
                     }
@@ -239,12 +234,13 @@ const ExpandRichInputDialog = ({ show, dialogProps, onCancel, onInputHintDialogC
             if (isHtmlContent(inputValue)) {
                 editor.commands.setContent(inputValue)
                 try {
-                    setInputValue(editor.getMarkdown())
+                    setInputValue(unescapeXmlTags(editor.getMarkdown()))
                 } catch {
                     // keep original value if conversion fails
                 }
             } else {
-                editor.commands.setContent(inputValue, { contentType: 'markdown' })
+                editor.commands.setContent(escapeXmlTags(inputValue), { contentType: 'markdown' })
+                editor.commands.setContent(unescapeXmlEntities(editor.getJSON()))
             }
             isSwitchingRef.current = false
         }
@@ -265,13 +261,17 @@ const ExpandRichInputDialog = ({ show, dialogProps, onCancel, onInputHintDialogC
 
             if (newMode === 'preview' && editor) {
                 isSwitchingRef.current = true
-                const contentType = isHtmlContent(inputValue) ? 'html' : 'markdown'
-                editor.commands.setContent(inputValue, { contentType })
+                if (isHtmlContent(inputValue)) {
+                    editor.commands.setContent(inputValue, { contentType: 'html' })
+                } else {
+                    editor.commands.setContent(escapeXmlTags(inputValue), { contentType: 'markdown' })
+                    editor.commands.setContent(unescapeXmlEntities(editor.getJSON()))
+                }
                 isSwitchingRef.current = false
                 setTimeout(() => editor.commands.focus(), 50)
             } else if (newMode === 'raw' && editor) {
                 try {
-                    setInputValue(editor.getMarkdown())
+                    setInputValue(unescapeXmlTags(editor.getMarkdown()))
                 } catch {
                     setInputValue(editor.getHTML())
                 }

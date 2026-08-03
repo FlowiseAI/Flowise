@@ -1,4 +1,22 @@
-import { extractVariables, getUpstreamNodes } from './variableUtils'
+import type { FlowNode } from '@/core/types'
+
+import { extractVariables, getDefinedStateKeys, getUpstreamNodes } from './variableUtils'
+
+// ── Shared test factories ──────────────────────────────────────────────────
+
+/** Create a FlowNode with `updateFlowState` inputs for state-related tests. */
+const makeStateNode = (id: string, updates: Array<{ key: string; value: string }>): FlowNode =>
+    ({
+        id,
+        type: 'customNode',
+        position: { x: 0, y: 0 },
+        data: {
+            id,
+            name: id,
+            label: id,
+            inputs: { updateFlowState: updates }
+        }
+    } as unknown as FlowNode)
 
 // ── extractVariables ────────────────────────────────────────────────────────
 
@@ -174,5 +192,132 @@ describe('getUpstreamNodes', () => {
         const upstream = getUpstreamNodes('a', nodes, edges)
         expect(upstream).toHaveLength(1)
         expect(upstream[0].id).toBe('b')
+    })
+})
+
+// ── getDefinedStateKeys ────────────────────────────────────────────────────
+
+describe('getDefinedStateKeys', () => {
+    it('returns empty array when no nodes have updateFlowState', () => {
+        const nodes: FlowNode[] = [
+            { id: 'a', type: 'customNode', position: { x: 0, y: 0 }, data: { id: 'a', name: 'a', label: 'a' } } as unknown as FlowNode
+        ]
+        expect(getDefinedStateKeys(nodes)).toEqual([])
+    })
+
+    it('returns empty array for empty nodes', () => {
+        expect(getDefinedStateKeys([])).toEqual([])
+    })
+
+    it('extracts keys from a single node', () => {
+        const nodes = [
+            makeStateNode('n1', [
+                { key: 'counter', value: '1' },
+                { key: 'name', value: 'test' }
+            ])
+        ]
+        expect(getDefinedStateKeys(nodes)).toEqual(['counter', 'name'])
+    })
+
+    it('deduplicates keys across nodes', () => {
+        const nodes = [makeStateNode('n1', [{ key: 'counter', value: '1' }]), makeStateNode('n2', [{ key: 'counter', value: '2' }])]
+        expect(getDefinedStateKeys(nodes)).toEqual(['counter'])
+    })
+
+    it('ignores empty keys', () => {
+        const nodes = [
+            makeStateNode('n1', [
+                { key: '', value: 'empty' },
+                { key: '  ', value: 'whitespace' },
+                { key: 'valid', value: 'ok' }
+            ])
+        ]
+        expect(getDefinedStateKeys(nodes)).toEqual(['valid'])
+    })
+
+    it('returns keys sorted alphabetically', () => {
+        const nodes = [
+            makeStateNode('n1', [
+                { key: 'zebra', value: '1' },
+                { key: 'alpha', value: '2' },
+                { key: 'middle', value: '3' }
+            ])
+        ]
+        expect(getDefinedStateKeys(nodes)).toEqual(['alpha', 'middle', 'zebra'])
+    })
+
+    it('skips nodes where updateFlowState is not an array', () => {
+        const nodes: FlowNode[] = [
+            {
+                id: 'a',
+                type: 'customNode',
+                position: { x: 0, y: 0 },
+                data: { id: 'a', name: 'a', label: 'a', inputs: { updateFlowState: 'not-an-array' } }
+            } as unknown as FlowNode
+        ]
+        expect(getDefinedStateKeys(nodes)).toEqual([])
+    })
+
+    it('extracts keys from startState input (Start node)', () => {
+        const nodes: FlowNode[] = [
+            {
+                id: 'start_0',
+                type: 'agentflowNode',
+                position: { x: 0, y: 0 },
+                data: {
+                    id: 'start_0',
+                    name: 'startAgentflow',
+                    label: 'Start',
+                    inputs: {
+                        startState: [
+                            { key: 'userName', value: '' },
+                            { key: 'sessionId', value: '123' }
+                        ]
+                    }
+                }
+            } as unknown as FlowNode
+        ]
+        expect(getDefinedStateKeys(nodes)).toEqual(['sessionId', 'userName'])
+    })
+
+    it('extracts keys from prefixed UpdateState inputs (agentUpdateState, llmUpdateState)', () => {
+        const nodes: FlowNode[] = [
+            {
+                id: 'agent_0',
+                type: 'agentflowNode',
+                position: { x: 0, y: 0 },
+                data: {
+                    id: 'agent_0',
+                    name: 'agentAgentflow',
+                    label: 'Agent',
+                    inputs: { agentUpdateState: [{ key: 'agentKey', value: 'v1' }] }
+                }
+            } as unknown as FlowNode,
+            {
+                id: 'llm_0',
+                type: 'agentflowNode',
+                position: { x: 0, y: 0 },
+                data: {
+                    id: 'llm_0',
+                    name: 'llmAgentflow',
+                    label: 'LLM',
+                    inputs: { llmUpdateState: [{ key: 'llmKey', value: 'v2' }] }
+                }
+            } as unknown as FlowNode
+        ]
+        expect(getDefinedStateKeys(nodes)).toEqual(['agentKey', 'llmKey'])
+    })
+
+    it('collects keys across startState and updateFlowState from different nodes', () => {
+        const nodes: FlowNode[] = [
+            {
+                id: 'start_0',
+                type: 'agentflowNode',
+                position: { x: 0, y: 0 },
+                data: { id: 'start_0', name: 'startAgentflow', label: 'Start', inputs: { startState: [{ key: 'initKey', value: '' }] } }
+            } as unknown as FlowNode,
+            makeStateNode('n1', [{ key: 'runtimeKey', value: 'x' }])
+        ]
+        expect(getDefinedStateKeys(nodes)).toEqual(['initKey', 'runtimeKey'])
     })
 })

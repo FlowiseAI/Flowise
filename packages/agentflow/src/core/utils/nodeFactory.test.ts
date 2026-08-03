@@ -232,6 +232,17 @@ describe('initNode', () => {
         expect(result.inputParams![0].name).toBe('temperature')
     })
 
+    it('should not prepend credential param when credential is a string ID (runtime selection)', () => {
+        const nodeData = makeNodeDataSchema({
+            inputs: [{ id: '', name: 'temperature', label: 'Temperature', type: 'number' }],
+            credential: 'some-credential-id'
+        })
+
+        const result = initNode(nodeData, 'n1', false)
+        expect(result.inputParams).toHaveLength(1)
+        expect(result.inputParams![0].name).toBe('temperature')
+    })
+
     it('should strip server-only metadata like filePath from node data', () => {
         const nodeData = makeNodeDataSchema({
             filePath: '/some/server/path/Agent.js',

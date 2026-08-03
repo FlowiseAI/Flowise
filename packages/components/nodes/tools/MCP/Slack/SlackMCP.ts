@@ -1,6 +1,6 @@
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
-import { getCredentialData, getCredentialParam, getNodeModulesPackagePath } from '../../../../src/utils'
+import { getCredentialData, getCredentialParam, getNodeModulesPackagePath, refreshOAuth2Token } from '../../../../src/utils'
 import { MCPToolkit } from '../core'
 
 class Slack_MCP implements INode {
@@ -24,12 +24,12 @@ class Slack_MCP implements INode {
         this.icon = 'slack.svg'
         this.category = 'Tools (MCP)'
         this.description = 'MCP Server for the Slack API'
-        this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/slack'
+        this.documentation = 'https://docs.slack.dev/ai/slack-mcp-server'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['slackApi']
+            credentialNames: ['slackOAuth2', 'slackApi']
         }
         this.inputs = [
             {
@@ -61,7 +61,7 @@ class Slack_MCP implements INode {
                     {
                         label: 'No Available Actions',
                         name: 'error',
-                        description: 'No available actions, please check your Slack Bot Token and refresh'
+                        description: 'No available actions, please check your Slack credential and refresh'
                     }
                 ]
             }
@@ -85,26 +85,48 @@ class Slack_MCP implements INode {
     }
 
     async getTools(nodeData: INodeData, options: ICommonObject): Promise<Tool[]> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        let credentialData = await getCredentialData(nodeData.credential ?? '', options)
+
+        const accessToken =
+            getCredentialParam('access_token', credentialData, nodeData) || getCredentialParam('accessToken', credentialData, nodeData)
         const botToken = getCredentialParam('botToken', credentialData, nodeData)
         const teamId = getCredentialParam('teamId', credentialData, nodeData)
 
-        if (!botToken || !teamId) {
-            throw new Error('Missing Credentials')
-        }
+        let toolkit: MCPToolkit
 
-        const packagePath = getNodeModulesPackagePath('@modelcontextprotocol/server-slack/dist/index.js')
+        if (accessToken) {
+            credentialData = await refreshOAuth2Token(nodeData.credential ?? '', credentialData, options)
+            const refreshedAccessToken =
+                getCredentialParam('access_token', credentialData, nodeData) ||
+                getCredentialParam('accessToken', credentialData, nodeData) ||
+                accessToken
 
-        const serverParams = {
-            command: 'node',
-            args: [packagePath],
-            env: {
-                SLACK_BOT_TOKEN: botToken,
-                SLACK_TEAM_ID: teamId
+            toolkit = new MCPToolkit(
+                {
+                    url: 'https://mcp.slack.com/mcp',
+                    headers: {
+                        Authorization: `Bearer ${refreshedAccessToken}`
+                    }
+                },
+                'http'
+            )
+        } else if (botToken && teamId) {
+            const packagePath = getNodeModulesPackagePath('@modelcontextprotocol/server-slack/dist/index.js')
+
+            const serverParams = {
+                command: 'node',
+                args: [packagePath],
+                env: {
+                    SLACK_BOT_TOKEN: botToken,
+                    SLACK_TEAM_ID: teamId
+                }
             }
+
+            toolkit = new MCPToolkit(serverParams, 'stdio')
+        } else {
+            throw new Error('Missing Slack credentials. Provide either an OAuth2 access token or a Bot Token with Team ID.')
         }
 
-        const toolkit = new MCPToolkit(serverParams, 'stdio')
         await toolkit.initialize()
 
         const tools = toolkit.tools ?? []

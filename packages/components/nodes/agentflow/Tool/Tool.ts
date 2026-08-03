@@ -3,7 +3,7 @@ import { updateFlowState } from '../utils'
 import { processTemplateVariables } from '../../../src/utils'
 import { Tool } from '@langchain/core/tools'
 import { ARTIFACTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
-import zodToJsonSchema from 'zod-to-json-schema'
+import { toolSchemaToJsonSchema } from '../../../src/utils'
 
 interface IToolInputArgs {
     inputArgName: string
@@ -153,19 +153,16 @@ class Tool_Agentflow implements INode {
                     // Combine schemas from all tools in the array
                     const allProperties = toolInstance.reduce((acc, tool) => {
                         if (tool?.schema) {
-                            const schema: Record<string, any> = zodToJsonSchema(tool.schema)
+                            const schema = toolSchemaToJsonSchema(tool.schema) as { properties?: ICommonObject }
                             return { ...acc, ...(schema.properties || {}) }
                         }
                         return acc
                     }, {})
                     toolInputArgs = { properties: allProperties }
+                } else if (!toolInstance.schema) {
+                    toolInputArgs = {}
                 } else {
-                    // Handle single tool instance
-                    toolInputArgs = toolInstance.schema ? zodToJsonSchema(toolInstance.schema as any) : {}
-                }
-
-                if (toolInputArgs && Object.keys(toolInputArgs).length > 0) {
-                    delete toolInputArgs.$schema
+                    toolInputArgs = toolSchemaToJsonSchema(toolInstance.schema) as ICommonObject
                 }
 
                 return Object.keys(toolInputArgs.properties || {}).map((item) => ({

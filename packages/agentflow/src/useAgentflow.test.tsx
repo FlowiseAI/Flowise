@@ -4,7 +4,7 @@ import { makeFlowEdge, makeFlowNode } from '@test-utils/factories'
 import { act, renderHook } from '@testing-library/react'
 
 import type { FlowData } from '@/core/types'
-import { AgentflowStateProvider } from '@/infrastructure/store'
+import { AgentflowStateProvider, useAgentflowContext } from '@/infrastructure/store'
 
 import { useAgentflow } from './useAgentflow'
 
@@ -215,6 +215,116 @@ describe('useAgentflow', () => {
             })
 
             expect(() => result.current.fitView()).not.toThrow()
+        })
+    })
+
+    describe('setNodeExecutionStatus', () => {
+        it('records execution status in context state', () => {
+            const { result } = renderHook(() => ({ af: useAgentflow(), ctx: useAgentflowContext() }), {
+                wrapper: createWrapper()
+            })
+
+            act(() => {
+                result.current.af.setNodeExecutionStatus('node-1', 'INPROGRESS')
+            })
+
+            expect(result.current.ctx.state.executionState?.nodeStates['node-1']?.status).toBe('INPROGRESS')
+        })
+
+        it('stores the error message alongside ERROR status', () => {
+            const { result } = renderHook(() => ({ af: useAgentflow(), ctx: useAgentflowContext() }), {
+                wrapper: createWrapper()
+            })
+
+            act(() => {
+                result.current.af.setNodeExecutionStatus('node-1', 'ERROR', 'API rate limit exceeded')
+            })
+
+            const nodeState = result.current.ctx.state.executionState?.nodeStates['node-1']
+            expect(nodeState?.status).toBe('ERROR')
+            expect(nodeState?.error).toBe('API rate limit exceeded')
+        })
+
+        it('overwrites a previous status when called again for the same node', () => {
+            const { result } = renderHook(() => ({ af: useAgentflow(), ctx: useAgentflowContext() }), {
+                wrapper: createWrapper()
+            })
+
+            act(() => {
+                result.current.af.setNodeExecutionStatus('node-1', 'INPROGRESS')
+            })
+            act(() => {
+                result.current.af.setNodeExecutionStatus('node-1', 'FINISHED')
+            })
+
+            expect(result.current.ctx.state.executionState?.nodeStates['node-1']?.status).toBe('FINISHED')
+        })
+
+        it('does not include execution state in getFlow() output', () => {
+            const initialFlow: FlowData = { nodes: [makeNode('node-1')], edges: [] }
+            const { result } = renderHook(() => useAgentflow(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            act(() => {
+                result.current.setNodeExecutionStatus('node-1', 'FINISHED')
+            })
+
+            const flow = result.current.getFlow()
+            const node = flow.nodes.find((n) => n.id === 'node-1')
+            expect(node).toBeDefined()
+            expect(node).not.toHaveProperty('executionStatus')
+            expect(node).not.toHaveProperty('executionState')
+        })
+    })
+
+    describe('clearExecutionState', () => {
+        it('resets executionState to null', () => {
+            const { result } = renderHook(() => ({ af: useAgentflow(), ctx: useAgentflowContext() }), {
+                wrapper: createWrapper()
+            })
+
+            act(() => {
+                result.current.af.setNodeExecutionStatus('node-1', 'FINISHED')
+                result.current.af.setNodeExecutionStatus('node-2', 'ERROR')
+            })
+
+            act(() => {
+                result.current.af.clearExecutionState()
+            })
+
+            expect(result.current.ctx.state.executionState).toBeNull()
+        })
+
+        it('does not throw when called with no prior execution state', () => {
+            const { result } = renderHook(() => useAgentflow(), {
+                wrapper: createWrapper()
+            })
+
+            expect(() => {
+                act(() => {
+                    result.current.clearExecutionState()
+                })
+            }).not.toThrow()
+        })
+
+        it('preserves flow nodes after clearing execution state', () => {
+            const initialFlow: FlowData = {
+                nodes: [makeNode('node-1'), makeNode('node-2')],
+                edges: []
+            }
+            const { result } = renderHook(() => useAgentflow(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            act(() => {
+                result.current.setNodeExecutionStatus('node-1', 'INPROGRESS')
+            })
+            act(() => {
+                result.current.clearExecutionState()
+            })
+
+            expect(result.current.getFlow().nodes).toHaveLength(2)
         })
     })
 

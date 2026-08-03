@@ -8,8 +8,7 @@
  */
 export function getDefaultValueForType({
     type,
-    default: defaultValue,
-    options
+    default: defaultValue
 }: {
     type: string
     default?: unknown
@@ -21,16 +20,12 @@ export function getDefaultValueForType({
         case 'boolean':
             return false
         case 'number':
-            return 0
+            return ''
         case 'json':
             return '{}'
         case 'array':
             return []
-        case 'options': {
-            const first = options?.[0]
-            if (!first) return ''
-            return typeof first === 'string' ? first : first.name
-        }
+        case 'options':
         case 'string':
         case 'password':
         default:

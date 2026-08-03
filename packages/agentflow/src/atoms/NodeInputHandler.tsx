@@ -19,7 +19,7 @@ import { styled, useTheme } from '@mui/material/styles'
 import { tooltipClasses } from '@mui/material/Tooltip'
 import { IconArrowsMaximize, IconVariable } from '@tabler/icons-react'
 
-import type { InputAnchor, InputParam, NodeData } from '@/core/types'
+import type { InputAnchor, InputParam, NodeData, StateUpdate } from '@/core/types'
 
 import ArrayInput from './ArrayInput'
 import { CodeInput } from './CodeInput'
@@ -27,9 +27,10 @@ import { Dropdown } from './Dropdown'
 import { ExpandTextDialog } from './ExpandTextDialog'
 import { JsonInput } from './JsonInput'
 import { RichTextEditor } from './RichTextEditor.lazy'
-import { SuggestionItem } from './SuggestionDropdown'
+import { StateKeyValueInput } from './StateKeyValueInput'
 import { SwitchInput } from './SwitchInput'
 import { TooltipWithParser } from './TooltipWithParser'
+import { toSuggestionItems } from './toSuggestionItems'
 import { VariableInput } from './VariableInput'
 import type { VariableItem } from './VariablePicker'
 import { VariablePicker } from './VariablePicker'
@@ -47,6 +48,7 @@ export interface AsyncInputProps {
     disabled: boolean
     onChange: (newValue: string) => void
     nodeName?: string
+    nodeId?: string
     inputValues?: Record<string, unknown>
 }
 
@@ -180,24 +182,10 @@ export function NodeInputHandler({
         ['string', 'password', 'code'].includes(inputParam?.type ?? '')
     )
 
-    // Map VariableItem[] to SuggestionItem[] for the inline autocomplete.
-    // ids must be unique for correct findIndex lookups and React keys — append
-    // a counter suffix when the same base id appears more than once.
-    const suggestionItems: SuggestionItem[] | undefined = useMemo(() => {
-        if (!inputParam?.acceptVariable || !variableItems || variableItems.length === 0) return undefined
-        const idCount = new Map<string, number>()
-        return variableItems.map((v) => {
-            const baseId = v.value.replace(/{{|}}/g, '')
-            const count = idCount.get(baseId) ?? 0
-            idCount.set(baseId, count + 1)
-            return {
-                id: count === 0 ? baseId : `${baseId}__${count}`,
-                label: v.label,
-                description: v.description,
-                category: v.category
-            }
-        })
-    }, [inputParam?.acceptVariable, variableItems])
+    const suggestionItems = useMemo(
+        () => (inputParam?.acceptVariable ? toSuggestionItems(variableItems) : undefined),
+        [inputParam?.acceptVariable, variableItems]
+    )
 
     const renderInput = () => {
         if (!inputParam) return null
@@ -222,13 +210,15 @@ export function NodeInputHandler({
                 }
                 if (isExpandable) {
                     return (
-                        <RichTextEditor
-                            value={typeof value === 'string' ? value : ''}
-                            onChange={(html) => handleDataChange(html)}
-                            placeholder={inputParam.placeholder}
-                            disabled={disabled}
-                            rows={inputParam.rows || 4}
-                        />
+                        <Box sx={{ mt: 1 }}>
+                            <RichTextEditor
+                                value={typeof value === 'string' ? value : ''}
+                                onChange={(html) => handleDataChange(html)}
+                                placeholder={inputParam.placeholder}
+                                disabled={disabled}
+                                rows={inputParam.rows || 4}
+                            />
+                        </Box>
                     )
                 }
                 return (
@@ -316,11 +306,11 @@ export function NodeInputHandler({
 
             case 'json': {
                 const jsonStr = typeof value === 'string' ? value : JSON.stringify(value || {})
-                if (inputParam.acceptVariable && variableItems && variableItems.length > 0) {
+                if (inputParam.acceptVariable) {
                     // acceptVariable: show a button that opens a dialog with JsonInput + variable support
                     return (
                         <Button
-                            sx={{ borderRadius: 25, width: '100%', mb: 0, mt: 2 }}
+                            sx={{ borderRadius: 25, width: '100%', mb: 0, mt: 1 }}
                             variant='outlined'
                             disabled={disabled}
                             onClick={() => setJsonDialogOpen(true)}
@@ -336,23 +326,33 @@ export function NodeInputHandler({
             case 'code':
                 return (
                     <>
+                        {inputParam.codeExample && !disabled && (
+                            <Button
+                                size='small'
+                                variant='outlined'
+                                sx={{ mb: 1, textTransform: 'none' }}
+                                onClick={() => handleDataChange(inputParam.codeExample)}
+                            >
+                                See Example
+                            </Button>
+                        )}
                         <CodeInput
                             value={typeof value === 'string' ? value : ''}
                             onChange={(code) => handleDataChange(code)}
                             language={inputParam.codeLanguage}
                             disabled={disabled}
                         />
-                        {inputParam.codeExample && !disabled && (
-                            <Button
-                                size='small'
-                                variant='text'
-                                sx={{ mt: 0.5, textTransform: 'none' }}
-                                onClick={() => handleDataChange(inputParam.codeExample)}
-                            >
-                                See Example
-                            </Button>
-                        )}
                     </>
+                )
+
+            case 'updateFlowState':
+                return (
+                    <StateKeyValueInput
+                        value={Array.isArray(value) ? (value as StateUpdate[]) : []}
+                        onChange={(v) => handleDataChange(v)}
+                        disabled={disabled}
+                        suggestionItems={suggestionItems}
+                    />
                 )
 
             case 'array':
@@ -366,6 +366,7 @@ export function NodeInputHandler({
                         AsyncInputComponent={AsyncInputComponent}
                         ConfigInputComponent={ConfigInputComponent}
                         onConfigChange={onConfigChange}
+                        variableItems={variableItems}
                     />
                 )
 
@@ -380,6 +381,7 @@ export function NodeInputHandler({
                             disabled={disabled}
                             onChange={(v) => handleDataChange(v)}
                             nodeName={data.name}
+                            nodeId={data.id}
                             inputValues={data.inputs as Record<string, unknown> | undefined}
                         />
                         {inputParam.loadConfig && ConfigInputComponent && value && onConfigChange && (
@@ -405,6 +407,7 @@ export function NodeInputHandler({
                         disabled={disabled}
                         onChange={(v) => handleDataChange(v)}
                         nodeName={data.name}
+                        nodeId={data.id}
                         inputValues={data.inputs as Record<string, unknown> | undefined}
                     />
                 )
@@ -524,6 +527,7 @@ export function NodeInputHandler({
                     disabled={disabled}
                     inputType={inputParam?.type}
                     language={inputParam?.type === 'code' ? inputParam.codeLanguage : undefined}
+                    suggestionItems={suggestionItems}
                     onConfirm={handleExpandConfirm}
                     onCancel={() => setExpandOpen(false)}
                 />
@@ -542,7 +546,7 @@ export function NodeInputHandler({
                 </Popover>
             )}
 
-            {inputParam?.type === 'json' && inputParam.acceptVariable && variableItems && variableItems.length > 0 && (
+            {inputParam?.type === 'json' && inputParam.acceptVariable && (
                 <Dialog open={jsonDialogOpen} onClose={() => setJsonDialogOpen(false)} fullWidth maxWidth='sm'>
                     <DialogTitle>{inputParam.label}</DialogTitle>
                     <DialogContent>

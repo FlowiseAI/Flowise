@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { styled } from '@mui/material/styles'
 import {
     Box,
+    IconButton,
     Paper,
     Skeleton,
     Table,
@@ -18,6 +19,7 @@ import {
 } from '@mui/material'
 import { tableCellClasses } from '@mui/material/TableCell'
 import DocumentStoreStatus from '@/views/docstore/DocumentStoreStatus'
+import { IconDotsVertical } from '@tabler/icons-react'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -38,7 +40,7 @@ const StyledTableRow = styled(TableRow)(() => ({
     }
 }))
 
-export const DocumentStoreTable = ({ data, isLoading, onRowClick, images }) => {
+export const DocumentStoreTable = ({ data, isLoading, onRowClick, images, showActions, onActionMenuClick, actionButtonSx }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -88,6 +90,11 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images }) => {
                             <StyledTableCell>Total characters</StyledTableCell>
                             <StyledTableCell>Total chunks</StyledTableCell>
                             <StyledTableCell>Loader Types</StyledTableCell>
+                            {showActions && (
+                                <StyledTableCell align='right' sx={{ width: 44, pr: 1 }}>
+                                    &nbsp;
+                                </StyledTableCell>
+                            )}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -115,6 +122,11 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images }) => {
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
+                                    {showActions && (
+                                        <StyledTableCell>
+                                            <Skeleton variant='text' />
+                                        </StyledTableCell>
+                                    )}
                                 </StyledTableRow>
                                 <StyledTableRow>
                                     <StyledTableCell>
@@ -138,16 +150,21 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images }) => {
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
+                                    {showActions && (
+                                        <StyledTableCell>
+                                            <Skeleton variant='text' />
+                                        </StyledTableCell>
+                                    )}
                                 </StyledTableRow>
                             </>
                         ) : (
                             <>
-                                {sortedData.map((row, index) => {
+                                {sortedData.map((row) => {
                                     return (
                                         <StyledTableRow
                                             onClick={() => onRowClick(row)}
                                             hover
-                                            key={index}
+                                            key={row.id}
                                             sx={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
                                         >
                                             <StyledTableCell>
@@ -233,6 +250,21 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images }) => {
                                                     </Box>
                                                 )}
                                             </StyledTableCell>
+                                            {showActions && (
+                                                <StyledTableCell align='right' sx={{ width: 44, mr: 1 }}>
+                                                    <IconButton
+                                                        size='small'
+                                                        aria-label='Document store options'
+                                                        sx={actionButtonSx}
+                                                        onClick={(event) => {
+                                                            event.stopPropagation()
+                                                            onActionMenuClick(event, row)
+                                                        }}
+                                                    >
+                                                        <IconDotsVertical size={18} />
+                                                    </IconButton>
+                                                </StyledTableCell>
+                                            )}
                                         </StyledTableRow>
                                     )
                                 })}
@@ -249,7 +281,10 @@ DocumentStoreTable.propTypes = {
     data: PropTypes.array,
     isLoading: PropTypes.bool,
     images: PropTypes.object,
-    onRowClick: PropTypes.func
+    onRowClick: PropTypes.func,
+    showActions: PropTypes.bool,
+    onActionMenuClick: PropTypes.func,
+    actionButtonSx: PropTypes.object
 }
 
 DocumentStoreTable.displayName = 'DocumentStoreTable'

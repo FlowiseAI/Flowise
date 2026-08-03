@@ -1,7 +1,7 @@
 import { type SyntheticEvent, useState } from 'react'
 
 import { Box, InputAdornment, List, ListItemButton, OutlinedInput, Typography } from '@mui/material'
-import { alpha, useTheme } from '@mui/material/styles'
+import { useTheme } from '@mui/material/styles'
 import { IconKey, IconSearch, IconX } from '@tabler/icons-react'
 
 import type { ComponentCredentialSchema } from '@/core/types'
@@ -66,7 +66,7 @@ export function CredentialTypeSelector({ schemas, apiBaseUrl, onSelect }: Creden
                         onClick={() => onSelect(schema)}
                         sx={{
                             border: 1,
-                            borderColor: alpha(theme.palette.grey[900], 0.25),
+                            borderColor: theme.palette.divider,
                             borderRadius: 2,
                             display: 'flex',
                             alignItems: 'center',

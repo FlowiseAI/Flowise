@@ -1,7 +1,10 @@
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 
-/** Default TTL for cached responses (30 seconds) */
-const DEFAULT_CACHE_TTL_MS = 30_000
+/** Default TTL for cached GET responses (30 seconds) */
+const DEFAULT_GET_CACHE_TTL_MS = 30_000
+
+/** Default TTL for cached load-method responses (5 seconds) — external data can change at any time */
+const DEFAULT_LOAD_METHOD_CACHE_TTL_MS = 5_000
 
 interface CacheEntry {
     response: AxiosResponse
@@ -47,7 +50,11 @@ export interface DeduplicatedClient extends AxiosInstance {
     clearCache(): void
 }
 
-export function withDeduplication(client: AxiosInstance, cacheTtlMs: number = DEFAULT_CACHE_TTL_MS): DeduplicatedClient {
+export function withDeduplication(
+    client: AxiosInstance,
+    getCacheTtlMs: number = DEFAULT_GET_CACHE_TTL_MS,
+    loadMethodCacheTtlMs: number = DEFAULT_LOAD_METHOD_CACHE_TTL_MS
+): DeduplicatedClient {
     const inFlight = new Map<string, Promise<AxiosResponse>>()
     // No size limit needed: ~15 distinct metadata endpoints with 30s TTL keeps this trivially small
     const cache = new Map<string, CacheEntry>()
@@ -74,7 +81,7 @@ export function withDeduplication(client: AxiosInstance, cacheTtlMs: number = DE
         const promise = client
             .get<T, R, D>(url, config)
             .then((response) => {
-                cache.set(key, { response: response as AxiosResponse, expiresAt: Date.now() + cacheTtlMs })
+                cache.set(key, { response: response as AxiosResponse, expiresAt: Date.now() + getCacheTtlMs })
                 return response
             })
             .finally(() => inFlight.delete(key))
@@ -103,7 +110,7 @@ export function withDeduplication(client: AxiosInstance, cacheTtlMs: number = DE
         const promise = client
             .post<T, R, D>(url, data, config)
             .then((response) => {
-                cache.set(key, { response: response as AxiosResponse, expiresAt: Date.now() + cacheTtlMs })
+                cache.set(key, { response: response as AxiosResponse, expiresAt: Date.now() + loadMethodCacheTtlMs })
                 return response
             })
             .finally(() => inFlight.delete(key))

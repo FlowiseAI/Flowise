@@ -1,8 +1,10 @@
-import Stripe from 'stripe'
 import { Request } from 'express'
-import { UsageCacheManager } from './UsageCacheManager'
+import Stripe from 'stripe'
 import { UserPlan } from './Interface'
+import { UsageCacheManager } from './UsageCacheManager'
 import { LICENSE_QUOTAS } from './utils/constants'
+import { InternalFlowiseError } from './errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 export class StripeManager {
     private static instance: StripeManager
@@ -53,6 +55,7 @@ export class StripeManager {
 
         try {
             const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            if (subscription.status === 'canceled') throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Subscription is canceled')
             const items = subscription.items.data
             if (items.length === 0) {
                 return ''
@@ -85,6 +88,7 @@ export class StripeManager {
         const subscription = await this.stripe.subscriptions.retrieve(subscriptionId, {
             timeout: 5000
         })
+        if (subscription.status === 'canceled') throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Subscription is canceled')
         const items = subscription.items.data
         if (items.length === 0) {
             return {}
@@ -241,6 +245,7 @@ export class StripeManager {
 
         try {
             const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            if (subscription.status === 'canceled') throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Subscription is canceled')
             const additionalSeatsItem = subscription.items.data.find(
                 (item) => (item.price.product as string) === process.env.ADDITIONAL_SEAT_ID
             )
@@ -282,6 +287,7 @@ export class StripeManager {
 
         try {
             const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            if (subscription.status === 'canceled') throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Subscription is canceled')
 
             // Get customer's credit balance
             const customer = await this.stripe.customers.retrieve(subscription.customer as string)
@@ -374,6 +380,7 @@ export class StripeManager {
 
         try {
             const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            if (subscription.status === 'canceled') throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Subscription is canceled')
             const additionalSeatsItem = subscription.items.data.find(
                 (item) => (item.price.product as string) === process.env.ADDITIONAL_SEAT_ID
             )
@@ -438,6 +445,7 @@ export class StripeManager {
 
         try {
             const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            if (subscription.status === 'canceled') throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Subscription is canceled')
             const customerId = subscription.customer as string
 
             // Get customer's credit balance and metadata
@@ -510,6 +518,7 @@ export class StripeManager {
 
         try {
             const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            if (subscription.status === 'canceled') throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Subscription is canceled')
             const customerId = subscription.customer as string
 
             // Get customer details and metadata
@@ -610,5 +619,19 @@ export class StripeManager {
             console.error('Error updating subscription plan:', error)
             throw error
         }
+    }
+
+    /**
+     * Cancels a Stripe subscription immediately without proration or an immediate invoice.
+     *
+     * Calls the Stripe API to cancel the subscription with `prorate: false` and
+     * `invoice_now: false`. Throws if the Stripe client is not initialized.
+     *
+     * @param subscriptionId - The Stripe subscription ID to cancel
+     * @returns A promise resolving to the Stripe API response containing the cancelled subscription
+     */
+    public async cancelSubscription(subscriptionId: string): Promise<Stripe.Response<Stripe.Subscription>> {
+        if (!this.stripe) throw new Error('Stripe is not initialized')
+        return await this.stripe.subscriptions.cancel(subscriptionId, { prorate: false, invoice_now: false })
     }
 }

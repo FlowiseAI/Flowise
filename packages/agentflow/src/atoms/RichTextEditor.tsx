@@ -4,6 +4,8 @@ import { Box } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Placeholder from '@tiptap/extension-placeholder'
+import { Markdown } from '@tiptap/markdown'
+import type { Editor } from '@tiptap/react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 // Individual language imports instead of lowlight/common to tree-shake highlight.js
@@ -14,6 +16,7 @@ import python from 'highlight.js/lib/languages/python'
 import typescript from 'highlight.js/lib/languages/typescript'
 import { createLowlight } from 'lowlight'
 
+import { escapeXmlTags, getEditorMarkdown, isHtmlContent, unescapeXmlEntities, unescapeXmlTags } from '@/atoms/utils/'
 import { tokens } from '@/core/theme/tokens'
 
 const lowlight = createLowlight()
@@ -23,22 +26,38 @@ lowlight.register('python', python)
 lowlight.register('typescript', typescript)
 
 export interface RichTextEditorProps {
-    /** HTML content */
+    /** Markdown string, or legacy HTML string for backward compatibility */
     value: string
-    /** Called with the updated HTML string on every edit */
-    onChange: (html: string) => void
+    /** Called with the updated markdown string on every edit */
+    onChange: (markdown: string) => void
     placeholder?: string
     disabled?: boolean
     /** Number of visible text rows (controls editor height) */
     rows?: number
     /** Auto-focus when the editor mounts */
     autoFocus?: boolean
+    /** Called with the live editor instance once it is ready (and null on unmount). Used by ExpandTextDialog to call getMarkdown() on mode switch. */
+    onEditorReady?: (editor: Editor | null) => void
+    /** When true, emits markdown; when false, emits HTML. Defaults to true. */
+    useMarkdown?: boolean
+}
+
+/* ── Helpers ── */
+
+function loadContent(editor: Editor, value: string, markdown: boolean) {
+    if (!markdown || isHtmlContent(value)) {
+        editor.commands.setContent(value, { emitUpdate: false, contentType: 'html' })
+    } else {
+        editor.commands.setContent(escapeXmlTags(value), { emitUpdate: false, contentType: 'markdown' })
+        editor.commands.setContent(unescapeXmlEntities(editor.getJSON()), { emitUpdate: false })
+    }
 }
 
 /* ── TipTap extensions (no mention/variable support — that belongs in features/) ── */
 
-const buildExtensions = (placeholder?: string) => [
-    StarterKit.configure({ codeBlock: false }),
+const buildExtensions = (placeholder?: string, useMarkdown = true) => [
+    ...(useMarkdown ? [Markdown] : []),
+    StarterKit.configure({ codeBlock: false, ...(!useMarkdown && { link: false }) }),
     CodeBlockLowlight.configure({ lowlight, enableTabIndentation: true, tabSize: 2 }),
     ...(placeholder ? [Placeholder.configure({ placeholder })] : [])
 ]
@@ -58,21 +77,21 @@ const StyledEditorContent = styled(EditorContent, {
             overflowY: rows ? 'auto' : 'hidden',
             overflowX: rows ? 'auto' : 'hidden',
             lineHeight: rows ? `${tokens.typography.rowHeightRem}em` : `${tokens.typography.singleLineLineHeightEm}em`,
-            fontWeight: 500,
-            color: disabled ? theme.palette.action.disabled : theme.palette.grey[900],
-            border: `1px solid ${theme.palette.grey[900]}25`,
+            fontSize: tokens.typography.fontSize.md,
+            fontWeight: tokens.typography.fontWeight.medium,
+            color: disabled ? theme.palette.action.disabled : theme.palette.text.primary,
+            border: `1px solid ${tokens.colors.border.input[mode]}`,
             borderRadius: '10px',
-            backgroundColor:
-                (theme.palette as { textBackground?: { main: string } }).textBackground?.main ?? theme.palette.background.paper,
+            backgroundColor: tokens.colors.background.input[mode],
             boxSizing: 'border-box',
             whiteSpace: rows ? 'pre-wrap' : 'nowrap',
 
             '&:hover': {
-                borderColor: disabled ? `${theme.palette.grey[900]}25` : theme.palette.text.primary,
+                borderColor: disabled ? tokens.colors.border.input[mode] : theme.palette.text.primary,
                 cursor: disabled ? 'default' : 'text'
             },
             '&:focus': {
-                borderColor: disabled ? `${theme.palette.grey[900]}25` : theme.palette.primary.main,
+                borderColor: disabled ? tokens.colors.border.input[mode] : theme.palette.primary.main,
                 outline: 'none'
             },
 
@@ -134,34 +153,75 @@ const StyledEditorContent = styled(EditorContent, {
 /**
  * A TipTap-based rich text editor atom with code block syntax highlighting.
  *
+ * Stores and emits content as markdown. Legacy HTML values (content starting with `<`)
+ * are accepted for backward compatibility — TipTap renders them correctly, and
+ * subsequent edits will emit markdown.
+ *
  * This is a "dumb" UI primitive — it receives all data via props and owns no
  * business logic. Variable/mention support lives in the features layer.
  */
-export function RichTextEditor({ value, onChange, placeholder, disabled = false, rows, autoFocus = false }: RichTextEditorProps) {
+export function RichTextEditor({
+    value,
+    onChange,
+    placeholder,
+    disabled = false,
+    rows,
+    autoFocus = false,
+    onEditorReady,
+    useMarkdown = true
+}: RichTextEditorProps) {
     // Keep a ref to the latest onChange so the TipTap onUpdate callback never goes stale
     const onChangeRef = useRef(onChange)
     useEffect(() => {
         onChangeRef.current = onChange
     }, [onChange])
 
-    const extensions = useMemo(() => buildExtensions(placeholder), [placeholder])
+    // Track the last value we emitted (or loaded) to avoid re-setting content
+    // when the parent echoes our own onChange value back as the new prop.
+    const lastEmittedRef = useRef<string>(value || '')
+
+    // Capture initial value and useMarkdown for the mount effect below so we can
+    // depend only on `editor` without suppressing the exhaustive-deps rule.
+    const initialValueRef = useRef(value)
+    const useMarkdownRef = useRef(useMarkdown)
+
+    const extensions = useMemo(() => buildExtensions(placeholder, useMarkdown), [placeholder, useMarkdown])
 
     const editor = useEditor({
         extensions,
-        content: value,
+        content: '',
         editable: !disabled,
         autofocus: autoFocus ? 'end' : false,
-        onUpdate: ({ editor: ed }: { editor: { getHTML: () => string } }) => {
-            onChangeRef.current(ed.getHTML())
+        onUpdate: ({ editor: ed }) => {
+            const raw = useMarkdown ? getEditorMarkdown(ed) : ed.getHTML()
+            const emitted = useMarkdown ? unescapeXmlTags(raw) : raw
+            lastEmittedRef.current = emitted
+            onChangeRef.current(emitted)
         }
     })
 
-    // Sync external value changes into the editor (e.g. when parent state updates)
+    // Notify parent when the editor instance is ready (used by ExpandTextDialog to flush
+    // the current editor state to markdown when switching to Source mode).
     useEffect(() => {
-        if (editor && value !== editor.getHTML()) {
-            editor.commands.setContent(value, { emitUpdate: false })
+        onEditorReady?.(editor)
+        return () => onEditorReady?.(null)
+    }, [editor, onEditorReady])
+
+    // Load initial content once the editor is ready, detecting legacy HTML vs markdown.
+    // Reads from refs so only `editor` needs to be in the dep array.
+    useEffect(() => {
+        if (!editor || !initialValueRef.current) return
+        loadContent(editor, initialValueRef.current, useMarkdownRef.current)
+        lastEmittedRef.current = initialValueRef.current
+    }, [editor])
+
+    // Sync genuine external value changes (e.g. parent resets the field programmatically).
+    useEffect(() => {
+        if (editor && value !== lastEmittedRef.current) {
+            loadContent(editor, value, useMarkdown)
+            lastEmittedRef.current = value
         }
-    }, [editor, value])
+    }, [editor, value, useMarkdown])
 
     // Sync editable state when disabled prop changes
     useEffect(() => {

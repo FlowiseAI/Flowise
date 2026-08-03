@@ -85,7 +85,11 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         )
                     }
                 })
-                onConfirm(createResp.data.id)
+                onConfirm(createResp.data.id, {
+                    ...(createResp.data || {}),
+                    name: documentStoreName,
+                    description: documentStoreDesc
+                })
             }
         } catch (error) {
             enqueueSnackbar({
@@ -128,7 +132,11 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         )
                     }
                 })
-                onConfirm(saveResp.data.id)
+                onConfirm(saveResp.data.id, {
+                    ...(saveResp.data || {}),
+                    name: documentStoreName,
+                    description: documentStoreDesc
+                })
             }
         } catch (error) {
             enqueueSnackbar({

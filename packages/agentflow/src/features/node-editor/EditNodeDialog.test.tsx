@@ -1212,4 +1212,42 @@ describe('EditNodeDialog', () => {
             }).not.toThrow()
         })
     })
+
+    // ========================================================================
+    // Credential input
+    // ========================================================================
+
+    describe('credential input', () => {
+        it('sets top-level credential field alongside inputs.FLOWISE_CREDENTIAL_ID when credential changes', () => {
+            const credParam: InputParam = {
+                id: 'cred-param',
+                name: 'FLOWISE_CREDENTIAL_ID',
+                label: 'HTTP Credential',
+                type: 'credential',
+                credentialNames: ['httpBasicAuth'],
+                optional: true
+            } as InputParam
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{
+                        inputParams: [credParam],
+                        data: { ...nodeData, id: 'http-node-1', inputs: { FLOWISE_CREDENTIAL_ID: '' } },
+                        disabled: false
+                    }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            fireEvent.click(screen.getByTestId('change-FLOWISE_CREDENTIAL_ID'))
+
+            // Server-side execution reads nodeData.credential (not inputs.FLOWISE_CREDENTIAL_ID),
+            // so both must be set when the user selects a credential.
+            expect(mockUpdateNodeData).toHaveBeenCalledWith('http-node-1', {
+                inputs: { FLOWISE_CREDENTIAL_ID: 'test-value' },
+                credential: 'test-value'
+            })
+        })
+    })
 })

@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 
 import type { VariableItem } from '@/atoms/VariablePicker'
-import { getAgentflowIcon } from '@/core/node-config/nodeIconUtils'
-import { getUpstreamNodes } from '@/core/utils/variableUtils'
+import { getAgentflowIcon } from '@/core/node-config'
+import { getDefinedStateKeys, getUpstreamNodes } from '@/core/utils'
 import { useAgentflowContext } from '@/infrastructure/store'
 
 // ── Static global variables (matches original suggestionOption.js) ───────────
@@ -70,14 +70,25 @@ export function useAvailableVariables(nodeId: string): VariableItem[] {
     return useMemo(() => {
         const items: VariableItem[] = [...GLOBAL_VARIABLES]
 
+        // Nodes inside an iteration group (extent === 'parent') get access to $iteration
+        const currentNode = nodes.find((n) => n.id === nodeId)
+        if (currentNode?.extent === 'parent') {
+            items.unshift({
+                label: '$iteration',
+                description: 'Iteration item. For JSON, use dot notation: $iteration.name',
+                category: 'Iteration',
+                value: '{{$iteration}}'
+            })
+        }
+
         // ── Upstream node outputs ────────────────────────────────────────
         const upstreamNodes = getUpstreamNodes(nodeId, nodes, edges)
         for (const node of upstreamNodes) {
+            if (node.data.name === 'startAgentflow') continue
             const displayName =
                 (node.data.inputs?.chainName as string) ??
                 (node.data.inputs?.functionName as string) ??
                 (node.data.inputs?.variableName as string) ??
-                node.data.label ??
                 node.data.id
 
             const agentflowIcon = getAgentflowIcon(node.data.name)
@@ -85,28 +96,21 @@ export function useAvailableVariables(nodeId: string): VariableItem[] {
                 label: displayName,
                 description: `Output from ${node.data.label ?? node.data.name}`,
                 category: 'Node Outputs',
-                value: `{{${node.id}.data.instance}}`,
+                value: `{{${node.id}}}`,
                 icon: agentflowIcon?.icon,
                 iconColor: agentflowIcon?.color
             })
         }
 
-        // ── Flow state variables from startAgentflow node ────────────────
-        const startNode = nodes.find((n) => n.data.name === 'startAgentflow')
-        if (startNode) {
-            const startState = startNode.data.inputs?.startState
-            if (Array.isArray(startState)) {
-                for (const entry of startState) {
-                    if (entry && typeof entry === 'object' && 'key' in entry && typeof entry.key === 'string') {
-                        items.push({
-                            label: `$flow.state.${entry.key}`,
-                            description: `Current value of the state variable with specified key`,
-                            category: 'Flow State',
-                            value: `$flow.state.${entry.key}`
-                        })
-                    }
-                }
-            }
+        // ── Flow state variables from all nodes ─────────────────────────
+        const stateKeys = getDefinedStateKeys(nodes)
+        for (const key of stateKeys) {
+            items.push({
+                label: `$flow.state.${key}`,
+                description: `Current value of the state variable with specified key`,
+                category: 'Flow State',
+                value: `{{$flow.state.${key}}}`
+            })
         }
 
         return items

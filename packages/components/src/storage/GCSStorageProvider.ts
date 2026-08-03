@@ -1,5 +1,5 @@
-import { Storage, Bucket } from '@google-cloud/storage'
 import { LoggingWinston } from '@google-cloud/logging-winston'
+import { Bucket, Storage } from '@google-cloud/storage'
 import multer from 'multer'
 import { v4 as uuidv4 } from 'uuid'
 import { BaseStorageProvider } from './BaseStorageProvider'
@@ -336,7 +336,7 @@ export class GCSStorageProvider extends BaseStorageProvider {
         })
     }
 
-    getLoggerTransports(logType: 'server' | 'error' | 'requests'): any[] {
+    getLoggerTransports(logType: 'server' | 'error' | 'requests' | 'audit'): any[] {
         const gcsConfig = {
             projectId: this.projectId,
             keyFilename: this.keyFilename,
@@ -368,7 +368,15 @@ export class GCSStorageProvider extends BaseStorageProvider {
                     logName: 'requests'
                 })
             ]
+        } else if (logType === 'audit') {
+            return [
+                new LoggingWinston({
+                    ...gcsConfig,
+                    logName: 'audit'
+                })
+            ]
         }
+
         return []
     }
 }

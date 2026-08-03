@@ -9,6 +9,31 @@ import type { InputParam, NodeData } from '@/core/types'
 
 import { type AsyncInputProps, type ConfigInputComponentProps, NodeInputHandler } from './NodeInputHandler'
 import { useStableKeys } from './useStableKeys'
+import type { VariableItem } from './VariablePicker'
+
+/**
+ * Builds VariableItems representing the current node's own output.
+ * Added when a nested sub-field declares `acceptNodeOutputAsVariable: true`,
+ * matching the v2 suggestionOption behaviour where `{{output}}` and
+ * `{{output.<key>}}` appear for structured-output fields.
+ */
+function buildNodeOutputVariables(data: NodeData): VariableItem[] {
+    const vars: VariableItem[] = [
+        { label: 'output', description: 'Output from the current node', category: 'Node Outputs', value: '{{output}}' }
+    ]
+    const structured = (
+        (data.inputs?.agentStructuredOutput ?? data.inputs?.llmStructuredOutput ?? []) as Array<{ key: string; description?: string }>
+    ).filter((item) => item?.key)
+    for (const item of structured) {
+        vars.push({
+            label: `output.${item.key}`,
+            description: item.description ?? `Structured output field: ${item.key}`,
+            category: 'Node Outputs',
+            value: `{{output.${item.key}}}`
+        })
+    }
+    return vars
+}
 
 export interface ArrayInputProps {
     inputParam: InputParam
@@ -23,6 +48,8 @@ export interface ArrayInputProps {
         configValues: Record<string, unknown>,
         arrayContext?: { parentParamName: string; arrayIndex: number }
     ) => void
+    /** Variable items passed through to sub-field NodeInputHandlers for {{ autocomplete. */
+    variableItems?: VariableItem[]
 }
 
 export function ArrayInput({
@@ -33,7 +60,8 @@ export function ArrayInput({
     itemParameters: itemParametersProp,
     AsyncInputComponent,
     ConfigInputComponent,
-    onConfigChange
+    onConfigChange,
+    variableItems
 }: ArrayInputProps) {
     const theme = useTheme()
 
@@ -114,10 +142,13 @@ export function ArrayInput({
         <>
             {/* Render each array item */}
             {arrayItems.map((itemValues, index) => {
-                // Create item-specific data context for nested NodeInputHandler
+                // Create item-specific data context for nested NodeInputHandler.
+                // Merge parent inputs first so async load methods (e.g. listToolInputArgs)
+                // can read parent-level fields like toolAgentflowSelectedTool, while
+                // item-level fields take precedence via the spread order.
                 const itemData: NodeData = {
                     ...data,
-                    inputs: itemValues
+                    inputs: { ...data.inputs, ...itemValues }
                 }
 
                 return (
@@ -128,7 +159,7 @@ export function ArrayInput({
                             mt: 2,
                             mb: 1,
                             border: 1,
-                            borderColor: theme.palette.grey[300],
+                            borderColor: theme.palette.divider,
                             borderRadius: 2,
                             position: 'relative'
                         }}
@@ -174,6 +205,13 @@ export function ArrayInput({
                                     onConfigChange={onConfigChange}
                                     arrayIndex={index}
                                     parentArrayParam={inputParam}
+                                    variableItems={
+                                        param.acceptVariable
+                                            ? param.acceptNodeOutputAsVariable
+                                                ? [...buildNodeOutputVariables(data), ...(variableItems ?? [])]
+                                                : variableItems
+                                            : undefined
+                                    }
                                 />
                             ))}
                     </Box>
@@ -186,7 +224,7 @@ export function ArrayInput({
                 size='small'
                 variant='outlined'
                 disabled={disabled}
-                sx={{ borderRadius: '16px', mt: 2 }}
+                sx={{ borderRadius: '16px', mt: 1 }}
                 startIcon={<IconPlus />}
                 onClick={handleAddItem}
             >

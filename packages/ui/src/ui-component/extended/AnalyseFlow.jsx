@@ -15,6 +15,7 @@ import {
     ListItemAvatar,
     ListItemText
 } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { IconX } from '@tabler/icons-react'
 
@@ -221,6 +222,7 @@ const analyticProviders = [
 
 const AnalyseFlow = ({ dialogProps }) => {
     const dispatch = useDispatch()
+    const theme = useTheme()
 
     useNotifier()
 
@@ -339,7 +341,12 @@ const AnalyseFlow = ({ dialogProps }) => {
                                 sx={{ ml: 1 }}
                                 primary={provider.label}
                                 secondary={
-                                    <a target='_blank' rel='noreferrer' href={provider.url}>
+                                    <a
+                                        target='_blank'
+                                        rel='noreferrer'
+                                        href={provider.url}
+                                        style={{ color: theme.palette.primary.main, opacity: 0.85 }}
+                                    >
                                         {provider.url}
                                     </a>
                                 }
@@ -416,9 +423,11 @@ const AnalyseFlow = ({ dialogProps }) => {
                     </AccordionDetails>
                 </Accordion>
             ))}
-            <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onSave}>
-                Save
-            </StyledButton>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
+                <StyledButton variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
+                    Save
+                </StyledButton>
+            </Box>
         </>
     )
 }

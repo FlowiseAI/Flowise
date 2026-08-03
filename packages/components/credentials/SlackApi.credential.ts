@@ -8,7 +8,7 @@ class SlackApi implements INodeCredential {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Slack API'
+        this.label = 'Slack Bot Token'
         this.name = 'slackApi'
         this.version = 1.0
         this.description =

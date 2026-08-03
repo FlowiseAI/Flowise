@@ -9,13 +9,14 @@ import { IconArrowsMaximize, IconAlertTriangle } from '@tabler/icons-react'
 // project import
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import { Input } from '@/ui-component/input/Input'
+import { SensitiveInput } from '@/ui-component/input/SensitiveInput'
 import { SwitchInput } from '@/ui-component/switch/Switch'
 import { JsonEditorInput } from '@/ui-component/json/JsonEditor'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 // ===========================|| NodeInputHandler ||=========================== //
 
-const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
+const CredentialInputHandler = ({ inputParam, data, disabled = false, onReveal }) => {
     const customization = useSelector((state) => state.customization)
     const ref = useRef(null)
 
@@ -90,7 +91,17 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
                                 value={data[inputParam.name] ?? inputParam.default ?? false}
                             />
                         )}
-                        {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
+                        {(inputParam.type === 'url' || inputParam.type === 'password') && (
+                            <SensitiveInput
+                                key={inputParam.name}
+                                inputParam={inputParam}
+                                value={data[inputParam.name] ?? inputParam.default ?? ''}
+                                onChange={(newValue) => (data[inputParam.name] = newValue)}
+                                disabled={disabled}
+                                onReveal={onReveal ? () => onReveal(inputParam.name) : undefined}
+                            />
+                        )}
+                        {(inputParam.type === 'string' || inputParam.type === 'number') && (
                             <Input
                                 key={data[inputParam.name]}
                                 disabled={disabled}
@@ -131,7 +142,8 @@ CredentialInputHandler.propTypes = {
     inputAnchor: PropTypes.object,
     inputParam: PropTypes.object,
     data: PropTypes.object,
-    disabled: PropTypes.bool
+    disabled: PropTypes.bool,
+    onReveal: PropTypes.func
 }
 
 export default CredentialInputHandler

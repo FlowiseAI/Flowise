@@ -8,7 +8,10 @@ router.post('/', checkPermission('credentials:create'), credentialsController.cr
 
 // READ
 router.get('/', checkPermission('credentials:view'), credentialsController.getAllCredentials)
-router.get(['/', '/:id'], checkPermission('credentials:view'), credentialsController.getCredentialById)
+router.get(['/', '/:id'], checkAnyPermission('credentials:create,credentials:update'), credentialsController.getCredentialById)
+
+// REVEAL
+router.get('/:id/reveal', checkAnyPermission('credentials:create,credentials:update'), credentialsController.revealCredentialById)
 
 // UPDATE
 router.put(['/', '/:id'], checkAnyPermission('credentials:create,credentials:update'), credentialsController.updateCredential)

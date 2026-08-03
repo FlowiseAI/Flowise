@@ -5,7 +5,7 @@ import { useAvailableVariables } from './useAvailableVariables'
 // --- Mocks ---
 
 const mockState = {
-    nodes: [] as Array<{ id: string; data: Record<string, unknown> }>,
+    nodes: [] as Array<{ id: string; extent?: string; parentNode?: string; data: Record<string, unknown> }>,
     edges: [] as Array<{ source: string; target: string }>
 }
 
@@ -64,8 +64,8 @@ describe('useAvailableVariables', () => {
 
         const nodeOutputs = result.current.filter((i) => i.category === 'Node Outputs')
         expect(nodeOutputs).toHaveLength(1)
-        expect(nodeOutputs[0].value).toBe('{{llm_0.data.instance}}')
-        expect(nodeOutputs[0].label).toBe('llmAgentflow')
+        expect(nodeOutputs[0].value).toBe('{{llm_0}}')
+        expect(nodeOutputs[0].label).toBe('llm_0')
     })
 
     it('excludes startAgentflow from node outputs', () => {
@@ -112,7 +112,7 @@ describe('useAvailableVariables', () => {
         const stateItems = result.current.filter((i) => i.category === 'Flow State')
         expect(stateItems).toHaveLength(2)
         expect(stateItems[0].label).toBe('$flow.state.count')
-        expect(stateItems[0].value).toBe('$flow.state.count')
+        expect(stateItems[0].value).toBe('{{$flow.state.count}}')
         expect(stateItems[1].label).toBe('$flow.state.userName')
     })
 
@@ -149,5 +149,48 @@ describe('useAvailableVariables', () => {
 
         const nodeOutputs = result.current.filter((i) => i.category === 'Node Outputs')
         expect(nodeOutputs).toHaveLength(0)
+    })
+
+    it('includes $iteration variable when node is inside an iteration group', () => {
+        mockState.nodes = [
+            { id: 'iter_0', data: { id: 'iter_0', name: 'iterationAgentflow', label: 'Iteration' } },
+            {
+                id: 'child_0',
+                extent: 'parent',
+                parentNode: 'iter_0',
+                data: { id: 'child_0', name: 'directReplyAgentflow', label: 'Direct Reply' }
+            }
+        ]
+
+        const { result } = renderHook(() => useAvailableVariables('child_0'))
+
+        const iterationItems = result.current.filter((i) => i.category === 'Iteration')
+        expect(iterationItems).toHaveLength(1)
+        expect(iterationItems[0].label).toBe('$iteration')
+        expect(iterationItems[0].value).toBe('{{$iteration}}')
+    })
+
+    it('does not include $iteration variable when node is not inside an iteration group', () => {
+        mockState.nodes = [makeNode('agent_0', 'agentAgentflow')]
+
+        const { result } = renderHook(() => useAvailableVariables('agent_0'))
+
+        const iterationItems = result.current.filter((i) => i.category === 'Iteration')
+        expect(iterationItems).toHaveLength(0)
+    })
+
+    it('lists $iteration before other variables when inside an iteration group', () => {
+        mockState.nodes = [
+            {
+                id: 'child_0',
+                extent: 'parent',
+                parentNode: 'iter_0',
+                data: { id: 'child_0', name: 'directReplyAgentflow', label: 'Direct Reply' }
+            }
+        ]
+
+        const { result } = renderHook(() => useAvailableVariables('child_0'))
+
+        expect(result.current[0].label).toBe('$iteration')
     })
 })

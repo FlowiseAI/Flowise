@@ -19,7 +19,7 @@
 
 ## ⚡빠른 시작 가이드
 
-18.15.0 버전 이상의 [NodeJS](https://nodejs.org/en/download) 다운로드 및 설치
+20.0.0 버전 이상의 [NodeJS](https://nodejs.org/en/download) 다운로드 및 설치
 
 1. Flowise 설치
     ```bash
@@ -148,7 +148,7 @@ Flowise는 인스턴스 구성을 위한 다양한 환경 변수를 지원합니
 
         [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
 
-    -   [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
+    -   [HuggingFace Spaces](https://docs.flowiseai.com/configuration/deployment/hugging-face)
 
         <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
 

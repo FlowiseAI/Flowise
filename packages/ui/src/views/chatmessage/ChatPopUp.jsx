@@ -101,7 +101,7 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                 removeLocalStorageChatHistory(chatflowid)
                 resetChatDialog()
                 enqueueSnackbar({
-                    message: 'Succesfully cleared all chat history',
+                    message: 'Successfully cleared all chat history',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',

@@ -23,6 +23,7 @@ const translationFlow: FlowData = {
                 id: 'startAgentflow_0',
                 name: 'startAgentflow',
                 label: 'Start',
+                version: 1.3,
                 color: '#7EE787',
                 hideInput: true,
                 outputAnchors: [{ id: 'startAgentflow_0-output-0', name: 'start', label: 'Start', type: 'start' }]
@@ -36,6 +37,7 @@ const translationFlow: FlowData = {
                 id: 'llmAgentflow_0',
                 name: 'llmAgentflow',
                 label: 'Translator',
+                version: 1.1,
                 color: '#64B5F6',
                 outputAnchors: [{ id: 'llmAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }],
                 inputs: {
@@ -54,6 +56,7 @@ const translationFlow: FlowData = {
                 id: 'conditionAgentflow_0',
                 name: 'conditionAgentflow',
                 label: 'Check Quality',
+                version: 1.0,
                 color: '#FFB938',
                 outputAnchors: [
                     { id: 'conditionAgentflow_0-output-0', name: 'true', label: 'Pass', type: 'boolean' },
@@ -69,6 +72,7 @@ const translationFlow: FlowData = {
                 id: 'directReplyAgentflow_0',
                 name: 'directReplyAgentflow',
                 label: 'Send Response',
+                version: 1.0,
                 color: '#4DDBBB',
                 outputAnchors: [{ id: 'directReplyAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -81,6 +85,7 @@ const translationFlow: FlowData = {
                 id: 'humanInputAgentflow_0',
                 name: 'humanInputAgentflow',
                 label: 'Review Required',
+                version: 1.0,
                 color: '#6E6EFD',
                 outputAnchors: [
                     { id: 'humanInputAgentflow_0-output-0', name: 'proceed', label: 'Proceed', type: 'string' },

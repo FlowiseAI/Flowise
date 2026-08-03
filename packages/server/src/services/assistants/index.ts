@@ -140,7 +140,8 @@ const createAssistant = async (requestBody: any, orgId: string, workspaceId: str
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error creating new assistant - ${getErrorMessage(error)}`)
         }
         const newAssistant = new Assistant()
-        Object.assign(newAssistant, requestBody)
+        Object.assign(newAssistant, stripProtectedFields(requestBody))
+        newAssistant.workspaceId = workspaceId
 
         const assistant = appServer.AppDataSource.getRepository(Assistant).create(newAssistant)
         const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)

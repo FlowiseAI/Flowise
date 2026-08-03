@@ -15,8 +15,8 @@ describe('getDefaultValueForType', () => {
         expect(getDefaultValueForType({ type: 'boolean' })).toBe(false)
     })
 
-    it('returns 0 for number', () => {
-        expect(getDefaultValueForType({ type: 'number' })).toBe(0)
+    it("returns '' for number without explicit default", () => {
+        expect(getDefaultValueForType({ type: 'number' })).toBe('')
     })
 
     it("returns '{}' for json", () => {
@@ -27,22 +27,26 @@ describe('getDefaultValueForType', () => {
         expect(getDefaultValueForType({ type: 'array' })).toEqual([])
     })
 
-    it('returns first option name for object options', () => {
+    it("returns '' for options without explicit default", () => {
         expect(
             getDefaultValueForType({
                 type: 'options',
                 options: [{ name: 'first' }, { name: 'second' }]
             })
-        ).toBe('first')
-    })
-
-    it('returns first option value for string options', () => {
-        expect(getDefaultValueForType({ type: 'options', options: ['alpha', 'beta'] })).toBe('alpha')
-    })
-
-    it("returns '' for options with no options", () => {
+        ).toBe('')
+        expect(getDefaultValueForType({ type: 'options', options: ['alpha', 'beta'] })).toBe('')
         expect(getDefaultValueForType({ type: 'options' })).toBe('')
         expect(getDefaultValueForType({ type: 'options', options: [] })).toBe('')
+    })
+
+    it('returns explicit default for options when provided', () => {
+        expect(
+            getDefaultValueForType({
+                type: 'options',
+                default: 'second',
+                options: [{ name: 'first' }, { name: 'second' }]
+            })
+        ).toBe('second')
     })
 
     it("returns '' for string", () => {

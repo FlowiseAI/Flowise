@@ -21,5 +21,7 @@ export enum FLOWISE_METRIC_COUNTERS {
     CHATFLOW_PREDICTION_EXTERNAL = 'chatflow_prediction_external',
 
     AGENTFLOW_PREDICTION_INTERNAL = 'agentflow_prediction_internal',
-    AGENTFLOW_PREDICTION_EXTERNAL = 'agentflow_prediction_external'
+    AGENTFLOW_PREDICTION_EXTERNAL = 'agentflow_prediction_external',
+
+    CUSTOM_MCP_SERVER_CREATED = 'custom_mcp_server_created'
 }

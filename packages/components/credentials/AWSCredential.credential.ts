@@ -19,7 +19,7 @@ class AWSApi implements INodeCredential {
             {
                 label: 'AWS Access Key',
                 name: 'awsKey',
-                type: 'string',
+                type: 'password',
                 placeholder: '<AWS_ACCESS_KEY_ID>',
                 description: 'The access key for your AWS account.',
                 optional: true

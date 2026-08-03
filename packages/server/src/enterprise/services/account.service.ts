@@ -1,8 +1,28 @@
 import bcrypt from 'bcryptjs'
-import jwt, { JwtPayload } from 'jsonwebtoken'
+import { removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import moment from 'moment'
-import { DataSource, QueryRunner } from 'typeorm'
+import { DataSource, In, QueryRunner } from 'typeorm'
+import { ApiKey } from '../../database/entities/ApiKey'
+import { Assistant } from '../../database/entities/Assistant'
+import { ChatFlow } from '../../database/entities/ChatFlow'
+import { ChatMessage } from '../../database/entities/ChatMessage'
+import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
+import { Credential } from '../../database/entities/Credential'
+import { CustomTemplate } from '../../database/entities/CustomTemplate'
+import { Dataset } from '../../database/entities/Dataset'
+import { DatasetRow } from '../../database/entities/DatasetRow'
+import { DocumentStore } from '../../database/entities/DocumentStore'
+import { DocumentStoreFileChunk } from '../../database/entities/DocumentStoreFileChunk'
+import { Evaluation } from '../../database/entities/Evaluation'
+import { EvaluationRun } from '../../database/entities/EvaluationRun'
+import { Evaluator } from '../../database/entities/Evaluator'
+import { Execution } from '../../database/entities/Execution'
+import { Lead } from '../../database/entities/Lead'
+import { Tool } from '../../database/entities/Tool'
+import { UpsertHistory } from '../../database/entities/UpsertHistory'
+import { Variable } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { IdentityManager } from '../../IdentityManager'
 import { Platform, UserPlan } from '../../Interface'
@@ -10,6 +30,9 @@ import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import logger from '../../utils/logger'
 import { checkUsageLimit } from '../../utils/quotaUsage'
+import { sanitizeUser } from '../../utils/sanitize.util'
+import { emitEvent, TelemetryEventCategory, TelemetryEventResult } from '../../utils/telemetry'
+import { WorkspaceShared } from '../database/entities/EnterpriseEntities'
 import { OrganizationUser, OrganizationUserStatus } from '../database/entities/organization-user.entity'
 import { Organization, OrganizationName } from '../database/entities/organization.entity'
 import { GeneralRole, Role } from '../database/entities/role.entity'
@@ -19,8 +42,8 @@ import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
 import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
 import { getJWTAuthTokenSecret } from '../utils/authSecrets'
-import { compareHash, getHash, getPasswordSaltRounds, hashNeedsUpgrade } from '../utils/encryption.util'
 import { EMAIL_CHANGE_JWT_TYP, isEmailChangeJwtShape, signEmailChangeJwt, verifyEmailChangeJwt } from '../utils/emailChangeJwt.util'
+import { compareHash, getHash, getPasswordSaltRounds, hashNeedsUpgrade } from '../utils/encryption.util'
 import {
     isSmtpConfigured,
     sendEmailChangeConfirmationEmail,
@@ -36,7 +59,6 @@ import auditService from './audit'
 import { OrganizationUserErrorMessage, OrganizationUserService } from './organization-user.service'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
 import { RoleErrorMessage, RoleService } from './role.service'
-import { sanitizeUser } from '../../utils/sanitize.util'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
@@ -175,7 +197,8 @@ export class AccountService {
                 break
             case Platform.CLOUD: {
                 const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
-                if (user && (user.status === UserStatus.ACTIVE || user.status === UserStatus.UNVERIFIED))
+                if (!user) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'New registrations are currently closed.')
+                if (user.status === UserStatus.ACTIVE || user.status === UserStatus.UNVERIFIED)
                     throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_EMAIL_ALREADY_EXISTS)
 
                 if (!data.user.email) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_EMAIL)
@@ -342,6 +365,8 @@ export class AccountService {
             data.role = role
             const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
             if (!user) {
+                if (this.identityManager.isCloud())
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'New registrations are currently closed.')
                 await checkUsageLimit('users', subscriptionId, getRunningExpressApp().usageCacheManager, totalOrgUsers + 1)
 
                 // generate a temporary token
@@ -387,12 +412,12 @@ export class AccountService {
                 data.workspaceUser = await this.workspaceUserService.saveWorkspaceUser(data.workspaceUser, queryRunner)
                 data.role = await this.roleService.saveRole(data.role, queryRunner)
                 await queryRunner.commitTransaction()
-                delete data.user.credential
-                delete data.user.tempToken
-                delete data.user.tokenExpiry
+                data.user = sanitizeUser(data.user)
 
                 return data
             }
+            if (user.status !== UserStatus.ACTIVE && this.identityManager.isCloud())
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'New registrations are currently closed.')
             const { organizationUser } = await this.organizationUserService.readOrganizationUserByOrganizationIdUserId(
                 data.workspace.organizationId,
                 user.id,
@@ -490,7 +515,7 @@ export class AccountService {
 
             const personalWorkspaceRole = await this.roleService.readGeneralRoleByName(GeneralRole.PERSONAL_WORKSPACE, queryRunner)
             if (oldWorkspaceUser && oldWorkspaceUser.roleId !== personalWorkspaceRole.id) {
-                await this.workspaceUserService.deleteWorkspaceUser(oldWorkspaceUser.workspaceId, user.id)
+                await this.workspaceUserService.deleteWorkspaceUser(oldWorkspaceUser.workspaceId, user.id, data.workspace.organizationId)
             }
 
             await queryRunner.startTransaction()
@@ -500,6 +525,7 @@ export class AccountService {
             data.role = await this.roleService.saveRole(data.role, queryRunner)
             await queryRunner.commitTransaction()
 
+            data.user = sanitizeUser(data.user)
             return data
         } catch (error) {
             if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
@@ -564,7 +590,9 @@ export class AccountService {
             if (platform === Platform.ENTERPRISE) {
                 await auditService.recordLoginActivity(user.email, LoginActivityCode.LOGIN_SUCCESS, 'Login Success')
             }
-            return { user, workspaceDetails: wsUserOrUsers }
+
+            const sanitizedUser = sanitizeUser(user)
+            return { user: sanitizedUser, workspaceDetails: wsUserOrUsers }
         } finally {
             await queryRunner.release()
         }
@@ -592,7 +620,7 @@ export class AccountService {
         } finally {
             await queryRunner.release()
         }
-
+        data.user = sanitizeUser(data.user)
         return data
     }
 
@@ -691,6 +719,157 @@ export class AccountService {
                 user.ssoToken ? 'SSO' : 'Email/Password'
             )
         }
+    }
+
+    /**
+     * Permanently deletes the logged-in user's account and all associated organization and workspace data.
+     *
+     * Only allowed on CLOUD platform. Validates that the user is the sole organization owner and that
+     * the organization has a subscription, then runs a transaction that removes organization and
+     * workspace memberships, deletes all workspace resources (chatflows, documents, evaluations,
+     * datasets, etc.), anonymizes the user record for GDPR, cancels the Stripe subscription, removes
+     * organization storage, and emits an audit event. Throws on validation failure or if the user is
+     * not found.
+     *
+     * @param queryRunner - TypeORM query runner for the database transaction
+     * @param loggedInUser - The authenticated user requesting account deletion
+     * @param ipAddress - Client IP address (e.g. for audit/telemetry)
+     * @returns A promise that resolves when deletion and cleanup complete, or rejects with an error
+     */
+    public async delete(queryRunner: QueryRunner, loggedInUser: LoggedInUser, ipAddress: string): Promise<void> {
+        if (this.identityManager.getPlatformType() !== Platform.CLOUD)
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+        if (!loggedInUser.id) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
+        // Step 3.1: Find User ID by Email
+        const user = await this.userService.readUserById(loggedInUser.id, queryRunner)
+        if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+
+        // Step 3.1: Find Organization Memberships and Roles
+        const targetUserOrganizationMemberships = await this.organizationUserService.readOrganizationUserByUserId(user.id, queryRunner)
+        if (!targetUserOrganizationMemberships?.length)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, OrganizationUserErrorMessage.ORGANIZATION_USER_NOT_FOUND)
+        // Step 3.1.1: Verify that there is only one owner
+        const organizationIdsWhereOwner = targetUserOrganizationMemberships
+            .filter((organizationUser) => organizationUser.isOrgOwner)
+            .map((organizationUser) => organizationUser)
+        if (organizationIdsWhereOwner.length !== 1)
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.NOT_ALLOWED_TO_DELETE_OWNER)
+        const organizaiton = await this.organizationservice.readOrganizationById(organizationIdsWhereOwner[0].organizationId, queryRunner)
+        if (!organizaiton?.subscriptionId)
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, OrganizationErrorMessage.ORGANIZATION_HAS_NO_SUBSCRIPTION)
+        // Step 3.1.2: Verify how many people invited him as member
+        const organizationsUserWasInvitedTo = targetUserOrganizationMemberships
+            .filter((organizationUser) => !organizationUser.isOrgOwner)
+            .map((organizationUser) => organizationUser.organizationId)
+
+        // Step 3.3: Find All Members and Owner in the Organization
+        const organizationUsers = await this.organizationUserService.readOrganizationUserByOrganizationId(organizaiton.id, queryRunner)
+        if (!organizationUsers)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, OrganizationUserErrorMessage.ORGANIZATION_USER_NOT_FOUND)
+        const membershipsWhereUserWasInvited = organizationUsers
+            .filter((organizationUser) => !organizationUser.isOrgOwner)
+            .map((organizationUser) => organizationUser.userId)
+
+        // Step 3.4: Find All Workspaces for the Organization
+        const workspaceIds = (await queryRunner.manager.findBy(Workspace, { organizationId: organizaiton.id })).map(
+            (workspace) => workspace.id
+        )
+        if (workspaceIds.length === 0) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)
+        const chatflowIds = (await queryRunner.manager.findBy(ChatFlow, { workspaceId: In(workspaceIds) })).map((chatflow) => chatflow.id)
+        const documentStoreIds = (await queryRunner.manager.findBy(DocumentStore, { workspaceId: In(workspaceIds) })).map(
+            (documentStore) => documentStore.id
+        )
+        const evaluationIds = (await queryRunner.manager.findBy(Evaluation, { workspaceId: In(workspaceIds) })).map(
+            (evaluation) => evaluation.id
+        )
+        const datasetIds = (await queryRunner.manager.findBy(Dataset, { workspaceId: In(workspaceIds) })).map((dataset) => dataset.id)
+
+        // Step 4: Deletion Process
+        await queryRunner.startTransaction()
+
+        // Step 4.1: Delete Organization Users with Member Role
+        await queryRunner.manager.delete(OrganizationUser, { userId: loggedInUser.id, organizationId: In(organizationsUserWasInvitedTo) })
+        await queryRunner.manager.delete(OrganizationUser, {
+            organizationId: organizaiton.id,
+            userId: In(membershipsWhereUserWasInvited)
+        })
+
+        // Step 4.2: Delete Workspace Users
+        await queryRunner.manager.delete(WorkspaceUser, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(WorkspaceUser, { userId: loggedInUser.id })
+
+        // Step 4.3: Delete Roles created for the Organization
+        await queryRunner.manager.delete(Role, { organizationId: organizaiton.id })
+
+        // Step 4.4: Delete Workspace Child Data
+        // Step 4.4.1: Delete Chat Messages
+        await queryRunner.manager.delete(ChatMessageFeedback, { chatflowid: In(chatflowIds) })
+        await queryRunner.manager.delete(ChatMessage, { chatflowid: In(chatflowIds) })
+
+        // Step 4.4.2: Delete Upsert History
+        await queryRunner.manager.delete(UpsertHistory, { chatflowid: In(chatflowIds) })
+        await queryRunner.manager.delete(UpsertHistory, { chatflowid: In(documentStoreIds) }) // don't be alarm because we reuse the chatflowid for document store upsert history
+
+        // Step 4.4.3: Delete Leads
+        await queryRunner.manager.delete(Lead, { chatflowid: In(chatflowIds) })
+
+        // Step 4.4.4: Delete Document Store Data
+        await queryRunner.manager.delete(DocumentStoreFileChunk, { storeId: In(documentStoreIds) })
+        await queryRunner.manager.delete(DocumentStore, { workspaceId: In(workspaceIds) })
+
+        // Step 4.4.5: Delete Evaluation Data
+        await queryRunner.manager.delete(EvaluationRun, { evaluationId: In(evaluationIds) })
+        await queryRunner.manager.delete(Evaluation, { workspaceId: In(workspaceIds) })
+
+        // Step 4.4.6: Delete Dataset Data
+        await queryRunner.manager.delete(DatasetRow, { datasetId: In(datasetIds) })
+        await queryRunner.manager.delete(Dataset, { workspaceId: In(workspaceIds) })
+
+        // Step 4.4.7: Delete ChatFlows
+        await queryRunner.manager.delete(ChatFlow, { workspaceId: In(workspaceIds) })
+
+        // Step 4.4.8: Delete Other Workspace Resources
+        await queryRunner.manager.delete(ApiKey, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Variable, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Tool, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Credential, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Assistant, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Evaluator, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(CustomTemplate, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Execution, { workspaceId: In(workspaceIds) })
+
+        // Step 4.4.9: Delete Workspace
+        await queryRunner.manager.delete(WorkspaceShared, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Workspace, { id: In(workspaceIds) })
+
+        // Step 5: Anonymize User Record (GDPR Compliance)
+        user.name = UserStatus.DELETED
+        user.email = `deleted_${user.id}_${Date.now()}@deleted.flowise`
+        user.status = UserStatus.DELETED
+        user.credential = null
+        user.tokenExpiry = null
+        user.tempToken = null
+        await queryRunner.manager.save(User, user)
+
+        // Step 6: Cancel Stripe Subscription
+        await this.identityManager.cancelSubscription(organizaiton.subscriptionId)
+
+        await queryRunner.commitTransaction()
+
+        // Step 7: Delete Organization Folder from Storage
+        await removeFolderFromStorage(organizaiton.id)
+
+        await emitEvent({
+            category: TelemetryEventCategory.AUDIT,
+            eventType: 'account-deleted',
+            actionType: 'delete',
+            userId: user.id,
+            orgId: organizaiton.id,
+            resourceId: user.id,
+            ipAddress: ipAddress,
+            result: TelemetryEventResult.SUCCESS
+        })
     }
 
     public async initiateEmailChange(userId: string, newEmail: string) {

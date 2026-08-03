@@ -13,6 +13,7 @@ import {
 } from '../../../src/Interface'
 import { getModels, getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { getBaseClasses } from '../../../src/utils'
+import { supportsSamplingParams } from '../../../src/anthropicUtils'
 
 class ChatVertexAI extends LcChatVertexAI implements IVisionChatModal {
     configuredModel: string
@@ -229,19 +230,29 @@ class GoogleVertexAI_ChatModels implements INode {
             }
         }
 
+        const resolvedModelName = customModelName || modelName
+
+        // Newer Anthropic Claude models hosted on Vertex (Opus 4.7+) don't
+        // accept sampling parameters. Gemini and older Claude models are
+        // unaffected because their names won't match the patterns.
+        const samplingSupported = supportsSamplingParams(resolvedModelName)
+
         const obj: ChatVertexAIInput & Partial<GoogleGenerativeAIChatInput> = {
-            temperature: parseFloat(temperature),
-            modelName: customModelName || modelName,
+            modelName: resolvedModelName,
             streaming: streaming ?? true
+        }
+
+        if (samplingSupported) {
+            obj.temperature = parseFloat(temperature)
         }
 
         const authOptions = await buildGoogleCredentials(nodeData, options)
         if (authOptions && Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
+        if (samplingSupported && topP) obj.topP = parseFloat(topP)
         if (cache) obj.cache = cache
-        if (topK) obj.topK = parseFloat(topK)
+        if (samplingSupported && topK) obj.topK = parseFloat(topK)
         if (region) obj.location = region
         if (thinkingLevel) {
             obj.thinkingConfig = {

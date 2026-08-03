@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import jwt, { JwtPayload, sign } from 'jsonwebtoken'
 import passport from 'passport'
 import { VerifiedCallback } from 'passport-jwt'
+import { v4 as uuidv4 } from 'uuid'
 import { InternalFlowiseError } from '../../../errors/internalFlowiseError'
 import { IdentityManager } from '../../../IdentityManager'
 import { Platform } from '../../../Interface'
@@ -29,7 +30,6 @@ import {
 import { decryptToken, encryptToken, generateSafeCopy } from '../../utils/tempTokenUtils'
 import { getAuthStrategy } from './AuthStrategy'
 import { initializeDBClientAndStore, initializeRedisClientAndStore } from './SessionPersistance'
-import { v4 as uuidv4 } from 'uuid'
 
 const localStrategy = require('passport-local').Strategy
 
@@ -143,7 +143,7 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                     if (!organizationUser)
                         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, OrganizationUserErrorMessage.ORGANIZATION_USER_NOT_FOUND)
                     organizationUser.status = OrganizationUserStatus.ACTIVE
-                    await workspaceUserService.updateWorkspaceUser(workspaceUser, queryRunner)
+                    await workspaceUserService.updateWorkspaceUser(workspaceUser, queryRunner, organizationUser.organizationId)
                     await organizationUserService.updateOrganizationUser(organizationUser)
 
                     const workspaceUsers = await workspaceUserService.readWorkspaceUserByUserId(organizationUser.userId, queryRunner)
@@ -173,14 +173,14 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
 
                     const loggedInUser: LoggedInUser = {
                         id: workspaceUser.userId,
-                        email: response.user.email,
-                        name: response.user?.name,
+                        email: response.user.email!,
+                        name: response.user.name ?? response.user.email!,
                         roleId: workspaceUser.roleId,
                         activeOrganizationId: organization.id,
                         activeOrganizationSubscriptionId: subscriptionId,
                         activeOrganizationCustomerId: customerId,
                         activeOrganizationProductId: productId,
-                        isOrganizationAdmin: workspaceUser.roleId === ownerRole.id,
+                        isOrganizationAdmin: organizationUser.roleId === ownerRole.id,
                         activeWorkspaceId: workspaceUser.workspaceId,
                         activeWorkspace: workspaceUser.workspace.name,
                         assignedWorkspaces,

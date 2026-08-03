@@ -30,8 +30,6 @@ import { debounce, groupNodesByCategory, searchNodes } from './search'
 import { StyledFab } from './StyledFab'
 import { useDrawerMaxHeight } from './useDrawerMaxHeight'
 
-const Z_INDEX_DRAWER = 1000
-
 export interface AddNodesDrawerProps {
     /** Available nodes to display */
     nodes: NodeDataSchema[]
@@ -154,7 +152,7 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
                     position: 'absolute',
                     left: 20,
                     top: 20,
-                    zIndex: Z_INDEX_DRAWER
+                    zIndex: tokens.zIndex.canvasButton
                 }}
             >
                 {open ? <IconMinus /> : <IconPlus />}
@@ -177,7 +175,7 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
                         }
                     ]
                 }}
-                sx={{ zIndex: Z_INDEX_DRAWER }}
+                sx={{ zIndex: tokens.zIndex.canvasPanel }}
             >
                 {({ TransitionProps }) => (
                     <Fade {...TransitionProps} timeout={200}>
@@ -221,7 +219,7 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
                                                             cursor: 'pointer',
                                                             color: theme.palette.grey[500],
                                                             '&:hover': {
-                                                                color: theme.palette.grey[900]
+                                                                color: theme.palette.text.primary
                                                             }
                                                         }}
                                                         onClick={handleClearSearch}

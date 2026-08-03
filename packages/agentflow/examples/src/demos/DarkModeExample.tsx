@@ -24,6 +24,7 @@ const sampleFlow: FlowData = {
                 id: 'startAgentflow_0',
                 name: 'startAgentflow',
                 label: 'Start',
+                version: 1.3,
                 color: '#7EE787',
                 hideInput: true,
                 outputAnchors: [{ id: 'startAgentflow_0-output-0', name: 'start', label: 'Start', type: 'start' }]
@@ -37,6 +38,7 @@ const sampleFlow: FlowData = {
                 id: 'agentAgentflow_0',
                 name: 'agentAgentflow',
                 label: 'AI Assistant',
+                version: 3.2,
                 color: '#4DD0E1',
                 outputAnchors: [{ id: 'agentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }],
                 inputs: {
@@ -55,6 +57,7 @@ const sampleFlow: FlowData = {
                 id: 'directReplyAgentflow_0',
                 name: 'directReplyAgentflow',
                 label: 'Reply',
+                version: 1.0,
                 color: '#4DDBBB',
                 outputAnchors: [{ id: 'directReplyAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }

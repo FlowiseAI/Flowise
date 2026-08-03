@@ -24,6 +24,7 @@ const allNodesFlow: FlowData = {
                 id: 'startAgentflow_0',
                 name: 'startAgentflow',
                 label: 'Start',
+                version: 1.3,
                 color: '#7EE787',
                 hideInput: true,
                 outputAnchors: [{ id: 'startAgentflow_0-output-0', name: 'start', label: 'Start', type: 'start' }]
@@ -37,6 +38,7 @@ const allNodesFlow: FlowData = {
                 id: 'llmAgentflow_0',
                 name: 'llmAgentflow',
                 label: 'LLM',
+                version: 1.1,
                 color: '#64B5F6',
                 outputAnchors: [{ id: 'llmAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -49,6 +51,7 @@ const allNodesFlow: FlowData = {
                 id: 'agentAgentflow_0',
                 name: 'agentAgentflow',
                 label: 'Agent',
+                version: 3.2,
                 color: '#4DD0E1',
                 outputAnchors: [{ id: 'agentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -61,6 +64,7 @@ const allNodesFlow: FlowData = {
                 id: 'directReplyAgentflow_0',
                 name: 'directReplyAgentflow',
                 label: 'Direct Reply',
+                version: 1.0,
                 color: '#4DDBBB',
                 outputAnchors: [{ id: 'directReplyAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -75,6 +79,7 @@ const allNodesFlow: FlowData = {
                 id: 'conditionAgentflow_0',
                 name: 'conditionAgentflow',
                 label: 'Condition',
+                version: 1.0,
                 color: '#FFB938',
                 outputAnchors: [
                     { id: 'conditionAgentflow_0-output-0', name: 'true', label: 'True', type: 'boolean' },
@@ -90,6 +95,7 @@ const allNodesFlow: FlowData = {
                 id: 'conditionAgentAgentflow_0',
                 name: 'conditionAgentAgentflow',
                 label: 'Condition Agent',
+                version: 2.0,
                 color: '#ff8fab',
                 outputAnchors: [{ id: 'conditionAgentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -102,6 +108,7 @@ const allNodesFlow: FlowData = {
                 id: 'loopAgentflow_0',
                 name: 'loopAgentflow',
                 label: 'Loop',
+                version: 1.2,
                 color: '#FFA07A',
                 outputAnchors: [{ id: 'loopAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -114,6 +121,7 @@ const allNodesFlow: FlowData = {
                 id: 'iterationAgentflow_0',
                 name: 'iterationAgentflow',
                 label: 'Iteration',
+                version: 1.0,
                 color: '#9C89B8',
                 outputAnchors: [{ id: 'iterationAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -128,6 +136,7 @@ const allNodesFlow: FlowData = {
                 id: 'humanInputAgentflow_0',
                 name: 'humanInputAgentflow',
                 label: 'Human Input',
+                version: 1.0,
                 color: '#6E6EFD',
                 outputAnchors: [
                     { id: 'humanInputAgentflow_0-output-0', name: 'proceed', label: 'Proceed', type: 'string' },
@@ -143,6 +152,7 @@ const allNodesFlow: FlowData = {
                 id: 'toolAgentflow_0',
                 name: 'toolAgentflow',
                 label: 'Tool',
+                version: 1.2,
                 color: '#d4a373',
                 outputAnchors: [{ id: 'toolAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -155,6 +165,7 @@ const allNodesFlow: FlowData = {
                 id: 'retrieverAgentflow_0',
                 name: 'retrieverAgentflow',
                 label: 'Retriever',
+                version: 1.1,
                 color: '#b8bedd',
                 outputAnchors: [{ id: 'retrieverAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -167,6 +178,7 @@ const allNodesFlow: FlowData = {
                 id: 'customFunctionAgentflow_0',
                 name: 'customFunctionAgentflow',
                 label: 'Custom Function',
+                version: 1.1,
                 color: '#E4B7FF',
                 outputAnchors: [{ id: 'customFunctionAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -181,6 +193,7 @@ const allNodesFlow: FlowData = {
                 id: 'httpAgentflow_0',
                 name: 'httpAgentflow',
                 label: 'HTTP Request',
+                version: 1.1,
                 color: '#FF7F7F',
                 outputAnchors: [{ id: 'httpAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -193,6 +206,7 @@ const allNodesFlow: FlowData = {
                 id: 'executeFlowAgentflow_0',
                 name: 'executeFlowAgentflow',
                 label: 'Execute Flow',
+                version: 1.2,
                 color: '#a3b18a',
                 outputAnchors: [{ id: 'executeFlowAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
@@ -205,6 +219,7 @@ const allNodesFlow: FlowData = {
                 id: 'stickyNoteAgentflow_0',
                 name: 'stickyNoteAgentflow',
                 label: 'Sticky Note',
+                version: 1.0,
                 color: '#fee440',
                 outputAnchors: []
             }
