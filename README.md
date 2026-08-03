@@ -186,6 +186,10 @@ Deploy Flowise self-hosted in your existing infrastructure, we support various [
 -   <details>
       <summary>Others</summary>
 
+    -   [Zenith](https://zenith.hosting/host/flowise)
+
+        [![Deploy with Zenith](https://cdn.zenith.hosting/buttons/deploy-with-zenith.svg)](https://zenith.hosting/host/flowise)
+
     -   [Railway](https://docs.flowiseai.com/configuration/deployment/railway)
 
         [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
