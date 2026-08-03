@@ -22,7 +22,7 @@ import {
     TextField,
     Typography
 } from '@mui/material'
-import { darken, useTheme } from '@mui/material/styles'
+import { useTheme } from '@mui/material/styles'
 
 // project imports
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -32,7 +32,7 @@ import SettingsSection from '@/ui-component/form/settings'
 import PricingDialog from '@/ui-component/subscription/PricingDialog'
 
 // Icons
-import { IconAlertCircle, IconCreditCard, IconExternalLink, IconSparkles, IconX } from '@tabler/icons-react'
+import { IconAlertCircle, IconCreditCard, IconExternalLink, IconX } from '@tabler/icons-react'
 
 // API
 import accountApi from '@/api/account.api'
@@ -533,34 +533,6 @@ const AccountSettings = () => {
                                                     'Billing'
                                                 )}
                                             </Button>
-                                            <Button
-                                                variant='contained'
-                                                sx={{
-                                                    mr: 1,
-                                                    ml: 2,
-                                                    minWidth: 160,
-                                                    height: 40,
-                                                    borderRadius: 15,
-                                                    background: (theme) =>
-                                                        `linear-gradient(90deg, ${theme.palette.primary.main} 10%, ${theme.palette.secondary.main} 100%)`,
-                                                    color: (theme) => theme.palette.secondary.contrastText,
-                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                                                    transition: 'all 0.3s ease',
-                                                    '&:hover': {
-                                                        background: (theme) =>
-                                                            `linear-gradient(90deg, ${darken(
-                                                                theme.palette.primary.main,
-                                                                0.1
-                                                            )} 10%, ${darken(theme.palette.secondary.main, 0.1)} 100%)`,
-                                                        boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
-                                                    }
-                                                }}
-                                                endIcon={<IconSparkles />}
-                                                disabled={!currentUser.isOrganizationAdmin}
-                                                onClick={() => setOpenPricingDialog(true)}
-                                            >
-                                                Change Plan
-                                            </Button>
                                         </Box>
                                     </Box>
                                 </SettingsSection>
@@ -610,49 +582,6 @@ const AccountSettings = () => {
                                                     )}
                                                 </Typography>
                                             </Stack>
-                                        </Box>
-                                        <Box
-                                            sx={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'end',
-                                                gap: 2,
-                                                px: 2.5,
-                                                py: 2
-                                            }}
-                                        >
-                                            {getAdditionalSeatsQuantityApi.data?.quantity > 0 &&
-                                                currentPlanTitle.toUpperCase() === 'PRO' && (
-                                                    <Button
-                                                        variant='outlined'
-                                                        disabled={
-                                                            !currentUser.isOrganizationAdmin ||
-                                                            !getAdditionalSeatsQuantityApi.data?.quantity
-                                                        }
-                                                        onClick={() => {
-                                                            setOpenRemoveSeatsDialog(true)
-                                                        }}
-                                                        color='error'
-                                                        sx={{ borderRadius: 2, height: 40 }}
-                                                    >
-                                                        Remove Seats
-                                                    </Button>
-                                                )}
-                                            <StyledButton
-                                                variant='contained'
-                                                disabled={!currentUser.isOrganizationAdmin}
-                                                onClick={() => {
-                                                    if (currentPlanTitle.toUpperCase() === 'PRO') {
-                                                        setOpenAddSeatsDialog(true)
-                                                    } else {
-                                                        setOpenPricingDialog(true)
-                                                    }
-                                                }}
-                                                title='Add Seats is available only for PRO plan'
-                                                sx={{ borderRadius: 2, height: 40 }}
-                                            >
-                                                Add Seats
-                                            </StyledButton>
                                         </Box>
                                     </Box>
                                 </SettingsSection>

@@ -1,6 +1,7 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { OllamaParams, Ollama } from 'llamaindex'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 class ChatOllama_LlamaIndex_ChatModels implements INode {
     label: string
@@ -191,6 +192,8 @@ class ChatOllama_LlamaIndex_ChatModels implements INode {
         const repeatPenalty = nodeData.inputs?.repeatPenalty as string
         const stop = nodeData.inputs?.stop as string
         const tfsZ = nodeData.inputs?.tfsZ as string
+
+        if (baseUrl) await checkDenyList(baseUrl)
 
         const obj: OllamaParams = {
             model: modelName,

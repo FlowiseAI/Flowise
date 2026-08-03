@@ -47,6 +47,21 @@ jest.mock('../../utils/logger', () => ({
     __esModule: true,
     default: { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() }
 }))
+jest.mock('flowise-components', () => ({
+    redactSensitiveHeaders: (headers: Record<string, any> | null | undefined): Record<string, any> => {
+        if (!headers) return {}
+        const SENSITIVE = new Set([
+            'authorization',
+            'proxy-authorization',
+            'cookie',
+            'set-cookie',
+            'x-api-key',
+            'x-auth-token',
+            'x-amz-security-token'
+        ])
+        return Object.fromEntries(Object.entries(headers).map(([k, v]) => [k, SENSITIVE.has(k.toLowerCase()) ? '[REDACTED]' : v]))
+    }
+}))
 
 import webhookController from './index'
 

@@ -359,6 +359,46 @@ export const validateSQLitePath = (userProvidedPath: string | undefined): string
 }
 
 /**
+ * Restricts SQL executed against a SQLite database opened via validateSQLitePath to a
+ * single read-only SELECT/WITH statement.
+ *
+ * The Sql Database Chain hands LLM-generated SQL directly to TypeORM's raw query
+ * executor with no statement-type filtering. Without this guard, a compromised or
+ * malicious LLM response can run `ATTACH DATABASE`/`VACUUM INTO`/bare `PRAGMA` to write
+ * arbitrary files anywhere the process can write, bypassing validateSQLitePath (which
+ * only constrains the initial connection path, not queries run afterward).
+ *
+ * All legitimate queries issued against sqlite by this chain (including langchain's own
+ * schema introspection, which uses `pragma_table_info()` as a table-valued function
+ * inside a SELECT) are single SELECT/WITH statements, so this restriction does not
+ * affect normal operation.
+ *
+ * @param {string} sql The SQL statement to validate
+ * @throws {Error} If the statement is not a single read-only SELECT/WITH statement
+ */
+export const assertReadOnlySqlStatement = (sql: string): void => {
+    if (!sql || typeof sql !== 'string') {
+        throw new Error('Invalid SQL statement: statement is required and must be a string')
+    }
+
+    let trimmed = sql.trim()
+    // Strip at most one trailing semicolon (+ trailing whitespace)
+    trimmed = trimmed.replace(/;\s*$/, '')
+
+    if (trimmed.includes(';')) {
+        throw new Error('Invalid SQL statement: multiple statements are not allowed')
+    }
+
+    if (!/^(SELECT|WITH)\b/i.test(trimmed)) {
+        throw new Error('Invalid SQL statement: only read-only SELECT/WITH statements are allowed')
+    }
+
+    if (/load_extension\s*\(/i.test(trimmed)) {
+        throw new Error('Invalid SQL statement: load_extension is not allowed')
+    }
+}
+
+/**
  * Sanitize a file name to prevent path traversal attacks.
  * Strips common storage prefixes, extracts the basename, runs it through
  * the `sanitize-filename` package, and rejects anything that still looks unsafe.
