@@ -1,5 +1,7 @@
 FROM node:24-alpine
 
+ENV HOME=/home/node
+
 RUN apk add --update libc6-compat python3 make g++
 # needed for pdfjs-dist
 RUN apk add --no-cache build-base cairo-dev pango-dev

@@ -27,6 +27,10 @@ ENV NODE_OPTIONS=--max-old-space-size=8192
 
 WORKDIR /usr/src/flowise
 
+# Keep Node's home directory aligned with the non-root runtime user. Flowise
+# stores its default data under ~/.flowise.
+ENV HOME=/home/node
+
 # Copy app source
 COPY . .
 

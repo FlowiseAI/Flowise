@@ -21,6 +21,8 @@ RUN npm install -g flowise && npm --prefix "$(npm root -g)/flowise" dedupe
 # Stage 2: Runtime stage
 FROM node:${NODE_VERSION}-alpine
 
+ENV HOME=/home/node
+
 # Install runtime dependencies
 RUN apk add --no-cache chromium git python3 py3-pip make g++ build-base cairo-dev pango-dev curl
 
