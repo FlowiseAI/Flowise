@@ -48,6 +48,7 @@ import { AddWebhookSecretToChatFlow1776240000002 } from './1776240000002-AddWebh
 import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpServer'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
+import { AddConversationSummaryBufferState1783987200000 } from './1783987200000-AddConversationSummaryBufferState'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mysql/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/mysql/1720230151484-AddWorkspace'
@@ -122,5 +123,6 @@ export const mysqlMigrations = [
     AddWebhookSecretToChatFlow1776240000002,
     AddCustomMcpServer1766000000000,
     AddMcpServerConfigToChatFlow1767000000000,
-    AddScheduleEntities1772000000000
+    AddScheduleEntities1772000000000,
+    AddConversationSummaryBufferState1783987200000
 ]

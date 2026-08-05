@@ -11,6 +11,7 @@ import { utilAddChatMessage } from '../../utils/addChatMesage'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { updateStorageUsage } from '../../utils/quotaUsage'
+import { invalidateConversationSummaryBufferStates } from '../../utils/conversationSummaryBufferState'
 
 // Add chatmessages for chatflowid
 const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
@@ -117,6 +118,15 @@ const removeAllChatMessages = async (
 ): Promise<DeleteResult> => {
     try {
         const appServer = getRunningExpressApp()
+        const chatMessageRepository = appServer.AppDataSource.getRepository(ChatMessage)
+        const affectedMessages = await chatMessageRepository.find({
+            select: ['sessionId'],
+            where: deleteOptions
+        })
+        const sessionIds = Array.from(
+            new Set(affectedMessages.map((message) => message.sessionId).filter((id): id is string => Boolean(id)))
+        )
+        await invalidateConversationSummaryBufferStates(appServer.AppDataSource, chatflowid, sessionIds)
 
         // Remove all related feedback records
         const feedbackDeleteOptions: FindOptionsWhere<ChatMessageFeedback> = { chatId }
@@ -131,7 +141,7 @@ const removeAllChatMessages = async (
                 // Don't throw error if file deletion fails because file might not exist
             }
         }
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
+        const dbResponse = await chatMessageRepository.delete(deleteOptions)
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -155,6 +165,8 @@ const removeChatMessagesByMessageIds = async (
         // Get messages before deletion to check for executionId
         const messages = await appServer.AppDataSource.getRepository(ChatMessage).findByIds(messageIds)
         const executionIds = messages.map((msg) => msg.executionId).filter(Boolean)
+        const sessionIds = Array.from(new Set(messages.map((message) => message.sessionId).filter((id): id is string => Boolean(id))))
+        await invalidateConversationSummaryBufferStates(appServer.AppDataSource, chatflowid, sessionIds)
 
         for (const [composite_key] of chatIdMap) {
             const [chatId] = composite_key.split('_')

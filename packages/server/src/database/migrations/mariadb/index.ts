@@ -47,6 +47,7 @@ import { AddCustomMcpServer1766000000000 } from './1766000000000-AddCustomMcpSer
 import { AddWebhookSecretToChatFlow1776240000003 } from './1776240000003-AddWebhookSecretToChatFlow'
 import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
 import { AddScheduleEntities1772000000000 } from './1772000000000-AddScheduleEntities'
+import { AddConversationSummaryBufferState1783987200000 } from './1783987200000-AddConversationSummaryBufferState'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mariadb/1720230151482-AddAuthTables'
 import { AddWorkspace1725437498242 } from '../../../enterprise/database/migrations/mariadb/1725437498242-AddWorkspace'
@@ -120,5 +121,6 @@ export const mariadbMigrations = [
     AddCustomMcpServer1766000000000,
     AddWebhookSecretToChatFlow1776240000003,
     AddMcpServerConfigToChatFlow1767000000000,
-    AddScheduleEntities1772000000000
+    AddScheduleEntities1772000000000,
+    AddConversationSummaryBufferState1783987200000
 ]
