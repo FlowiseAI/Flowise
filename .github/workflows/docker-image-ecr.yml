@@ -35,9 +35,12 @@ jobs:
         steps:
             - name: Set default values
               id: defaults
+              env:
+                  NODE_VERSION_INPUT: ${{ github.event.inputs.node_version || '24' }}
+                  TAG_VERSION_INPUT: ${{ github.event.inputs.tag_version || 'latest' }}
               run: |
-                  echo "node_version=${{ github.event.inputs.node_version || '24' }}" >> $GITHUB_OUTPUT
-                  echo "tag_version=${{ github.event.inputs.tag_version || 'latest' }}" >> $GITHUB_OUTPUT
+                  echo "node_version=${NODE_VERSION_INPUT}" >> $GITHUB_OUTPUT
+                  echo "tag_version=${TAG_VERSION_INPUT}" >> $GITHUB_OUTPUT
 
             - name: Checkout
               uses: actions/checkout@v6.0.2

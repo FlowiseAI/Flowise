@@ -2,9 +2,10 @@ import { MoreThanOrEqual, LessThanOrEqual, Between, In, QueryRunner } from 'type
 import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
+import { ChatFlow } from '../../database/entities/ChatFlow'
+import { DocumentStore } from '../../database/entities/DocumentStore'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import chatflowsService from '../chatflows'
 
 const getAllUpsertHistory = async (
     sortOrder: string | undefined,
@@ -80,8 +81,25 @@ const patchDeleteUpsertHistory = async (ids: string[] = [], workspaceId: string)
                 )
             }
 
-            const chatflowIds = [...new Set(rows.map((r) => r.chatflowid))]
-            await chatflowsService.assertChatflowIdsInWorkspace(chatflowIds, workspaceId, queryRunner)
+            const resourceIds = [...new Set(rows.map((r) => r.chatflowid))]
+
+            const chatflowRepo = queryRunner.manager.getRepository(ChatFlow)
+            const foundChatflows = await chatflowRepo.find({ where: { id: In(resourceIds), workspaceId }, select: ['id'] })
+            const foundChatflowIds = new Set(foundChatflows.map((c) => c.id))
+            const remainingIds = resourceIds.filter((id) => !foundChatflowIds.has(id))
+
+            if (remainingIds.length > 0) {
+                const docStoreRepo = queryRunner.manager.getRepository(DocumentStore)
+                const foundDocStores = await docStoreRepo.find({ where: { id: In(remainingIds), workspaceId }, select: ['id'] })
+                const foundDocStoreIds = new Set(foundDocStores.map((d) => d.id))
+                const unauthorizedIds = remainingIds.filter((id) => !foundDocStoreIds.has(id))
+                if (unauthorizedIds.length > 0) {
+                    throw new InternalFlowiseError(
+                        StatusCodes.NOT_FOUND,
+                        'Error: upsertHistoryServices.patchDeleteUpsertHistory - one or more upsert history records were not found in the workspace!'
+                    )
+                }
+            }
 
             const deleteResult = await repo.delete({ id: In(uniqueIds) })
             await queryRunner.commitTransaction()

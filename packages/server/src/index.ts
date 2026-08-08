@@ -14,6 +14,7 @@ import { Organization } from './enterprise/database/entities/organization.entity
 import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { LoggedInUser } from './enterprise/Interface.Enterprise'
 import { initializeJwtCookieMiddleware, verifyToken, verifyTokenForBullMQDashboard } from './enterprise/middleware/passport'
+import { checkPermission } from './enterprise/rbac/PermissionCheck'
 import { initAuthSecrets } from './enterprise/utils/authSecrets'
 import { IdentityManager } from './IdentityManager'
 import { MODE, Platform } from './Interface'
@@ -347,7 +348,13 @@ export class App {
             )
 
             const rateLimiter = this.rateLimiterManager.getRateLimiterById(id)
-            this.app.use('/admin/queues', rateLimiter, verifyTokenForBullMQDashboard, this.queueManager.getBullBoardRouter())
+            this.app.use(
+                '/admin/queues',
+                rateLimiter,
+                verifyTokenForBullMQDashboard,
+                checkPermission('admin:queues'),
+                this.queueManager.getBullBoardRouter()
+            )
         }
 
         // ----------------------------------------

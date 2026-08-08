@@ -51,6 +51,9 @@ if (USE_AWS_SECRETS_MANAGER) {
 
 /*
  * List of dependencies allowed to be import in @flowiseai/nodevm
+ *
+ * Do NOT add 'puppeteer' or 'playwright' here (or via TOOL_FUNCTION_EXTERNAL_DEP): their launch()
+ * APIs forward executablePath/args to child_process.spawn, which is a sandbox escape.
  */
 export const availableDependencies = [
     '@aws-sdk/client-bedrock-runtime',
@@ -86,7 +89,6 @@ export const availableDependencies = [
     '@qdrant/js-client-rest',
     '@supabase/supabase-js',
     '@upstash/redis',
-    '@zilliz/milvus2-sdk-node',
     'apify-client',
     'cheerio',
     'chromadb',
@@ -97,7 +99,6 @@ export const availableDependencies = [
     'google-auth-library',
     'graphql',
     'html-to-text',
-    'ioredis',
     'langchain',
     'langfuse',
     'langsmith',
@@ -105,24 +106,17 @@ export const availableDependencies = [
     'linkifyjs',
     'lunary',
     'mammoth',
-    'mongodb',
-    'mysql2',
     'node-html-markdown',
     'notion-to-md',
     'openai',
     'pdf-parse',
     'pdfjs-dist',
-    'pg',
-    'playwright',
-    'puppeteer',
-    'redis',
     'replicate',
     'srt-parser-2',
-    'typeorm',
     'weaviate-client'
 ]
 
-const defaultAllowExternalDependencies = ['axios', 'moment', 'node-fetch']
+const defaultAllowExternalDependencies = ['axios', 'node-fetch']
 
 export const defaultAllowBuiltInDep = ['assert', 'buffer', 'crypto', 'events', 'path', 'querystring', 'timers', 'url', 'zlib']
 
@@ -1780,6 +1774,7 @@ export const executeJavaScriptCode = async (
             },
             eval: false,
             wasm: false,
+            fixAsync: true,
             timeout: timeoutMs
         }
 
@@ -1789,7 +1784,8 @@ export const executeJavaScriptCode = async (
             ...nodeVMOptions,
             require: defaultNodeVMOptions.require,
             eval: false,
-            wasm: false
+            wasm: false,
+            fixAsync: true
         }
 
         const vm = new NodeVM(finalNodeVMOptions)

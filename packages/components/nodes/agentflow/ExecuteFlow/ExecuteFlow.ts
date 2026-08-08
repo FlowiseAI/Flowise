@@ -10,6 +10,7 @@ import {
 import { AxiosRequestConfig } from 'axios'
 import { secureAxiosRequest } from '../../../src/httpSecurity'
 import { getCredentialData, getCredentialParam, processTemplateVariables, parseJsonBody } from '../../../src/utils'
+import { isValidURL } from '../../../src/validator'
 import { DataSource } from 'typeorm'
 import { BaseMessageLike } from '@langchain/core/messages'
 import { updateFlowState } from '../utils'
@@ -182,6 +183,8 @@ class ExecuteFlow_Agentflow implements INode {
         try {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const chatflowApiKey = getCredentialParam('chatflowApiKey', credentialData, nodeData)
+
+            if (!baseURL || !isValidURL(baseURL)) throw new Error('Invalid base URL: must be a valid URL')
 
             if (selectedFlowId === options.chatflowid) throw new Error('Cannot call the same agentflow!')
 

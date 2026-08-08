@@ -3,6 +3,9 @@ import { getBaseClasses, getUserHome } from '../../../src/utils'
 import { ListKeyOptions, RecordManagerInterface, UpdateOptions } from '@langchain/community/indexes/base'
 import { DataSource } from 'typeorm'
 import path from 'path'
+import { mergeDataSourceOptions, sanitizeDataSourceOptions } from '../../../src/sanitizeDataSourceOptions'
+import { sanitizeRecordManagerNamespace, sanitizeRecordManagerTableName } from '../../../src/recordManagerSecurity'
+import { validateSQLitePath } from '../../../src/validator'
 
 class SQLiteRecordManager_RecordManager implements INode {
     label: string
@@ -36,6 +39,8 @@ class SQLiteRecordManager_RecordManager implements INode {
                 label: 'Additional Connection Configuration',
                 name: 'additionalConfig',
                 type: 'json',
+                description:
+                    'Optional TypeORM connection options (e.g. ssl, connectTimeout). entities, subscribers, migrations, and extra are not allowed.',
                 additionalParams: true,
                 optional: true
             },
@@ -98,10 +103,10 @@ class SQLiteRecordManager_RecordManager implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const _tableName = nodeData.inputs?.tableName as string
-        const tableName = _tableName ? _tableName : 'upsertion_records'
+        const tableName = sanitizeRecordManagerTableName(_tableName ? _tableName : 'upsertion_records')
         const additionalConfig = nodeData.inputs?.additionalConfig as string
         const _namespace = nodeData.inputs?.namespace as string
-        const namespace = _namespace ? _namespace : options.chatflowid
+        const namespace = _namespace ? sanitizeRecordManagerNamespace(_namespace) : options.chatflowid
         const cleanup = nodeData.inputs?.cleanup as string
         const _sourceIdKey = nodeData.inputs?.sourceIdKey as string
         const sourceIdKey = _sourceIdKey ? _sourceIdKey : 'source'
@@ -113,15 +118,18 @@ class SQLiteRecordManager_RecordManager implements INode {
             } catch (exception) {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
+            additionalConfiguration = sanitizeDataSourceOptions(additionalConfiguration)
         }
 
-        const database = path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite')
+        const database = validateSQLitePath(path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite'))
 
-        const sqliteOptions = {
-            database,
-            ...additionalConfiguration,
-            type: 'sqlite'
-        }
+        const sqliteOptions = mergeDataSourceOptions(
+            {
+                database,
+                type: 'sqlite'
+            },
+            additionalConfiguration
+        )
 
         const args = {
             sqliteOptions,
@@ -156,15 +164,7 @@ class SQLiteRecordManager implements RecordManagerInterface {
     }
 
     sanitizeTableName(tableName: string): string {
-        // Trim and normalize case, turn whitespace into underscores
-        tableName = tableName.trim().toLowerCase().replace(/\s+/g, '_')
-
-        // Validate using a regex (alphanumeric and underscores only)
-        if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
-            throw new Error('Invalid table name')
-        }
-
-        return tableName
+        return sanitizeRecordManagerTableName(tableName)
     }
 
     private async getDataSource(): Promise<DataSource> {

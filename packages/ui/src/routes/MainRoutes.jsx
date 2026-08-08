@@ -53,7 +53,7 @@ const Evaluators = Loadable(lazy(() => import('@/views/evaluators')))
 const Account = Loadable(lazy(() => import('@/views/account')))
 
 // files routing
-const Files = Loadable(lazy(() => import('@/views/files')))
+// const Files = Loadable(lazy(() => import('@/views/files')))
 
 // logs routing
 const Logs = Loadable(lazy(() => import('@/views/serverlogs')))
