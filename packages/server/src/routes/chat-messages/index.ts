@@ -7,12 +7,12 @@ const router = express.Router()
 // router.post(['/', '/:id'], chatMessageController.createChatMessage)
 
 // READ
-router.get(['/', '/:id'], chatMessageController.getAllChatMessages)
+router.get('/:id', chatMessageController.getAllChatMessages)
 
 // UPDATE
-router.put(['/abort/', '/abort/:chatflowid/:chatid'], chatMessageController.abortChatMessage)
+router.put('/abort/:chatflowid/:chatid', chatMessageController.abortChatMessage)
 
 // DELETE
-router.delete(['/', '/:id'], chatMessageController.removeAllChatMessages)
+router.delete('/:id', chatMessageController.removeAllChatMessages)
 
 export default router
