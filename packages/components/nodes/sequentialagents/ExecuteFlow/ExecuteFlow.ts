@@ -239,19 +239,20 @@ class ExecuteFlow_SeqAgents implements INode {
             // Create additional sandbox variables
             const additionalSandbox: ICommonObject = {
                 $callOptions: callOptions,
-                $callBody: body
+                $callBody: body,
+                $apiURL: `${baseURL}/api/v1/prediction/${selectedFlowId}`
             }
 
             const sandbox = createCodeExecutionSandbox(flowInput, variables, flow, additionalSandbox)
 
             const code = `
     const fetch = require('node-fetch');
-    const url = "${baseURL}/api/v1/prediction/${selectedFlowId}";
-    
+    const url = $apiURL;
+
     const body = $callBody;
-    
+
     const options = $callOptions;
-    
+
     try {
         const response = await fetch(url, options);
         const resp = await response.json();

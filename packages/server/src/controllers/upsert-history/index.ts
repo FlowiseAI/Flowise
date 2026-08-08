@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import chatflowsService from '../../services/chatflows'
+import documentStoreService from '../../services/documentstore'
 import upsertHistoryService from '../../services/upsert-history'
 
 const getAllUpsertHistory = async (req: Request, res: Response, next: NextFunction) => {
@@ -20,7 +21,22 @@ const getAllUpsertHistory = async (req: Request, res: Response, next: NextFuncti
                 'Error: upsertHistoryController.getAllUpsertHistory - chatflow id is required!'
             )
         }
-        await chatflowsService.getChatflowById(chatflowid, workspaceId)
+        let isAuthorized = true
+        try {
+            await chatflowsService.getChatflowById(chatflowid, workspaceId)
+        } catch (chatflowError) {
+            try {
+                await documentStoreService.getDocumentStoreById(chatflowid, workspaceId)
+            } catch (docStoreError) {
+                isAuthorized = false
+            }
+        }
+        if (!isAuthorized) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: upsertHistoryController.getAllUpsertHistory - resource ${chatflowid} not found in workspace!`
+            )
+        }
 
         const sortOrder = req.query?.order as string | undefined
         const startDate = req.query?.startDate as string | undefined

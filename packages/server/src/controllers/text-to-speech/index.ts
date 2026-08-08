@@ -38,6 +38,12 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             } else {
                 // Fallback: get workspaceId from chatflow when req.user.activeWorkspaceId is not set (from whitelist API)
                 chatflow = await chatflowsService.getChatflowById(chatflowId)
+                if (!chatflow.isPublic) {
+                    throw new InternalFlowiseError(
+                        StatusCodes.UNAUTHORIZED,
+                        `Error: textToSpeechController.generateTextToSpeech - unauthorized access to non-public chatflow!`
+                    )
+                }
                 workspaceId = chatflow.workspaceId
             }
 
@@ -199,13 +205,6 @@ const abortTextToSpeech = async (req: Request, res: Response) => {
         const ttsAbortId = `tts_${chatId}_${chatMessageId}`
         appServer.abortControllerPool.abort(ttsAbortId)
 
-        // Also abort the main chat flow AbortController for auto-TTS
-        const chatFlowAbortId = `${chatflowId}_${chatId}`
-        if (appServer.abortControllerPool.get(chatFlowAbortId)) {
-            appServer.abortControllerPool.abort(chatFlowAbortId)
-            appServer.sseStreamer.streamMetadataEvent(chatId, { chatId, chatMessageId })
-        }
-
         // Send abort event to client
         appServer.sseStreamer.streamTTSAbortEvent(chatId, chatMessageId)
 
@@ -225,7 +224,15 @@ const getVoices = async (req: Request, res: Response, next: NextFunction) => {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Error: textToSpeechController.getVoices - provider not provided!`)
         }
 
-        const voices = await textToSpeechService.getVoices(provider as any, credentialId as string)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: textToSpeechController.getVoices - workspace ${workspaceId} not found!`
+            )
+        }
+
+        const voices = await textToSpeechService.getVoices(provider as any, credentialId as string, workspaceId)
 
         return res.json(voices)
     } catch (error) {

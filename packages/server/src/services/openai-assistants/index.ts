@@ -12,11 +12,12 @@ import { getFileFromUpload, removeSpecificFileFromUpload } from 'flowise-compone
 // ----------------------------------------
 
 // List available assistants
-const getAllOpenaiAssistants = async (credentialId: string): Promise<any> => {
+const getAllOpenaiAssistants = async (credentialId: string, workspaceId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
+            id: credentialId,
+            workspaceId: workspaceId
         })
         if (!credential) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found in the database!`)
@@ -40,11 +41,12 @@ const getAllOpenaiAssistants = async (credentialId: string): Promise<any> => {
 }
 
 // Get assistant object
-const getSingleOpenaiAssistant = async (credentialId: string, assistantId: string): Promise<any> => {
+const getSingleOpenaiAssistant = async (credentialId: string, assistantId: string, workspaceId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
+            id: credentialId,
+            workspaceId: workspaceId
         })
         if (!credential) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found in the database!`)
@@ -82,10 +84,11 @@ const getSingleOpenaiAssistant = async (credentialId: string, assistantId: strin
     }
 }
 
-const uploadFilesToAssistant = async (credentialId: string, files: { filePath: string; fileName: string }[]) => {
+const uploadFilesToAssistant = async (credentialId: string, files: { filePath: string; fileName: string }[], workspaceId: string) => {
     const appServer = getRunningExpressApp()
     const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-        id: credentialId
+        id: credentialId,
+        workspaceId: workspaceId
     })
     if (!credential) {
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found in the database!`)

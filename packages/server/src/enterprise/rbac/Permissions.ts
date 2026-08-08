@@ -88,6 +88,7 @@ export class Permissions {
 
         const executionsCategory = new PermissionCategory('executions')
         executionsCategory.addPermission(new Permission('executions:view', 'View', true, true, true))
+        executionsCategory.addPermission(new Permission('executions:update', 'Update', true, true, true))
         executionsCategory.addPermission(new Permission('executions:delete', 'Delete', true, true, true))
         this.categories.push(executionsCategory)
 
@@ -130,6 +131,7 @@ export class Permissions {
         adminCategory.addPermission(new Permission('users:manage', 'Manage Users', false, true, true))
         adminCategory.addPermission(new Permission('roles:manage', 'Manage Roles', false, true, true))
         adminCategory.addPermission(new Permission('sso:manage', 'Manage SSO', false, true, false))
+        adminCategory.addPermission(new Permission('admin:queues', 'View & Manage Queues Dashboard', true, true, false))
         this.categories.push(adminCategory)
 
         const logsCategory = new PermissionCategory('logs')

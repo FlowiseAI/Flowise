@@ -50,7 +50,8 @@ const settings = {
             title: 'Upsert History',
             type: 'item',
             url: '',
-            icon: icons.IconDatabaseExport
+            icon: icons.IconDatabaseExport,
+            permission: 'chatflows:view'
         },
         {
             id: 'chatflowConfiguration',

@@ -12,7 +12,7 @@ import {
 } from '../../utils'
 import { checkStorage, updateStorageUsage } from '../../utils/quotaUsage'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { ChatFlow } from '../../database/entities/ChatFlow'
+import chatflowsService from '../chatflows'
 import { IDepthQueue, IReactFlowNode } from '../../Interface'
 import { ICommonObject, INodeData } from 'flowise-components'
 import { convertToOpenAIFunction } from '@langchain/core/utils/function_calling'
@@ -26,14 +26,9 @@ const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
 const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
 const TOOL_ARGS_PREFIX = '\n\n----FLOWISE_TOOL_ARGS----\n\n'
 
-const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessageId?: string) => {
+const buildAndInitTool = async (chatflowid: string, reqWorkspaceId?: string, _chatId?: string, _apiMessageId?: string) => {
     const appServer = getRunningExpressApp()
-    const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
-        id: chatflowid
-    })
-    if (!chatflow) {
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
-    }
+    const chatflow = await chatflowsService.getChatflowByIdForWorkspace(chatflowid, reqWorkspaceId)
 
     const chatId = _chatId || uuidv4()
     const apiMessageId = _apiMessageId || uuidv4()
@@ -156,12 +151,15 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     return agent
 }
 
-const getAgentTools = async (chatflowid: string): Promise<any> => {
+const getAgentTools = async (chatflowid: string, workspaceId?: string): Promise<any> => {
     try {
-        const agent = await buildAndInitTool(chatflowid)
+        const agent = await buildAndInitTool(chatflowid, workspaceId)
         const tools = agent.tools
         return tools.map(convertToOpenAIFunction)
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: openaiRealTimeService.getAgentTools - ${getErrorMessage(error)}`
@@ -171,13 +169,14 @@ const getAgentTools = async (chatflowid: string): Promise<any> => {
 
 const executeAgentTool = async (
     chatflowid: string,
+    workspaceId: string | undefined,
     chatId: string,
     toolName: string,
     inputArgs: string,
     apiMessageId?: string
 ): Promise<any> => {
     try {
-        const agent = await buildAndInitTool(chatflowid, chatId, apiMessageId)
+        const agent = await buildAndInitTool(chatflowid, workspaceId, chatId, apiMessageId)
         const tools = agent.tools
         const tool = tools.find((tool: any) => tool.name === toolName)
 
@@ -228,6 +227,9 @@ const executeAgentTool = async (
             artifacts
         }
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: openaiRealTimeService.executeAgentTool - ${getErrorMessage(error)}`

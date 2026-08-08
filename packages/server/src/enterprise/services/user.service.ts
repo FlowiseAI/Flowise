@@ -26,7 +26,10 @@ export const enum UserErrorMessage {
     USER_FOUND_MULTIPLE = 'User Found Multiple',
     INCORRECT_USER_EMAIL_OR_CREDENTIALS = 'Incorrect Email or Password',
     PASSWORDS_DO_NOT_MATCH = 'Passwords do not match',
-    EMAIL_CHANGE_USE_CONFIRM_LINK = 'Use the confirm email change link from your email to complete this action.'
+    EMAIL_CHANGE_USE_CONFIRM_LINK = 'Use the confirm email change link from your email to complete this action.',
+    USER_INVITED_PENDING_ACTIVATION = 'You have a pending invitation. Please check your email and complete the invitation to activate your account before signing in.',
+    SSO_IDENTITY_MISMATCH = 'This account is linked to a different sign-in method. Please use your original sign-in method, or contact your administrator to update it.',
+    SSO_SUBJECT_ID_MISSING = 'Your identity provider did not return a valid user identifier. Please contact your administrator.'
 }
 export class UserService {
     private telemetry: Telemetry
@@ -65,6 +68,10 @@ export class UserService {
         return await queryRunner.manager.findOneBy(User, { tempToken: token })
     }
 
+    public async bindSSOIdentity(userId: string, ssoProvider: string, ssoSubjectId: string, queryRunner: QueryRunner) {
+        return await queryRunner.manager.update(User, { id: userId }, { ssoProvider, ssoSubjectId })
+    }
+
     public validateUserStatus(status: string | undefined) {
         if (status && !Object.values(UserStatus).includes(status as UserStatus))
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_STATUS)
@@ -82,6 +89,8 @@ export class UserService {
 
     public async createNewUser(data: Partial<User>, queryRunner: QueryRunner) {
         const user = await this.readUserByEmail(data.email, queryRunner)
+        if (!user && getRunningExpressApp().identityManager.isCloud())
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'New registrations are currently closed.')
         if (user) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.USER_EMAIL_ALREADY_EXISTS)
         if (data.credential) data.credential = this.encryptUserCredential(data.credential)
         if (!data.name) data.name = data.email
