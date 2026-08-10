@@ -50,9 +50,9 @@ class PlivoMakeCallTool extends Tool {
                 return `Failed to place call (HTTP ${response.status}): ${JSON.stringify(data)}`
             }
 
-            return `Successfully fired call to ${destination}. Request UUID: ${data.request_uuid}`
+            return `Successfully placed call to ${destination}. Request UUID: ${data.request_uuid}`
         } catch (error) {
-            return `Failed to place call: ${error}`
+            return `Failed to place call: ${error instanceof Error ? error.message : String(error)}`
         }
     }
 }

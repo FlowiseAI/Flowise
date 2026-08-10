@@ -51,7 +51,7 @@ class PlivoSendSMSTool extends Tool {
             const messageUuid = Array.isArray(data.message_uuid) ? data.message_uuid.join(', ') : data.message_uuid
             return `Successfully queued SMS to ${this.dst}. Message UUID: ${messageUuid}`
         } catch (error) {
-            return `Failed to send SMS: ${error}`
+            return `Failed to send SMS: ${error instanceof Error ? error.message : String(error)}`
         }
     }
 }
@@ -96,7 +96,7 @@ class PlivoSendSMS_Tools implements INode {
                 name: 'dst',
                 type: 'string',
                 placeholder: '+14150000001',
-                description: 'Destination number in E.164 format. Multiple recipients are joined with a < character'
+                description: 'Destination number in E.164 format, for example +14150000001'
             }
         ]
     }
