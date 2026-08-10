@@ -1,8 +1,9 @@
 // SSOBase.ts
 import express from 'express'
 import passport from 'passport'
-import { IAssignedWorkspace, LoggedInUser } from '../Interface.Enterprise'
+import { IAssignedWorkspace, LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import auditService from '../services/audit'
 import { UserErrorMessage, UserService } from '../services/user.service'
 import { WorkspaceUserService } from '../services/workspace-user.service'
 import { WorkspaceUser } from '../database/entities/workspace-user.entity'
@@ -71,6 +72,26 @@ abstract class SSOBase {
                     // identity provider's email assertion, which is not equivalent proof.
                     throw new InternalFlowiseError(StatusCodes.FORBIDDEN, UserErrorMessage.USER_INVITED_PENDING_ACTIVATION)
                 }
+
+                const providerSubjectId = profile?.id
+                if (!providerSubjectId) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.SSO_SUBJECT_ID_MISSING)
+                }
+
+                if (user.ssoProvider && user.ssoSubjectId) {
+                    if (user.ssoProvider !== ssoProviderName || user.ssoSubjectId !== providerSubjectId) {
+                        await auditService.recordLoginActivity(
+                            user.email,
+                            LoginActivityCode.INVALID_LOGIN_MODE,
+                            UserErrorMessage.SSO_IDENTITY_MISMATCH,
+                            ssoProviderName
+                        )
+                        throw new InternalFlowiseError(StatusCodes.FORBIDDEN, UserErrorMessage.SSO_IDENTITY_MISMATCH)
+                    }
+                } else {
+                    await userService.bindSSOIdentity(user.id, ssoProviderName, providerSubjectId, queryRunner)
+                }
+
                 let wsUserOrUsers = await workspaceUserService.readWorkspaceUserByLastLogin(user?.id, queryRunner)
                 wu = Array.isArray(wsUserOrUsers) && wsUserOrUsers.length > 0 ? wsUserOrUsers[0] : (wsUserOrUsers as WorkspaceUser)
             }

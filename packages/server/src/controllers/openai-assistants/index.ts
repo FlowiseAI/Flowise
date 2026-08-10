@@ -19,7 +19,14 @@ const getAllOpenaiAssistants = async (req: Request, res: Response, next: NextFun
                 `Error: openaiAssistantsController.getAllOpenaiAssistants - credential not provided!`
             )
         }
-        const apiResponse = await openaiAssistantsService.getAllOpenaiAssistants(req.query.credential as string)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: openaiAssistantsController.getAllOpenaiAssistants - workspace ${workspaceId} not found!`
+            )
+        }
+        const apiResponse = await openaiAssistantsService.getAllOpenaiAssistants(req.query.credential as string, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -41,7 +48,18 @@ const getSingleOpenaiAssistant = async (req: Request, res: Response, next: NextF
                 `Error: openaiAssistantsController.getSingleOpenaiAssistant - credential not provided!`
             )
         }
-        const apiResponse = await openaiAssistantsService.getSingleOpenaiAssistant(req.query.credential as string, req.params.id)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: openaiAssistantsController.getSingleOpenaiAssistant - workspace ${workspaceId} not found!`
+            )
+        }
+        const apiResponse = await openaiAssistantsService.getSingleOpenaiAssistant(
+            req.query.credential as string,
+            req.params.id,
+            workspaceId
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -98,6 +116,13 @@ const uploadAssistantFiles = async (req: Request, res: Response, next: NextFunct
                 `Error: openaiAssistantsVectorStoreController.uploadFilesToAssistantVectorStore - credential not provided!`
             )
         }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: openaiAssistantsController.uploadAssistantFiles - workspace ${workspaceId} not found!`
+            )
+        }
         const files = req.files ?? []
         const uploadFiles: { filePath: string; fileName: string }[] = []
 
@@ -116,7 +141,7 @@ const uploadAssistantFiles = async (req: Request, res: Response, next: NextFunct
             }
         }
 
-        const apiResponse = await openaiAssistantsService.uploadFilesToAssistant(req.query.credential as string, uploadFiles)
+        const apiResponse = await openaiAssistantsService.uploadFilesToAssistant(req.query.credential as string, uploadFiles, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

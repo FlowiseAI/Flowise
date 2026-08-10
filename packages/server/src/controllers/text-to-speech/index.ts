@@ -224,7 +224,15 @@ const getVoices = async (req: Request, res: Response, next: NextFunction) => {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Error: textToSpeechController.getVoices - provider not provided!`)
         }
 
-        const voices = await textToSpeechService.getVoices(provider as any, credentialId as string)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: textToSpeechController.getVoices - workspace ${workspaceId} not found!`
+            )
+        }
+
+        const voices = await textToSpeechService.getVoices(provider as any, credentialId as string, workspaceId)
 
         return res.json(voices)
     } catch (error) {

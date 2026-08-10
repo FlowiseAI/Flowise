@@ -43,6 +43,9 @@ import HistoryEmptySVG from '@/assets/images/upsert_history_empty.svg'
 import vectorstoreApi from '@/api/vectorstore'
 import useApi from '@/hooks/useApi'
 
+// Rbac
+import { Available } from '@/ui-component/rbac/available'
+
 // Store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { baseURL } from '@/store/constant'
@@ -352,15 +355,17 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
                         </div>
                     </div>
                     {selected.length > 0 && (
-                        <Button
-                            sx={{ mt: 1, mb: 2 }}
-                            variant='outlined'
-                            onClick={handleRemoveHistory}
-                            color='error'
-                            startIcon={<IconTrash />}
-                        >
-                            Delete {selected.length} {selected.length === 1 ? 'row' : 'rows'}
-                        </Button>
+                        <Available permission='chatflows:update'>
+                            <Button
+                                sx={{ mt: 1, mb: 2 }}
+                                variant='outlined'
+                                onClick={handleRemoveHistory}
+                                color='error'
+                                startIcon={<IconTrash />}
+                            >
+                                Delete {selected.length} {selected.length === 1 ? 'row' : 'rows'}
+                            </Button>
+                        </Available>
                     )}
                     {chatflowUpsertHistory.length <= 0 && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>

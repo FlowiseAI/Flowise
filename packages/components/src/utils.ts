@@ -51,6 +51,9 @@ if (USE_AWS_SECRETS_MANAGER) {
 
 /*
  * List of dependencies allowed to be import in @flowiseai/nodevm
+ *
+ * Do NOT add 'puppeteer' or 'playwright' here (or via TOOL_FUNCTION_EXTERNAL_DEP): their launch()
+ * APIs forward executablePath/args to child_process.spawn, which is a sandbox escape.
  */
 export const availableDependencies = [
     '@aws-sdk/client-bedrock-runtime',

@@ -36,6 +36,12 @@ export class User {
     @Column({ type: 'varchar', length: 20, default: UserStatus.UNVERIFIED })
     status: string
 
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    ssoProvider?: string | null
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    ssoSubjectId?: string | null
+
     @CreateDateColumn()
     createdDate?: Date
 
