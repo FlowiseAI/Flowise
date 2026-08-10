@@ -17,7 +17,7 @@ function createNodeData(inputs: any): INodeData {
         label: 'Plivo Make Call',
         name: 'plivoMakeCall',
         type: 'PlivoMakeCall',
-        icon: 'plivo.png',
+        icon: 'plivo.svg',
         version: 1.0,
         category: 'Tools',
         baseClasses: ['PlivoMakeCall', 'Tool'],

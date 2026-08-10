@@ -73,7 +73,7 @@ class PlivoSendSMS_Tools implements INode {
         this.name = 'plivoSendSMS'
         this.version = 1.0
         this.type = 'PlivoSendSMS'
-        this.icon = 'plivo.png'
+        this.icon = 'plivo.svg'
         this.category = 'Tools'
         this.description = 'Send an SMS message using the Plivo Messaging API'
         this.baseClasses = [this.type, ...getBaseClasses(PlivoSendSMSTool)]

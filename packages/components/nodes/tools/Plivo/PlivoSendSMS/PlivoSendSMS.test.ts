@@ -17,7 +17,7 @@ function createNodeData(inputs: any): INodeData {
         label: 'Plivo Send SMS',
         name: 'plivoSendSMS',
         type: 'PlivoSendSMS',
-        icon: 'plivo.png',
+        icon: 'plivo.svg',
         version: 1.0,
         category: 'Tools',
         baseClasses: ['PlivoSendSMS', 'Tool'],

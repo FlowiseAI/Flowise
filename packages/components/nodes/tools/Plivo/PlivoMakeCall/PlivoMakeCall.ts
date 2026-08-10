@@ -74,7 +74,7 @@ class PlivoMakeCall_Tools implements INode {
         this.name = 'plivoMakeCall'
         this.version = 1.0
         this.type = 'PlivoMakeCall'
-        this.icon = 'plivo.png'
+        this.icon = 'plivo.svg'
         this.category = 'Tools'
         this.description = 'Place an outbound phone call using the Plivo Voice API'
         this.baseClasses = [this.type, ...getBaseClasses(PlivoMakeCallTool)]
