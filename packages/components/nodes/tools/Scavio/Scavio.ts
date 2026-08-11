@@ -92,7 +92,7 @@ class Scavio_Tools implements INode {
         this.icon = 'scavio.svg'
         this.category = 'Tools'
         this.description =
-            'Real-time search API for AI agents - 188 endpoints across 32 platforms (Google, YouTube, Amazon, Walmart, eBay, Zillow, Redfin, Booking, Airbnb, Indeed, Glassdoor, G2, SEC EDGAR, the Meta Ad Library, Reddit, TikTok, Instagram, Threads, X, LinkedIn and more) plus URL extraction, as clean JSON'
+            'Real-time search API for AI agents - 188 endpoints across 31 platforms (Google, YouTube, Amazon, Walmart, eBay, Zillow, Redfin, Booking, Airbnb, Indeed, Glassdoor, G2, SEC EDGAR, the Meta Ad Library, Reddit, TikTok, Instagram, Threads, X, LinkedIn and more) plus URL extraction, as clean JSON'
         this.inputs = [
             {
                 label: 'Platform',
