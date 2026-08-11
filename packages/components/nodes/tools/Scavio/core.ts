@@ -1626,7 +1626,7 @@ export const KUAISHOU_ENDPOINTS: ScavioEndpoint[] = [
             share_link: z
                 .string()
                 .describe(
-                    'A kuaishou.com or v.kuaishou.com share link. kwai.com links are NOT supported -- TikHub does not serve Kwai international.'
+                    'A kuaishou.com or v.kuaishou.com share link. kwai.com links are NOT supported: Kwai international is a separate property and is not covered.'
                 )
         })
     ),
