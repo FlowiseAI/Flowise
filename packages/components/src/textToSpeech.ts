@@ -11,6 +11,15 @@ const TextToSpeechType = {
     MINIMAX_TTS: 'minimax'
 }
 
+const MINIMAX_TTS_ENDPOINTS = {
+    global_en: 'https://api.minimax.io/v1/t2a_v2',
+    cn_zh: 'https://api.minimaxi.com/v1/t2a_v2'
+} as const
+
+export const getMiniMaxTTSEndpoint = (region?: string): string => {
+    return MINIMAX_TTS_ENDPOINTS[region === 'cn_zh' ? 'cn_zh' : 'global_en']
+}
+
 export const convertTextToSpeechStream = async (
     text: string,
     textToSpeechConfig: ICommonObject,
@@ -133,7 +142,7 @@ export const convertTextToSpeechStream = async (
                                 }
                             }
 
-                            const response = await fetch('https://api.minimax.io/v1/t2a_v2', {
+                            const response = await fetch(getMiniMaxTTSEndpoint(credentialData.miniMaxTTSRegion as string | undefined), {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',

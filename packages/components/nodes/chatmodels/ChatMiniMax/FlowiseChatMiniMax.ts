@@ -7,7 +7,7 @@ export interface ChatMiniMaxInput extends Partial<AnthropicInput>, BaseChatModel
 
 export class ChatMiniMax extends LangchainChatAnthropic {
     configuredModel: string
-    configuredMaxToken?: number
+    configuredMaxToken: number
     id: string
 
     constructor(id: string, fields?: ChatMiniMaxInput) {
@@ -23,7 +23,7 @@ export class ChatMiniMax extends LangchainChatAnthropic {
 
         this.id = id
         this.configuredModel = fields?.modelName || 'MiniMax-M3'
-        this.configuredMaxToken = fields?.maxTokens
+        this.configuredMaxToken = this.maxTokens
 
         // @langchain/anthropic defaults topP and topK to -1 as an "unset" sentinel and
         // always serialises them into the request body.  The real Anthropic API accepts
