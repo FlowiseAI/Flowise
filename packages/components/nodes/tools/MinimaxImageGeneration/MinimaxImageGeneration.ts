@@ -169,7 +169,7 @@ class MinimaxImageTool extends StructuredTool {
     private baseUrl: string
     private model: string
     private aspectRatio: string
-    private responseFormat: string
+    private outputFormat: string
     private promptOptimizer: boolean
     private n: number
 
@@ -179,7 +179,7 @@ class MinimaxImageTool extends StructuredTool {
         this.baseUrl = params.baseUrl
         this.model = params.model
         this.aspectRatio = params.aspectRatio
-        this.responseFormat = params.responseFormat
+        this.outputFormat = params.responseFormat
         this.promptOptimizer = params.promptOptimizer
         this.n = params.n
     }
@@ -189,7 +189,7 @@ class MinimaxImageTool extends StructuredTool {
             model: this.model,
             prompt,
             aspect_ratio: this.aspectRatio,
-            response_format: this.responseFormat,
+            response_format: this.outputFormat,
             prompt_optimizer: this.promptOptimizer,
             n: this.n
         }
@@ -214,7 +214,7 @@ class MinimaxImageTool extends StructuredTool {
             throw new Error(`MiniMax image generation failed: ${statusMsg}`)
         }
 
-        if (this.responseFormat === 'base64') {
+        if (this.outputFormat === 'base64') {
             const images = data?.data?.image_base64
             if (!Array.isArray(images) || images.length === 0) {
                 throw new Error('MiniMax returned no image data')
