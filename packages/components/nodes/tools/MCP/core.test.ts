@@ -5,7 +5,8 @@ import {
     validateEnvironmentVariables,
     validateMCPServerConfig,
     sanitizeMCPToolDescription,
-    sanitizeMCPToolName
+    sanitizeMCPToolName,
+    MCPToolkit
 } from './core'
 
 describe('MCP Security Validations', () => {
@@ -751,5 +752,15 @@ describe('sanitizeMCPToolName', () => {
         sanitizeMCPToolName('clean_name-123')
         expect(warnSpy).not.toHaveBeenCalled()
         warnSpy.mockRestore()
+    })
+})
+
+describe('MCPToolkit', () => {
+    it('explains how to configure a missing remote URL', async () => {
+        const toolkit = new MCPToolkit({ command: 'npx', args: ['some-server'] }, 'sse')
+
+        await expect(toolkit.createClient()).rejects.toThrow(
+            'URL is required for remote MCP transport. For stdio servers, set CUSTOM_MCP_PROTOCOL=stdio and provide command/args.'
+        )
     })
 })
