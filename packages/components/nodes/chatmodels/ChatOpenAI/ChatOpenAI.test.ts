@@ -38,7 +38,7 @@ describe('ChatOpenAI node', () => {
         jest.clearAllMocks()
     })
 
-    it('passes proxyUrl to the OpenAI client fetch dispatcher', async () => {
+    it('reuses the proxy dispatcher across init calls', async () => {
         ;(getCredentialData as jest.Mock).mockResolvedValue({ openAIApiKey: 'sk-test' })
         ;(getCredentialParam as jest.Mock).mockImplementation((key, credentialData) => credentialData[key])
 
@@ -74,6 +74,10 @@ describe('ChatOpenAI node', () => {
 
         expect(ProxyAgent).toHaveBeenCalledWith('http://corporate-proxy.example.com:3128')
         expect(ProxyAgent).toHaveBeenCalledTimes(1)
+        expect(ChatOpenAI).toHaveBeenCalledTimes(2)
+        expect(ChatOpenAI.mock.calls[1][1].configuration.fetchOptions.dispatcher).toBe(
+            ChatOpenAI.mock.calls[0][1].configuration.fetchOptions.dispatcher
+        )
         expect(ChatOpenAI).toHaveBeenCalledWith(
             'chatOpenAI_0',
             expect.objectContaining({
