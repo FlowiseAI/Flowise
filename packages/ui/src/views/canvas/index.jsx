@@ -113,6 +113,7 @@ const Canvas = () => {
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
     const getHasChatflowChangedApi = useApi(chatflowsApi.getHasChatflowChanged)
+    const saveInProgressRef = useRef(false)
 
     // ==============================|| Events & Actions ||============================== //
 
@@ -209,6 +210,10 @@ const Canvas = () => {
     }
 
     const handleSaveFlow = async (chatflowName) => {
+        if (saveInProgressRef.current || createNewChatflowApi.loading || updateChatflowApi.loading || getHasChatflowChangedApi.loading)
+            return
+        saveInProgressRef.current = true
+
         if (reactFlowInstance) {
             const nodes = reactFlowInstance.getNodes().map((node) => {
                 const nodeData = cloneDeep(node.data)
@@ -241,6 +246,8 @@ const Canvas = () => {
                 setFlowData(flowData)
                 getHasChatflowChangedApi.request(chatflow.id, lastUpdatedDateTime)
             }
+        } else {
+            saveInProgressRef.current = false
         }
     }
 
@@ -429,11 +436,13 @@ const Canvas = () => {
     // Create new chatflow successful
     useEffect(() => {
         if (createNewChatflowApi.data) {
+            saveInProgressRef.current = false
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
             window.history.replaceState(state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
+            saveInProgressRef.current = false
             errorFailed(`Failed to retrieve ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         }
 
@@ -443,10 +452,12 @@ const Canvas = () => {
     // Update chatflow successful
     useEffect(() => {
         if (updateChatflowApi.data) {
+            saveInProgressRef.current = false
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
             setLasUpdatedDateTime(updateChatflowApi.data.updatedDate)
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
+            saveInProgressRef.current = false
             errorFailed(`Failed to retrieve ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
         }
 
@@ -466,6 +477,7 @@ const Canvas = () => {
                 const isConfirmed = await confirm(confirmPayload)
 
                 if (!isConfirmed) {
+                    saveInProgressRef.current = false
                     return
                 }
             }
@@ -478,6 +490,8 @@ const Canvas = () => {
 
         if (getHasChatflowChangedApi.data) {
             checkIfHasChanged()
+        } else if (getHasChatflowChangedApi.error) {
+            saveInProgressRef.current = false
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -577,6 +591,7 @@ const Canvas = () => {
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
                             isAgentCanvas={isAgentCanvas}
+                            isSaveLoading={createNewChatflowApi.loading || updateChatflowApi.loading || getHasChatflowChangedApi.loading}
                         />
                     </Toolbar>
                 </AppBar>

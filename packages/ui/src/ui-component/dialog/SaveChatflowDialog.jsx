@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 import { Button, Dialog, DialogActions, DialogContent, OutlinedInput, DialogTitle } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 
-const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm, isSubmitting }) => {
     const portalElement = document.getElementById('portal')
 
     const [chatflowName, setChatflowName] = useState('')
@@ -21,9 +21,10 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             open={show}
             fullWidth
             maxWidth='xs'
-            onClose={onCancel}
+            onClose={isSubmitting ? undefined : onCancel}
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
+            disableEscapeKeyDown={isSubmitting}
             disableRestoreFocus // needed due to StrictMode
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
@@ -41,14 +42,16 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     value={chatflowName}
                     onChange={(e) => setChatflowName(e.target.value)}
                     onKeyDown={(e) => {
-                        if (isReadyToSave && e.key === 'Enter') onConfirm(e.target.value)
+                        if (!isSubmitting && isReadyToSave && e.key === 'Enter') onConfirm(e.target.value)
                     }}
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>{dialogProps.cancelButtonName}</Button>
-                <StyledButton disabled={!isReadyToSave} variant='contained' onClick={() => onConfirm(chatflowName)}>
-                    {dialogProps.confirmButtonName}
+                <Button disabled={isSubmitting} onClick={onCancel}>
+                    {dialogProps.cancelButtonName}
+                </Button>
+                <StyledButton disabled={!isReadyToSave || isSubmitting} variant='contained' onClick={() => onConfirm(chatflowName)}>
+                    {isSubmitting ? 'Saving...' : dialogProps.confirmButtonName}
                 </StyledButton>
             </DialogActions>
         </Dialog>
@@ -61,7 +64,8 @@ SaveChatflowDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    isSubmitting: PropTypes.bool
 }
 
 export default SaveChatflowDialog
