@@ -481,7 +481,8 @@ const Marketplace = () => {
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'end',
-                                            minWidth: 120
+                                            minWidth: 120,
+                                            maxWidth: 120
                                         }}
                                     >
                                         <InputLabel size='small' id='filter-badge-label'>
@@ -517,7 +518,8 @@ const Marketplace = () => {
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'end',
-                                            minWidth: 120
+                                            minWidth: 120,
+                                            maxWidth: 120
                                         }}
                                     >
                                         <InputLabel size='small' id='type-badge-label'>
@@ -553,7 +555,8 @@ const Marketplace = () => {
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'end',
-                                            minWidth: 120
+                                            minWidth: 120,
+                                            maxWidth: 120
                                         }}
                                     >
                                         <InputLabel size='small' id='type-fw-label'>
