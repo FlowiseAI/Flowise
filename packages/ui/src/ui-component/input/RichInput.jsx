@@ -6,6 +6,7 @@ import Placeholder from '@tiptap/extension-placeholder'
 import { mergeAttributes } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Markdown } from '@tiptap/markdown'
+import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
 import { styled } from '@mui/material/styles'
 import { Box } from '@mui/material'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
@@ -17,6 +18,40 @@ import { isHtmlContent, escapeXmlTags, unescapeXmlEntities, unescapeXmlTags } fr
 
 const lowlight = createLowlight(common)
 
+const MarkdownTable = Table.extend({
+    renderMarkdown: (node, h) => {
+        const rows =
+            node.content?.map((rowNode) =>
+                (rowNode.content || []).map((cellNode) =>
+                    (cellNode.content || [])
+                        .map((childNode) => h.renderChildren(childNode))
+                        .join(' ')
+                        .replace(/\s+/g, ' ')
+                        .trim()
+                        .replace(/\|/g, '\\|')
+                )
+            ) || []
+        const columnCount = rows.reduce((max, row) => Math.max(max, row.length), 0)
+
+        if (!columnCount) return ''
+
+        const renderRow = (row = []) =>
+            `| ${new Array(columnCount)
+                .fill(0)
+                .map((_, index) => row[index] || '')
+                .join(' | ')} |`
+
+        const headerRow = rows[0] || []
+        const bodyRows = rows.slice(1)
+
+        return [
+            renderRow(headerRow),
+            `| ${new Array(columnCount).fill('---').join(' | ')} |`,
+            ...bodyRows.map(renderRow)
+        ].join('\n')
+    }
+})
+
 // define your extension array
 const extensions = (
     availableNodesForVariable,
@@ -27,10 +62,19 @@ const extensions = (
     isNodeInsideInteration,
     useMarkdown
 ) => [
-    Markdown,
     StarterKit.configure({
         codeBlock: false,
         ...(!useMarkdown && { link: false })
+    }),
+    MarkdownTable,
+    TableRow,
+    TableHeader,
+    TableCell,
+    Markdown.configure({
+        markedOptions: {
+            gfm: true,
+            breaks: false
+        }
     }),
     CustomMention.configure({
         HTMLAttributes: {
