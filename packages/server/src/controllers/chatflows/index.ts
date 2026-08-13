@@ -171,6 +171,10 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
 
         const newChatFlow = new ChatFlow()
         Object.assign(newChatFlow, stripProtectedFields(body))
+        // Imported flows rely on the create API accepting the exported chatflow id.
+        if (Object.prototype.hasOwnProperty.call(body, 'id')) {
+            newChatFlow.id = body.id
+        }
 
         newChatFlow.workspaceId = workspaceId
         const apiResponse = await chatflowsService.saveChatflow(
