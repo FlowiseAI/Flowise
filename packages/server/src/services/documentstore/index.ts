@@ -1583,6 +1583,9 @@ const _createEmbeddingsObject = async (
 ): Promise<any> => {
     // prepare embedding node data
     const embeddingComponent = componentNodes[data.embeddingName]
+    if (!embeddingComponent || !embeddingComponent.filePath) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Embedding "${data.embeddingName}" not found in component nodes`)
+    }
     const embeddingNodeData: any = {
         inputs: { ...data.embeddingConfig },
         outputs: { output: 'document' },
@@ -1618,6 +1621,12 @@ const _createRecordManagerObject = async (
 ) => {
     // prepare record manager node data
     const recordManagerComponent = componentNodes[data.recordManagerName]
+    if (!recordManagerComponent || !recordManagerComponent.filePath) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Record Manager "${data.recordManagerName}" not found in component nodes`
+        )
+    }
     const rmNodeData: any = {
         inputs: { ...data.recordManagerConfig },
         id: `${recordManagerComponent.name}_0`,
@@ -1646,6 +1655,12 @@ const _createRecordManagerObject = async (
 
 const _createVectorStoreNodeData = (componentNodes: IComponentNodes, data: ICommonObject, embeddingObj: any, recordManagerObj?: any) => {
     const vectorStoreComponent = componentNodes[data.vectorStoreName]
+    if (!vectorStoreComponent) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Vector Store "${data.vectorStoreName}" not found in component nodes`
+        )
+    }
     const vStoreNodeData: any = {
         id: `${vectorStoreComponent.name}_0`,
         inputs: { ...data.vectorStoreConfig },
@@ -1679,7 +1694,14 @@ const _createVectorStoreObject = async (
     vStoreNodeData: INodeData,
     upsertHistory?: Record<string, any>
 ) => {
-    const vStoreNodeInstanceFilePath = componentNodes[data.vectorStoreName].filePath as string
+    const vectorStoreComponent = componentNodes[data.vectorStoreName]
+    if (!vectorStoreComponent || !vectorStoreComponent.filePath) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Vector Store "${data.vectorStoreName}" not found or filePath not configured in component nodes`
+        )
+    }
+    const vStoreNodeInstanceFilePath = vectorStoreComponent.filePath as string
     const vStoreNodeModule = await import(vStoreNodeInstanceFilePath)
     const vStoreNodeInstance = new vStoreNodeModule.nodeClass()
     if (upsertHistory) upsertHistory['flowData'] = saveUpsertFlowData(vStoreNodeData, upsertHistory)
