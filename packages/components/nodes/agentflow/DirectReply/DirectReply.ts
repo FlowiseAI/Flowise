@@ -1,4 +1,29 @@
 import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
+import { flatten } from 'lodash'
+
+const parseArtifacts = (value: unknown): ICommonObject[] => {
+    let artifacts = value
+
+    if (typeof artifacts === 'string') {
+        const trimmedValue = artifacts.trim()
+        if (!trimmedValue) return []
+
+        try {
+            artifacts = JSON.parse(trimmedValue)
+        } catch {
+            return []
+        }
+    }
+
+    const flattenedArtifacts = Array.isArray(artifacts) ? flatten(artifacts) : [artifacts]
+    return flattenedArtifacts.filter(
+        (artifact): artifact is ICommonObject =>
+            typeof artifact === 'object' &&
+            artifact !== null &&
+            typeof (artifact as ICommonObject).type === 'string' &&
+            typeof (artifact as ICommonObject).data === 'string'
+    )
+}
 
 class DirectReply_Agentflow implements INode {
     label: string
@@ -32,22 +57,41 @@ class DirectReply_Agentflow implements INode {
                 name: 'directReplyMessage',
                 type: 'string',
                 rows: 4,
-                acceptVariable: true
+                acceptVariable: true,
+                acceptNodeOutputAsVariable: true
+            },
+            {
+                label: 'Artifacts',
+                name: 'directReplyArtifacts',
+                type: 'string',
+                optional: true,
+                acceptVariable: true,
+                acceptNodeOutputAsVariable: true
             }
         ]
     }
 
     async run(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const directReplyMessage = nodeData.inputs?.directReplyMessage as string
+        const directReplyArtifacts = nodeData.inputs?.directReplyArtifacts
 
         const state = options.agentflowRuntime?.state as ICommonObject
         const chatId = options.chatId as string
         const isLastNode = options.isLastNode as boolean
         const isStreamable = isLastNode && options.sseStreamer !== undefined
+        const artifacts = parseArtifacts(directReplyArtifacts)
+        const messageArtifacts = artifacts.length > 0 ? [] : parseArtifacts(directReplyMessage)
+        const resolvedArtifacts = artifacts.length > 0 ? artifacts : messageArtifacts
+        const outputContent = messageArtifacts.length > 0 && directReplyMessage?.trim() ? ' ' : directReplyMessage
 
         if (isStreamable) {
             const sseStreamer: IServerSideEventStreamer = options.sseStreamer
-            sseStreamer.streamTokenEvent(chatId, directReplyMessage)
+            if (outputContent?.trim()) {
+                sseStreamer.streamTokenEvent(chatId, outputContent)
+            }
+            if (resolvedArtifacts.length > 0) {
+                sseStreamer.streamArtifactsEvent(chatId, resolvedArtifacts)
+            }
         }
 
         const returnOutput = {
@@ -55,7 +99,8 @@ class DirectReply_Agentflow implements INode {
             name: this.name,
             input: {},
             output: {
-                content: directReplyMessage
+                content: outputContent,
+                ...(resolvedArtifacts.length > 0 && { artifacts: resolvedArtifacts })
             },
             state
         }
