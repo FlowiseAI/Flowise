@@ -1,0 +1,198 @@
+import { BaseCache } from '@langchain/core/caches'
+import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+
+class ChatAGIone_ChatModels implements INode {
+    readonly baseURL: string = 'https://agione.pro/hyperone/xapi/api/v1'
+    label: string
+    name: string
+    version: number
+    type: string
+    icon: string
+    category: string
+    description: string
+    baseClasses: string[]
+    credential: INodeParams
+    inputs: INodeParams[]
+
+    constructor() {
+        this.label = 'AGIone'
+        this.name = 'chatAGIone'
+        this.version = 1.0
+        this.type = 'ChatAGIone'
+        this.icon = 'agione.svg'
+        this.category = 'Chat Models'
+        this.description = 'Wrapper around AGIone models that use the OpenAI-compatible Chat endpoint'
+        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['agioneApi']
+        }
+        this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
+            {
+                label: 'Model Name',
+                name: 'modelName',
+                type: 'string',
+                default: 'openai/GPT-5.5/c6fbe',
+                description:
+                    'Enter the model name (e.g., openai/GPT-5.5/c6fbe, anthropic/Claude-opus-4.7/a4d5d, deepseek/deepseek-v3.2/0000n)'
+            },
+            {
+                label: 'Temperature',
+                name: 'temperature',
+                type: 'number',
+                step: 0.1,
+                default: 0.7,
+                optional: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Max Tokens',
+                name: 'maxTokens',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Top Probability',
+                name: 'topP',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Frequency Penalty',
+                name: 'frequencyPenalty',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Presence Penalty',
+                name: 'presencePenalty',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Base Options',
+                name: 'baseOptions',
+                type: 'json',
+                optional: true,
+                additionalParams: true,
+                description: 'Additional options to pass to the AGIone client. This should be a JSON object.'
+            }
+        ]
+    }
+
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const temperature = nodeData.inputs?.temperature as string
+        const modelName = nodeData.inputs?.modelName as string
+        const maxTokens = nodeData.inputs?.maxTokens as string
+        const topP = nodeData.inputs?.topP as string
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
+        const presencePenalty = nodeData.inputs?.presencePenalty as string
+        const streaming = nodeData.inputs?.streaming as boolean
+        const baseOptions = nodeData.inputs?.baseOptions
+
+        if (nodeData.inputs?.credentialId) {
+            nodeData.credential = nodeData.inputs?.credentialId
+        }
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const agioneApiKey = getCredentialParam('agioneApiKey', credentialData, nodeData)
+
+        if (!agioneApiKey || agioneApiKey.trim() === '') {
+            throw new Error(
+                'AGIone Auth Token is missing or empty. Please provide a valid AGIone Auth Token in the credential configuration.'
+            )
+        }
+
+        if (!modelName || modelName.trim() === '') {
+            throw new Error('Model Name is required. Please enter a valid AGIone model name (e.g., openai/GPT-5.5/c6fbe).')
+        }
+
+        const cache = nodeData.inputs?.cache as BaseCache
+
+        const parseOptionalFloat = (value: unknown): number | undefined => {
+            if (value === undefined || value === null || value === '') return undefined
+            const parsedValue = typeof value === 'number' ? value : parseFloat(value as string)
+            return Number.isNaN(parsedValue) ? undefined : parsedValue
+        }
+
+        const parseOptionalInteger = (value: unknown): number | undefined => {
+            if (value === undefined || value === null || value === '') return undefined
+            const parsedValue = typeof value === 'number' ? value : parseInt(value as string, 10)
+            return Number.isNaN(parsedValue) ? undefined : parsedValue
+        }
+
+        const obj: ChatOpenAIFields = {
+            modelName,
+            openAIApiKey: agioneApiKey,
+            apiKey: agioneApiKey,
+            streaming: streaming ?? true
+        }
+
+        const parsedTemperature = parseOptionalFloat(temperature)
+        const parsedMaxTokens = parseOptionalInteger(maxTokens)
+        const parsedTopP = parseOptionalFloat(topP)
+        const parsedFrequencyPenalty = parseOptionalFloat(frequencyPenalty)
+        const parsedPresencePenalty = parseOptionalFloat(presencePenalty)
+
+        if (parsedTemperature !== undefined) obj.temperature = parsedTemperature
+        if (parsedMaxTokens !== undefined) obj.maxTokens = parsedMaxTokens
+        if (parsedTopP !== undefined) obj.topP = parsedTopP
+        if (parsedFrequencyPenalty !== undefined) obj.frequencyPenalty = parsedFrequencyPenalty
+        if (parsedPresencePenalty !== undefined) obj.presencePenalty = parsedPresencePenalty
+        if (cache) obj.cache = cache
+
+        let parsedBaseOptions: Record<string, unknown> | undefined = undefined
+
+        if (baseOptions) {
+            try {
+                const parsedOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+                if (parsedOptions && typeof parsedOptions === 'object' && !Array.isArray(parsedOptions)) {
+                    parsedBaseOptions = parsedOptions as Record<string, unknown>
+                    if ('baseURL' in parsedBaseOptions) {
+                        console.warn("The 'baseURL' parameter is not allowed when using the ChatAGIone node.")
+                        parsedBaseOptions.baseURL = undefined
+                    }
+                } else if (parsedOptions !== null) {
+                    throw new Error('BaseOptions must be a JSON object')
+                }
+            } catch (exception) {
+                throw new Error('Invalid JSON in the BaseOptions: ' + exception)
+            }
+        }
+
+        const model = new ChatOpenAI({
+            ...obj,
+            configuration: {
+                baseURL: this.baseURL,
+                ...parsedBaseOptions
+            }
+        })
+        return model
+    }
+}
+
+module.exports = { nodeClass: ChatAGIone_ChatModels }
