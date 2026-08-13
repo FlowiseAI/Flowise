@@ -1,0 +1,17 @@
+defaultDecision: deny
+
+rules:
+    - toolName: 'search_web'
+      decision: 'allow'
+      reason: 'Read-only search tool, safe to execute without approval'
+      matchArgs: {}
+
+    - toolName: 'send_email'
+      decision: 'escalate'
+      reason: 'Email tool has real-world consequences, requires human approval'
+      matchArgs: {}
+
+    - toolName: 'delete_record'
+      decision: 'deny'
+      reason: 'Destructive operations are permanently blocked by policy'
+      matchArgs: {}
