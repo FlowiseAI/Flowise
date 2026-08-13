@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import { getUniqueNodeId, showHideInputParams } from '@/utils/genericHelper'
 import { cloneDeep, isEqual } from 'lodash'
 import { SET_DIRTY } from '@/store/actions'
+import { recalculateDisabledNodes } from '@/utils/disabledNodes'
 
 const initialValue = {
     reactFlowInstance: null,
@@ -11,6 +12,7 @@ const initialValue = {
     duplicateNode: () => {},
     deleteNode: () => {},
     deleteEdge: () => {},
+    toggleNodeDisabled: () => {},
     onNodeDataChange: () => {}
 }
 
@@ -120,18 +122,49 @@ export const ReactFlowContext = ({ children }) => {
             }
         })
 
-        // Filter out all nodes and edges in a single operation
-        reactFlowInstance.setNodes((nodes) => nodes.filter((node) => !nodesToDelete.has(node.id)))
+        const remainingNodes = reactFlowInstance.getNodes().filter((node) => !nodesToDelete.has(node.id))
+        const remainingEdges = reactFlowInstance
+            .getEdges()
+            .filter((edge) => !nodesToDelete.has(edge.source) && !nodesToDelete.has(edge.target))
+        const recalculatedNodes = recalculateDisabledNodes(remainingNodes, remainingEdges)
 
-        // Remove all edges connected to any of the deleted nodes
-        reactFlowInstance.setEdges((edges) => edges.filter((edge) => !nodesToDelete.has(edge.source) && !nodesToDelete.has(edge.target)))
+        reactFlowInstance.setNodes(recalculatedNodes)
+        reactFlowInstance.setEdges(remainingEdges)
 
         dispatch({ type: SET_DIRTY })
     }
 
     const deleteEdge = (edgeid) => {
         deleteConnectedInput(edgeid, 'edge')
-        reactFlowInstance.setEdges(reactFlowInstance.getEdges().filter((edge) => edge.id !== edgeid))
+        const remainingEdges = reactFlowInstance.getEdges().filter((edge) => edge.id !== edgeid)
+        const recalculatedNodes = recalculateDisabledNodes(reactFlowInstance.getNodes(), remainingEdges)
+        reactFlowInstance.setNodes(recalculatedNodes)
+        reactFlowInstance.setEdges(remainingEdges)
+        dispatch({ type: SET_DIRTY })
+    }
+
+    const toggleNodeDisabled = (nodeid) => {
+        const nodes = reactFlowInstance.getNodes()
+        const edges = reactFlowInstance.getEdges()
+        const targetNode = nodes.find((node) => node.id === nodeid)
+        const shouldDisable = !(targetNode?.data?.disabled === true || targetNode?.data?.disabled === 'true')
+
+        const nextNodes = nodes.map((node) => {
+            if (node.id === nodeid) {
+                const { disabledBy, ...nextData } = node.data
+                return {
+                    ...node,
+                    data: {
+                        ...nextData,
+                        disabled: shouldDisable
+                    }
+                }
+            }
+            return node
+        })
+
+        const recalculatedNodes = recalculateDisabledNodes(nextNodes, edges)
+        reactFlowInstance.setNodes(recalculatedNodes)
         dispatch({ type: SET_DIRTY })
     }
 
@@ -252,6 +285,7 @@ export const ReactFlowContext = ({ children }) => {
                 deleteNode,
                 deleteEdge,
                 duplicateNode,
+                toggleNodeDisabled,
                 onAgentflowNodeStatusUpdate,
                 clearAgentflowNodeStatus,
                 onNodeDataChange

@@ -170,6 +170,8 @@ export interface INodeData extends INodeProperties {
     credential?: string
     instance?: any
     loadMethod?: string // method to load async options
+    disabled?: boolean
+    disabledBy?: string
 }
 
 export interface INodeCredential {

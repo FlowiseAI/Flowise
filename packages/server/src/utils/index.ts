@@ -206,6 +206,106 @@ export const constructGraphs = (
     return { graph, nodeDependencies }
 }
 
+export const isNodeDisabled = (node?: IReactFlowNode): boolean => {
+    const disabled = (node?.data as ICommonObject | undefined)?.disabled
+    return disabled === true || disabled === 'true'
+}
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const getDisabledNodeReferencePattern = (nodeId: string) => new RegExp('{{' + escapeRegExp(nodeId) + '\\.[^}]*}}', 'g')
+
+const removeDisabledNodeReferences = (value: unknown, disabledNodeIds: Set<string>): unknown => {
+    if (Array.isArray(value)) {
+        return value
+            .map((item) => removeDisabledNodeReferences(item, disabledNodeIds))
+            .filter((item) => item !== '' && item !== undefined && item !== null)
+    }
+
+    if (value && typeof value === 'object') {
+        const nextValue: ICommonObject = {}
+        for (const [key, nestedValue] of Object.entries(value)) {
+            nextValue[key] = removeDisabledNodeReferences(nestedValue, disabledNodeIds)
+        }
+        return nextValue
+    }
+
+    if (typeof value !== 'string') return value
+
+    let nextValue = value
+    for (const disabledNodeId of disabledNodeIds) {
+        nextValue = nextValue.replace(getDisabledNodeReferencePattern(disabledNodeId), '')
+    }
+    return nextValue
+}
+
+const getTransitiveDisabledNodeIds = (reactFlowNodes: IReactFlowNode[], reactFlowEdges: IReactFlowEdge[]): Set<string> => {
+    const disabledNodeIds = new Set(reactFlowNodes.filter(isNodeDisabled).map((node) => node.id))
+
+    if (!disabledNodeIds.size) return disabledNodeIds
+
+    const outgoingEdgesBySource = new Map<string, string[]>()
+    for (const edge of reactFlowEdges) {
+        const isToolEdge =
+            edge.targetHandle &&
+            (edge.targetHandle.includes('-input-tools-') ||
+                edge.targetHandle.split('-input-')[1]?.startsWith('tools-') ||
+                edge.targetHandle === 'tools' ||
+                edge.targetHandle.startsWith('tools-'))
+        const isModelEdge =
+            edge.targetHandle &&
+            (edge.targetHandle.includes('-input-model-') ||
+                edge.targetHandle.split('-input-')[1]?.startsWith('model-') ||
+                edge.targetHandle === 'model' ||
+                edge.targetHandle.startsWith('model-'))
+        if (isToolEdge || isModelEdge) continue
+
+        const targets = outgoingEdgesBySource.get(edge.source) ?? []
+        targets.push(edge.target)
+        outgoingEdgesBySource.set(edge.source, targets)
+    }
+
+    const queue = Array.from(disabledNodeIds)
+    for (let index = 0; index < queue.length; index += 1) {
+        const nodeId = queue[index]
+        const downstreamNodeIds = outgoingEdgesBySource.get(nodeId) ?? []
+
+        for (const downstreamNodeId of downstreamNodeIds) {
+            if (disabledNodeIds.has(downstreamNodeId)) continue
+            disabledNodeIds.add(downstreamNodeId)
+            queue.push(downstreamNodeId)
+        }
+    }
+
+    return disabledNodeIds
+}
+
+export const getExecutableFlowData = (reactFlowNodes: IReactFlowNode[] = [], reactFlowEdges: IReactFlowEdge[] = []) => {
+    const disabledNodeIds = getTransitiveDisabledNodeIds(reactFlowNodes, reactFlowEdges)
+
+    if (!disabledNodeIds.size) {
+        return {
+            nodes: reactFlowNodes,
+            edges: reactFlowEdges,
+            disabledNodeIds
+        }
+    }
+
+    const nodes = cloneDeep(reactFlowNodes)
+        .filter((node) => !disabledNodeIds.has(node.id))
+        .map((node) => ({
+            ...node,
+            data: {
+                ...node.data,
+                inputs: removeDisabledNodeReferences(node.data.inputs ?? {}, disabledNodeIds) as ICommonObject
+            }
+        }))
+
+    const edges = reactFlowEdges.filter((edge) => !disabledNodeIds.has(edge.source) && !disabledNodeIds.has(edge.target))
+
+    return { nodes, edges, disabledNodeIds }
+}
+
 /**
  * Get starting node and check if flow is valid
  * @param {INodeDependencies} nodeDependencies

@@ -30,7 +30,8 @@ import {
     getAppVersion,
     getMemorySessionId,
     getStartingNodes,
-    getTelemetryFlowObj
+    getTelemetryFlowObj,
+    getExecutableFlowData
 } from '../utils'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import logger from '../utils/logger'
@@ -130,8 +131,14 @@ export const executeUpsert = async ({
     /*** Get chatflows and prepare data  ***/
     const flowData = chatflow.flowData
     const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
-    const nodes = parsedFlowData.nodes
-    const edges = parsedFlowData.edges
+    const executableFlowData = getExecutableFlowData(parsedFlowData.nodes, parsedFlowData.edges)
+    const nodes = executableFlowData.nodes
+    const edges = executableFlowData.edges
+    if (executableFlowData.disabledNodeIds.size) {
+        logger.debug(
+            `[server]: [${orgId}]: Disabled nodes skipped during upsert: ${Array.from(executableFlowData.disabledNodeIds).join(', ')}`
+        )
+    }
 
     /*** Get session ID ***/
     const memoryNode = findMemoryNode(nodes, edges)

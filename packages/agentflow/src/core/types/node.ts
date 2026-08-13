@@ -44,6 +44,8 @@ export interface NodeData extends NodeDefinitionBase {
     id: string
     inputParams?: InputParam[] // Parameter definitions
     inputs?: Record<string, unknown> // Actual values entered by users
+    disabled?: boolean
+    disabledBy?: string
     // Status properties
     status?: ExecutionStatus
     error?: string

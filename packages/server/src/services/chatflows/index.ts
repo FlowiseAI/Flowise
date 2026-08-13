@@ -25,7 +25,8 @@ import {
     getAppVersion,
     getEndingNodes,
     getTelemetryFlowObj,
-    isFlowValidForStream
+    isFlowValidForStream,
+    getExecutableFlowData
 } from '../../utils'
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
 import { sanitizeAllowedUploadMimeTypesFromConfig } from '../../utils/fileValidation'
@@ -74,8 +75,9 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
         /*** Get Ending Node with Directed Graph  ***/
         const flowData = chatflow.flowData
         const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
-        const nodes = parsedFlowData.nodes
-        const edges = parsedFlowData.edges
+        const executableFlowData = getExecutableFlowData(parsedFlowData.nodes, parsedFlowData.edges)
+        const nodes = executableFlowData.nodes
+        const edges = executableFlowData.edges
         const { graph, nodeDependencies } = constructGraphs(nodes, edges)
 
         const endingNodes = getEndingNodes(nodeDependencies, graph, nodes)

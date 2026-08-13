@@ -3,7 +3,7 @@ import { Position } from 'reactflow'
 
 import { ButtonGroup, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconCopy, IconEdit, IconInfoCircle, IconTrash } from '@tabler/icons-react'
+import { IconCopy, IconEdit, IconInfoCircle, IconPlayerPause, IconPlayerPlay, IconTrash } from '@tabler/icons-react'
 
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 
@@ -14,16 +14,21 @@ export interface NodeToolbarActionsProps {
     nodeId: string
     nodeName: string
     isVisible: boolean
+    disabled?: boolean
+    disabledBy?: string
     onInfoClick?: () => void
 }
 
 /**
  * Toolbar with action buttons for a node (duplicate, delete, info)
  */
-function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick }: NodeToolbarActionsProps) {
+function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, disabled, disabledBy, onInfoClick }: NodeToolbarActionsProps) {
     const theme = useTheme()
     const { isDarkMode } = useConfigContext()
-    const { deleteNode, duplicateNode } = useAgentflowContext()
+    const { deleteNode, duplicateNode, toggleNodeDisabled, state } = useAgentflowContext()
+    const nodes = state?.nodes || []
+    const disabledByNode = disabledBy ? nodes.find((n) => n.id === disabledBy) : null
+    const disabledByName = disabledByNode ? disabledByNode.data?.label || disabledByNode.data?.name : disabledBy
     const { openNodeEditor } = useOpenNodeEditor()
 
     const handleEditClick = () => {
@@ -60,6 +65,24 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick 
                         }}
                     >
                         <IconEdit size={20} />
+                    </IconButton>
+                )}
+                {nodeName !== 'stickyNoteAgentflow' && (
+                    <IconButton
+                        size='small'
+                        title={disabledBy ? `Disabled by upstream node: ${disabledByName}` : disabled ? 'Enable' : 'Disable'}
+                        onClick={() => {
+                            if (!disabledBy) {
+                                toggleNodeDisabled(nodeId)
+                            }
+                        }}
+                        disabled={!!disabledBy}
+                        sx={{
+                            color: isDarkMode ? 'white' : 'inherit',
+                            '&:hover': { color: theme.palette.warning.main }
+                        }}
+                    >
+                        {disabled ? <IconPlayerPlay size={20} /> : <IconPlayerPause size={20} />}
                     </IconButton>
                 )}
                 <IconButton

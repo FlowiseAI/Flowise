@@ -279,6 +279,8 @@ export interface INodeData extends INodeDataFromComponent {
     inputAnchors: INodeParams[]
     inputParams: INodeParams[]
     outputAnchors: INodeParams[]
+    disabled?: boolean
+    disabledBy?: string
 }
 
 export interface IReactFlowNode {
