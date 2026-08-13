@@ -441,7 +441,7 @@ export const resolveVariables = async (
             if (nodeData && nodeData.data) {
                 // Replace the reference with actual value
                 const nodeOutput = nodeData.data['output'] as ICommonObject
-                const actualValue = nodeOutput?.content ?? nodeOutput?.http?.data
+                const actualValue = nodeOutput?.content ?? nodeOutput?.http?.data ?? nodeOutput?.artifacts
                 // For arrays and objects, stringify them to prevent toString() conversion issues
                 const formattedValue =
                     Array.isArray(actualValue) || (typeof actualValue === 'object' && actualValue !== null)
