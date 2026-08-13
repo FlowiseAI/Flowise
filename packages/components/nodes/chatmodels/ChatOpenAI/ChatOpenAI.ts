@@ -280,9 +280,23 @@ class ChatOpenAI_ChatModels implements INode {
 
         if (baseOptions) {
             try {
-                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+                parsedBaseOptions = typeof baseOptions === 'object' ? { ...baseOptions } : JSON.parse(baseOptions)
             } catch (exception) {
                 throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
+            }
+        }
+
+        if (parsedBaseOptions?.stop) {
+            const { stop, ...restBaseOptions } = parsedBaseOptions
+            parsedBaseOptions = Object.keys(restBaseOptions).length ? restBaseOptions : undefined
+
+            if (!isReasoningModelOpenAI(modelName) && !obj.stop) {
+                obj.stop = Array.isArray(stop)
+                    ? stop.map((item) => String(item).trim()).filter(Boolean)
+                    : String(stop)
+                          .split(',')
+                          .map((item) => item.trim())
+                          .filter(Boolean)
             }
         }
 
