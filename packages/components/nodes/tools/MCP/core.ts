@@ -4,10 +4,36 @@ import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
 import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
+import { Readable } from 'node:stream'
+import type { Response as NodeFetchResponse } from 'node-fetch'
 import { checkDenyList, secureFetch } from '../../../src/httpSecurity'
 
 const DEFAULT_MCP_TOOL_DESCRIPTION_MAX_LENGTH = 1024
 const DEFAULT_MCP_TOOL_NAME_MAX_LENGTH = 128
+
+export function toWebReadableResponse(response: NodeFetchResponse): globalThis.Response {
+    const body = response.body
+    // EventSource rejects non-200 responses before reading their bodies, and
+    // the Fetch Response constructor disallows bodies for statuses such as 204.
+    if (response.status !== 200 || !body || typeof body.pipe !== 'function') {
+        return response as unknown as globalThis.Response
+    }
+
+    const headers: Record<string, string> = {}
+    response.headers.forEach((value, key) => {
+        headers[key] = value
+    })
+
+    return new globalThis.Response(Readable.toWeb(body as Readable) as any, {
+        status: response.status,
+        statusText: response.statusText,
+        headers
+    })
+}
+
+async function secureFetchForSse(url: string, init?: Parameters<typeof secureFetch>[1]): Promise<globalThis.Response> {
+    return toWebReadableResponse(await secureFetch(url, init))
+}
 
 function getMCPToolDescriptionMaxLength(): number {
     const parsed = Number(process.env.CUSTOM_MCP_TOOL_DESCRIPTION_MAX_LENGTH)
@@ -145,10 +171,10 @@ export class MCPToolkit extends BaseToolkit {
                         },
                         eventSourceInit: {
                             fetch: async (url, init) => {
-                                return secureFetch(url.toString(), {
+                                return secureFetchForSse(url.toString(), {
                                     ...(init as any),
                                     headers
-                                }) as any
+                                })
                             }
                         }
                     })
@@ -156,7 +182,7 @@ export class MCPToolkit extends BaseToolkit {
                     transport = new SSEClientTransport(baseUrl, {
                         eventSourceInit: {
                             fetch: async (url, init) => {
-                                return secureFetch(url.toString(), init as any) as any
+                                return secureFetchForSse(url.toString(), init as any)
                             }
                         }
                     })

@@ -5,8 +5,41 @@ import {
     validateEnvironmentVariables,
     validateMCPServerConfig,
     sanitizeMCPToolDescription,
-    sanitizeMCPToolName
+    sanitizeMCPToolName,
+    toWebReadableResponse
 } from './core'
+import { PassThrough } from 'node:stream'
+import { Response } from 'node-fetch'
+
+describe('toWebReadableResponse', () => {
+    it('converts a node-fetch stream while preserving response metadata', async () => {
+        const body = new PassThrough()
+        body.end('data: connected\n\n')
+        const response = new Response(body, {
+            status: 200,
+            statusText: 'OK',
+            headers: { 'content-type': 'text/event-stream', 'x-test': 'preserved' }
+        })
+
+        expect(typeof response.body?.pipe).toBe('function')
+        expect('getReader' in (response.body as object)).toBe(false)
+
+        const converted = toWebReadableResponse(response)
+
+        expect(typeof converted.body?.getReader).toBe('function')
+        expect(converted.status).toBe(200)
+        expect(converted.statusText).toBe('OK')
+        expect(converted.headers.get('content-type')).toBe('text/event-stream')
+        expect(converted.headers.get('x-test')).toBe('preserved')
+        await expect(converted.text()).resolves.toBe('data: connected\n\n')
+    })
+
+    it('leaves non-success responses for EventSource to reject by status', () => {
+        const response = new Response('not found', { status: 404 })
+
+        expect(toWebReadableResponse(response)).toBe(response)
+    })
+})
 
 describe('MCP Security Validations', () => {
     describe('validateCommandFlags', () => {
