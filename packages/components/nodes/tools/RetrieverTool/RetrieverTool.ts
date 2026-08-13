@@ -7,6 +7,7 @@ import { getBaseClasses, resolveFlowObjValue, parseWithTypeConversion } from '..
 import { SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { VectorStoreRetriever } from '@langchain/core/vectorstores'
+import { processSearchFilter } from '../../retrievers/WeaviateRetriever/HybridSearchRetriever'
 
 const howToUse = `Add additional filters to vector store. You can also filter with flow config, including the current "state":
 - \`$flow.sessionId\`
@@ -203,7 +204,17 @@ class Retriever_Tools implements INode {
 
                 if (newMetadataFilter && typeof newMetadataFilter === 'object' && Object.keys(newMetadataFilter).length > 0) {
                     const vectorStore = (retriever as VectorStoreRetriever<any>).vectorStore
-                    vectorStore.filter = newMetadataFilter
+                    if (vectorStore.constructor.name === 'WeaviateStore' || vectorStore.lc_namespace?.includes('weaviate')) {
+                        const client = (vectorStore as any).client
+                        const indexName = (vectorStore as any).indexName
+                        if (client && indexName) {
+                            const newWeaviateMetadataFilter = processSearchFilter(newMetadataFilter, client, indexName)
+                            const weaviateRetriever = retriever as VectorStoreRetriever
+                            weaviateRetriever.filter = newWeaviateMetadataFilter
+                        }
+                    } else {
+                        vectorStore.filter = newMetadataFilter
+                    }
                 }
             }
             const docs = await retriever.invoke(input)

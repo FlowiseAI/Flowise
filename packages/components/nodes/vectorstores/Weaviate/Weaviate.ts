@@ -5,9 +5,8 @@ import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam, normalizeKeysRecursively, parseJsonBody } from '../../../src/utils'
-import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
-import { VectorStore } from '@langchain/core/vectorstores'
+import { HybridSearchRetriever, processSearchFilter } from '../../retrievers/WeaviateRetriever/HybridSearchRetriever'
 
 /**
  * Parses a host string into host and optional port.
@@ -231,19 +230,92 @@ class Weaviate_VectorStores implements INode {
                 additionalParams: true,
                 optional: true,
                 acceptVariable: true
+            },
+            {
+                label: 'Search Type',
+                name: 'searchType',
+                type: 'options',
+                default: 'similarity',
+                options: [
+                    {
+                        label: 'Similarity',
+                        name: 'similarity'
+                    },
+                    {
+                        label: 'Max Marginal Relevance',
+                        name: 'mmr'
+                    },
+                    {
+                        label: 'Hybrid Search',
+                        name: 'hybrid'
+                    }
+                ],
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Fetch K',
+                name: 'fetchK',
+                description: 'Number of initial documents to fetch for MMR reranking. Default to 20. Used only when the search type is MMR',
+                placeholder: '20',
+                type: 'number',
+                additionalParams: true,
+                optional: true,
+                show: {
+                    searchType: ['mmr']
+                }
+            },
+            {
+                label: 'Lambda',
+                name: 'lambda',
+                description:
+                    'Number between 0 and 1 that determines the degree of diversity among the results, where 0 corresponds to maximum diversity and 1 to minimum diversity. Used only when the search type is MMR',
+                placeholder: '0.5',
+                type: 'number',
+                additionalParams: true,
+                optional: true,
+                show: {
+                    searchType: ['mmr']
+                }
+            },
+            {
+                label: 'Alpha',
+                name: 'alpha',
+                description:
+                    'Number between 0 and 1 that determines the weighting of keyword (BM25) portion of the hybrid search. A value of 1 is a pure vector search, while 0 is a pure keyword search.',
+                placeholder: '1',
+                type: 'number',
+                additionalParams: true,
+                optional: true,
+                show: {
+                    searchType: ['hybrid']
+                }
+            },
+            {
+                label: 'fusionType',
+                name: 'fusionType',
+                type: 'options',
+                default: 'RelativeScore',
+                description:
+                    "Method to merge results: 'Ranked' combines by document rank, while 'RelativeScore' combines by normalized scores.",
+                options: [
+                    {
+                        label: 'RelativeScore',
+                        name: 'RelativeScore'
+                    },
+                    {
+                        label: 'Ranked',
+                        name: 'Ranked'
+                    }
+                ],
+                additionalParams: true,
+                optional: true,
+                show: {
+                    searchType: ['hybrid']
+                }
             }
         ]
-        addMMRInputParams(this.inputs)
-        this.inputs.push({
-            label: 'Alpha (for Hybrid Search)',
-            name: 'alpha',
-            description:
-                'Number between 0 and 1 that determines the weighting of keyword (BM25) portion of the hybrid search. A value of 1 is a pure vector search, while 0 is a pure keyword search.',
-            placeholder: '1',
-            type: 'number',
-            additionalParams: true,
-            optional: true
-        })
+
         this.outputs = [
             {
                 label: 'Weaviate Retriever',
@@ -307,7 +379,7 @@ class Weaviate_VectorStores implements INode {
 
             try {
                 if (recordManager) {
-                    const vectorStore = (await WeaviateStore.fromExistingIndex(embeddings, obj)) as unknown as VectorStore
+                    const vectorStore = (await WeaviateStore.fromExistingIndex(embeddings, obj)) as unknown as WeaviateStore
                     await recordManager.createSchema()
                     const res = await index({
                         docsSource: finalDocs,
@@ -394,6 +466,12 @@ class Weaviate_VectorStores implements INode {
         const weaviateIndex = nodeData.inputs?.weaviateIndex as string
         const weaviateTextKey = nodeData.inputs?.weaviateTextKey as string
         const weaviateMetadataKeys = nodeData.inputs?.weaviateMetadataKeys as string
+        const output = nodeData.outputs?.output as string
+        const searchType = nodeData.inputs?.searchType as string
+        const fusionType = nodeData.inputs?.fusionType as string
+        const topK = nodeData.inputs?.topK as string
+        const k = topK ? parseInt(topK, 10) : 4
+        const alpha = nodeData.inputs?.alpha
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         let weaviateFilter = nodeData.inputs?.weaviateFilter
 
@@ -418,12 +496,45 @@ class Weaviate_VectorStores implements INode {
         if (weaviateTextKey) obj.textKey = weaviateTextKey
         if (weaviateMetadataKeys) obj.metadataKeys = JSON.parse(weaviateMetadataKeys.replace(/\s/g, ''))
         if (weaviateFilter) {
-            weaviateFilter = typeof weaviateFilter === 'object' ? weaviateFilter : parseJsonBody(weaviateFilter)
+            const rawFilter = typeof weaviateFilter === 'object' ? weaviateFilter : parseJsonBody(weaviateFilter)
+            weaviateFilter = processSearchFilter(rawFilter, client, weaviateIndex)
         }
 
-        const vectorStore = (await WeaviateStore.fromExistingIndex(embeddings, obj)) as unknown as VectorStore
+        const vectorStore = (await WeaviateStore.fromExistingIndex(embeddings, obj)) as unknown as WeaviateStore
 
-        return resolveVectorStoreOrRetriever(nodeData, vectorStore, weaviateFilter)
+        if (output === 'retriever') {
+            if ('mmr' === searchType) {
+                const fetchK = nodeData.inputs?.fetchK as string
+                const lambda = nodeData.inputs?.lambda as string
+                const f = fetchK ? parseInt(fetchK) : 20
+                const l = lambda ? parseFloat(lambda) : 0.5
+                return vectorStore.asRetriever({
+                    searchType: 'mmr',
+                    k: k,
+                    filter: weaviateFilter,
+                    searchKwargs: {
+                        fetchK: f,
+                        lambda: l
+                    }
+                })
+            } else if ('hybrid' === searchType) {
+                return new HybridSearchRetriever({
+                    vectorStore: vectorStore,
+                    alpha: alpha ? parseFloat(alpha) : 1,
+                    topK: k,
+                    fusionType: fusionType ?? 'RelativeScore',
+                    filter: weaviateFilter
+                })
+            } else {
+                return vectorStore.asRetriever({
+                    k: k,
+                    filter: weaviateFilter
+                })
+            }
+        } else if (output === 'vectorStore') {
+            ;(vectorStore as any).k = k
+            return vectorStore
+        }
     }
 }
 
