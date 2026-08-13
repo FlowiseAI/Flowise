@@ -1,4 +1,4 @@
-import { BaseMessage } from '@langchain/core/messages'
+import { BaseMessage, AIMessageChunk } from '@langchain/core/messages'
 import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from '@langchain/classic/memory'
 import { Moderation } from '../nodes/moderation/Moderation'
 
@@ -454,6 +454,13 @@ export interface IServerSideEventStreamer {
     streamTTSStartEvent(chatId: string, chatMessageId: string, format: string): void
     streamTTSDataEvent(chatId: string, chatMessageId: string, audioChunk: string): void
     streamTTSEndEvent(chatId: string, chatMessageId: string): void
+    /**
+     * Stream a governance event to the UI so policy decisions are surfaced as
+     * first-class artifacts in the chat interface, not just backend log lines.
+     * Implementations that do not yet support this method may leave it undefined;
+     * callers must guard with an existence check before invoking.
+     */
+    streamGovernanceEvent?(chatId: string, data: import('./governance/types').GovernanceEvent): void
 }
 
 export enum FollowUpPromptProvider {
@@ -493,4 +500,25 @@ export interface IHumanInput {
     type: 'proceed' | 'reject'
     startNodeId: string
     feedback?: string
+    /**
+     * Reviewer instruction for an escalated tool call.
+     * When present on a 'proceed' decision and non-empty, the agent loop discards the
+     * pending tool call and re-invokes the LLM with this string as a new user message,
+     * restarting reasoning from that point.
+     * When empty or absent, the tool executes with its original args (approve as-is).
+     */
+    modifiedArgs?: string
+}
+
+/** Shared return shape for handleToolCalls and handleResumedToolCalls in the Agent node. */
+export interface IAgentToolCallResult {
+    response: AIMessageChunk
+    usedTools: IUsedTool[]
+    sourceDocuments: ICommonObject[]
+    artifacts: ICommonObject[]
+    totalTokens: number
+    isWaitingForHumanInput?: boolean
+    pendingToolCalls?: Array<{ name: string; args: Record<string, unknown> }>
+    accumulatedReasonContent?: string
+    accumulatedReasoningDuration?: number
 }

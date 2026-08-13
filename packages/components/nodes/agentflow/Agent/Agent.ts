@@ -1,5 +1,6 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import {
+    IAgentToolCallResult,
     ICommonObject,
     IDatabaseEntity,
     IHumanInput,
@@ -42,6 +43,22 @@ import {
 } from '../../../src/utils'
 import { sanitizeFileName } from '../../../src/validator'
 import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
+import {
+    GovernanceConfig,
+    GovernanceMeta,
+    POLICY_DENY_PREFIX,
+    auditExecute,
+    auditHitl,
+    auditObserve,
+    auditPropose,
+    auditSessionEnd,
+    auditSessionStart,
+    buildGovernanceEvent,
+    gateToolCall,
+    generateTraceId,
+    wrapToolWithGovernance
+} from '../../../src/governance'
+import { GovernedTool } from '../../../src/governance/governedTool'
 
 interface ITool {
     agentSelectedTool: string
@@ -268,6 +285,53 @@ class Agent_Agentflow implements INode {
                         optional: true
                     }
                 ]
+            },
+            {
+                label: 'Enable Governance',
+                name: 'agentEnableGovernance',
+                type: 'boolean',
+                description:
+                    'Enforce policy checks inside the agent loop before each tool runs. Policies are loaded from a JSON file; escalations pause for human approval in chat.',
+                default: false,
+                optional: true,
+                client: ['agentflowv2']
+            },
+            {
+                label: 'Policy File Path',
+                name: 'agentPolicyFilePath',
+                type: 'string',
+                description: 'Path to JSON policy file (allow / deny / escalate rules)',
+                default: '/Users/riteshdubey/Developer/Github/Projects/Flowise/hackathon/agent-policies.json',
+                optional: true,
+                client: ['agentflowv2'],
+                show: {
+                    agentEnableGovernance: true
+                }
+            },
+            {
+                label: 'Audit Log Path',
+                name: 'agentAuditLogPath',
+                type: 'string',
+                description: 'Append-only JSONL audit log path',
+                default: '/Users/riteshdubey/Developer/Github/Projects/Flowise/audit.jsonl',
+                optional: true,
+                client: ['agentflowv2'],
+                show: {
+                    agentEnableGovernance: true
+                }
+            },
+            {
+                label: 'Governance Context (JSON)',
+                name: 'agentGovernanceContext',
+                type: 'string',
+                description: 'Runtime context for policy rules, e.g. {"user":"demo","environment":"dev"}',
+                rows: 3,
+                optional: true,
+                acceptVariable: true,
+                client: ['agentflowv2'],
+                show: {
+                    agentEnableGovernance: true
+                }
             },
             {
                 label: 'Knowledge (Document Stores)',
@@ -702,6 +766,13 @@ class Agent_Agentflow implements INode {
             // Extract tools
             const tools = nodeData.inputs?.agentTools as ITool[]
 
+            const governanceConfig = this.parseGovernanceConfig(nodeData)
+            const governanceMeta: GovernanceMeta = {
+                sessionId: options.sessionId as string | undefined,
+                chatId: options.chatId as string | undefined,
+                nodeId: nodeData.id
+            }
+
             const toolsInstance: Tool[] = []
             for (const tool of tools) {
                 const toolConfig = tool.agentSelectedToolConfig
@@ -726,13 +797,19 @@ class Agent_Agentflow implements INode {
                         if (tool.agentSelectedToolRequiresHumanInput) {
                             ;(subToolInstance as any).requiresHumanInput = true
                         }
-                        toolsInstance.push(subToolInstance)
+                        const pushedTool = governanceConfig
+                            ? (wrapToolWithGovernance(subToolInstance, governanceConfig, governanceMeta) as Tool)
+                            : subToolInstance
+                        toolsInstance.push(pushedTool)
                     }
                 } else {
                     if (tool.agentSelectedToolRequiresHumanInput) {
                         toolInstance.requiresHumanInput = true
                     }
-                    toolsInstance.push(toolInstance as Tool)
+                    const pushedTool = governanceConfig
+                        ? (wrapToolWithGovernance(toolInstance as Tool, governanceConfig, governanceMeta) as Tool)
+                        : (toolInstance as Tool)
+                    toolsInstance.push(pushedTool)
                 }
             }
 
@@ -796,7 +873,10 @@ class Agent_Agentflow implements INode {
                     }
                     const retrieverToolInstance = await newRetrieverToolNodeInstance.init(newRetrieverToolNodeData, '', options)
 
-                    toolsInstance.push(retrieverToolInstance as Tool)
+                    const wrappedRetrieverTool = governanceConfig
+                        ? (wrapToolWithGovernance(retrieverToolInstance as Tool, governanceConfig, governanceMeta) as Tool)
+                        : (retrieverToolInstance as Tool)
+                    toolsInstance.push(wrappedRetrieverTool)
 
                     const jsonSchema = toolSchemaToJsonSchema(retrieverToolInstance.schema)
                     const componentNode = options.componentNodes['retrieverTool']
@@ -868,7 +948,10 @@ class Agent_Agentflow implements INode {
                     }
                     const retrieverToolInstance = await newRetrieverToolNodeInstance.init(newRetrieverToolNodeData, '', options)
 
-                    toolsInstance.push(retrieverToolInstance as Tool)
+                    const wrappedRetrieverTool = governanceConfig
+                        ? (wrapToolWithGovernance(retrieverToolInstance as Tool, governanceConfig, governanceMeta) as Tool)
+                        : (retrieverToolInstance as Tool)
+                    toolsInstance.push(wrappedRetrieverTool)
 
                     const jsonSchema = toolSchemaToJsonSchema(retrieverToolInstance.schema)
                     const componentNode = options.componentNodes['retrieverTool']
@@ -1110,6 +1193,16 @@ class Agent_Agentflow implements INode {
             // Track execution time
             const startTime = Date.now()
 
+            // Bracket the full agent run in the audit log so consumers can group all
+            // tool invocations by session without relying on sessionId alone.
+            if (governanceConfig) {
+                auditSessionStart(governanceConfig, typeof input === 'string' ? input : JSON.stringify(input), {
+                    sessionId: options.sessionId as string | undefined,
+                    chatId: options.chatId as string | undefined,
+                    nodeId: nodeData.id
+                })
+            }
+
             // Get initial response from LLM
             const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
 
@@ -1131,7 +1224,8 @@ class Agent_Agentflow implements INode {
                     isStreamable,
                     isLastNode,
                     iterationContext,
-                    isStructuredOutput
+                    isStructuredOutput,
+                    governanceConfig
                 })
 
                 response = result.response
@@ -1207,7 +1301,8 @@ class Agent_Agentflow implements INode {
                     iterationContext,
                     isStructuredOutput,
                     accumulatedReasonContent: reasonContent,
-                    accumulatedReasoningDuration: thinkingDuration
+                    accumulatedReasoningDuration: thinkingDuration,
+                    governanceConfig
                 })
 
                 response = result.response
@@ -1269,8 +1364,6 @@ class Agent_Agentflow implements INode {
             // Calculate execution time
             const endTime = Date.now()
             const timeDelta = endTime - startTime
-
-            // Update flow state if needed
             let newState = { ...state }
             if (_agentUpdateState && Array.isArray(_agentUpdateState) && _agentUpdateState.length > 0) {
                 newState = updateFlowState(state, _agentUpdateState)
@@ -1503,6 +1596,15 @@ class Agent_Agentflow implements INode {
             }
 
             // Prepare and return the final output
+            // Close the session bracket in the audit log before returning.
+            if (governanceConfig) {
+                auditSessionEnd(governanceConfig, finalResponse, usedTools.length, {
+                    sessionId: options.sessionId as string | undefined,
+                    chatId: options.chatId as string | undefined,
+                    nodeId: nodeData.id
+                })
+            }
+
             return {
                 id: nodeData.id,
                 name: this.name,
@@ -2150,7 +2252,8 @@ class Agent_Agentflow implements INode {
         iterationContext,
         isStructuredOutput = false,
         accumulatedReasonContent: initialAccumulatedReasonContent,
-        accumulatedReasoningDuration: initialAccumulatedReasoningDuration
+        accumulatedReasoningDuration: initialAccumulatedReasoningDuration,
+        governanceConfig
     }: {
         response: AIMessageChunk
         messages: BaseMessageLike[]
@@ -2167,21 +2270,13 @@ class Agent_Agentflow implements INode {
         isStructuredOutput?: boolean
         accumulatedReasonContent?: string
         accumulatedReasoningDuration?: number
-    }): Promise<{
-        response: AIMessageChunk
-        usedTools: IUsedTool[]
-        sourceDocuments: Array<any>
-        artifacts: any[]
-        totalTokens: number
-        isWaitingForHumanInput?: boolean
-        accumulatedReasonContent?: string
-        accumulatedReasoningDuration?: number
-    }> {
+        governanceConfig?: GovernanceConfig
+    }): Promise<IAgentToolCallResult> {
         // Track total tokens used throughout this process
         let totalTokens = response.usage_metadata?.total_tokens || 0
         const usedTools: IUsedTool[] = []
-        let sourceDocuments: Array<any> = []
-        let artifacts: any[] = []
+        let sourceDocuments: ICommonObject[] = []
+        let artifacts: ICommonObject[] = []
         let isWaitingForHumanInput: boolean | undefined
         // Use reasoning from caller (first turn); subsequent turns are added when we get newResponse
         let accumulatedReasonContent = initialAccumulatedReasonContent ?? ''
@@ -2249,6 +2344,89 @@ class Agent_Agentflow implements INode {
                     state: options.agentflowRuntime?.state
                 }
 
+                const toolArgs = (toolCall.args || {}) as Record<string, unknown>
+
+                // Each tool invocation gets its own traceId that correlates all audit steps:
+                // propose → policy_decision → [hitl] → execute → observe
+                let toolTraceId: string | undefined
+
+                if (governanceConfig) {
+                    // 1. PROPOSE — record the agent's intent before any policy check
+                    toolTraceId = auditPropose({
+                        tool: toolCall.name,
+                        args: toolArgs,
+                        governance: governanceConfig,
+                        sessionId: options.sessionId,
+                        chatId: options.chatId,
+                        nodeId: governanceConfig.context?.nodeId as string | undefined
+                    })
+
+                    // 2. POLICY CHECK — evaluate rules; first match wins
+                    const decision = gateToolCall({
+                        tool: toolCall.name,
+                        args: toolArgs,
+                        governance: governanceConfig,
+                        sessionId: options.sessionId,
+                        chatId: options.chatId,
+                        nodeId: governanceConfig.context?.nodeId as string | undefined,
+                        traceId: toolTraceId
+                    })
+
+                    // Stream the policy decision as a first-class UI event
+                    const govEvent = buildGovernanceEvent('policy_decision', toolTraceId, toolCall.name, toolArgs, decision)
+                    sseStreamer?.streamGovernanceEvent?.(chatId, govEvent)
+
+                    if (decision.effect === 'deny') {
+                        const denyObservation = POLICY_DENY_PREFIX + decision.message
+                        messages.push({
+                            role: 'tool',
+                            content: denyObservation,
+                            tool_call_id: toolCall.id,
+                            name: toolCall.name
+                        })
+                        usedTools.push({
+                            tool: toolCall.name,
+                            toolInput: toolArgs,
+                            toolOutput: denyObservation
+                        })
+                        continue
+                    }
+
+                    if (decision.effect === 'escalate') {
+                        // Collect ALL remaining tool calls in this batch as pending so the
+                        // reviewer sees the full picture, not just the first escalated call.
+                        const pendingToolCalls = response.tool_calls
+                            .slice(i)
+                            .map((tc) => ({ name: tc.name, args: (tc.args || {}) as Record<string, unknown> }))
+
+                        const toolCallDetails = '```json\n' + JSON.stringify(toolCall, null, 2) + '\n```'
+                        const escalationBlock =
+                            `\n\n**Policy escalation** (rule: \`${decision.ruleId}\`): ${decision.message}\n\n` +
+                            `Attempting to use tool:\n${toolCallDetails}`
+                        const responseContent = (response.content || '') + escalationBlock
+                        response.content = responseContent
+                        if (!isStructuredOutput) {
+                            sseStreamer?.streamTokenEvent(chatId, responseContent)
+                        }
+                        // Stream the escalation as a governance event so the UI can render
+                        // an approval widget without parsing the token stream.
+                        const escalateEvent = buildGovernanceEvent('hitl', toolTraceId, toolCall.name, toolArgs, decision)
+                        sseStreamer?.streamGovernanceEvent?.(chatId, escalateEvent)
+
+                        return {
+                            response,
+                            usedTools,
+                            sourceDocuments,
+                            artifacts,
+                            totalTokens,
+                            isWaitingForHumanInput: true,
+                            pendingToolCalls,
+                            accumulatedReasonContent: accumulatedReasonContent || undefined,
+                            accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
+                        }
+                    }
+                }
+
                 if (isToolRequireHumanInput) {
                     const toolCallDetails = '```json\n' + JSON.stringify(toolCall, null, 2) + '\n```'
                     const responseContent = response.content + `\nAttempting to use tool:\n${toolCallDetails}`
@@ -2274,8 +2452,29 @@ class Agent_Agentflow implements INode {
                 }
 
                 try {
+                    // Mark the GovernedTool as human-approved if governance is active.
+                    // This prevents the defense-in-depth layer from blocking execution
+                    // on an 'escalate' decision that the agent loop has already cleared.
+                    if (governanceConfig && selectedTool instanceof GovernedTool) {
+                        selectedTool.humanApproved = true
+                    }
+
                     //@ts-ignore
                     let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
+
+                    // Reset the flag after execution
+                    if (governanceConfig && selectedTool instanceof GovernedTool) {
+                        selectedTool.humanApproved = false
+                    }
+
+                    if (governanceConfig) {
+                        auditExecute(governanceConfig, toolCall.name, toolArgs, toolOutput, {
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined,
+                            traceId: toolTraceId
+                        })
+                    }
 
                     if (options.analyticHandlers && toolIds) {
                         await options.analyticHandlers.onToolEnd(toolIds, toolOutput)
@@ -2327,6 +2526,20 @@ class Agent_Agentflow implements INode {
                             sourceDocuments: parsedDocs
                         }
                     })
+
+                    // Audit the observation (what the agent will see as the tool result)
+                    if (governanceConfig) {
+                        auditObserve(governanceConfig, toolCall.name, toolOutput, {
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined,
+                            traceId: toolTraceId
+                        })
+                        // Stream the execute/observe as a governance event so the UI can show
+                        // a real-time audit trail of what the agent actually did.
+                        const execEvent = buildGovernanceEvent('execute', toolTraceId ?? generateTraceId(), toolCall.name, toolArgs)
+                        sseStreamer?.streamGovernanceEvent?.(chatId, execEvent)
+                    }
 
                     // Track used tools
                     usedTools.push({
@@ -2461,7 +2674,8 @@ class Agent_Agentflow implements INode {
                 iterationContext,
                 isStructuredOutput,
                 accumulatedReasonContent,
-                accumulatedReasoningDuration
+                accumulatedReasoningDuration,
+                governanceConfig
             })
 
             // Merge results from recursive tool calls
@@ -2508,7 +2722,8 @@ class Agent_Agentflow implements INode {
         isStreamable,
         isLastNode,
         iterationContext,
-        isStructuredOutput = false
+        isStructuredOutput = false,
+        governanceConfig
     }: {
         humanInput: IHumanInput
         humanInputAction: Record<string, any> | undefined
@@ -2524,20 +2739,12 @@ class Agent_Agentflow implements INode {
         isLastNode: boolean
         iterationContext: ICommonObject
         isStructuredOutput?: boolean
-    }): Promise<{
-        response: AIMessageChunk
-        usedTools: IUsedTool[]
-        sourceDocuments: Array<any>
-        artifacts: any[]
-        totalTokens: number
-        isWaitingForHumanInput?: boolean
-        accumulatedReasonContent?: string
-        accumulatedReasoningDuration?: number
-    }> {
+        governanceConfig?: GovernanceConfig
+    }): Promise<IAgentToolCallResult> {
         let llmNodeInstance = llmWithoutToolsBind
         const usedTools: IUsedTool[] = []
-        let sourceDocuments: Array<any> = []
-        let artifacts: any[] = []
+        let sourceDocuments: ICommonObject[] = []
+        let artifacts: ICommonObject[] = []
         let isWaitingForHumanInput: boolean | undefined
 
         const lastCheckpointMessages = humanInputAction?.data?.input?.messages ?? []
@@ -2629,25 +2836,291 @@ class Agent_Agentflow implements INode {
                 }
 
                 if (humanInput.type === 'reject') {
-                    messages.pop()
-                    const toBeRemovedTool = toolsInstance.find((tool) => tool.name === toolCall.name)
-                    if (toBeRemovedTool) {
-                        toolsInstance = toolsInstance.filter((tool) => tool.name !== toolCall.name)
-                        // Remove other tools with the same agentSelectedTool such as MCP tools
-                        toolsInstance = toolsInstance.filter(
-                            (tool) => (tool as any).agentSelectedTool !== (toBeRemovedTool as any).agentSelectedTool
+                    if (governanceConfig) {
+                        // Re-evaluate to recover the ruleId that originally triggered escalation.
+                        // Use skipAudit=true — we write the hitl entry ourselves below with full context.
+                        const rejectDecision = gateToolCall({
+                            tool: toolCall.name,
+                            args: (toolCall.args || {}) as Record<string, unknown>,
+                            governance: governanceConfig,
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined,
+                            skipAudit: true
+                        })
+                        auditHitl(governanceConfig, toolCall.name, (toolCall.args || {}) as Record<string, unknown>, 'reject', {
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined,
+                            ruleId: rejectDecision.ruleId,
+                            feedback: humanInput.feedback
+                        })
+                        // Stream the rejection as a governance event so the UI can render it
+                        // as a first-class audit artifact in the chat timeline.
+                        const rejectEvent = buildGovernanceEvent(
+                            'hitl',
+                            generateTraceId(),
+                            toolCall.name,
+                            (toolCall.args || {}) as Record<string, unknown>,
+                            rejectDecision,
+                            'reject',
+                            humanInput.feedback
                         )
+                        sseStreamer?.streamGovernanceEvent?.(chatId, rejectEvent)
                     }
+                    // Keep the assistant message with the tool call in the conversation so the
+                    // message history stays valid (assistant tool_call must be followed by a tool result).
+                    // Push a synthetic tool result explaining the rejection so the LLM can re-reason
+                    // without retrying the same tool call.
+                    messages.push({
+                        role: 'tool',
+                        content: `[REJECTED BY HUMAN] The action "${toolCall.name}" was rejected by the reviewer.${
+                            humanInput.feedback ? ` Reviewer note: "${humanInput.feedback}".` : ''
+                        } Do not attempt this action again in this conversation. Explain to the user that the action was not approved and suggest alternatives if appropriate.`,
+                        tool_call_id: toolCall.id,
+                        name: toolCall.name
+                    })
+                    usedTools.push({
+                        tool: toolCall.name,
+                        toolInput: toolCall.args,
+                        toolOutput: '[REJECTED BY HUMAN]'
+                    })
                 }
                 if (humanInput.type === 'proceed') {
+                    // modifiedArgs is a plain-text instruction from the reviewer.
+                    // If provided, discard the pending tool call and restart LLM reasoning
+                    // with the instruction injected as a new user message.
+                    // If empty, approve as-is and execute the tool with its original args.
+                    const rawModifiedArgs = typeof humanInput.modifiedArgs === 'string' ? (humanInput.modifiedArgs as string).trim() : ''
+
+                    if (rawModifiedArgs) {
+                        // --- REDIRECT PATH: re-invoke LLM with the reviewer's instruction ---
+                        // The checkpoint already pushed the LLM's tool-call message onto `messages`.
+                        // We need to remove it so the conversation history stays valid
+                        // (an assistant tool_call message with no following tool result would
+                        // confuse the LLM), then append the reviewer's instruction as a user turn.
+                        if (messages.length > 0) {
+                            const last = messages[messages.length - 1] as any
+                            if (last?.tool_calls?.length || last?.additional_kwargs?.tool_calls?.length) {
+                                messages.pop()
+                            }
+                        }
+
+                        if (governanceConfig) {
+                            const redirectDecision = gateToolCall({
+                                tool: toolCall.name,
+                                args: (toolCall.args || {}) as Record<string, unknown>,
+                                governance: governanceConfig,
+                                sessionId: options.sessionId,
+                                chatId: options.chatId,
+                                nodeId: governanceConfig.context?.nodeId as string | undefined,
+                                skipAudit: true
+                            })
+                            auditHitl(governanceConfig, toolCall.name, (toolCall.args || {}) as Record<string, unknown>, 'proceed', {
+                                sessionId: options.sessionId,
+                                chatId: options.chatId,
+                                nodeId: governanceConfig.context?.nodeId as string | undefined,
+                                ruleId: redirectDecision.ruleId,
+                                feedback: rawModifiedArgs
+                            })
+                            const redirectEvent = buildGovernanceEvent(
+                                'hitl',
+                                generateTraceId(),
+                                toolCall.name,
+                                (toolCall.args || {}) as Record<string, unknown>,
+                                redirectDecision,
+                                'proceed',
+                                rawModifiedArgs
+                            )
+                            sseStreamer?.streamGovernanceEvent?.(chatId, redirectEvent)
+                        }
+
+                        // Inject the reviewer's instruction as a new user message so the LLM
+                        // reasons from it rather than retrying the blocked tool call.
+                        messages.push({ role: 'user', content: rawModifiedArgs })
+
+                        // Bind tools and re-invoke the LLM — full reasoning restart.
+                        if (llmNodeInstance && (llmNodeInstance as any).builtInTools?.length > 0) {
+                            toolsInstance.push(...(llmNodeInstance as any).builtInTools)
+                        }
+                        if (llmNodeInstance && toolsInstance.length > 0) {
+                            if (llmNodeInstance.bindTools === undefined) {
+                                throw new Error(`Agent needs to have a function calling capable model.`)
+                            }
+                            // @ts-ignore
+                            llmNodeInstance = llmNodeInstance.bindTools(toolsInstance)
+                        }
+
+                        let redirectResponse: AIMessageChunk
+                        if (isStreamable) {
+                            redirectResponse = await this.handleStreamingResponse(
+                                sseStreamer,
+                                llmNodeInstance,
+                                messages,
+                                chatId,
+                                abortController,
+                                isStructuredOutput,
+                                isLastNode
+                            )
+                        } else {
+                            redirectResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+                            if (isLastNode && sseStreamer && !isStructuredOutput) {
+                                sseStreamer.streamTokenEvent(chatId, extractResponseContent(redirectResponse))
+                            }
+                        }
+
+                        if (redirectResponse.usage_metadata?.total_tokens) {
+                            totalTokens += redirectResponse.usage_metadata.total_tokens
+                        }
+
+                        let accumulatedReasonContent = (response.additional_kwargs?.reasoning_content as string) || ''
+                        if (redirectResponse.additional_kwargs?.reasoning_content) {
+                            accumulatedReasonContent +=
+                                (accumulatedReasonContent ? '\n\n' : '') + (redirectResponse.additional_kwargs.reasoning_content as string)
+                        }
+                        let accumulatedReasoningDuration =
+                            (typeof response.additional_kwargs?.reasoning_duration === 'number'
+                                ? response.additional_kwargs.reasoning_duration
+                                : 0) +
+                            (typeof redirectResponse.additional_kwargs?.reasoning_duration === 'number'
+                                ? redirectResponse.additional_kwargs.reasoning_duration
+                                : 0)
+
+                        // If the LLM wants to call tools again, handle them through the normal path.
+                        if (redirectResponse.tool_calls && redirectResponse.tool_calls.length > 0) {
+                            const {
+                                response: recursiveResponse,
+                                usedTools: recursiveUsedTools,
+                                sourceDocuments: recursiveSourceDocuments,
+                                artifacts: recursiveArtifacts,
+                                totalTokens: recursiveTokens,
+                                isWaitingForHumanInput: recursiveWaiting,
+                                accumulatedReasonContent: recursiveReason,
+                                accumulatedReasoningDuration: recursiveDuration
+                            } = await this.handleToolCalls({
+                                response: redirectResponse,
+                                messages,
+                                toolsInstance,
+                                sseStreamer,
+                                chatId,
+                                input,
+                                options,
+                                abortController,
+                                llmNodeInstance,
+                                isStreamable,
+                                isLastNode,
+                                iterationContext,
+                                isStructuredOutput,
+                                accumulatedReasonContent,
+                                accumulatedReasoningDuration,
+                                governanceConfig
+                            })
+                            return {
+                                response: recursiveResponse,
+                                usedTools: [...usedTools, ...recursiveUsedTools],
+                                sourceDocuments: [...sourceDocuments, ...recursiveSourceDocuments],
+                                artifacts: [...artifacts, ...recursiveArtifacts],
+                                totalTokens: totalTokens + recursiveTokens,
+                                isWaitingForHumanInput: recursiveWaiting,
+                                accumulatedReasonContent: recursiveReason || undefined,
+                                accumulatedReasoningDuration: recursiveDuration || undefined
+                            }
+                        }
+
+                        return {
+                            response: redirectResponse,
+                            usedTools,
+                            sourceDocuments,
+                            artifacts,
+                            totalTokens,
+                            isWaitingForHumanInput: undefined,
+                            accumulatedReasonContent: accumulatedReasonContent || undefined,
+                            accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
+                        }
+                    }
+
+                    // --- APPROVE PATH: execute the tool with its original args ---
+                    const originalArgs = (toolCall.args || {}) as Record<string, unknown>
+                    const toolArgs = originalArgs
+
+                    if (governanceConfig) {
+                        const decision = gateToolCall({
+                            tool: toolCall.name,
+                            args: toolArgs,
+                            governance: governanceConfig,
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined,
+                            skipAudit: true
+                        })
+                        // Write the hitl audit entry
+                        auditHitl(governanceConfig, toolCall.name, toolArgs, 'proceed', {
+                            sessionId: options.sessionId,
+                            chatId: options.chatId,
+                            nodeId: governanceConfig.context?.nodeId as string | undefined,
+                            ruleId: decision.ruleId,
+                            feedback: humanInput.feedback
+                        })
+                        // Stream the approval as a governance event
+                        const approveEvent = buildGovernanceEvent(
+                            'hitl',
+                            generateTraceId(),
+                            toolCall.name,
+                            toolArgs,
+                            decision,
+                            'proceed',
+                            humanInput.feedback
+                        )
+                        sseStreamer?.streamGovernanceEvent?.(chatId, approveEvent)
+
+                        if (decision.effect === 'deny') {
+                            const denyObservation = POLICY_DENY_PREFIX + decision.message
+                            messages.push({
+                                role: 'tool',
+                                content: denyObservation,
+                                tool_call_id: toolCall.id,
+                                name: toolCall.name
+                            })
+                            usedTools.push({
+                                tool: toolCall.name,
+                                toolInput: toolArgs,
+                                toolOutput: denyObservation
+                            })
+                            continue
+                        }
+
+                        // 'escalate' with humanInput.type === 'proceed' means the human has already
+                        // reviewed and approved this tool call. Do NOT re-escalate — fall through to
+                        // execute the tool. Only a hard 'deny' should block execution at this point.
+                    }
+
                     let toolIds: ICommonObject | undefined
                     if (options.analyticHandlers) {
-                        toolIds = await options.analyticHandlers.onToolStart(toolCall.name, toolCall.args, options.parentTraceIds)
+                        toolIds = await options.analyticHandlers.onToolStart(toolCall.name, toolArgs, options.parentTraceIds)
                     }
 
                     try {
+                        // Mark the GovernedTool as human-approved so the defense-in-depth layer
+                        // does not block execution on an 'escalate' decision already cleared here.
+                        if (governanceConfig && selectedTool instanceof GovernedTool) {
+                            selectedTool.humanApproved = true
+                        }
+
                         //@ts-ignore
-                        let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
+                        let toolOutput = await selectedTool.call(toolArgs, { signal: abortController?.signal }, undefined, flowConfig)
+
+                        // Reset the flag after execution
+                        if (governanceConfig && selectedTool instanceof GovernedTool) {
+                            selectedTool.humanApproved = false
+                        }
+
+                        if (governanceConfig) {
+                            auditExecute(governanceConfig, toolCall.name, toolArgs, toolOutput, {
+                                sessionId: options.sessionId,
+                                chatId: options.chatId,
+                                nodeId: governanceConfig.context?.nodeId as string | undefined
+                            })
+                        }
 
                         if (options.analyticHandlers && toolIds) {
                             await options.analyticHandlers.onToolEnd(toolIds, toolOutput)
@@ -2688,10 +3161,19 @@ class Agent_Agentflow implements INode {
                             }
                         }
 
+                        // Append reviewer feedback to the tool output so the LLM can act on it.
+                        // This is the key step that makes HITL feedback visible to the agent —
+                        // without it the feedback is only written to the audit log and never
+                        // influences the LLM's next reasoning step.
+                        const toolOutputWithFeedback =
+                            humanInput.feedback && humanInput.feedback.trim()
+                                ? `${toolOutput}\n\n[Reviewer note: "${humanInput.feedback.trim()}"]`
+                                : toolOutput
+
                         // Add tool message to conversation
                         messages.push({
                             role: 'tool',
-                            content: toolOutput,
+                            content: toolOutputWithFeedback,
                             tool_call_id: toolCall.id,
                             name: toolCall.name,
                             additional_kwargs: {
@@ -2700,11 +3182,23 @@ class Agent_Agentflow implements INode {
                             }
                         })
 
+                        // Audit the observation (what the agent will see as the tool result)
+                        if (governanceConfig) {
+                            auditObserve(governanceConfig, toolCall.name, toolOutputWithFeedback, {
+                                sessionId: options.sessionId,
+                                chatId: options.chatId,
+                                nodeId: governanceConfig.context?.nodeId as string | undefined
+                            })
+                            // Stream the execute event so the UI audit trail stays live
+                            const execEvent = buildGovernanceEvent('execute', generateTraceId(), toolCall.name, toolArgs)
+                            sseStreamer?.streamGovernanceEvent?.(chatId, execEvent)
+                        }
+
                         // Track used tools
                         usedTools.push({
                             tool: toolCall.name,
                             toolInput: toolInput ?? toolCall.args,
-                            toolOutput
+                            toolOutput: toolOutputWithFeedback
                         })
                     } catch (e) {
                         if (options.analyticHandlers && toolIds) {
@@ -2840,7 +3334,8 @@ class Agent_Agentflow implements INode {
                 iterationContext,
                 isStructuredOutput,
                 accumulatedReasonContent,
-                accumulatedReasoningDuration
+                accumulatedReasoningDuration,
+                governanceConfig
             })
 
             // Merge results from recursive tool calls
@@ -2867,6 +3362,60 @@ class Agent_Agentflow implements INode {
             isWaitingForHumanInput,
             accumulatedReasonContent: accumulatedReasonContent || undefined,
             accumulatedReasoningDuration: accumulatedReasoningDuration || undefined
+        }
+    }
+
+    private parseGovernanceConfig(nodeData: INodeData): GovernanceConfig | undefined {
+        const enabled = nodeData.inputs?.agentEnableGovernance === true || nodeData.inputs?.agentEnableGovernance === 'true'
+        if (!enabled) {
+            return undefined
+        }
+
+        const policyPath = nodeData.inputs?.agentPolicyFilePath as string
+        const auditPath = nodeData.inputs?.agentAuditLogPath as string
+
+        // Both paths are required for governance to function. Warn and disable rather than
+        // crashing at runtime when loadPolicyFile / appendAuditLog receive undefined paths.
+        if (!policyPath || !policyPath.trim()) {
+            console.warn('[Governance] agentEnableGovernance is true but agentPolicyFilePath is not set; governance disabled.')
+            return undefined
+        }
+        if (!auditPath || !auditPath.trim()) {
+            console.warn('[Governance] agentEnableGovernance is true but agentAuditLogPath is not set; governance disabled.')
+            return undefined
+        }
+
+        let context: Record<string, unknown> = { nodeId: nodeData.id }
+        const rawContext = nodeData.inputs?.agentGovernanceContext
+        if (rawContext) {
+            // rawContext may arrive as an already-parsed object (when the node framework
+            // pre-parses JSON string inputs) or as a raw JSON string from the text field.
+            if (typeof rawContext === 'object' && !Array.isArray(rawContext)) {
+                context = { ...context, ...(rawContext as Record<string, unknown>) }
+            } else if (typeof rawContext === 'string') {
+                const trimmed = rawContext.trim()
+                if (trimmed) {
+                    try {
+                        const parsed: unknown = JSON.parse(trimmed)
+                        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                            context = { ...context, ...(parsed as Record<string, unknown>) }
+                        }
+                    } catch {
+                        console.warn(
+                            `[Governance] agentGovernanceContext is not valid JSON ("${trimmed.slice(
+                                0,
+                                60
+                            )}..."); runtime context signals will be unavailable.`
+                        )
+                    }
+                }
+            }
+        }
+
+        return {
+            policyPath: policyPath.trim(),
+            auditPath: auditPath.trim(),
+            context
         }
     }
 

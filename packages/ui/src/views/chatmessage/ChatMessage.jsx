@@ -267,6 +267,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const [feedback, setFeedback] = useState('')
     const [pendingActionData, setPendingActionData] = useState(null)
     const [feedbackType, setFeedbackType] = useState('')
+    const [modifiedArgs, setModifiedArgs] = useState('')
 
     // start input type
     const [startInputType, setStartInputType] = useState('')
@@ -868,11 +869,17 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             fbType = type
         }
         const question = feedback ? feedback : fbType.charAt(0).toUpperCase() + fbType.slice(1)
-        handleSubmit(undefined, question, undefined, {
+        const humanInputPayload = {
             type: fbType,
             startNodeId: actionData?.nodeId,
             feedback
-        })
+        }
+        // Include modifiedArgs if the reviewer edited the text-input widget
+        if (fbType === 'proceed' && modifiedArgs.trim()) {
+            humanInputPayload.modifiedArgs = modifiedArgs.trim()
+        }
+        setModifiedArgs('')
+        handleSubmit(undefined, question, undefined, humanInputPayload)
     }
 
     const handleSubmitFeedback = () => {
@@ -886,6 +893,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     }
 
     const handleActionClick = async (elem, action) => {
+        // agentflowv2-text-input is a data-entry widget, not a button — skip it
+        if (elem.type === 'agentflowv2-text-input') return
+
         setUserInput(elem.label)
         setMessages((prevMessages) => {
             let allMessages = [...cloneDeep(prevMessages)]
@@ -2799,8 +2809,38 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                 {(message.action.elements || []).map((elem, index) => {
                                                     return (
                                                         <>
-                                                            {(elem.type === 'approve-button' && elem.label === 'Yes') ||
-                                                            elem.type === 'agentflowv2-approve-button' ? (
+                                                            {elem.type === 'agentflowv2-text-input' ? (
+                                                                <div key={index} style={{ width: '100%', marginBottom: '8px' }}>
+                                                                    {elem.label && (
+                                                                        <div
+                                                                            style={{
+                                                                                fontSize: '11px',
+                                                                                color: '#888',
+                                                                                marginBottom: '4px'
+                                                                            }}
+                                                                        >
+                                                                            {elem.label}
+                                                                        </div>
+                                                                    )}
+                                                                    <textarea
+                                                                        rows={3}
+                                                                        style={{
+                                                                            width: '100%',
+                                                                            padding: '8px',
+                                                                            borderRadius: '8px',
+                                                                            border: '1px solid #ccc',
+                                                                            fontFamily: 'inherit',
+                                                                            fontSize: '13px',
+                                                                            resize: 'vertical',
+                                                                            boxSizing: 'border-box'
+                                                                        }}
+                                                                        value={modifiedArgs}
+                                                                        placeholder={elem.placeholder || ''}
+                                                                        onChange={(e) => setModifiedArgs(e.target.value)}
+                                                                    />
+                                                                </div>
+                                                            ) : (elem.type === 'approve-button' && elem.label === 'Yes') ||
+                                                              elem.type === 'agentflowv2-approve-button' ? (
                                                                 <Button
                                                                     sx={{
                                                                         width: 'max-content',
