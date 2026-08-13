@@ -829,10 +829,14 @@ async function determineNodesToIgnore(
             .filter((index) => index !== -1)
 
         // Find nodes to ignore based on unfulfilled conditions
+        // Note: a single condition output can fan out to multiple target nodes
+        // (e.g. parallel branches sharing the same `-output-${index}` handle), so we
+        // must collect ALL matching edges. Using find() here would only ignore the
+        // first target and let the remaining parallel nodes leak into other branches.
         for (const index of unfulfilledIndexes) {
-            const ignoreEdge = edges.find((edge) => edge.source === nodeId && edge.sourceHandle === `${nodeId}-output-${index}`)
+            const ignoreEdges = edges.filter((edge) => edge.source === nodeId && edge.sourceHandle === `${nodeId}-output-${index}`)
 
-            if (ignoreEdge) {
+            for (const ignoreEdge of ignoreEdges) {
                 ignoreNodeIds.push(ignoreEdge.target)
             }
         }
