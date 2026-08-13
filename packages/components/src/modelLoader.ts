@@ -29,6 +29,20 @@ const isValidUrl = (urlString: string) => {
     return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
+const getModelListRequestTimeout = (): number => {
+    const timeoutStr = process.env.MODEL_LIST_REQUEST_TIMEOUT_MS
+    if (timeoutStr == null) {
+        return 3000
+    }
+
+    const timeout = parseInt(timeoutStr, 10)
+    if (!Number.isInteger(timeout) || timeout <= 0 || String(timeout) !== timeoutStr.trim()) {
+        throw new Error(`Invalid MODEL_LIST_REQUEST_TIMEOUT_MS value: ${timeoutStr}`)
+    }
+
+    return timeout
+}
+
 /**
  * Load the raw model file from either a URL or a local file
  * If any of the loading fails, fallback to the default models.json file on disk
@@ -38,7 +52,9 @@ const getRawModelFile = async () => {
         process.env.MODEL_LIST_CONFIG_JSON ?? 'https://raw.githubusercontent.com/FlowiseAI/Flowise/main/packages/components/models.json'
     try {
         if (isValidUrl(modelFile)) {
-            const resp = await axios.get(modelFile)
+            const resp = await axios.get(modelFile, {
+                timeout: getModelListRequestTimeout()
+            })
             if (resp.status === 200 && resp.data) {
                 return resp.data
             } else {
