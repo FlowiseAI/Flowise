@@ -112,10 +112,22 @@ const deleteExecutions = async (req: Request, res: Response, next: NextFunction)
     }
 }
 
+const abortExecution = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const executionId = req.params.id
+        const workspaceId = req.user?.activeWorkspaceId
+        const result = await executionsService.abortExecution(executionId, workspaceId)
+        return res.json(result)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     getAllExecutions,
     deleteExecutions,
     getExecutionById,
     getPublicExecutionById,
-    updateExecution
+    updateExecution,
+    abortExecution
 }

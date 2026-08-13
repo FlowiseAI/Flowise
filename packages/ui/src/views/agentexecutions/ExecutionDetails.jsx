@@ -33,7 +33,8 @@ import {
     IconRelationOneToManyFilled,
     IconShare,
     IconWorld,
-    IconX
+    IconX,
+    IconPlayerStop
 } from '@tabler/icons-react'
 
 // Project imports
@@ -293,7 +294,17 @@ const MIN_DRAWER_WIDTH = 400
 const DEFAULT_DRAWER_WIDTH = window.innerWidth - 400
 const MAX_DRAWER_WIDTH = window.innerWidth
 
-export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose, onProceedSuccess, onUpdateSharing, onRefresh }) => {
+export const ExecutionDetails = ({
+    open,
+    isPublic,
+    execution,
+    metadata,
+    onClose,
+    onProceedSuccess,
+    onUpdateSharing,
+    onRefresh,
+    onAbortExecution
+}) => {
     const [drawerWidth, setDrawerWidth] = useState(Math.min(DEFAULT_DRAWER_WIDTH, MAX_DRAWER_WIDTH))
     const [executionTree, setExecution] = useState([])
     const [expandedItems, setExpandedItems] = useState([])
@@ -825,6 +836,19 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                             >
                                 <IconRefresh size={20} />
                             </IconButton>
+                            {!isPublic && localMetadata?.state === 'INPROGRESS' && (
+                                <Available permission='executions:update'>
+                                    <Chip
+                                        sx={{ ml: 1 }}
+                                        icon={<IconPlayerStop size={15} />}
+                                        variant='outlined'
+                                        color='error'
+                                        label='Abort'
+                                        className={'button'}
+                                        onClick={() => onAbortExecution && onAbortExecution(localMetadata?.id)}
+                                    />
+                                </Available>
+                            )}
                         </Box>
                     </Box>
                 </Box>
@@ -983,7 +1007,8 @@ ExecutionDetails.propTypes = {
     onClose: PropTypes.func,
     onProceedSuccess: PropTypes.func,
     onUpdateSharing: PropTypes.func,
-    onRefresh: PropTypes.func
+    onRefresh: PropTypes.func,
+    onAbortExecution: PropTypes.func
 }
 
 ExecutionDetails.displayName = 'ExecutionDetails'
