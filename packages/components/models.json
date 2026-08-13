@@ -1745,16 +1745,16 @@
             "name": "deepseek",
             "models": [
                 {
-                    "label": "deepseek-chat",
-                    "name": "deepseek-chat",
-                    "input_cost": 0.00027,
-                    "output_cost": 0.0011
+                    "label": "deepseek-v4-flash",
+                    "name": "deepseek-v4-flash",
+                    "input_cost": 0.00014,
+                    "output_cost": 0.00028
                 },
                 {
-                    "label": "deepseek-reasoner",
-                    "name": "deepseek-reasoner",
-                    "input_cost": 0.00055,
-                    "output_cost": 0.00219
+                    "label": "deepseek-v4-pro",
+                    "name": "deepseek-v4-pro",
+                    "input_cost": 0.000435,
+                    "output_cost": 0.00087
                 }
             ]
         },
