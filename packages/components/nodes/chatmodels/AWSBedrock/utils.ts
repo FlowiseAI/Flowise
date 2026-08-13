@@ -144,12 +144,11 @@ export async function discoverInferenceProfiles(
             }
             nextToken = resp.nextToken
         } while (nextToken)
-        _regionProfileCache.set(region, ids)
+        if (ids.size > 0) _regionProfileCache.set(region, ids)
         return ids
-    } catch {
-        const empty = new Set<string>()
-        _regionProfileCache.set(region, empty)
-        return empty
+    } catch (err) {
+        console.error(`[AWSBedrock] discoverInferenceProfiles(${region}) failed:`, err)
+        return new Set<string>()
     }
 }
 
