@@ -11,13 +11,14 @@ const SpeechToTextType = {
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
     LOCALAI_STT: 'localAISTT',
     AZURE_COGNITIVE: 'azureCognitive',
-    GROQ_WHISPER: 'groqWhisper'
+    GROQ_WHISPER: 'groqWhisper',
+    FUNASR_STT: 'funASRSTT'
 }
 
 export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
     if (speechToTextConfig) {
         const credentialId = speechToTextConfig.credentialId as string
-        const credentialData = await getCredentialData(credentialId ?? '', options)
+        const credentialData = credentialId ? await getCredentialData(credentialId, options) : {}
         const audio_file = await getFileFromStorage(upload.name, options.orgId, options.chatflowid, options.chatId)
 
         switch (speechToTextConfig.name) {
@@ -71,6 +72,23 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                 })
                 if (localAITranscription?.text) {
                     return localAITranscription.text
+                }
+                break
+            }
+            case SpeechToTextType.FUNASR_STT: {
+                const funASRClientOptions: ClientOptions = {
+                    apiKey: credentialData.funASRApiKey || 'not-required',
+                    baseURL: speechToTextConfig?.baseUrl || 'http://127.0.0.1:8000/v1'
+                }
+                const funASRClient = new OpenAIClient(funASRClientOptions)
+                const file = await toFile(audio_file, upload.name)
+                const funASRTranscription = await funASRClient.audio.transcriptions.create({
+                    file,
+                    model: speechToTextConfig?.model || 'sensevoice',
+                    language: speechToTextConfig?.language
+                })
+                if (funASRTranscription?.text) {
+                    return funASRTranscription.text
                 }
                 break
             }
