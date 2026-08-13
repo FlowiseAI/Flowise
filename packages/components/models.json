@@ -701,6 +701,42 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "gpt-5.5",
+                    "name": "gpt-5.5",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-5.5-pro",
+                    "name": "gpt-5.5-pro",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00018
+                },
+                {
+                    "label": "gpt-5.4",
+                    "name": "gpt-5.4",
+                    "input_cost": 0.0000025,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "gpt-5.4-pro",
+                    "name": "gpt-5.4-pro",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00018
+                },
+                {
+                    "label": "gpt-5.4-mini",
+                    "name": "gpt-5.4-mini",
+                    "input_cost": 0.00000075,
+                    "output_cost": 0.0000045
+                },
+                {
+                    "label": "gpt-5.4-nano",
+                    "name": "gpt-5.4-nano",
+                    "input_cost": 0.0000002,
+                    "output_cost": 0.00000125
+                },
+                {
                     "label": "gpt-5.2",
                     "name": "gpt-5.2",
                     "input_cost": 0.00000175,
