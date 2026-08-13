@@ -443,17 +443,35 @@ class GoogleDrive_DocumentLoaders implements INode {
         let nextPageToken: string | undefined
 
         do {
+            const remainingFiles = maxFiles - files.length
+
+            // The file budget can be exhausted before the do-while condition is re-checked
+            // (e.g. after recursing into subfolders). Stop here rather than issuing another
+            // request: Google Drive rejects a pageSize outside [1, 1000] with a 400 (Bad Request),
+            // which is the failure reported for recursive subfolder listings.
+            if (remainingFiles <= 0) {
+                break
+            }
+
             let query = `'${folderId}' in parents and trashed = false`
 
             // Add file type filter if specified
             if (fileTypes && fileTypes.length > 0) {
-                const mimeTypeQuery = fileTypes.map((type) => `mimeType='${type}'`).join(' or ')
+                const mimeTypes = [...fileTypes]
+                // Folders must stay queryable so subfolders can be traversed even when a
+                // fileTypes filter is set; otherwise the filter excludes the folder mimeType
+                // and recursion silently finds nothing. The folders are removed from the
+                // returned files below, so the fileTypes filter still applies to loaded files.
+                if (includeSubfolders) {
+                    mimeTypes.push('application/vnd.google-apps.folder')
+                }
+                const mimeTypeQuery = mimeTypes.map((type) => `mimeType='${type}'`).join(' or ')
                 query += ` and (${mimeTypeQuery})`
             }
 
             const url = new URL('https://www.googleapis.com/drive/v3/files')
             url.searchParams.append('q', query)
-            url.searchParams.append('pageSize', Math.min(maxFiles - files.length, 1000).toString())
+            url.searchParams.append('pageSize', Math.min(Math.max(remainingFiles, 1), 1000).toString())
             url.searchParams.append(
                 'fields',
                 'nextPageToken, files(id, name, mimeType, size, createdTime, modifiedTime, parents, webViewLink, driveId)'
@@ -482,8 +500,15 @@ class GoogleDrive_DocumentLoaders implements INode {
 
             const data = await response.json()
 
+            // Folders are only used to drive subfolder recursion; keep them out of the
+            // returned file list so they are never treated as loadable documents.
+            const nonFolderFiles = data.files.filter((file: any) => file.mimeType !== 'application/vnd.google-apps.folder')
+            const subfolders = includeSubfolders
+                ? data.files.filter((file: any) => file.mimeType === 'application/vnd.google-apps.folder')
+                : []
+
             // Add drive context to each file
-            const filesWithContext = data.files.map((file: any) => ({
+            const filesWithContext = nonFolderFiles.map((file: any) => ({
                 ...file,
                 driveContext: file.driveId ? ' (Shared Drive)' : ' (My Drive)'
             }))
@@ -493,18 +518,21 @@ class GoogleDrive_DocumentLoaders implements INode {
 
             // If includeSubfolders is true, also get files from subfolders
             if (includeSubfolders) {
-                for (const file of data.files) {
-                    if (file.mimeType === 'application/vnd.google-apps.folder') {
-                        const subfolderFiles = await this.getFilesFromFolder(
-                            file.id,
-                            accessToken,
-                            fileTypes,
-                            includeSubfolders,
-                            includeSharedDrives,
-                            maxFiles - files.length
-                        )
-                        files.push(...subfolderFiles)
+                for (const folder of subfolders) {
+                    // Skip recursion once the file budget is exhausted so the child call is
+                    // never asked for a non-positive pageSize (which Drive rejects with a 400).
+                    if (maxFiles - files.length <= 0) {
+                        break
                     }
+                    const subfolderFiles = await this.getFilesFromFolder(
+                        folder.id,
+                        accessToken,
+                        fileTypes,
+                        includeSubfolders,
+                        includeSharedDrives,
+                        maxFiles - files.length
+                    )
+                    files.push(...subfolderFiles)
                 }
             }
         } while (nextPageToken && files.length < maxFiles)
