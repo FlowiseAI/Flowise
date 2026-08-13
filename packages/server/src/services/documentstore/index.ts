@@ -785,7 +785,7 @@ const saveProcessingLoader = async (
             if (!data.splitterId) data.splitterId = found.splitterId
             if (!data.splitterName) data.splitterName = found.splitterName
             if (!data.splitterConfig) data.splitterConfig = found.splitterConfig
-            if (found.credential) {
+            if (!data.credential && found.credential) {
                 data.credential = found.credential
             }
 
