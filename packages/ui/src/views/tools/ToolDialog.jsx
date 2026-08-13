@@ -1,3 +1,15 @@
+import {
+    Box,
+    Button,
+    Typography,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Stack,
+    OutlinedInput,
+    FormHelperText
+} from '@mui/material'
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { useState, useEffect, useCallback, useMemo } from 'react'
@@ -5,7 +17,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import { cloneDeep } from 'lodash'
 
-import { Box, Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Grid } from '@/ui-component/grid/Grid'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
@@ -78,10 +89,51 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     const [toolId, setToolId] = useState('')
     const [toolName, setToolName] = useState('')
     const [toolDesc, setToolDesc] = useState('')
+    // const [toolIcon, setToolIcon] = useState('')
+    // const [toolSchema, setToolSchema] = useState([])
+    // const [toolFunc, setToolFunc] = useState('')
+    // const [showHowToDialog, setShowHowToDialog] = useState(false)
+    // const [toolIconError, setToolIconError] = useState('')
+    // // URL validation: only allow empty or http/https URLs
+    // const validateIconUrl = (url) => {
+    //     if (!url) return ''
+    //     try {
+    //         const parsed = new URL(url)
+    //         if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return ''
+    //         return 'Icon URL must start with http:// or https://'
+    //     } catch {
+    //         return 'Icon URL must be a valid http(s) URL'
+    //     }
+    // }
+
+    // // Validate on change
+    // const handleToolIconChange = (e) => {
+    //     const value = e.target.value
+    //     setToolIcon(value)
+    //     setToolIconError(validateIconUrl(value))
+    // }
+    // {
+    //     toolIconError ? <FormHelperText error>{toolIconError}</FormHelperText> : null
+    // }
+
     const [toolIcon, setToolIcon] = useState('')
     const [toolSchema, setToolSchema] = useState([])
     const [toolFunc, setToolFunc] = useState('')
     const [showHowToDialog, setShowHowToDialog] = useState(false)
+
+    const toolIconError = useMemo(() => {
+        const value = toolIcon.trim()
+
+        if (!value) return ''
+
+        try {
+            const parsed = new URL(value)
+            if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return ''
+            return 'Icon URL must start with http:// or https://'
+        } catch {
+            return 'Icon URL must be a valid http(s) URL'
+        }
+    }, [toolIcon])
 
     const [exportAsTemplateDialogOpen, setExportAsTemplateDialogOpen] = useState(false)
     const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
@@ -513,8 +565,10 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                             placeholder='https://raw.githubusercontent.com/gilbarbara/logos/main/logos/airtable.svg'
                             value={toolIcon}
                             name='toolIcon'
+                            error={!!toolIconError}
                             onChange={(e) => setToolIcon(e.target.value)}
                         />
+                        {toolIconError && <FormHelperText error>{toolIconError}</FormHelperText>}
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', justifyContent: 'space-between' }} direction='row'>
@@ -583,7 +637,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                 {dialogProps.type !== 'TEMPLATE' && (
                     <StyledPermissionButton
                         permissionId={'tools:update,tools:create'}
-                        disabled={!(toolName && toolDesc)}
+                        disabled={!(toolName && toolDesc) || !!toolIconError}
                         variant='contained'
                         onClick={() => (dialogProps.type === 'ADD' || dialogProps.type === 'IMPORT' ? addNewTool() : saveTool())}
                     >
