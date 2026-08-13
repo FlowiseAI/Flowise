@@ -5,7 +5,18 @@ import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import { cloneDeep } from 'lodash'
 
-import { Box, Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
+import {
+    Box,
+    Button,
+    Typography,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Stack,
+    OutlinedInput,
+    FormHelperText
+} from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Grid } from '@/ui-component/grid/Grid'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
@@ -32,6 +43,7 @@ import useApi from '@/hooks/useApi'
 // utils
 import useNotifier from '@/utils/useNotifier'
 import { generateRandomGradient, formatDataGridRows } from '@/utils/genericHelper'
+import { isOptionalHttpOrHttpsToolIconUrl } from '@/utils/toolIconUrl'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const exampleAPIFunc = `/*
@@ -120,7 +132,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             tool: {
                 name: toolName,
                 description: toolDesc,
-                iconSrc: toolIcon,
+                iconSrc: toolIcon ?? '',
                 schema: toolSchema,
                 func: toolFunc
             }
@@ -177,6 +189,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolId(getSpecificToolApi.data.id)
             setToolName(getSpecificToolApi.data.name)
             setToolDesc(getSpecificToolApi.data.description)
+            setToolIcon(getSpecificToolApi.data.iconSrc ?? '')
             setToolSchema(formatDataGridRows(getSpecificToolApi.data.schema))
             if (getSpecificToolApi.data.func) setToolFunc(getSpecificToolApi.data.func)
             else setToolFunc('')
@@ -196,7 +209,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolId(dialogProps.data.id)
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
-            setToolIcon(dialogProps.data.iconSrc)
+            setToolIcon(dialogProps.data.iconSrc ?? '')
             setToolSchema(formatDataGridRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
@@ -207,7 +220,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             // When tool dialog is to import existing tool
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
-            setToolIcon(dialogProps.data.iconSrc)
+            setToolIcon(dialogProps.data.iconSrc ?? '')
             setToolSchema(formatDataGridRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
@@ -215,7 +228,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             // When tool dialog is a template
             setToolName(dialogProps.data.name)
             setToolDesc(dialogProps.data.description)
-            setToolIcon(dialogProps.data.iconSrc)
+            setToolIcon(dialogProps.data.iconSrc ?? '')
             setToolSchema(formatDataGridRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
@@ -277,6 +290,23 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     }
 
     const addNewTool = async () => {
+        const trimmedIcon = (toolIcon ?? '').trim()
+        if (trimmedIcon && !isOptionalHttpOrHttpsToolIconUrl(trimmedIcon)) {
+            enqueueSnackbar({
+                message: 'Tool Icon Source must be a valid http or https URL, or left empty.',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            return
+        }
         try {
             const obj = {
                 name: toolName,
@@ -284,7 +314,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                 color: generateRandomGradient(),
                 schema: JSON.stringify(toolSchema),
                 func: toolFunc,
-                iconSrc: toolIcon
+                iconSrc: trimmedIcon ? trimmedIcon : null
             }
             const createResp = await toolsApi.createNewTool(obj)
             if (createResp.data) {
@@ -323,13 +353,30 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     }
 
     const saveTool = async () => {
+        const trimmedIcon = (toolIcon ?? '').trim()
+        if (trimmedIcon && !isOptionalHttpOrHttpsToolIconUrl(trimmedIcon)) {
+            enqueueSnackbar({
+                message: 'Tool Icon Source must be a valid http or https URL, or left empty.',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            return
+        }
         try {
             const saveResp = await toolsApi.updateTool(toolId, {
                 name: toolName,
                 description: toolDesc,
                 schema: JSON.stringify(toolSchema),
                 func: toolFunc,
-                iconSrc: toolIcon
+                iconSrc: trimmedIcon ? trimmedIcon : null
             })
             if (saveResp.data) {
                 enqueueSnackbar({
@@ -418,6 +465,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
         setToolSchema(formattedData)
         setShowPasteJSONDialog(false)
     }
+
+    const toolIconInvalid = (toolIcon ?? '').trim() !== '' && !isOptionalHttpOrHttpsToolIconUrl(toolIcon ?? '')
 
     const component = show ? (
         <Dialog
@@ -511,10 +560,17 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                             fullWidth
                             disabled={dialogProps.type === 'TEMPLATE'}
                             placeholder='https://raw.githubusercontent.com/gilbarbara/logos/main/logos/airtable.svg'
-                            value={toolIcon}
+                            value={toolIcon ?? ''}
                             name='toolIcon'
+                            error={toolIconInvalid}
                             onChange={(e) => setToolIcon(e.target.value)}
+                            aria-describedby={toolIconInvalid ? 'tool-icon-helper-text' : undefined}
                         />
+                        {toolIconInvalid && (
+                            <FormHelperText error id='tool-icon-helper-text'>
+                                Enter a valid http or https URL, or leave this field empty.
+                            </FormHelperText>
+                        )}
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', justifyContent: 'space-between' }} direction='row'>
@@ -583,7 +639,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                 {dialogProps.type !== 'TEMPLATE' && (
                     <StyledPermissionButton
                         permissionId={'tools:update,tools:create'}
-                        disabled={!(toolName && toolDesc)}
+                        disabled={!(toolName && toolDesc) || toolIconInvalid}
                         variant='contained'
                         onClick={() => (dialogProps.type === 'ADD' || dialogProps.type === 'IMPORT' ? addNewTool() : saveTool())}
                     >

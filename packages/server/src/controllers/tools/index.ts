@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import toolsService from '../../services/tools'
 import { getPageAndLimitParams } from '../../utils/pagination'
+import { normalizeOptionalToolIconSrc } from '../../utils/toolIconSrc'
 
 const createTool = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -23,7 +24,7 @@ const createTool = async (req: Request, res: Response, next: NextFunction) => {
         if (body.name !== undefined) toolBody.name = body.name
         if (body.description !== undefined) toolBody.description = body.description
         if (body.color !== undefined) toolBody.color = body.color
-        if (body.iconSrc !== undefined) toolBody.iconSrc = body.iconSrc
+        if (body.iconSrc !== undefined) toolBody.iconSrc = normalizeOptionalToolIconSrc(body.iconSrc)
         if (body.schema !== undefined) toolBody.schema = body.schema
         if (body.func !== undefined) toolBody.func = body.func
         toolBody.workspaceId = workspaceId
@@ -98,7 +99,7 @@ const updateTool = async (req: Request, res: Response, next: NextFunction) => {
         if (body.name !== undefined) toolBody.name = body.name
         if (body.description !== undefined) toolBody.description = body.description
         if (body.color !== undefined) toolBody.color = body.color
-        if (body.iconSrc !== undefined) toolBody.iconSrc = body.iconSrc
+        if (body.iconSrc !== undefined) toolBody.iconSrc = normalizeOptionalToolIconSrc(body.iconSrc)
         if (body.schema !== undefined) toolBody.schema = body.schema
         if (body.func !== undefined) toolBody.func = body.func
         const apiResponse = await toolsService.updateTool(req.params.id, toolBody, workspaceId)

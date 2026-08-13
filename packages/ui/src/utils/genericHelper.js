@@ -869,6 +869,9 @@ export const isValidURL = (url) => {
 export const formatDataGridRows = (rows) => {
     try {
         const parsedRows = typeof rows === 'string' ? JSON.parse(rows) : rows
+        if (!Array.isArray(parsedRows)) {
+            return []
+        }
         return parsedRows.map((sch, index) => {
             return {
                 ...sch,

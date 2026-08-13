@@ -16,6 +16,9 @@ import {
     useTheme
 } from '@mui/material'
 
+import { getItemCardIconBackgroundUrl } from '@/utils/toolIconUrl'
+import defaultToolIcon from '@/assets/images/tool.svg'
+
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
 
@@ -87,47 +90,87 @@ export const ToolsTable = ({ data, isLoading, onSelect }) => {
                             </>
                         ) : (
                             <>
-                                {data?.map((row, index) => (
-                                    <StyledTableRow key={index}>
-                                        <StyledTableCell sx={{ display: 'flex', alignItems: 'center', gap: 1 }} key='0'>
-                                            <div
-                                                style={{
-                                                    width: 35,
-                                                    height: 35,
-                                                    display: 'flex',
-                                                    flexShrink: 0,
-                                                    marginRight: 10,
-                                                    borderRadius: '50%',
-                                                    backgroundImage: `url(${row.iconSrc})`,
-                                                    backgroundSize: 'contain',
-                                                    backgroundRepeat: 'no-repeat',
-                                                    backgroundPosition: 'center center'
-                                                }}
-                                            ></div>
-                                            <Typography
-                                                sx={{
-                                                    display: '-webkit-box',
-                                                    fontSize: 14,
-                                                    fontWeight: 500,
-                                                    WebkitLineClamp: 2,
-                                                    WebkitBoxOrient: 'vertical',
-                                                    textOverflow: 'ellipsis',
-                                                    overflow: 'hidden'
-                                                }}
-                                            >
-                                                <Button onClick={() => onSelect(row)} sx={{ textAlign: 'left' }}>
-                                                    {row.templateName || row.name}
-                                                </Button>
-                                            </Typography>
-                                        </StyledTableCell>
-                                        <StyledTableCell key='1'>
-                                            <Typography sx={{ overflowWrap: 'break-word', whiteSpace: 'pre-line' }}>
-                                                {row.description || ''}
-                                            </Typography>
-                                        </StyledTableCell>
-                                        <StyledTableCell key='3'></StyledTableCell>
-                                    </StyledTableRow>
-                                ))}
+                                {data?.map((row, index) => {
+                                    const headerIconBgUrl = getItemCardIconBackgroundUrl(row.iconSrc)
+                                    return (
+                                        <StyledTableRow key={index}>
+                                            <StyledTableCell sx={{ display: 'flex', alignItems: 'center', gap: 1 }} key='0'>
+                                                {headerIconBgUrl ? (
+                                                    <div
+                                                        style={{
+                                                            width: 35,
+                                                            height: 35,
+                                                            display: 'flex',
+                                                            flexShrink: 0,
+                                                            marginRight: 10,
+                                                            borderRadius: '50%',
+                                                            backgroundImage: `url(${headerIconBgUrl})`,
+                                                            backgroundSize: 'contain',
+                                                            backgroundRepeat: 'no-repeat',
+                                                            backgroundPosition: 'center center'
+                                                        }}
+                                                    ></div>
+                                                ) : row.color ? (
+                                                    <div
+                                                        style={{
+                                                            width: 35,
+                                                            height: 35,
+                                                            display: 'flex',
+                                                            flexShrink: 0,
+                                                            marginRight: 10,
+                                                            borderRadius: '50%',
+                                                            background: row.color
+                                                        }}
+                                                    ></div>
+                                                ) : (
+                                                    <div
+                                                        style={{
+                                                            width: 35,
+                                                            height: 35,
+                                                            display: 'flex',
+                                                            flexShrink: 0,
+                                                            marginRight: 10,
+                                                            borderRadius: '50%',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            overflow: 'hidden',
+                                                            backgroundColor: customization.isDarkMode
+                                                                ? theme.palette.grey[800]
+                                                                : theme.palette.grey[200]
+                                                        }}
+                                                    >
+                                                        <img
+                                                            src={defaultToolIcon}
+                                                            alt=''
+                                                            style={{ width: 22, height: 22, objectFit: 'contain' }}
+                                                        />
+                                                    </div>
+                                                )}
+                                                <Typography
+                                                    sx={{
+                                                        display: '-webkit-box',
+                                                        fontSize: 14,
+                                                        fontWeight: 500,
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        textOverflow: 'ellipsis',
+                                                        overflow: 'hidden'
+                                                    }}
+                                                >
+                                                    <Button onClick={() => onSelect(row)} sx={{ textAlign: 'left' }}>
+                                                        {row.templateName || row.name}
+                                                    </Button>
+                                                </Typography>
+                                            </StyledTableCell>
+                                            <StyledTableCell key='1'>
+                                                <Typography sx={{ overflowWrap: 'break-word', whiteSpace: 'pre-line' }}>
+                                                    {row.description || ''}
+                                                </Typography>
+                                            </StyledTableCell>
+                                            <StyledTableCell key='3'></StyledTableCell>
+                                        </StyledTableRow>
+                                    )
+                                })}
                             </>
                         )}
                     </TableBody>
