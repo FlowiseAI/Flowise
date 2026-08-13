@@ -207,6 +207,15 @@ class ChatOpenAI_ChatModels implements INode {
                 optional: true,
                 description: 'Default headers to include with every request to the API.',
                 additionalParams: true
+            },
+            {
+                label: 'Model Kwargs',
+                name: 'modelKwargs',
+                type: 'json',
+                optional: true,
+                description:
+                    'Additional parameters to pass to the model body, e.g. {"parallel_tool_calls": false} or {"logit_bias": {50256: -100}}',
+                additionalParams: true
             }
         ]
     }
@@ -234,6 +243,7 @@ class ChatOpenAI_ChatModels implements INode {
         const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.ReasoningEffort | null
         const reasoningSummary = nodeData.inputs?.reasoningSummary as 'auto' | 'concise' | 'detailed' | null
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        const modelKwargs = nodeData.inputs?.modelKwargs
 
         if (nodeData.inputs?.credentialId) {
             nodeData.credential = nodeData.inputs?.credentialId
@@ -262,6 +272,15 @@ class ChatOpenAI_ChatModels implements INode {
             obj.stop = stopSequenceArray
         }
         if (strictToolCalling) obj.supportsStrictToolCalling = strictToolCalling
+
+        if (modelKwargs) {
+            try {
+                const parsedModelKwargs = typeof modelKwargs === 'object' ? modelKwargs : JSON.parse(modelKwargs)
+                obj.modelKwargs = parsedModelKwargs
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatOpenAI's Model Kwargs: " + exception)
+            }
+        }
 
         if (isReasoningModelOpenAI(modelName)) {
             delete obj.temperature
