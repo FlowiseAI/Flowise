@@ -83,6 +83,10 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 20.0.0
     docker stop flowise
     ```
 
+## 📦 Third-Party Installers
+
+- [LynxHub](https://github.com/KindaBrazy/LynxHub): Cross-platform visual management dashboard and terminal/browser for installing, configuring, and launching Flowise.
+
 ## 👨‍💻 Developers
 
 Flowise has 3 different modules in a single mono repository.
