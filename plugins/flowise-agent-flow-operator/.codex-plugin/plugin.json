@@ -1,0 +1,29 @@
+{
+  "name": "flowise-agent-flow-operator",
+  "version": "0.1.0",
+  "description": "Design, inspect, and regression-test Flowise agent flows.",
+  "author": {
+    "name": "Flowise contributors"
+  },
+  "skills": "./skills/",
+  "repository": "https://github.com/FlowiseAI/Flowise",
+  "keywords": [
+    "agent-plugin",
+    "evals",
+    "flowise"
+  ],
+  "interface": {
+    "displayName": "Flowise Agent Flow Operator",
+    "shortDescription": "Design, inspect, and regression-test Flowise agent flows.",
+    "longDescription": "Help agents review Flowise flows for tool wiring, retrieval behavior, credential boundaries, deployment readiness, and plugin-level regression checks.",
+    "developerName": "Flowise contributors",
+    "category": "Developer Tools",
+    "capabilities": [
+      "flow design",
+      "tool wiring review",
+      "retrieval QA",
+      "deployment checks"
+    ],
+    "defaultPrompt": "Use the Flowise plugin to plan the workflow, identify verification checks, and produce plugin eval metadata."
+  }
+}
