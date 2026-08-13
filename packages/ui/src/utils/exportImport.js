@@ -19,16 +19,34 @@ const sanitizeTool = (Tool) => {
     }
 }
 
+const CHATFLOW_FIELDS_TO_PRESERVE = [
+    'chatbotConfig',
+    'category',
+    'speechToText',
+    'textToSpeech',
+    'followUpPrompts',
+    'apiConfig',
+    'analytic',
+    'isPublic',
+    'mcpServerConfig'
+]
+
 const sanitizeChatflow = (ChatFlow) => {
     try {
         return ChatFlow.map((chatFlow) => {
             const sanitizeFlowData = generateExportFlowData(JSON.parse(chatFlow.flowData))
-            return {
+            const sanitized = {
                 id: chatFlow.id,
                 name: chatFlow.name,
                 flowData: stringify(sanitizeFlowData),
                 type: chatFlow.type
             }
+            CHATFLOW_FIELDS_TO_PRESERVE.forEach((field) => {
+                if (chatFlow[field] != null) {
+                    sanitized[field] = chatFlow[field]
+                }
+            })
+            return sanitized
         })
     } catch (error) {
         throw new Error(`exportImport.sanitizeChatflow ${getErrorMessage(error)}`)
