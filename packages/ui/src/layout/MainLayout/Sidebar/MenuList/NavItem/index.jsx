@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { forwardRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
@@ -21,6 +21,7 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
     const matchesSM = useMediaQuery(theme.breakpoints.down('lg'))
+    const location = useLocation()
 
     const Icon = item.icon
     const itemIcon = item?.icon ? (
@@ -77,23 +78,24 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
         }
     }
 
-    // active menu item on page load
+    // sync the active menu item with the current route, including client-side
+    // navigations such as clicking the logo (re-runs whenever the path changes)
     useEffect(() => {
         if (navType === 'MENU') {
-            const currentIndex = document.location.pathname
+            const currentIndex = location.pathname
                 .toString()
                 .split('/')
                 .findIndex((id) => id === item.id)
             if (currentIndex > -1) {
                 dispatch({ type: MENU_OPEN, id: item.id })
             }
-            if (!document.location.pathname.toString().split('/')[1]) {
+            if (!location.pathname.toString().split('/')[1]) {
                 itemHandler('chatflows')
             }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [navType])
+    }, [navType, location.pathname])
 
     return (
         <ListItemButton
