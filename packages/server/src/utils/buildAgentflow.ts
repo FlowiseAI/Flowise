@@ -1499,6 +1499,58 @@ const executeNode = async ({
             return { result: results, shouldStop: true, agentFlowExecutedData, humanInput: updatedHumanInput }
         }
 
+        // Stop going through the current route if the node is an executeFlow node waiting for human input in child flow
+        if (reactFlowNode.data.name === 'executeFlowAgentflow' && results?.output?.isWaitingForHumanInput) {
+            const childAction = results.output.humanInputAction
+            const humanInputAction = {
+                id: uuidv4(),
+                mapping: {
+                    approve: 'Proceed',
+                    reject: 'Reject'
+                },
+                elements: [
+                    { type: 'agentflowv2-approve-button', label: 'Proceed' },
+                    { type: 'agentflowv2-reject-button', label: 'Reject' }
+                ],
+                data: {
+                    nodeId,
+                    nodeLabel: reactFlowNode.data.label,
+                    input: results.input,
+                    childFlowId: results.output.childFlowId,
+                    childExecutionId: results.output.childExecutionId,
+                    childChatId: results.output.childChatId,
+                    childNodeId: childAction?.data?.nodeId || childAction?.data?.childNodeId
+                }
+            }
+
+            const newWorkflowExecutedData: IAgentflowExecutedData = {
+                nodeId,
+                nodeLabel: reactFlowNode.data.label,
+                data: {
+                    ...results,
+                    output: {
+                        ...results.output,
+                        humanInputAction
+                    }
+                },
+                previousNodeIds: reversedGraph[nodeId] || [],
+                status: 'STOPPED'
+            }
+            agentFlowExecutedData.push(newWorkflowExecutedData)
+
+            sseStreamer?.streamNextAgentFlowEvent(chatId, {
+                nodeId,
+                nodeLabel: reactFlowNode.data.label,
+                status: 'STOPPED'
+            })
+            sseStreamer?.streamAgentFlowExecutedDataEvent(chatId, agentFlowExecutedData)
+            sseStreamer?.streamAgentFlowEvent(chatId, 'STOPPED')
+
+            sseStreamer?.streamActionEvent(chatId, humanInputAction)
+
+            return { result: results, shouldStop: true, agentFlowExecutedData, humanInput: updatedHumanInput }
+        }
+
         return { result: results, agentFlowExecutedData, humanInput: updatedHumanInput }
     } catch (error) {
         logger.error(`[server]: Error executing node ${nodeId}: ${getErrorMessage(error)}`)

@@ -195,21 +195,33 @@ class ExecuteFlow_Agentflow implements INode {
             if (chatflowApiKey) headers = { ...headers, Authorization: `Bearer ${chatflowApiKey}` }
 
             const finalUrl = `${baseURL}/api/v1/prediction/${selectedFlowId}`
+            let dataObj: any = {
+                question: flowInput,
+                chatId: options.chatId,
+                overrideConfig
+            }
+
+            // Forward humanInput if we are resuming from a paused state
+            const humanInput = nodeData.inputs?.humanInput
+            if (humanInput && typeof humanInput === 'object') {
+                dataObj.humanInput = {
+                    type: humanInput.type,
+                    startNodeId: humanInput.childNodeId || humanInput.startNodeId,
+                    feedback: humanInput.feedback
+                }
+            }
+
             const requestConfig: AxiosRequestConfig = {
                 method: 'POST',
                 url: finalUrl,
                 headers,
-                data: {
-                    question: flowInput,
-                    chatId: options.chatId,
-                    overrideConfig
-                }
+                data: dataObj
             }
 
             const response = await secureAxiosRequest(requestConfig)
 
             let resultText = ''
-            const { sourceDocuments, usedTools, artifacts, fileAnnotations } = response.data
+            const { sourceDocuments, usedTools, artifacts, fileAnnotations, action, executionId, chatId: childChatId } = response.data
             const flattenedSourceDocuments = Array.isArray(sourceDocuments) ? flatten(sourceDocuments) : []
             const flattenedUsedTools = Array.isArray(usedTools) ? flatten(usedTools) : []
             const flattenedArtifacts = Array.isArray(artifacts) ? flatten(artifacts) : []
@@ -289,6 +301,28 @@ class ExecuteFlow_Agentflow implements INode {
                         })
                     }
                 ]
+            }
+
+            // Propagate human input state if child flow is paused
+            if (action && Object.keys(action).length > 0) {
+                returnOutput.output = {
+                    ...returnOutput.output,
+                    // @ts-ignore
+                    isWaitingForHumanInput: true,
+                    childExecutionId: executionId,
+                    childChatId: childChatId,
+                    childFlowId: selectedFlowId,
+                    humanInputAction: {
+                        ...action,
+                        data: {
+                            ...action.data,
+                            childFlowId: selectedFlowId,
+                            childExecutionId: executionId,
+                            childChatId: childChatId,
+                            childNodeId: action.data?.nodeId
+                        }
+                    }
+                }
             }
 
             return returnOutput
