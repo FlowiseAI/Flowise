@@ -21,6 +21,14 @@ router.get(
     checkAnyPermission('chatflows:view,chatflows:update,chatflows:delete,agentflows:view,agentflows:update,agentflows:delete'),
     chatflowsController.getChatflowById
 )
+// Resolve the owning workspace of a flow for the current user (membership-gated; identical 404 otherwise).
+// Lets the UI auto-switch the active workspace when opening a flow URL from another (member) workspace.
+// Two-segment path so it never collides with the single-segment '/:id' matcher above.
+router.get(
+    '/resolve-workspace/:id',
+    checkAnyPermission('chatflows:view,chatflows:update,chatflows:delete,agentflows:view,agentflows:update,agentflows:delete'),
+    chatflowsController.getChatflowWorkspace
+)
 router.get(['/apikey/', '/apikey/:apikey'], chatflowsController.getChatflowByApiKey)
 
 // UPDATE
