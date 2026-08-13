@@ -38,8 +38,9 @@ export class VoyageAIRerank extends BaseDocumentCompressor {
         }
         try {
             let returnedDocs = await axios.post(this.VOYAGEAI_RERANK_API_URL, data, config)
+            const results = returnedDocs.data.data ?? returnedDocs.data.results
             const finalResults: Document<Record<string, any>>[] = []
-            returnedDocs.data.results.forEach((result: any) => {
+            results.forEach((result: any) => {
                 const doc = documents[result.index]
                 doc.metadata.relevance_score = result.relevance_score
                 finalResults.push(doc)
