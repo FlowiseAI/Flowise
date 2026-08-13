@@ -369,19 +369,25 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
         })
 
         // Identify iteration nodes and their children
-        const iterationGroups = new Map() // parentId -> Map of iterationIndex -> nodes
+        const iterationGroups = new Map() // parent uniqueNodeId -> Map of iterationIndex -> nodes
+        const lastSeenIndices = new Map()
 
         // Group iteration child nodes by their parent and iteration index
         nodes.forEach((node, index) => {
+            lastSeenIndices.set(node.nodeId, index)
             if (node.data?.parentNodeId && node.data?.iterationIndex !== undefined) {
                 const parentId = node.data.parentNodeId
                 const iterationIndex = node.data.iterationIndex
+                const parentIndex = lastSeenIndices.get(parentId)
+                const parentUniqueNodeId = parentIndex !== undefined ? `${parentId}_${parentIndex}` : null
 
-                if (!iterationGroups.has(parentId)) {
-                    iterationGroups.set(parentId, new Map())
+                if (!parentUniqueNodeId) return
+
+                if (!iterationGroups.has(parentUniqueNodeId)) {
+                    iterationGroups.set(parentUniqueNodeId, new Map())
                 }
 
-                const iterationMap = iterationGroups.get(parentId)
+                const iterationMap = iterationGroups.get(parentUniqueNodeId)
                 if (!iterationMap.has(iterationIndex)) {
                     iterationMap.set(iterationIndex, [])
                 }
@@ -391,16 +397,10 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
         })
 
         // Create virtual iteration container nodes
-        iterationGroups.forEach((iterationMap, parentId) => {
+        iterationGroups.forEach((iterationMap, parentUniqueNodeId) => {
             iterationMap.forEach((nodeIds, iterationIndex) => {
-                // Find the parent iteration node
-                let parentNode = null
-                for (let i = 0; i < nodes.length; i++) {
-                    if (nodes[i].nodeId === parentId) {
-                        parentNode = nodes[i]
-                        break
-                    }
-                }
+                // Find the parent iteration node instance
+                const parentNode = nodeMap.get(parentUniqueNodeId)
 
                 if (!parentNode) return
 
@@ -410,7 +410,7 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
                 const iterationContext = firstChild?.data?.iterationContext || { index: iterationIndex }
 
                 // Create a virtual node for this iteration
-                const iterationNodeId = `${parentId}_${iterationIndex}`
+                const iterationNodeId = `${parentUniqueNodeId}_iteration_${iterationIndex}`
                 const iterationLabel = `Iteration #${iterationIndex}`
 
                 // Determine status based on child nodes
@@ -432,7 +432,7 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
                         iterationIndex,
                         iterationContext,
                         isVirtualNode: true,
-                        parentIterationId: parentId
+                        parentIterationId: parentNode.nodeId
                     },
                     previousNodeIds: [], // Will be handled in the main tree building
                     status: iterationStatus,
@@ -497,31 +497,14 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
         })
 
         // Second pass: Build the iteration sub-trees
-        iterationGroups.forEach((iterationMap, parentId) => {
-            // Find all instances of the parent node
-            const parentInstances = []
-            nodes.forEach((node, index) => {
-                if (node.nodeId === parentId) {
-                    parentInstances.push(`${node.nodeId}_${index}`)
-                }
-            })
-
-            // Find the latest instance of the parent node that exists in the tree
-            let latestParent = null
-            for (let i = parentInstances.length - 1; i >= 0; i--) {
-                const parentId = parentInstances[i]
-                const parent = nodeMap.get(parentId)
-                if (parent) {
-                    latestParent = parent
-                    break
-                }
-            }
+        iterationGroups.forEach((iterationMap, parentUniqueNodeId) => {
+            const latestParent = nodeMap.get(parentUniqueNodeId)
 
             if (!latestParent) return
 
             // Add all virtual iteration nodes to the parent
             iterationMap.forEach((nodeIds, iterationIndex) => {
-                const iterationNodeId = `${parentId}_${iterationIndex}`
+                const iterationNodeId = `${parentUniqueNodeId}_iteration_${iterationIndex}`
                 const virtualNode = nodeMap.get(iterationNodeId)
                 if (virtualNode) {
                     latestParent.children.push(virtualNode)
@@ -547,6 +530,7 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
                                     potentialParent.nodeId === prevNodeId &&
                                     potentialParent.data?.iterationIndex === node.data?.iterationIndex &&
                                     potentialParent.data?.parentNodeId === node.data?.parentNodeId &&
+                                    potentialParent.virtualParentId === node.virtualParentId &&
                                     !parentFound
                                 ) {
                                     potentialParent.children.push(node)
