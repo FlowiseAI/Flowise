@@ -10,6 +10,7 @@ import { useTheme, styled } from '@mui/material/styles'
 
 // API
 import credentialsApi from '@/api/credentials'
+import { getOptionLabel, getSelectionValue, getSingleAutocompleteValue, isOptionEqualToValue } from './dropdownUtils'
 
 // const
 import { baseURL } from '@/store/constant'
@@ -92,7 +93,10 @@ export const AsyncDropdown = ({
         }
         return options.find((option) => option.name === value)
     }
-    const getDefaultOptionValue = () => (multiple ? [] : '')
+    const getAutocompleteValue = () => {
+        if (multiple) return findMatchingOptions(options, internalValue) || []
+        return getSingleAutocompleteValue({ options, value: internalValue, freeSolo })
+    }
     const addNewOption = [{ label: '- Create New -', name: '-create-' }]
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
     const { reactFlowInstance } = useContext(flowContext)
@@ -183,7 +187,10 @@ export const AsyncDropdown = ({
                 disabled={disabled}
                 disableClearable={disableClearable}
                 multiple={multiple}
+                autoSelect={freeSolo && !multiple}
                 filterSelectedOptions={multiple}
+                getOptionLabel={getOptionLabel}
+                isOptionEqualToValue={isOptionEqualToValue}
                 size='small'
                 sx={{ mt: 1, width: fullWidth ? '100%' : multiple ? '90%' : '100%' }}
                 open={open}
@@ -194,7 +201,7 @@ export const AsyncDropdown = ({
                     setOpen(false)
                 }}
                 options={options}
-                value={findMatchingOptions(options, internalValue) || getDefaultOptionValue()}
+                value={getAutocompleteValue()}
                 onChange={(e, selection) => {
                     if (multiple) {
                         let value = ''
@@ -205,7 +212,7 @@ export const AsyncDropdown = ({
                         setInternalValue(value)
                         onSelect(value)
                     } else {
-                        const value = selection ? selection.name : ''
+                        const value = getSelectionValue(selection)
                         if (isCreateNewOption && value === '-create-') {
                             onCreateNew()
                         } else {
@@ -224,7 +231,6 @@ export const AsyncDropdown = ({
                     const textField = (
                         <TextField
                             {...params}
-                            value={internalValue}
                             sx={{
                                 height: '100%',
                                 '& .MuiInputBase-root': {
