@@ -496,6 +496,14 @@
                     "inference_profile_geos": ["us"]
                 },
                 {
+                    "label": "anthropic.claude-3-5-sonnet-20241022-v2:0 (Legacy)",
+                    "name": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+                    "description": "Claude 3.5 Sonnet v2 - Legacy",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015,
+                    "inference_profile_geos": ["us", "eu", "apac"]
+                },
+                {
                     "label": "cohere.command-r-v1:0 (Legacy)",
                     "name": "cohere.command-r-v1:0",
                     "description": "Cohere Command R - Legacy",

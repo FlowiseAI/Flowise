@@ -1,6 +1,6 @@
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { getModels, getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { getAWSCredentialConfig } from '../../../src/awsToolsUtils'
 import { ChatBedrockConverseInput, ChatBedrockConverse } from '@langchain/aws'
@@ -35,7 +35,7 @@ class AWSChatBedrock_ChatModels implements INode {
             label: 'AWS Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['awsApi'],
+            credentialNames: ['awsApi', 'awsBedrockApiKey'],
             optional: true
         }
         this.inputs = [
@@ -81,6 +81,17 @@ class AWSChatBedrock_ChatModels implements INode {
                     'Hostname-only override for a custom VPC endpoint or proxy ' +
                     '(e.g. bedrock-runtime.us-east-1.amazonaws.com). ' +
                     'Do NOT enter model ARNs or inference profile IDs here.',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Bedrock API Key (Bearer Token)',
+                name: 'bedrockBearerToken',
+                type: 'password',
+                description:
+                    'AWS Bedrock API Key for bearer token authentication. ' +
+                    'When provided, this is used instead of IAM credentials. ' +
+                    'Also configurable via the AWS_BEARER_TOKEN_BEDROCK environment variable.',
                 optional: true,
                 additionalParams: true
             },
@@ -280,6 +291,29 @@ class AWSChatBedrock_ChatModels implements INode {
         if (credentialConfig.credentials) {
             obj.credentials = credentialConfig.credentials
         }
+
+        // Resolve Bearer Token from credential (awsBedrockApiKey) or node-level input field.
+        // Credential takes precedence over the node-level field.
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const bearerTokenFromCredential = getCredentialParam('bedrockBearerToken', credentialData, nodeData)
+        const bearerTokenFromInput = nodeData.inputs?.bedrockBearerToken as string
+        const bedrockBearerToken = bearerTokenFromCredential || bearerTokenFromInput
+
+        if (bedrockBearerToken) {
+            const { BedrockRuntimeClient } = await import('@aws-sdk/client-bedrock-runtime')
+            const client = new BedrockRuntimeClient({
+                region: iRegion
+            })
+            client.middlewareStack.add(
+                (next) => async (args) => {
+                    ;(args.request as any).headers['authorization'] = `Bearer ${bedrockBearerToken}`
+                    return next(args)
+                },
+                { step: 'build', name: 'bedrockBearerToken' }
+            )
+            obj.client = client
+        }
+
         if (cache) obj.cache = cache
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
