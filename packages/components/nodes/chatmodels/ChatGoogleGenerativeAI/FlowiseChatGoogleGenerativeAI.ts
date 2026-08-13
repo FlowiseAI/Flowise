@@ -302,6 +302,23 @@ function _convertLangChainContentToPart(content: MessageContentComplex, isMultim
         }
     } else if ('functionCall' in content) {
         return undefined
+    } else if (content.type === 'thinking') {
+        // Map LangChain `thinking` blocks back to Google's native shape:
+        // a text Part with `thought: true` and optional `thoughtSignature`.
+        // https://ai.google.dev/gemini-api/docs/thinking
+        const text = (content as any).thinking ?? (content as any).text
+        if (text !== undefined && typeof text !== 'string') {
+            throw new Error(`Invalid 'thinking' content: expected string, got ${typeof text}`)
+        }
+        const signature = (content as any).signature ?? (content as any).thoughtSignature
+        if (signature !== undefined && typeof signature !== 'string') {
+            throw new Error(`Invalid 'thinking' signature: expected string, got ${typeof signature}`)
+        }
+        return {
+            text: text ?? '',
+            thought: true,
+            ...(signature ? { thoughtSignature: signature } : {})
+        } as Part
     } else {
         if ('type' in content) {
             throw new Error(`Unknown content type ${content.type}`)
