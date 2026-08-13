@@ -3,7 +3,8 @@ import {
     convertRequireToImport,
     COMMONJS_REQUIRE_REGEX,
     IMPORT_EXTRACTION_REGEX,
-    executeJavaScriptCode
+    executeJavaScriptCode,
+    mapExtToInputField
 } from './utils'
 
 describe('removeInvalidImageMarkdown', () => {
@@ -286,4 +287,36 @@ describe('NodeVM sandbox — availableDependencies allowlist', () => {
         const result = await executeJavaScriptCode(`const { Client } = require('pg'); return typeof Client`, {}, { timeout: 10000 })
         expect(result).toBe('function')
     }, 15000)
+})
+
+describe('mapExtToInputField', () => {
+    it('maps known lowercase extensions to their input field', () => {
+        expect(mapExtToInputField('.pdf')).toBe('pdfFile')
+        expect(mapExtToInputField('.txt')).toBe('txtFile')
+        expect(mapExtToInputField('.json')).toBe('jsonFile')
+        expect(mapExtToInputField('.csv')).toBe('csvFile')
+        expect(mapExtToInputField('.docx')).toBe('docxFile')
+    })
+
+    it('maps uppercase extensions to the same input field (case-insensitive)', () => {
+        expect(mapExtToInputField('.PDF')).toBe('pdfFile')
+        expect(mapExtToInputField('.TXT')).toBe('txtFile')
+        expect(mapExtToInputField('.JSON')).toBe('jsonFile')
+        expect(mapExtToInputField('.DOCX')).toBe('docxFile')
+    })
+
+    it('maps mixed-case extensions to the same input field', () => {
+        expect(mapExtToInputField('.Pdf')).toBe('pdfFile')
+        expect(mapExtToInputField('.Csv')).toBe('csvFile')
+    })
+
+    it('falls back to txtFile for unknown extensions', () => {
+        expect(mapExtToInputField('.unknown')).toBe('txtFile')
+    })
+
+    it('falls back to txtFile for empty or nullish extensions', () => {
+        expect(mapExtToInputField('')).toBe('txtFile')
+        expect(mapExtToInputField(undefined)).toBe('txtFile')
+        expect(mapExtToInputField(null as unknown as string)).toBe('txtFile')
+    })
 })

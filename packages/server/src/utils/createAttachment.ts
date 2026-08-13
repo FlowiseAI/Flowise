@@ -177,7 +177,7 @@ export const createFileAttachment = async (req: Request) => {
             if (fileInputFieldFromExt !== 'txtFile') {
                 fileInputField = fileInputFieldFromExt
             } else if (fileInputFieldFromMimeType !== 'txtFile') {
-                fileInputField = fileInputFieldFromExt
+                fileInputField = fileInputFieldFromMimeType
             }
 
             await removeSpecificFileFromUpload(file.path ?? file.key)
