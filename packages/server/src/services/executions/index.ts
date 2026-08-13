@@ -105,6 +105,21 @@ const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data:
     }
 }
 
+/**
+ * Fields that the HTTP `PUT /api/v1/executions/:id` endpoint is allowed to
+ * change on an Execution row. The endpoint is only used by the UI to toggle
+ * an execution's share state (see `packages/ui/src/views/agentexecutions`),
+ * so the writable surface is intentionally limited to `isPublic`.
+ *
+ * Every other column (`id`, `executionData`, `state`, `agentflowId`,
+ * `sessionId`, `action`, `createdDate`, `updatedDate`, `stoppedDate`,
+ * `workspaceId`) is server-managed and must not be settable through this
+ * route. Internal callers that need to mutate those columns use the
+ * dedicated `updateExecution` helper in `utils/buildAgentflow.ts`, which
+ * does not pass through this service function.
+ */
+const EXECUTION_UPDATABLE_FIELDS = ['isPublic'] as const
+
 const updateExecution = async (executionId: string, data: Partial<Execution>, workspaceId?: string): Promise<Execution | null> => {
     try {
         const appServer = getRunningExpressApp()
@@ -117,8 +132,20 @@ const updateExecution = async (executionId: string, data: Partial<Execution>, wo
         if (!execution) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Execution ${executionId} not found`)
         }
+
+        // Build a sanitized partial that only carries fields in the
+        // explicit allowlist; prevents mass assignment of server-managed
+        // columns such as `workspaceId`, `agentflowId`, `executionData`,
+        // `state`, and so on via the request body.
+        const sanitized: Partial<Execution> = {}
+        for (const field of EXECUTION_UPDATABLE_FIELDS) {
+            if (data && Object.prototype.hasOwnProperty.call(data, field)) {
+                ;(sanitized as any)[field] = (data as any)[field]
+            }
+        }
+
         const updateExecution = new Execution()
-        Object.assign(updateExecution, data)
+        Object.assign(updateExecution, sanitized)
         await appServer.AppDataSource.getRepository(Execution).merge(execution, updateExecution)
         const dbResponse = await appServer.AppDataSource.getRepository(Execution).save(execution)
         return dbResponse
