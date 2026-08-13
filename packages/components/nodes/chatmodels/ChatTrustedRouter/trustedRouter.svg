@@ -1,0 +1,8 @@
+<svg fill="none" height="1em" style="flex:none;line-height:1" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg">
+  <title>TrustedRouter</title>
+  <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+    <path d="M1.4 7.5h5.1L11 12M1.4 16.5H4L8.5 12M1.4 12h14.1"/>
+    <circle cx="15.5" cy="12" fill="currentColor" r="1.9" stroke="none"/>
+    <path d="M17.4 12h5.2"/>
+  </g>
+</svg>
