@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Atlas Cloud">
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  <path d="M20 40h25a9 9 0 0 0 1.7-17.8 14 14 0 0 0-26.2-2.9A10.5 10.5 0 0 0 20 40Z" fill="#38bdf8"/>
+  <path d="M22 43h20" stroke="#e0f2fe" stroke-width="4" stroke-linecap="round"/>
+</svg>
