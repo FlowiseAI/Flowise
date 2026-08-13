@@ -2757,6 +2757,23 @@
             ]
         },
         {
+            "name": "forgeEmbeddings",
+            "models": [
+                {
+                    "label": "forge-turbo (1024d)",
+                    "name": "forge-turbo"
+                },
+                {
+                    "label": "forge-pro (2560d)",
+                    "name": "forge-pro"
+                },
+                {
+                    "label": "forge-ultra-4k (4096d)",
+                    "name": "forge-ultra-4k"
+                }
+            ]
+        },
+        {
             "name": "mistralAIEmbeddings",
             "models": [
                 {
