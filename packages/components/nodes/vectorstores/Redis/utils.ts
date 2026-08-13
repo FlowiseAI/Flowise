@@ -1,12 +1,13 @@
 import { isNil } from 'lodash'
 
 /*
- * Escapes all '-' characters.
- * Redis Search considers '-' as a negative operator, hence we need
- * to escape it
+ * Escapes all RediSearch special characters.
+ * RediSearch reserves the following characters as operators/delimiters,
+ * so they must be escaped when stored as metadata values:
+ *   , . < > { } [ ] " ' : ; ! @ # $ % ^ & * ( ) - + = ~ \
  */
 export const escapeSpecialChars = (str: string) => {
-    return str.replaceAll('-', '\\-')
+    return str.replace(/([,.<>{}[\]"':;!@#$%^&*()\-+=~\\])/g, '\\$1')
 }
 
 export const escapeAllStrings = (obj: object) => {
@@ -27,5 +28,5 @@ export const escapeAllStrings = (obj: object) => {
 }
 
 export const unEscapeSpecialChars = (str: string) => {
-    return str.replaceAll('\\-', '-')
+    return str.replace(/\\([,.<>{}[\]"':;!@#$%^&*()\-+=~\\])/g, '$1')
 }
