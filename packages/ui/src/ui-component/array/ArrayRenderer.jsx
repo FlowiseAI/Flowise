@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Chip, Box, Button, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconTrash, IconPlus } from '@tabler/icons-react'
+import { IconTrash, IconPlus, IconArrowUp, IconArrowDown } from '@tabler/icons-react'
 import NodeInputHandler from '@/views/canvas/NodeInputHandler'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 import { showHideInputs } from '@/utils/genericHelper'
@@ -17,6 +17,62 @@ export const ArrayRenderer = ({ inputParam, data, disabled, isDocStore = false }
     const customization = useSelector((state) => state.customization)
     const flowContextValue = useContext(flowContext)
     const { reactFlowInstance } = flowContextValue || {}
+    const [itemKeys, setItemKeys] = useState([])
+
+    // Enable reorder only for Condition Agent "scenarios" array.
+    // Use stable schema keys (inputParam.name) instead of label to avoid i18n/text changes.
+    const isConditionAgentNode = data?.name === 'conditionAgentV2' || data?.name === 'conditionAgentAgentflow'
+
+    // Whitelist scenario field names across variants (keep this minimal)
+    // Include both legacy and UI field name for compatibility
+    const scenarioFieldNames = new Set(['conditionAgentScenarios', 'ConditionAgentScenarios'])
+
+    const isScenarioField = scenarioFieldNames.has(inputParam?.name)
+    const enableReorder = !isDocStore && isConditionAgentNode && isScenarioField
+
+    //array reorder tinny tool
+    const swapInArray = (arr, i, j) => {
+        const next = [...arr]
+        ;[next[i], next[j]] = [next[j], next[i]]
+        return next
+    }
+
+    //scenario array swap function
+    const moveItem = (fromIndex, toIndex) => {
+        if (!enableReorder) return
+        if (disabled) return
+        if (fromIndex === toIndex) return
+
+        const length = arrayItems.length
+        if (length <= 0) return
+        if (fromIndex < 0 || fromIndex >= length) return
+        if (toIndex < 0 || toIndex >= length) return
+
+        const nextItems = swapInArray(arrayItems, fromIndex, toIndex)
+        const nextKeys = swapInArray(itemKeys, fromIndex, toIndex)
+
+        // Only swap itemParameters when it is aligned 1:1 with arrayItems.
+        // Some items may have empty parameters (show/hide), which can make lengths differ.
+        const canSwapParams = itemParameters.length === arrayItems.length
+        const nextParams = canSwapParams ? swapInArray(itemParameters, fromIndex, toIndex) : itemParameters
+
+        setArrayItems(nextItems)
+        if (canSwapParams) setItemParameters(nextParams)
+        setItemKeys(nextKeys)
+
+        data.inputs[inputParam.name] = nextItems
+
+        updateOutputAnchors(nextItems, 'REORDER')
+    }
+
+    const handleMoveUp = (index) => {
+        if (index <= 0) return
+        moveItem(index, index - 1)
+    }
+    const handleMoveDown = (index) => {
+        if (index >= arrayItems.length - 1) return
+        moveItem(index, index + 1)
+    }
 
     // Handler for when input values change within array items
     const handleItemInputChange = ({ inputParam: changedParam, newValue }, itemIndex) => {
@@ -69,13 +125,27 @@ export const ArrayRenderer = ({ inputParam, data, disabled, isDocStore = false }
         }
 
         setItemParameters(initialItemParameters)
+
+        // Initialize render keys (UI-only). Keep them stable across reorders.
+        setItemKeys((prev) => {
+            if (prev.length === initialArrayItems.length) return prev
+            const createKey = () => {
+                try {
+                    return crypto.randomUUID()
+                } catch (e) {
+                    return 'key-' + Date.now() + '-' + Math.random()
+                }
+            }
+            // If length changed (e.g., dialog opened with fresh data), rebuild to match.
+            return Array.from({ length: initialArrayItems.length }, () => createKey())
+        })
     }, [data, inputParam])
 
     const updateOutputAnchors = (items, type, indexToDelete) => {
         // Skip output anchor updates for DocStore context
         if (isDocStore || !reactFlowInstance) return
 
-        if (data.name !== 'conditionAgentflow' && data.name !== 'conditionAgentAgentflow') return
+        if (!isConditionAgentNode) return
 
         const updatedOutputs = items.map((_, i) => ({
             id: `${data.id}-output-${i}`,
@@ -147,6 +217,17 @@ export const ArrayRenderer = ({ inputParam, data, disabled, isDocStore = false }
         setArrayItems(updatedArrayItems)
         data.inputs[inputParam.name] = updatedArrayItems
 
+        // keep render keys aligned (UI-only, do not persist)
+        setItemKeys((prev) => {
+            const next = [...prev]
+            try {
+                next.push(crypto.randomUUID())
+            } catch (e) {
+                next.push('key-' + Date.now() + '-' + Math.random())
+            }
+            return next
+        })
+
         // Calculate display parameters for all items including new one
         const updatedItemParameters = []
         for (let i = 0; i < updatedArrayItems.length; i += 1) {
@@ -165,6 +246,9 @@ export const ArrayRenderer = ({ inputParam, data, disabled, isDocStore = false }
         const updatedArrayItems = arrayItems.filter((_, i) => i !== indexToDelete)
         setArrayItems(updatedArrayItems)
         data.inputs[inputParam.name] = updatedArrayItems
+
+        // keep render keys aligned (UI-only, do not persist)
+        setItemKeys((prev) => prev.filter((_, i) => i !== indexToDelete))
 
         const updatedItemParameters = itemParameters.filter((_, i) => i !== indexToDelete)
         setItemParameters(updatedItemParameters)
@@ -196,7 +280,7 @@ export const ArrayRenderer = ({ inputParam, data, disabled, isDocStore = false }
                             borderRadius: 2,
                             position: 'relative'
                         }}
-                        key={index}
+                        key={itemKeys[index] ?? index}
                     >
                         {/* Delete button for array item */}
                         {isDeleteButtonVisible && (
@@ -223,8 +307,42 @@ export const ArrayRenderer = ({ inputParam, data, disabled, isDocStore = false }
                             sx={{ position: 'absolute', right: isDeleteButtonVisible ? 45 : 10, top: 16 }}
                         />
 
+                        {enableReorder && (
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    // Place arrows on the same row, to the left of the index chip
+                                    right: isDeleteButtonVisible ? 78 : 43,
+                                    top: 14,
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    gap: 0.25
+                                }}
+                            >
+                                <IconButton
+                                    title='Move up'
+                                    size='small'
+                                    disabled={disabled || index === 0}
+                                    onClick={() => handleMoveUp(index)}
+                                    sx={{ height: '22px', width: '22px', p: 0 }}
+                                >
+                                    <IconArrowUp size={16} />
+                                </IconButton>
+                                <IconButton
+                                    title='Move down'
+                                    size='small'
+                                    disabled={disabled || index === arrayItems.length - 1}
+                                    onClick={() => handleMoveDown(index)}
+                                    sx={{ height: '22px', width: '22px', p: 0 }}
+                                >
+                                    <IconArrowDown size={16} />
+                                </IconButton>
+                            </Box>
+                        )}
+
                         {/* Render input fields for array item */}
-                        {itemParameters[index]
+                        {(itemParameters[index] || [])
                             .filter((param) => param.display !== false)
                             .map((param, _index) => {
                                 if (isDocStore) {
