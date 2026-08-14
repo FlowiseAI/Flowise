@@ -1,4 +1,4 @@
-import { TavilySearch } from '@langchain/tavily'
+import { TavilySearch, type TavilySearchAPIRetrieverFields } from '@langchain/tavily'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -170,8 +170,8 @@ class TavilyAPI_Tools implements INode {
         const includeDomains = nodeData.inputs?.includeDomains as string
         const excludeDomains = nodeData.inputs?.excludeDomains as string
 
-        const config: any = {
-            apiKey: tavilyApiKey,
+        const config: TavilySearchAPIRetrieverFields = {
+            tavilyApiKey,
             topic,
             searchDepth,
             maxResults,
