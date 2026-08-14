@@ -43,6 +43,8 @@ const ORIGINAL_ENV = process.env
 describe('utils/telemetry.ts', () => {
     beforeEach(() => {
         process.env = { ...ORIGINAL_ENV }
+        delete process.env.POSTHOG_PUBLIC_API_KEY
+        delete process.env.DISABLE_FLOWISE_TELEMETRY
         jest.clearAllMocks()
 
         jest.useFakeTimers()
@@ -66,6 +68,16 @@ describe('utils/telemetry.ts', () => {
         it('does not create PostHog when POSTHOG_PUBLIC_API_KEY is unset', async () => {
             delete process.env.POSTHOG_PUBLIC_API_KEY
             const t = new Telemetry()
+            expect(t.postHog).toBeUndefined()
+            expect(posthogNode.PostHog).not.toHaveBeenCalled()
+        })
+
+        it('does not create PostHog when telemetry is disabled', async () => {
+            process.env.POSTHOG_PUBLIC_API_KEY = 'ph-key'
+            process.env.DISABLE_FLOWISE_TELEMETRY = 'true'
+
+            const t = new Telemetry()
+
             expect(t.postHog).toBeUndefined()
             expect(posthogNode.PostHog).not.toHaveBeenCalled()
         })

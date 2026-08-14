@@ -15,7 +15,9 @@ export class Telemetry {
     postHog?: PostHog
 
     constructor() {
-        if (process.env.POSTHOG_PUBLIC_API_KEY) {
+        const telemetryDisabled = process.env.DISABLE_FLOWISE_TELEMETRY?.toLowerCase() === 'true'
+
+        if (process.env.POSTHOG_PUBLIC_API_KEY && !telemetryDisabled) {
             this.postHog = new PostHog(process.env.POSTHOG_PUBLIC_API_KEY)
         } else {
             this.postHog = undefined
