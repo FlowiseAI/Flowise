@@ -101,6 +101,14 @@ class ChatLitellm_ChatModels implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'User',
+                name: 'user',
+                type: 'string',
+                placeholder: 'user id',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -115,6 +123,7 @@ class ChatLitellm_ChatModels implements INode {
         const topP = nodeData.inputs?.topP as string
         const timeout = nodeData.inputs?.timeout as string
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        const user = nodeData.inputs?.user as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('litellmApiKey', credentialData, nodeData)
@@ -137,6 +146,7 @@ class ChatLitellm_ChatModels implements INode {
         if (topP) obj.topP = parseFloat(topP)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
+        if (user) obj.user = user
         if (apiKey) {
             obj.openAIApiKey = apiKey
             obj.apiKey = apiKey
