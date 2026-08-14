@@ -1290,6 +1290,7 @@ const executeNode = async ({
                 }
 
                 // Initialize array to collect results from iterations
+                const outputStructure = results.input?.iterationOutputStructure ?? 'aggregatedText'
                 const iterationResults: string[] = []
 
                 // Execute sub-flow for each item in the iteration array
@@ -1336,9 +1337,12 @@ const executeNode = async ({
                             productId
                         })
 
-                        // Store the result
+                        // Store the result.
+                        // In jsonArray mode, always push to maintain 1:1 mapping with the input array.
                         if (subFlowResult?.text) {
                             iterationResults.push(subFlowResult.text)
+                        } else if (outputStructure === 'jsonArray') {
+                            iterationResults.push('')
                         }
 
                         // Add executed data from sub-flow to main execution data with appropriate iteration context
@@ -1398,7 +1402,7 @@ const executeNode = async ({
                 results.output = {
                     ...(results.output || {}),
                     iterationResults,
-                    content: iterationResults.join('\n')
+                    content: outputStructure === 'jsonArray' ? JSON.stringify(iterationResults) : iterationResults.join('\n')
                 }
 
                 logger.debug(`  📊 Completed all iterations. Total results: ${iterationResults.length}`)

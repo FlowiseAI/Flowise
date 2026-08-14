@@ -18,7 +18,7 @@ class Iteration_Agentflow implements INode {
     constructor() {
         this.label = 'Iteration'
         this.name = 'iterationAgentflow'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Iteration'
         this.category = 'Agent Flows'
         this.description = 'Execute the nodes within the iteration block through N iterations'
@@ -32,6 +32,25 @@ class Iteration_Agentflow implements INode {
                 description: 'The input array to iterate over',
                 acceptVariable: true,
                 rows: 4
+            },
+            {
+                label: 'Output Structure',
+                name: 'iterationOutputStructure',
+                type: 'options',
+                description: 'How to structure the output from all iterations',
+                options: [
+                    {
+                        label: 'Aggregated Text',
+                        name: 'aggregatedText',
+                        description: 'Join all iteration outputs into a single text separated by newlines'
+                    },
+                    {
+                        label: 'JSON Array',
+                        name: 'jsonArray',
+                        description: 'Preserve the input array structure — output[i] corresponds to the result of processing input[i]'
+                    }
+                ],
+                default: 'aggregatedText'
             }
         ]
     }
@@ -56,13 +75,15 @@ class Iteration_Agentflow implements INode {
             throw new Error('Invalid input array')
         }
 
+        const iterationOutputStructure = nodeData.inputs?.iterationOutputStructure ?? 'aggregatedText'
         const state = options.agentflowRuntime?.state as ICommonObject
 
         const returnOutput = {
             id: nodeData.id,
             name: this.name,
             input: {
-                iterationInput: iterationInputArray
+                iterationInput: iterationInputArray,
+                iterationOutputStructure
             },
             output: {},
             state
