@@ -15,7 +15,12 @@ import {
     replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
-import { processTemplateVariables, configureStructuredOutput, extractResponseContent } from '../../../src/utils'
+import {
+    processTemplateVariables,
+    configureStructuredOutput,
+    extractResponseContent,
+    extractStreamingChunkContent
+} from '../../../src/utils'
 import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
 import { flatten } from 'lodash'
 
@@ -867,43 +872,38 @@ class LLM_Agentflow implements INode {
         try {
             for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
                 if (sseStreamer && !isStructuredOutput) {
-                    let content = ''
+                    const { text: content, reasoning } = extractStreamingChunkContent(chunk)
 
-                    if (chunk.contentBlocks?.length) {
-                        for (const block of chunk.contentBlocks) {
-                            if (isLastNode) {
-                                // As soon as we see the first non-reasoning block, send last thinking event with duration (only when isLastNode)
-                                if (block.type !== 'reasoning' && wasThinking && !sentLastThinkingEvent && thinkingStartTime != null) {
-                                    thinkingDuration = Math.round((Date.now() - thinkingStartTime) / 1000)
-                                    sseStreamer.streamThinkingEvent(chatId, '', thinkingDuration)
-                                    sentLastThinkingEvent = true
-                                }
-                                if (block.type === 'reasoning' && (block as { reasoning?: string }).reasoning) {
-                                    if (!thinkingStartTime) {
-                                        thinkingStartTime = Date.now()
-                                    }
-                                    wasThinking = true
-                                    const reasoningContent = (block as { reasoning: string }).reasoning
-                                    sseStreamer.streamThinkingEvent(chatId, reasoningContent)
-                                    reasonContent += reasoningContent
-                                }
+                    if (reasoning) {
+                        reasonContent += reasoning
+                        if (isLastNode) {
+                            if (!thinkingStartTime) {
+                                thinkingStartTime = Date.now()
                             }
+                            wasThinking = true
+                            sseStreamer.streamThinkingEvent(chatId, reasoning)
                         }
                     }
 
-                    if (typeof chunk === 'string') {
-                        content = chunk
-                    } else if (Array.isArray(chunk.content) && chunk.content.length > 0) {
-                        const contents = chunk.content as ContentBlock.Text[]
-                        content = contents.map((item) => item.text).join('')
-                    } else if (chunk.content) {
-                        content = chunk.content.toString()
+                    if (content && isLastNode && wasThinking && !sentLastThinkingEvent && thinkingStartTime != null) {
+                        thinkingDuration = Math.round((Date.now() - thinkingStartTime) / 1000)
+                        sseStreamer.streamThinkingEvent(chatId, '', thinkingDuration)
+                        sentLastThinkingEvent = true
                     }
-                    sseStreamer.streamTokenEvent(chatId, content)
+
+                    if (content) {
+                        sseStreamer.streamTokenEvent(chatId, content)
+                    }
                 }
 
                 const messageChunk = typeof chunk === 'string' ? new AIMessageChunk(chunk) : chunk
                 response = response.concat(messageChunk)
+            }
+
+            if (sseStreamer && !isStructuredOutput && isLastNode && wasThinking && !sentLastThinkingEvent && thinkingStartTime != null) {
+                thinkingDuration = Math.round((Date.now() - thinkingStartTime) / 1000)
+                sseStreamer.streamThinkingEvent(chatId, '', thinkingDuration)
+                sentLastThinkingEvent = true
             }
         } catch (error) {
             console.error('Error during streaming:', error)
