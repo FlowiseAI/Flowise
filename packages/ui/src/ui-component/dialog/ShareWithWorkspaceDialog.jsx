@@ -47,6 +47,7 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
     const [outputSchema, setOutputSchema] = useState([])
 
     const [name, setName] = useState('')
+    const [selectedRowIds, setSelectedRowIds] = useState([])
 
     const onRowUpdate = (newRow) => {
         setTimeout(() => {
@@ -59,6 +60,12 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
                 return allRows
             })
         })
+    }
+
+    const handleRowSelectionModelChange = (newSelectionModel) => {
+        const selectedIds = Array.isArray(newSelectionModel) ? newSelectionModel : []
+        setSelectedRowIds(selectedIds)
+        setOutputSchema((prev) => prev.map((row) => ({ ...row, shared: selectedIds.includes(row.id) })))
     }
 
     const columns = useMemo(
