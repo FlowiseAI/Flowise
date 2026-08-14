@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
@@ -43,12 +43,14 @@ const Agentflows = () => {
     const [icons, setIcons] = useState({})
     const [scheduleStatuses, setScheduleStatuses] = useState({})
     const [search, setSearch] = useState('')
+    const [searchQuery, setSearchQuery] = useState('')
     const { error, setError } = useError()
 
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
     const [view, setView] = useState(localStorage.getItem('agentFlowDisplayStyle') || 'card')
     const [agentflowVersion, setAgentflowVersion] = useState(localStorage.getItem('agentFlowVersion') || 'v2')
     const [showDeprecationNotice, setShowDeprecationNotice] = useState(true)
+    const latestAgentflowVersionRef = useRef(agentflowVersion)
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
@@ -62,11 +64,12 @@ const Agentflows = () => {
         refresh(page, pageLimit, agentflowVersion)
     }
 
-    const refresh = (page, limit, nextView) => {
+    const refresh = (page, limit, nextView, nextSearch = searchQuery) => {
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
         }
+        if (nextSearch) params.search = nextSearch
         getAllAgentflows.request(nextView === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT', params)
     }
 
@@ -80,19 +83,12 @@ const Agentflows = () => {
         if (nextView === null) return
         localStorage.setItem('agentFlowVersion', nextView)
         setAgentflowVersion(nextView)
+        setCurrentPage(1)
         refresh(1, pageLimit, nextView)
     }
 
     const onSearchChange = (event) => {
         setSearch(event.target.value)
-    }
-
-    function filterFlows(data) {
-        return (
-            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
-            (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
-            data.id.toLowerCase().indexOf(search.toLowerCase()) > -1
-        )
     }
 
     const addNew = () => {
@@ -120,6 +116,25 @@ const Agentflows = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    useEffect(() => {
+        latestAgentflowVersionRef.current = agentflowVersion
+    }, [agentflowVersion])
+
+    useEffect(() => {
+        const normalizedSearch = search.trim()
+        if (normalizedSearch === searchQuery) return
+
+        const timeoutId = setTimeout(() => {
+            setSearchQuery(normalizedSearch)
+            setCurrentPage(1)
+            refresh(1, pageLimit, latestAgentflowVersionRef.current, normalizedSearch)
+        }, 300)
+
+        return () => clearTimeout(timeoutId)
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search])
 
     useEffect(() => {
         if (getAllAgentflows.error) {
@@ -219,7 +234,7 @@ const Agentflows = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={true}
-                        searchPlaceholder='Search Name or Category'
+                        searchPlaceholder='Search Name, Category, or ID'
                         title='Agentflows'
                         description='Multi-agent systems, workflow orchestration'
                     >
@@ -346,7 +361,7 @@ const Agentflows = () => {
                         <>
                             {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllAgentflows.data?.data.filter(filterFlows).map((data, index) => (
+                                    {getAllAgentflows.data?.data.map((data, index) => (
                                         <ItemCard
                                             key={index}
                                             onClick={() => goToCanvas(data)}
@@ -366,7 +381,7 @@ const Agentflows = () => {
                                     icons={icons}
                                     scheduleStatuses={scheduleStatuses}
                                     isLoading={isLoading}
-                                    filterFunction={filterFlows}
+                                    filterFunction={() => true}
                                     updateFlowsApi={getAllAgentflows}
                                     setError={setError}
                                     currentPage={currentPage}
