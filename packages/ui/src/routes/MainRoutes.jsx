@@ -61,6 +61,9 @@ const Logs = Loadable(lazy(() => import('@/views/serverlogs')))
 // executions routing
 const Executions = Loadable(lazy(() => import('@/views/agentexecutions')))
 
+// channels routing
+const Channels = Loadable(lazy(() => import('@/views/channels')))
+
 // enterprise features
 const UsersPage = Loadable(lazy(() => import('@/views/users')))
 const RolesPage = Loadable(lazy(() => import('@/views/roles')))
@@ -288,6 +291,14 @@ const MainRoutes = {
         //         </RequireAuth>
         //     )
         // },
+        {
+            path: '/channels',
+            element: (
+                <RequireAuth permission={'credentials:view,chatflows:view,agentflows:view'}>
+                    <Channels />
+                </RequireAuth>
+            )
+        },
         {
             path: '/account',
             element: <Account />

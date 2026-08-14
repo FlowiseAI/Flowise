@@ -19,6 +19,7 @@ import { FlowListTable } from '@/ui-component/table/FlowListTable'
 
 // API
 import chatflowsApi from '@/api/chatflows'
+import channelsApi from '@/api/channels'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -42,6 +43,9 @@ const Chatflows = () => {
     const { error, setError } = useError()
 
     const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
+    const getBindingsApi = useApi(channelsApi.getChannelBindings)
+    const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
+    const [channelBindingsByFlowId, setChannelBindingsByFlowId] = useState({})
     const [view, setView] = useState(localStorage.getItem('chatFlowDisplayStyle') || 'card')
 
     /* Table Pagination */
@@ -62,6 +66,7 @@ const Chatflows = () => {
             limit: limit || pageLimit
         }
         getAllChatflowsApi.request(params)
+        getBindingsApi.request()
     }
 
     const handleChange = (event, nextView) => {
@@ -98,6 +103,25 @@ const Chatflows = () => {
     useEffect(() => {
         setLoading(getAllChatflowsApi.loading)
     }, [getAllChatflowsApi.loading])
+
+    useEffect(() => {
+        if (getBindingsApi.data) {
+            const grouped = (getBindingsApi.data || []).reduce((acc, binding) => {
+                const flowId = binding.chatflowId
+                if (!flowId) return acc
+                if (!acc[flowId]) acc[flowId] = []
+                acc[flowId].push(binding)
+                return acc
+            }, {})
+            setChannelBindingsByFlowId(grouped)
+        }
+    }, [getBindingsApi.data])
+
+    useEffect(() => {
+        if (getBindingsApi.error?.response?.status && getBindingsApi.error.response.status !== 403) {
+            setError(getBindingsApi.error)
+        }
+    }, [getBindingsApi.error, setError])
 
     useEffect(() => {
         if (getAllChatflowsApi.data) {
@@ -198,7 +222,13 @@ const Chatflows = () => {
                             {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                                     {getAllChatflowsApi.data?.data?.filter(filterFlows).map((data, index) => (
-                                        <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                        <ItemCard
+                                            key={index}
+                                            onClick={() => goToCanvas(data)}
+                                            data={data}
+                                            images={images[data.id]}
+                                            channelBindings={channelBindingsByFlowId[data.id] || []}
+                                        />
                                     ))}
                                 </Box>
                             ) : (
@@ -211,6 +241,7 @@ const Chatflows = () => {
                                     setError={setError}
                                     currentPage={currentPage}
                                     pageLimit={pageLimit}
+                                    channelBindingsByFlowId={channelBindingsByFlowId}
                                 />
                             )}
                             {/* Pagination and Page Size Controls */}

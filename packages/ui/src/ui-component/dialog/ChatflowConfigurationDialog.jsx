@@ -35,6 +35,7 @@ import Leads from '@/ui-component/extended/Leads'
 import FollowUpPrompts from '@/ui-component/extended/FollowUpPrompts'
 import FileUpload from '@/ui-component/extended/FileUpload'
 import PostProcessing from '@/ui-component/extended/PostProcessing'
+import ChannelBindings from '@/ui-component/extended/ChannelBindings'
 import McpServer from '@/ui-component/extended/McpServer'
 
 const CONFIGURATION_GROUPS = [
@@ -58,6 +59,12 @@ const CONFIGURATION_GROUPS = [
                 id: 'leads',
                 icon: IconUserPlus,
                 description: 'Capture visitor contact information'
+            },
+            {
+                label: 'Channels',
+                id: 'channels',
+                icon: IconWorldWww,
+                description: 'Channel Configuration'
             }
         ]
     },
@@ -157,6 +164,8 @@ function getSectionStatus(sectionId, chatflow) {
             return Array.isArray(chatbotConfig?.allowedOrigins) && chatbotConfig.allowedOrigins.some((o) => o && o.trim() !== '')
         case 'leads':
             return chatbotConfig?.leads?.status === true
+        case 'channels':
+            return chatbotConfig?.channels?.status === true
         case 'conversationStarters': {
             const sp = chatbotConfig?.starterPrompts
             if (!sp) return false
@@ -170,7 +179,6 @@ function getSectionStatus(sectionId, chatflow) {
             if (!chatflow.speechToText) return false
             try {
                 const stt = JSON.parse(chatflow.speechToText)
-                // "none" with status:true means disabled — ignore it
                 return Object.entries(stt).some(([key, provider]) => key !== 'none' && provider?.status === true)
             } catch {
                 return false
@@ -255,6 +263,8 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                 return <AllowedDomains {...props} hideTitle />
             case 'leads':
                 return <Leads {...props} />
+            case 'channels':
+                return <ChannelBindings {...props} />
             case 'conversationStarters':
                 return <StarterPrompts {...props} />
             case 'followUpPrompts':

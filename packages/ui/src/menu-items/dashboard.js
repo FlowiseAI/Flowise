@@ -148,6 +148,15 @@ const dashboard = {
                     permission: 'apikeys:view'
                 },
                 {
+                    id: 'channels',
+                    title: 'Channels',
+                    type: 'item',
+                    url: '/channels',
+                    icon: icons.IconFileDatabase,
+                    breadcrumbs: true,
+                    permission: 'credentials:view,chatflows:view,agentflows:view'
+                },
+                {
                     id: 'document-stores',
                     title: 'Document Stores',
                     type: 'item',

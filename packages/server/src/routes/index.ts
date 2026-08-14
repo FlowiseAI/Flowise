@@ -57,6 +57,14 @@ import variablesRouter from './variables'
 import vectorRouter from './vectors'
 import verifyRouter from './verify'
 import versionRouter from './versions'
+import pricingRouter from './pricing'
+import nvidiaNimRouter from './nvidia-nim'
+import executionsRouter from './executions'
+import validationRouter from './validation'
+import agentflowv2GeneratorRouter from './agentflowv2-generator'
+import textToSpeechRouter from './text-to-speech'
+import channelsRouter from './channels'
+import channelWebhooksRouter from './channel-webhooks'
 import webhookRouter from './webhook'
 import webhookListenerRouter from './webhook-listener'
 
@@ -130,6 +138,8 @@ router.use('/executions', executionsRouter)
 router.use('/validation', validationRouter)
 router.use('/agentflowv2-generator', agentflowv2GeneratorRouter)
 router.use('/text-to-speech', textToSpeechRouter)
+router.use('/channels', channelsRouter)
+router.use('/channel-webhooks', channelWebhooksRouter)
 router.use('/custom-mcp-servers', customMcpServersRouter)
 router.use('/mcp-server', mcpServerRouter)
 router.use('/mcp', mcpEndpointRouter)

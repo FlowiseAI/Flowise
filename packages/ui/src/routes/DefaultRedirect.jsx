@@ -14,6 +14,7 @@ import SSOConfig from '@/views/auth/ssoConfig'
 import Unauthorized from '@/views/auth/unauthorized'
 import Chatflows from '@/views/chatflows'
 import Credentials from '@/views/credentials'
+import Channels from '@/views/channels'
 import EvalDatasets from '@/views/datasets'
 import Documents from '@/views/docstore'
 import EvalEvaluation from '@/views/evaluations/index'
@@ -47,6 +48,7 @@ export const DefaultRedirect = () => {
         { component: Credentials, permission: 'credentials:view' },
         { component: Variables, permission: 'variables:view' },
         { component: APIKey, permission: 'apikeys:view' },
+        { component: Channels, permission: 'credentials:view,chatflows:view,agentflows:view' },
         { component: Documents, permission: 'documentStores:view' },
         // Evaluation routes (with display flags)
         { component: EvalDatasets, permission: 'datasets:view', display: 'feat:datasets' },
