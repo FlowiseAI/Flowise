@@ -8,6 +8,7 @@ import { Between, DeleteResult, FindOptionsWhere, In } from 'typeorm'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import { verifyChatflowAccess } from '../../utils/chatflowAccess'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
 import { getPageAndLimitParams } from '../../utils/pagination'
 
@@ -312,6 +313,10 @@ const abortChatMessage = async (req: Request, res: Response, next: NextFunction)
                 `Error: chatMessagesController.abortChatMessage - chatflowid or chatid not provided!`
             )
         }
+
+        // Authorization: verify the caller has access to this chatflow
+        await verifyChatflowAccess(req.params.chatflowid, req.user)
+
         await chatMessagesService.abortChatMessage(req.params.chatid, req.params.chatflowid)
         return res.json({ status: 200, message: 'Chat message aborted' })
     } catch (error) {
