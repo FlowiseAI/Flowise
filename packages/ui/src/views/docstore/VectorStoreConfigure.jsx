@@ -45,6 +45,21 @@ import useNotifier from '@/utils/useNotifier'
 
 // const
 const steps = ['Embeddings', 'Vector Store', 'Record Manager']
+const matryoshkaTruncateDimensionsInput = {
+    label: 'Matryoshka Truncate Dimensions',
+    name: 'matryoshkaTruncateDimensions',
+    type: 'number',
+    optional: true,
+    additionalParams: true,
+    description: 'Optionally keep only the first N dimensions from document and query embeddings.'
+}
+
+const addMatryoshkaInput = (nodeData) => {
+    if (!nodeData.inputParams?.some((inputParam) => inputParam.name === matryoshkaTruncateDimensionsInput.name)) {
+        nodeData.inputParams = [...(nodeData.inputParams || []), matryoshkaTruncateDimensionsInput]
+    }
+    return nodeData
+}
 
 const VectorStoreConfigure = () => {
     const navigate = useNavigate()
@@ -123,7 +138,7 @@ const VectorStoreConfigure = () => {
             nodeData.inputs = documentStore.embeddingConfig.config
             nodeData.credential = documentStore.embeddingConfig.config.credential
         }
-        setSelectedEmbeddingsProvider(nodeData)
+        setSelectedEmbeddingsProvider(addMatryoshkaInput(nodeData))
         setShowEmbeddingsListDialog(false)
     }
 
