@@ -449,7 +449,7 @@ export const executeFlow = async ({
             if (fileInputFieldFromExt !== 'txtFile') {
                 fileInputField = fileInputFieldFromExt
             } else if (fileInputFieldFromMimeType !== 'txtFile') {
-                fileInputField = fileInputFieldFromExt
+                fileInputField = fileInputFieldFromMimeType
             }
 
             if (overrideConfig[fileInputField]) {
