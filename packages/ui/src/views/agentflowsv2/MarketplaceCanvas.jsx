@@ -14,6 +14,7 @@ import { useTheme } from '@mui/material/styles'
 import AgentFlowNode from './AgentFlowNode'
 import AgentFlowEdge from './AgentFlowEdge'
 import IterationNode from './IterationNode'
+import ParallelNode from './ParallelNode'
 import MarketplaceCanvasHeader from '@/views/marketplaces/MarketplaceCanvasHeader'
 import StickyNote from './StickyNote'
 import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
@@ -22,7 +23,7 @@ import { flowContext } from '@/store/context/ReactFlowContext'
 // icons
 import { IconMagnetFilled, IconMagnetOff, IconArtboard, IconArtboardOff } from '@tabler/icons-react'
 
-const nodeTypes = { agentFlow: AgentFlowNode, stickyNote: StickyNote, iteration: IterationNode }
+const nodeTypes = { agentFlow: AgentFlowNode, stickyNote: StickyNote, iteration: IterationNode, parallel: ParallelNode }
 const edgeTypes = { agentFlow: AgentFlowEdge }
 
 // ==============================|| CANVAS ||============================== //
