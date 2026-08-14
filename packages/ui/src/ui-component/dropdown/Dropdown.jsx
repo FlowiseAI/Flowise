@@ -21,6 +21,12 @@ const StyledPopper = styled(Popper)({
 export const Dropdown = ({ name, value, loading, options, onSelect, disabled = false, freeSolo = false, disableClearable = false }) => {
     const customization = useSelector((state) => state.customization)
     const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value)
+    const getSelectionValue = (selection) => (typeof selection === 'string' ? selection : selection?.name ?? '')
+    const getAutocompleteValue = (options = [], value) => {
+        const matchingOption = findMatchingOptions(options, value)
+        if (matchingOption) return matchingOption
+        return freeSolo && value && value !== 'choose an option' ? value : getDefaultOptionValue()
+    }
     const getDefaultOptionValue = () => ''
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
     const theme = useTheme()
@@ -35,9 +41,11 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
                 size='small'
                 loading={loading}
                 options={options || []}
-                value={findMatchingOptions(options, internalValue) || getDefaultOptionValue()}
+                value={getAutocompleteValue(options, internalValue)}
+                getOptionLabel={(option) => (typeof option === 'string' ? option : option?.label ?? option?.name ?? '')}
+                isOptionEqualToValue={(option, value) => option?.name === (typeof value === 'string' ? value : value?.name)}
                 onChange={(e, selection) => {
-                    const value = selection ? selection.name : ''
+                    const value = getSelectionValue(selection)
                     setInternalValue(value)
                     onSelect(value)
                 }}
