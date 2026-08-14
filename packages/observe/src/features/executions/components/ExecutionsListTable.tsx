@@ -89,7 +89,7 @@ export function ExecutionsListTable({
                             <Typography variant='body2'>{formatDate(execution.updatedDate)}</Typography>
                         </TableCell>
                         <TableCell>
-                            <Typography variant='body2'>{execution.agentflow?.name ?? '—'}</Typography>
+                            <Typography variant='body2'>{execution.agentflow?.name || '—'}</Typography>
                         </TableCell>
                         <TableCell>
                             <Tooltip title={execution.sessionId}>

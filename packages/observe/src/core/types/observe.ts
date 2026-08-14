@@ -41,10 +41,11 @@ export interface ObserveBaseProps {
 
 export interface ExecutionsViewerProps {
     /**
-     * When provided, scopes the list to a single agentflow (M1 / DevSite use case).
-     * When omitted, shows the full cross-agent list (M2 / OSS use case).
+     * When provided, scopes the list to one or more agentflows. Pass `[id]` for
+     * a single-agent view, or `[id1, id2, ...]` to filter across multiple agents.
+     * When omitted (or an empty array), shows the full cross-agent list.
      */
-    agentflowId?: string
+    agentflowIds?: string[]
     /**
      * Whether to show a delete icon on each row (default: false).
      * The SDK handles the DELETE API call internally.

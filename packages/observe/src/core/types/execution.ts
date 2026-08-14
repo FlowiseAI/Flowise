@@ -106,7 +106,8 @@ export interface ExecutionFilters {
     state?: ExecutionState | ''
     startDate?: Date | null
     endDate?: Date | null
-    agentflowId?: string
+    /** One or more agentflow IDs to filter by. Empty array is treated as no filter. */
+    agentflowIds?: string[]
     agentflowName?: string
     sessionId?: string
 }
