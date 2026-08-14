@@ -118,7 +118,9 @@ export class MCPToolkit extends BaseToolkit {
             await client.connect(transport)
         } else {
             if (this.serverParams.url === undefined) {
-                throw new Error('URL is required for SSE transport')
+                throw new Error(
+                    'URL is required for remote MCP transport. For stdio servers, set CUSTOM_MCP_PROTOCOL=stdio and provide command/args.'
+                )
             }
 
             const baseUrl = new URL(this.serverParams.url)
