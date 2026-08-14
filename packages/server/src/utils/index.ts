@@ -807,6 +807,14 @@ export const clearSessionMemory = async (
     }
 }
 
+/**
+ * Get global variables from available variables and override config
+ * @param {ICommonObject} overrideConfig
+ * @param {IVariable[]} availableVariables
+ * @param {ICommonObject[]} variableOverrides
+ * @returns {Promise<object>}
+ */
+
 export const getGlobalVariable = async (
     overrideConfig?: ICommonObject,
     availableVariables: IVariable[] = [],
