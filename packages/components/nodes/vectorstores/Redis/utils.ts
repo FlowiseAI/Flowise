@@ -1,12 +1,37 @@
 import { isNil } from 'lodash'
 
 /*
- * Escapes all '-' characters.
- * Redis Search considers '-' as a negative operator, hence we need
- * to escape it
+ * Escapes all RediSearch special characters.
+ * Redis Search considers these characters as operators or special syntax,
+ * so they must be escaped to be treated as literals.
  */
 export const escapeSpecialChars = (str: string) => {
     return str.replaceAll('-', '\\-')
+        .replaceAll(',', '\\,')
+        .replaceAll('.', '\\.')
+        .replaceAll('<', '\\<')
+        .replaceAll('>', '\\>')
+        .replaceAll('{', '\\{')
+        .replaceAll('}', '\\}')
+        .replaceAll('[', '\\[')
+        .replaceAll(']', '\\]')
+        .replaceAll('"', '\\"')
+        .replaceAll("'", "\\'")
+        .replaceAll(':', '\\:')
+        .replaceAll(';', '\\;')
+        .replaceAll('!', '\\!')
+        .replaceAll('@', '\\@')
+        .replaceAll('#', '\\#')
+        .replaceAll('$', '\\$')
+        .replaceAll('%', '\\%')
+        .replaceAll('^', '\\^')
+        .replaceAll('&', '\\&')
+        .replaceAll('*', '\\*')
+        .replaceAll('(', '\\(')
+        .replaceAll(')', '\\)')
+        .replaceAll('+', '\\+')
+        .replaceAll('=', '\\=')
+        .replaceAll('~', '\\~')
 }
 
 export const escapeAllStrings = (obj: object) => {
@@ -27,5 +52,5 @@ export const escapeAllStrings = (obj: object) => {
 }
 
 export const unEscapeSpecialChars = (str: string) => {
-    return str.replaceAll('\\-', '-')
+    return str.replace(/\\([-,.<>{}[\]"':;!@#$%^&*()\-+=~])/g, '$1')
 }
