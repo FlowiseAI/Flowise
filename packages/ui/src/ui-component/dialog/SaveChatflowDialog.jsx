@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 import { Button, Dialog, DialogActions, DialogContent, OutlinedInput, DialogTitle } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 
-const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm, loading = false }) => {
     const portalElement = document.getElementById('portal')
 
     const [chatflowName, setChatflowName] = useState('')
@@ -15,6 +15,8 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         if (chatflowName) setIsReadyToSave(true)
         else setIsReadyToSave(false)
     }, [chatflowName])
+
+    const isSaveDisabled = !isReadyToSave || loading
 
     const component = show ? (
         <Dialog
@@ -41,13 +43,13 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     value={chatflowName}
                     onChange={(e) => setChatflowName(e.target.value)}
                     onKeyDown={(e) => {
-                        if (isReadyToSave && e.key === 'Enter') onConfirm(e.target.value)
+                        if (!isSaveDisabled && e.key === 'Enter') onConfirm(e.target.value)
                     }}
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>{dialogProps.cancelButtonName}</Button>
-                <StyledButton disabled={!isReadyToSave} variant='contained' onClick={() => onConfirm(chatflowName)}>
+                <Button onClick={onCancel} disabled={loading}>{dialogProps.cancelButtonName}</Button>
+                <StyledButton disabled={isSaveDisabled} variant='contained' onClick={() => onConfirm(chatflowName)}>
                     {dialogProps.confirmButtonName}
                 </StyledButton>
             </DialogActions>
@@ -61,7 +63,8 @@ SaveChatflowDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    loading: PropTypes.bool
 }
 
 export default SaveChatflowDialog
