@@ -13,7 +13,12 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md)
+English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md) | 
+[Deutsch](https://www.readme-i18n.com/FlowiseAI/Flowise?lang=de) | 
+[Español](https://www.readme-i18n.com/FlowiseAI/Flowise?lang=es) | 
+[français](https://www.readme-i18n.com/FlowiseAI/Flowise?lang=fr) | 
+[Português](https://www.readme-i18n.com/FlowiseAI/Flowise?lang=pt) | 
+[Русский](https://www.readme-i18n.com/FlowiseAI/Flowise?lang=ru) | 
 
 </div>
 
