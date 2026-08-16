@@ -2313,7 +2313,8 @@ export const executeAgentFlow = async ({
         }
     }
 
-    // Find the previous chat message with the same session/chat id and remove the action
+    // Clear the action on the specific message tied to the resumed node (not just the newest
+    // pending action) - a flow can have multiple HIL nodes pending at once. See #4787.
     if (humanInput && Object.keys(humanInput).length) {
         let query = await appDataSource
             .getRepository(ChatMessage)
@@ -2323,19 +2324,13 @@ export const executeAgentFlow = async ({
             .orderBy('chat_message.createdDate', 'DESC')
             .getMany()
 
-        for (const result of query) {
-            if (result.action) {
-                try {
-                    const newChatMessage = new ChatMessage()
-                    Object.assign(newChatMessage, result)
-                    newChatMessage.action = null
-                    const cm = await appDataSource.getRepository(ChatMessage).create(newChatMessage)
-                    await appDataSource.getRepository(ChatMessage).save(cm)
-                    break
-                } catch (e) {
-                    // error converting action to JSON
-                }
-            }
+        const messageToClear = findChatMessageActionToClear(query, humanInput.startNodeId)
+        if (messageToClear) {
+            const newChatMessage = new ChatMessage()
+            Object.assign(newChatMessage, messageToClear)
+            newChatMessage.action = null
+            const cm = await appDataSource.getRepository(ChatMessage).create(newChatMessage)
+            await appDataSource.getRepository(ChatMessage).save(cm)
         }
     }
 
@@ -2468,4 +2463,22 @@ export const executeAgentFlow = async ({
  */
 export const isObjectNotEmpty = (obj: any): boolean => {
     return obj && Object.keys(obj).length > 0 && obj.constructor === Object
+}
+
+/**
+ * Finds the chat message whose pending action belongs to the given (resumed) HIL node.
+ * Matches by nodeId instead of recency, since multiple HIL nodes can be pending at once. See #4787.
+ */
+export const findChatMessageActionToClear = (messages: ChatMessage[], startNodeId?: string): ChatMessage | undefined => {
+    if (!startNodeId) return undefined
+    for (const message of messages) {
+        if (!message.action) continue
+        try {
+            const parsedAction = JSON.parse(message.action)
+            if (parsedAction?.data?.nodeId === startNodeId) return message
+        } catch (e) {
+            // error converting action to JSON, skip this message
+        }
+    }
+    return undefined
 }
