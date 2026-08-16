@@ -2,18 +2,12 @@ import { Tool } from '@langchain/core/tools'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { secureFetch } from '../../../src/httpSecurity'
+import { KeenableResult, resultSnippet } from './resultSnippet'
 
 const defaultName = 'keenable-search'
 const defaultDesc =
     'A web search engine built for AI agents, powered by Keenable. Useful for answering questions about current events or looking up information on the web. Input should be a search query. Output is a JSON array of results.'
 const DEFAULT_BASE_URL = 'https://api.keenable.ai'
-
-interface KeenableResult {
-    title?: string
-    url: string
-    description?: string
-    published_at?: string | null
-}
 
 interface KeenableResponse {
     query?: string
@@ -206,7 +200,7 @@ class KeenableSearchTool extends Tool {
             results
                 .slice(0, this.maxResults)
                 .filter((r) => r && r.url)
-                .map((r) => ({ title: r.title || '', link: r.url, snippet: r.description || '' }))
+                .map((r) => ({ title: r.title || '', link: r.url, snippet: resultSnippet(r) }))
         )
     }
 }
