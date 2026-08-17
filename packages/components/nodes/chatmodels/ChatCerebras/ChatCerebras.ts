@@ -44,7 +44,7 @@ class ChatCerebras_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'llama3.1-8b'
+                default: 'gpt-oss-120b'
             },
             {
                 label: 'Temperature',
