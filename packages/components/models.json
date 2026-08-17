@@ -1720,11 +1720,6 @@
                     "description": "Open-weight reasoning model for coding, math, and agentic workflows"
                 },
                 {
-                    "label": "zai-glm-4.7",
-                    "name": "zai-glm-4.7",
-                    "description": "Advanced reasoning and complex problem-solving"
-                },
-                {
                     "label": "gemma-4-31b",
                     "name": "gemma-4-31b",
                     "description": "Multimodal reasoning for images, documents, and visual workflows"
