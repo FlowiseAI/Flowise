@@ -34,7 +34,7 @@ class OutageDeck_MCP implements INode {
         this.type = 'OutageDeck MCP Tool'
         this.icon = 'outagedeck.svg'
         this.category = 'Tools (MCP)'
-        this.description = 'Keyless, read-only cloud and SaaS status, incident timelines, and uptime history for 170+ providers'
+        this.description = 'Keyless, read-only cloud and SaaS status, incident timelines, and observed uptime history from vendor-published feeds'
         this.documentation = 'https://outagedeck.com/developers/mcp?utm_source=flowise&utm_medium=integration&utm_campaign=flowise_mcp'
         this.inputs = [
             {
