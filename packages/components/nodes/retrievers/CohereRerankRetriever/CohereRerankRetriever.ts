@@ -22,7 +22,7 @@ class CohereRerankRetriever_Retrievers implements INode {
     constructor() {
         this.label = 'Cohere Rerank Retriever'
         this.name = 'cohereRerankRetriever'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Cohere Rerank Retriever'
         this.icon = 'Cohere.svg'
         this.category = 'Retrievers'
