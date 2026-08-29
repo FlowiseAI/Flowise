@@ -18,6 +18,35 @@ import { TextSplitter } from '@langchain/textsplitters'
 import { CSVLoader } from '../Csv/CsvLoader'
 import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
 import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
+
+const S3_DOWNLOAD_CONCURRENCY = 25
+
+const forEachWithDownloadConcurrency = async <T>(items: T[], callback: (item: T) => Promise<void>): Promise<void> => {
+    for (let index = 0; index < items.length; index += S3_DOWNLOAD_CONCURRENCY) {
+        await Promise.all(items.slice(index, index + S3_DOWNLOAD_CONCURRENCY).map(callback))
+    }
+}
+
+const getS3FileKeys = async (s3Client: S3Client, bucketName: string, prefix?: string): Promise<string[]> => {
+    const keys: string[] = []
+    let continuationToken: string | undefined
+
+    do {
+        const listObjectsOutput: ListObjectsV2Output = await s3Client.send(
+            new ListObjectsV2Command({
+                Bucket: bucketName,
+                Prefix: prefix,
+                ContinuationToken: continuationToken
+            })
+        )
+
+        keys.push(...(listObjectsOutput.Contents ?? []).filter((item) => item.Key && item.ETag).map((item) => item.Key!))
+        continuationToken = listObjectsOutput.IsTruncated ? listObjectsOutput.NextContinuationToken : undefined
+    } while (continuationToken)
+
+    return keys
+}
+
 class S3_DocumentLoaders implements INode {
     label: string
     name: string
@@ -178,48 +207,39 @@ class S3_DocumentLoaders implements INode {
         try {
             const s3Client = new S3Client(s3Config)
 
-            const listObjectsOutput: ListObjectsV2Output = await s3Client.send(
-                new ListObjectsV2Command({
-                    Bucket: bucketName,
-                    Prefix: prefix
-                })
-            )
+            const keys = await getS3FileKeys(s3Client, bucketName, prefix)
 
-            const keys: string[] = (listObjectsOutput?.Contents ?? []).filter((item) => item.Key && item.ETag).map((item) => item.Key!)
-
-            await Promise.all(
-                keys.map(async (key) => {
-                    const filePath = getSafeFilePath(tempDir, key)
-                    try {
-                        const response = await s3Client.send(
-                            new GetObjectCommand({
-                                Bucket: bucketName,
-                                Key: key
-                            })
-                        )
-
-                        const objectData = await new Promise<Buffer>((resolve, reject) => {
-                            const chunks: Buffer[] = []
-
-                            if (response.Body instanceof Readable) {
-                                response.Body.on('data', (chunk: Buffer) => chunks.push(chunk))
-                                response.Body.on('end', () => resolve(Buffer.concat(chunks)))
-                                response.Body.on('error', reject)
-                            } else {
-                                reject(new Error('Response body is not a readable stream.'))
-                            }
+            await forEachWithDownloadConcurrency(keys, async (key) => {
+                const filePath = getSafeFilePath(tempDir, key)
+                try {
+                    const response = await s3Client.send(
+                        new GetObjectCommand({
+                            Bucket: bucketName,
+                            Key: key
                         })
+                    )
 
-                        // create the directory if it doesnt already exist
-                        fsDefault.mkdirSync(path.dirname(filePath), { recursive: true })
+                    const objectData = await new Promise<Buffer>((resolve, reject) => {
+                        const chunks: Buffer[] = []
 
-                        // write the file to the directory
-                        fsDefault.writeFileSync(filePath, objectData)
-                    } catch (e: any) {
-                        throw new Error(`Failed to download file ${key} from S3 bucket ${bucketName}: ${e.message}`)
-                    }
-                })
-            )
+                        if (response.Body instanceof Readable) {
+                            response.Body.on('data', (chunk: Buffer) => chunks.push(chunk))
+                            response.Body.on('end', () => resolve(Buffer.concat(chunks)))
+                            response.Body.on('error', reject)
+                        } else {
+                            reject(new Error('Response body is not a readable stream.'))
+                        }
+                    })
+
+                    // create the directory if it doesnt already exist
+                    fsDefault.mkdirSync(path.dirname(filePath), { recursive: true })
+
+                    // write the file to the directory
+                    fsDefault.writeFileSync(filePath, objectData)
+                } catch (e: any) {
+                    throw new Error(`Failed to download file ${key} from S3 bucket ${bucketName}: ${e.message}`)
+                }
+            })
 
             const loader = new DirectoryLoader(
                 tempDir,
@@ -291,4 +311,4 @@ class S3_DocumentLoaders implements INode {
         }
     }
 }
-module.exports = { nodeClass: S3_DocumentLoaders }
+module.exports = { nodeClass: S3_DocumentLoaders, forEachWithDownloadConcurrency, getS3FileKeys }
