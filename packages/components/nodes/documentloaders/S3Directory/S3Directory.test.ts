@@ -6,7 +6,8 @@ jest.mock('@aws-sdk/client-s3', () => ({
 
 describe('S3Directory', () => {
     const s3Client = { send: jest.fn() }
-    let getS3FileKeys: (s3Client: any, bucketName: string, prefix: string) => Promise<string[]>
+    let forEachWithDownloadConcurrency: <T>(items: T[], callback: (item: T) => Promise<void>) => Promise<void>
+    let getS3FileKeys: (s3Client: any, bucketName: string, prefix?: string) => Promise<string[]>
     let ListObjectsV2Command: jest.Mock
 
     beforeEach(async () => {
@@ -17,6 +18,7 @@ describe('S3Directory', () => {
         ListObjectsV2Command = s3Module.ListObjectsV2Command
 
         const module = (await import('./S3Directory')) as any
+        forEachWithDownloadConcurrency = module.forEachWithDownloadConcurrency
         getS3FileKeys = module.getS3FileKeys
     })
 
@@ -43,5 +45,22 @@ describe('S3Directory', () => {
             Prefix: 'docs/',
             ContinuationToken: 'next-page'
         })
+    })
+
+    it('limits concurrent work to the requested batch size', async () => {
+        let active = 0
+        let maxActive = 0
+
+        await forEachWithDownloadConcurrency(
+            Array.from({ length: 26 }, (_, index) => index),
+            async () => {
+                active += 1
+                maxActive = Math.max(maxActive, active)
+                await new Promise((resolve) => setImmediate(resolve))
+                active -= 1
+            }
+        )
+
+        expect(maxActive).toBe(25)
     })
 })
