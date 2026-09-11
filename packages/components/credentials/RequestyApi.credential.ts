@@ -11,6 +11,7 @@ class RequestyAPIAuth implements INodeCredential {
         this.label = 'Requesty API Key'
         this.name = 'requestyApi'
         this.version = 1.0
+        this.description = 'Get your API key from the <a target="_blank" href="https://app.requesty.ai/api-keys">Requesty</a> dashboard.'
         this.inputs = [
             {
                 label: 'Requesty API Key',

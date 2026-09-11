@@ -29,8 +29,7 @@ class ChatRequesty_ChatModels implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['requestyApi'],
-            optional: true
+            credentialNames: ['requestyApi']
         }
         this.inputs = [
             {
@@ -116,7 +115,7 @@ class ChatRequesty_ChatModels implements INode {
                 type: 'string',
                 optional: true,
                 default: 'https://router.requesty.ai/v1',
-                description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/',
+                description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/"',
                 additionalParams: true
             },
             {
@@ -148,13 +147,13 @@ class ChatRequesty_ChatModels implements INode {
         const requestyApiKey = getCredentialParam('requestyApiKey', credentialData, nodeData)
 
         const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: requestyApiKey,
             apiKey: requestyApiKey,
             streaming: streaming ?? true
         }
 
+        if (temperature) obj.temperature = parseFloat(temperature)
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
