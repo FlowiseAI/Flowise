@@ -1759,6 +1759,91 @@
             ]
         },
         {
+            "name": "chatTokenLab",
+            "models": [
+                {
+                    "label": "gpt-5.5",
+                    "name": "gpt-5.5",
+                    "description": "TokenLab hosted GPT 5.5 model"
+                },
+                {
+                    "label": "gpt-5.4",
+                    "name": "gpt-5.4",
+                    "description": "TokenLab hosted GPT 5.4 model"
+                },
+                {
+                    "label": "gpt-5.4-mini",
+                    "name": "gpt-5.4-mini",
+                    "description": "TokenLab hosted GPT 5.4 mini model"
+                },
+                {
+                    "label": "claude-opus-4-8",
+                    "name": "claude-opus-4-8",
+                    "description": "TokenLab hosted Claude Opus 4.8 model"
+                },
+                {
+                    "label": "claude-sonnet-5",
+                    "name": "claude-sonnet-5",
+                    "description": "TokenLab hosted Claude Sonnet 5 model"
+                },
+                {
+                    "label": "claude-fable-5",
+                    "name": "claude-fable-5",
+                    "description": "TokenLab hosted Claude Fable 5 model"
+                },
+                {
+                    "label": "gemini-3.5-flash",
+                    "name": "gemini-3.5-flash",
+                    "description": "TokenLab hosted Gemini 3.5 Flash model"
+                },
+                {
+                    "label": "gemini-3.1-flash-lite",
+                    "name": "gemini-3.1-flash-lite",
+                    "description": "TokenLab hosted Gemini 3.1 Flash Lite model"
+                },
+                {
+                    "label": "grok-4.3",
+                    "name": "grok-4.3",
+                    "description": "TokenLab hosted Grok 4.3 model"
+                },
+                {
+                    "label": "grok-4-fast",
+                    "name": "grok-4-fast",
+                    "description": "TokenLab hosted Grok 4 Fast model"
+                },
+                {
+                    "label": "qwen3.7-max",
+                    "name": "qwen3.7-max",
+                    "description": "TokenLab hosted Qwen 3.7 Max model"
+                },
+                {
+                    "label": "deepseek-v4-pro",
+                    "name": "deepseek-v4-pro",
+                    "description": "TokenLab hosted DeepSeek V4 Pro model"
+                },
+                {
+                    "label": "deepseek-v4-flash",
+                    "name": "deepseek-v4-flash",
+                    "description": "TokenLab hosted DeepSeek V4 Flash model"
+                },
+                {
+                    "label": "glm-5.2",
+                    "name": "glm-5.2",
+                    "description": "TokenLab hosted GLM 5.2 model"
+                },
+                {
+                    "label": "minimax-m3",
+                    "name": "minimax-m3",
+                    "description": "TokenLab hosted MiniMax M3 model"
+                },
+                {
+                    "label": "kimi-k2.7-code",
+                    "name": "kimi-k2.7-code",
+                    "description": "TokenLab hosted Kimi K2.7 Code model"
+                }
+            ]
+        },
+        {
             "name": "chatOpenAI",
             "models": [
                 {
