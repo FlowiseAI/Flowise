@@ -2055,67 +2055,65 @@ export const executeAgentFlow = async ({
         const batchExecutedData = cloneDeep(agentFlowExecutedData)
 
         const batchResults: IBatchResult[] = await Promise.all(
-            currentBatch.map(
-                async (currentNode): Promise<IBatchResult> => {
-                    const reactFlowNode = nodes.find((nd) => nd.id === currentNode.nodeId)
-                    if (!reactFlowNode || reactFlowNode === undefined || reactFlowNode.data.name === 'stickyNoteAgentflow') {
-                        return { currentNode, reactFlowNode: undefined, executionResult: null, error: null }
-                    }
-
-                    try {
-                        logger.debug(`   🎯 Executing node: ${reactFlowNode?.data.label}`)
-
-                        const executionResult = await executeNode({
-                            nodeId: currentNode.nodeId,
-                            reactFlowNode,
-                            nodes,
-                            edges,
-                            graph,
-                            reversedGraph,
-                            incomingInput,
-                            chatflow,
-                            chatId,
-                            sessionId,
-                            apiMessageId,
-                            evaluationRunId,
-                            parentExecutionId,
-                            isInternal,
-                            pastChatHistory,
-                            prependedChatHistory,
-                            appDataSource,
-                            usageCacheManager,
-                            telemetry,
-                            componentNodes,
-                            cachePool,
-                            sseStreamer,
-                            baseURL,
-                            overrideConfig,
-                            apiOverrideStatus,
-                            nodeOverrides,
-                            variableOverrides,
-                            uploadedFilesContent,
-                            fileUploads,
-                            humanInput: currentHumanInput,
-                            agentFlowExecutedData: cloneDeep(batchExecutedData),
-                            agentflowRuntime: cloneDeep(batchRuntime),
-                            abortController,
-                            parentTraceIds,
-                            analyticHandlers,
-                            isRecursive,
-                            iterationContext,
-                            loopCounts,
-                            orgId,
-                            workspaceId,
-                            subscriptionId,
-                            productId
-                        })
-
-                        return { currentNode, reactFlowNode, executionResult, error: null }
-                    } catch (error) {
-                        return { currentNode, reactFlowNode, executionResult: null, error }
-                    }
+            currentBatch.map(async (currentNode): Promise<IBatchResult> => {
+                const reactFlowNode = nodes.find((nd) => nd.id === currentNode.nodeId)
+                if (!reactFlowNode || reactFlowNode === undefined || reactFlowNode.data.name === 'stickyNoteAgentflow') {
+                    return { currentNode, reactFlowNode: undefined, executionResult: null, error: null }
                 }
-            )
+
+                try {
+                    logger.debug(`   🎯 Executing node: ${reactFlowNode?.data.label}`)
+
+                    const executionResult = await executeNode({
+                        nodeId: currentNode.nodeId,
+                        reactFlowNode,
+                        nodes,
+                        edges,
+                        graph,
+                        reversedGraph,
+                        incomingInput,
+                        chatflow,
+                        chatId,
+                        sessionId,
+                        apiMessageId,
+                        evaluationRunId,
+                        parentExecutionId,
+                        isInternal,
+                        pastChatHistory,
+                        prependedChatHistory,
+                        appDataSource,
+                        usageCacheManager,
+                        telemetry,
+                        componentNodes,
+                        cachePool,
+                        sseStreamer,
+                        baseURL,
+                        overrideConfig,
+                        apiOverrideStatus,
+                        nodeOverrides,
+                        variableOverrides,
+                        uploadedFilesContent,
+                        fileUploads,
+                        humanInput: currentHumanInput,
+                        agentFlowExecutedData: cloneDeep(batchExecutedData),
+                        agentflowRuntime: cloneDeep(batchRuntime),
+                        abortController,
+                        parentTraceIds,
+                        analyticHandlers,
+                        isRecursive,
+                        iterationContext,
+                        loopCounts,
+                        orgId,
+                        workspaceId,
+                        subscriptionId,
+                        productId
+                    })
+
+                    return { currentNode, reactFlowNode, executionResult, error: null }
+                } catch (error) {
+                    return { currentNode, reactFlowNode, executionResult: null, error }
+                }
+            })
         )
 
         // Sort results by nodeId for deterministic post-processing order.
@@ -2180,7 +2178,13 @@ export const executeAgentFlow = async ({
             if (!reactFlowNode || !executionResult) continue
 
             if (executionResult.agentFlowExecutedData) {
-                agentFlowExecutedData = executionResult.agentFlowExecutedData
+                if (currentBatch.length === 1) {
+                    agentFlowExecutedData = executionResult.agentFlowExecutedData
+                } else {
+                    // Parallel nodes start with the same history snapshot. Merge
+                    // only their additions so later branches retain earlier ones.
+                    agentFlowExecutedData.push(...executionResult.agentFlowExecutedData.slice(batchExecutedData.length))
+                }
             }
 
             // Update humanInput if it was cleared by the executed node
