@@ -341,8 +341,8 @@ export class App {
                 }
                 // Forward to the A2A agent card handler
                 const a2aController = (await import('./controllers/a2a')).default
-                const modifiedReq = { ...request, params: { chatflowId } } as any
-                await a2aController.handleAgentCard(modifiedReq, response, () => {})
+                request.params = { ...request.params, chatflowId }
+                await a2aController.handleAgentCard(request, response, () => {})
             } catch (error) {
                 response.status(500).json({ error: 'Failed to generate AgentCard' })
             }

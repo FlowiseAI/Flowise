@@ -5,7 +5,6 @@ import { ChatFlow } from '../../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilBuildChatflow } from '../../utils/buildChatflow'
 import { ChatType } from '../../Interface'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import logger from '../../utils/logger'
 import {
@@ -83,9 +82,7 @@ function extractMessageText(message: Message): string {
     if (!message.parts || message.parts.length === 0) {
         return ''
     }
-    const textParts = message.parts
-        .filter((part): part is TextPart => part.kind === 'text')
-        .map((part) => part.text)
+    const textParts = message.parts.filter((part): part is TextPart => part.kind === 'text').map((part) => part.text)
     return textParts.join('\n')
 }
 
@@ -153,7 +150,7 @@ function createInternalRequest(chatflow: ChatFlow, question: string, chatId: str
         user: {
             activeWorkspaceId: chatflow.workspaceId
         }
-    } as Partial<Request>
+    } as unknown as Partial<Request>
 }
 
 /**
@@ -240,12 +237,7 @@ async function handleJsonRpc(chatflowId: string, req: Request, res: Response): P
     } catch (error) {
         logger.error(`[A2A] Error handling JSON-RPC for ${chatflowId}: ${getErrorMessage(error)}`)
         const payload = req.body as JsonRpcRequest
-        const errorResp = createErrorResponse(
-            payload?.id ?? null,
-            -32603,
-            'Internal error',
-            getErrorMessage(error)
-        )
+        const errorResp = createErrorResponse(payload?.id ?? null, -32603, 'Internal error', getErrorMessage(error))
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResp)
     }
 }
@@ -254,12 +246,7 @@ async function handleJsonRpc(chatflowId: string, req: Request, res: Response): P
  * Handle tasks/send — synchronous task execution.
  * Runs the chatflow and returns the completed Task.
  */
-async function handleTaskSend(
-    chatflow: ChatFlow,
-    payload: JsonRpcRequest,
-    req: Request,
-    res: Response
-): Promise<void> {
+async function handleTaskSend(chatflow: ChatFlow, payload: JsonRpcRequest, req: Request, res: Response): Promise<void> {
     try {
         const params = payload.params as unknown as TaskSendParams
         const taskId = params?.id || uuidv4()
@@ -332,21 +319,14 @@ async function handleTaskSend(
             }
             activeTasks.set(taskId, { ...existingTask })
         }
-        res.json(
-            createErrorResponse(payload.id, -32000, 'Task execution failed', getErrorMessage(error))
-        )
+        res.json(createErrorResponse(payload.id, -32000, 'Task execution failed', getErrorMessage(error)))
     }
 }
 
 /**
  * Handle tasks/sendSubscribe — streaming task execution via SSE.
  */
-async function handleTaskSendSubscribe(
-    chatflow: ChatFlow,
-    payload: JsonRpcRequest,
-    req: Request,
-    res: Response
-): Promise<void> {
+async function handleTaskSendSubscribe(chatflow: ChatFlow, payload: JsonRpcRequest, req: Request, res: Response): Promise<void> {
     try {
         const params = payload.params as unknown as TaskSendParams
         const taskId = params?.id || uuidv4()
@@ -450,11 +430,7 @@ async function handleTaskSendSubscribe(
 /**
  * Handle tasks/get — retrieve a task by ID.
  */
-async function handleTaskGet(
-    _chatflow: ChatFlow,
-    payload: JsonRpcRequest,
-    res: Response
-): Promise<void> {
+async function handleTaskGet(_chatflow: ChatFlow, payload: JsonRpcRequest, res: Response): Promise<void> {
     const params = payload.params as unknown as TaskGetParams
     const taskId = params?.id
 
@@ -475,11 +451,7 @@ async function handleTaskGet(
 /**
  * Handle tasks/cancel — cancel a running task.
  */
-async function handleTaskCancel(
-    _chatflow: ChatFlow,
-    payload: JsonRpcRequest,
-    res: Response
-): Promise<void> {
+async function handleTaskCancel(_chatflow: ChatFlow, payload: JsonRpcRequest, res: Response): Promise<void> {
     const params = payload.params as unknown as TaskCancelParams
     const taskId = params?.id
 
