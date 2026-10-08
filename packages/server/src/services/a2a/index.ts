@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { v4 as uuidv4 } from 'uuid'
+import { v4 as uuidv4, validate as isValidUuid } from 'uuid'
 import { StatusCodes } from 'http-status-codes'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -27,10 +27,19 @@ import {
  */
 const activeTasks = new Map<string, Task>()
 
-/**
- * Map of task IDs to their SSE response objects.
- */
-const taskSSEClients = new Map<string, Response>()
+// Retain terminal results for one hour so tasks/get remains useful without
+// keeping completed histories and artifacts for the lifetime of the server.
+const TERMINAL_TASK_TTL_MS = 60 * 60 * 1000
+
+function storeTask(taskId: string, task: Task): void {
+    activeTasks.set(taskId, task)
+    if (['completed', 'failed', 'canceled'].includes(task.status.state)) {
+        const expiry = setTimeout(() => {
+            if (activeTasks.get(taskId) === task) activeTasks.delete(taskId)
+        }, TERMINAL_TASK_TTL_MS)
+        expiry.unref()
+    }
+}
 
 /**
  * Sanitize a chatflow name for use as an agent name.
@@ -158,6 +167,10 @@ function createInternalRequest(chatflow: ChatFlow, question: string, chatId: str
  * Returns the AgentCard JSON for the specified chatflow.
  */
 async function handleAgentCard(chatflowId: string, req: Request, res: Response): Promise<void> {
+    if (!isValidUuid(chatflowId)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid chatflowId format' })
+        return
+    }
     try {
         const appServer = getRunningExpressApp()
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
@@ -196,6 +209,10 @@ async function handleJsonRpc(chatflowId: string, req: Request, res: Response): P
             return
         }
 
+        if (!isValidUuid(chatflowId)) {
+            res.status(StatusCodes.BAD_REQUEST).json(createErrorResponse(payload.id, -32602, 'Invalid chatflowId format'))
+            return
+        }
         const appServer = getRunningExpressApp()
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
 
@@ -247,9 +264,9 @@ async function handleJsonRpc(chatflowId: string, req: Request, res: Response): P
  * Runs the chatflow and returns the completed Task.
  */
 async function handleTaskSend(chatflow: ChatFlow, payload: JsonRpcRequest, req: Request, res: Response): Promise<void> {
+    const params = payload.params as unknown as TaskSendParams
+    const taskId = params?.id || uuidv4()
     try {
-        const params = payload.params as unknown as TaskSendParams
-        const taskId = params?.id || uuidv4()
         const question = params?.message ? extractMessageText(params.message) : ''
 
         if (!question) {
@@ -266,11 +283,11 @@ async function handleTaskSend(chatflow: ChatFlow, payload: JsonRpcRequest, req: 
             history: params?.message ? [params.message] : [],
             metadata: params?.metadata || {}
         }
-        activeTasks.set(taskId, task)
+        storeTask(taskId, task)
 
         // Update to working
         task.status = { state: 'working' }
-        activeTasks.set(taskId, { ...task })
+        storeTask(taskId, { ...task })
 
         // Execute the chatflow
         const chatId = uuidv4()
@@ -301,13 +318,12 @@ async function handleTaskSend(chatflow: ChatFlow, payload: JsonRpcRequest, req: 
         task.status = { state: 'completed' }
         task.history = history
         task.artifacts = artifacts
-        activeTasks.set(taskId, { ...task })
+        storeTask(taskId, { ...task })
 
         const response = createSuccessResponse(payload.id, task)
         res.json(response)
     } catch (error) {
         logger.error(`[A2A] Error in tasks/send: ${getErrorMessage(error)}`)
-        const taskId = (payload.params as any)?.id || 'unknown'
         const existingTask = activeTasks.get(taskId)
         if (existingTask) {
             existingTask.status = {
@@ -317,7 +333,7 @@ async function handleTaskSend(chatflow: ChatFlow, payload: JsonRpcRequest, req: 
                     parts: [{ kind: 'text', text: getErrorMessage(error) }]
                 }
             }
-            activeTasks.set(taskId, { ...existingTask })
+            storeTask(taskId, { ...existingTask })
         }
         res.json(createErrorResponse(payload.id, -32000, 'Task execution failed', getErrorMessage(error)))
     }
@@ -327,9 +343,9 @@ async function handleTaskSend(chatflow: ChatFlow, payload: JsonRpcRequest, req: 
  * Handle tasks/sendSubscribe — streaming task execution via SSE.
  */
 async function handleTaskSendSubscribe(chatflow: ChatFlow, payload: JsonRpcRequest, req: Request, res: Response): Promise<void> {
+    const params = payload.params as unknown as TaskSendParams
+    const taskId = params?.id || uuidv4()
     try {
-        const params = payload.params as unknown as TaskSendParams
-        const taskId = params?.id || uuidv4()
         const question = params?.message ? extractMessageText(params.message) : ''
 
         if (!question) {
@@ -353,7 +369,7 @@ async function handleTaskSendSubscribe(chatflow: ChatFlow, payload: JsonRpcReque
             history: params?.message ? [params.message] : [],
             metadata: params?.metadata || {}
         }
-        activeTasks.set(taskId, task)
+        storeTask(taskId, task)
 
         // Send submitted event
         const submittedEvent = createSuccessResponse(payload.id, task)
@@ -361,7 +377,7 @@ async function handleTaskSendSubscribe(chatflow: ChatFlow, payload: JsonRpcReque
 
         // Update to working and send event
         task.status = { state: 'working' }
-        activeTasks.set(taskId, { ...task })
+        storeTask(taskId, { ...task })
         const workingEvent = createSuccessResponse(payload.id, task)
         res.write(`data: ${JSON.stringify(workingEvent)}\n\n`)
 
@@ -398,7 +414,7 @@ async function handleTaskSendSubscribe(chatflow: ChatFlow, payload: JsonRpcReque
         // Complete task
         task.status = { state: 'completed' }
         task.history = history
-        activeTasks.set(taskId, { ...task })
+        storeTask(taskId, { ...task })
 
         const completedEvent = createSuccessResponse(payload.id, task)
         res.write(`data: ${JSON.stringify(completedEvent)}\n\n`)
@@ -406,7 +422,6 @@ async function handleTaskSendSubscribe(chatflow: ChatFlow, payload: JsonRpcReque
         res.end()
     } catch (error) {
         logger.error(`[A2A] Error in tasks/sendSubscribe: ${getErrorMessage(error)}`)
-        const taskId = (payload.params as any)?.id || 'unknown'
         const existingTask = activeTasks.get(taskId)
         if (existingTask) {
             existingTask.status = {
@@ -416,7 +431,7 @@ async function handleTaskSendSubscribe(chatflow: ChatFlow, payload: JsonRpcReque
                     parts: [{ kind: 'text', text: getErrorMessage(error) }]
                 }
             }
-            activeTasks.set(taskId, { ...existingTask })
+            storeTask(taskId, { ...existingTask })
             const failedEvent = createSuccessResponse(payload.id, existingTask)
             res.write(`data: ${JSON.stringify(failedEvent)}\n\n`)
         } else {
@@ -470,7 +485,7 @@ async function handleTaskCancel(_chatflow: ChatFlow, payload: JsonRpcRequest, re
     const terminalStates: string[] = ['completed', 'failed', 'canceled']
     if (!terminalStates.includes(task.status.state)) {
         task.status = { state: 'canceled' }
-        activeTasks.set(taskId, { ...task })
+        storeTask(taskId, { ...task })
     }
 
     res.json(createSuccessResponse(payload.id, task))
@@ -484,6 +499,5 @@ export default {
     generateAgentCard,
     extractMessageText,
     buildArtifactsFromResult,
-    activeTasks,
-    taskSSEClients
+    activeTasks
 }

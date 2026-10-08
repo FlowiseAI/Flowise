@@ -53,18 +53,25 @@ describe('A2A well-known agent discovery', () => {
     })
 
     beforeEach(() => {
-        mockFindChatflow.mockResolvedValue({ id: 'flow-1', name: 'Example agent', type: 'AGENTFLOW' })
+        mockFindChatflow.mockClear()
+        mockFindChatflow.mockResolvedValue({ id: '102c1fd7-a77c-47d0-9daf-4618b70c0182', name: 'Example agent', type: 'AGENTFLOW' })
     })
 
     it('retains request header helpers when forwarding discovery to the controller', async () => {
         const response = await request(server.app)
-            .get('/.well-known/agent-card.json?chatflowId=flow-1')
+            .get('/.well-known/agent-card.json?chatflowId=102c1fd7-a77c-47d0-9daf-4618b70c0182')
             .set('Host', 'agents.example.test')
             .set('X-Forwarded-Proto', 'https')
         expect({ status: response.status, error: response.body.error }).toEqual({ status: 200, error: undefined })
         expect(response.body.name).toBe('Example agent')
-        expect(response.body.url).toBe('https://agents.example.test/api/v1/a2a/flow-1')
-        expect(mockFindChatflow).toHaveBeenCalledWith({ id: 'flow-1' })
+        expect(response.body.url).toBe('https://agents.example.test/api/v1/a2a/102c1fd7-a77c-47d0-9daf-4618b70c0182')
+        expect(mockFindChatflow).toHaveBeenCalledWith({ id: '102c1fd7-a77c-47d0-9daf-4618b70c0182' })
+    })
+
+    it('rejects invalid chatflow identifiers before querying the database', async () => {
+        const response = await request(server.app).get('/.well-known/agent-card.json?chatflowId=invalid')
+        expect(response.status).toBe(400)
+        expect(mockFindChatflow).not.toHaveBeenCalled()
     })
 
     it('keeps the missing chatflow query response', async () => {

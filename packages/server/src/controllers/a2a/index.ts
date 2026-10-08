@@ -40,7 +40,7 @@ const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
 /**
  * Rate limiter middleware for A2A endpoint.
  */
-const getRateLimiterMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+const getRateLimiterMiddleware = (req: Request, res: Response, next: NextFunction) => {
     try {
         return RateLimiterManager.getInstance().getRateLimiter()(req, res, next)
     } catch (error) {
