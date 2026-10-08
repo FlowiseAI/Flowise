@@ -328,6 +328,28 @@ export class App {
         this.app.use('/api/v1', flowiseApiV1Router)
 
         // ----------------------------------------
+        // A2A Agent Discovery — well-known endpoint
+        // Returns AgentCard for a specific chatflow (requires chatflowId query param)
+        // ----------------------------------------
+        this.app.get('/.well-known/agent-card.json', async (request, response) => {
+            try {
+                const chatflowId = request.query.chatflowId as string
+                if (!chatflowId) {
+                    response.status(400).json({
+                        error: 'chatflowId query parameter is required. Example: /.well-known/agent-card.json?chatflowId=<id>'
+                    })
+                    return
+                }
+                // Forward to the A2A agent card handler
+                const a2aController = (await import('./controllers/a2a')).default
+                request.params = { ...request.params, chatflowId }
+                await a2aController.handleAgentCard(request, response, () => {})
+            } catch (error) {
+                response.status(500).json({ error: 'Failed to generate AgentCard' })
+            }
+        })
+
+        // ----------------------------------------
         // Configure number of proxies in Host Environment
         // ----------------------------------------
         this.app.get('/api/v1/ip', (request, response) => {
