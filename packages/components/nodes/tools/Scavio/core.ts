@@ -26,8 +26,9 @@ export interface ScavioEndpoint {
     /** Node level default keys this endpoint accepts. Anything not listed is never sent. */
     defaults?: string[]
     /**
-     * Set only where the credit cost is a function of the request body, in which case it replaces
-     * the flat cost in every description. `credits` then carries the floor of the range.
+     * Set where a flat cost would mislead: the cost is a function of the request body, or (Instagram)
+     * varies per request around a typical value. It replaces the flat cost in every description, and
+     * `credits` then carries the floor or the typical cost.
      */
     creditNote?: string
 }
@@ -425,7 +426,7 @@ export const YOUTUBE_ENDPOINTS: ScavioEndpoint[] = [
         'YouTube Transcript',
         'scavio_youtube_transcript',
         '/api/v1/youtube/transcript',
-        8,
+        5,
         'Get the transcript of a YouTube video as plain text or timed SRT.',
         z.object({
             video_id: youtubeVideoId,
@@ -941,8 +942,12 @@ export const TIKTOK_SHOP_ENDPOINTS: ScavioEndpoint[] = [
 ]
 
 /* -------------------------------------------------------------------------- */
-/* Instagram - 12 endpoints, per endpoint credits (10 default, 8 and 2)        */
+/* Instagram - 12 endpoints, typically 1 or 2 credits, never more than 10     */
 /* -------------------------------------------------------------------------- */
+
+// Typical costs; a request that needs extra work can cost up to 10, and
+// credits_used in the response is the exact charge.
+const igCost = (typical: string) => `Typically ${typical}; up to 10 when a request needs extra work.`
 
 const igUsername = z.string().optional().describe('Instagram handle without the @')
 const igUserId = z.string().optional().describe('Numeric user id as a STRING. Takes precedence over username')
@@ -955,9 +960,11 @@ export const INSTAGRAM_ENDPOINTS: ScavioEndpoint[] = [
         'Instagram User Profile',
         'scavio_instagram_profile',
         '/api/v1/instagram/profile',
-        10,
+        1,
         'Get an Instagram profile: follower and following counts, biography, verification and profile picture.',
-        z.object({ username: igUsername, user_id: igUserId })
+        z.object({ username: igUsername, user_id: igUserId }),
+        undefined,
+        igCost('1 credit')
     ),
     endpoint(
         'userPosts',
@@ -965,111 +972,133 @@ export const INSTAGRAM_ENDPOINTS: ScavioEndpoint[] = [
         'scavio_instagram_user_posts',
         '/api/v1/instagram/user/posts',
         2,
-        'List the timeline posts of an Instagram account. This is the cheapest Instagram endpoint.',
-        z.object({ username: igUsername, user_id: igUserId, count: igFeedCount, cursor })
+        'List the timeline posts of an Instagram account. Posts are under data.items; pass pagination_token as cursor for the next page.',
+        z.object({ username: igUsername, user_id: igUserId, count: igFeedCount, cursor }),
+        undefined,
+        igCost('2 credits per page')
     ),
     endpoint(
         'userReels',
         'Instagram User Reels',
         'scavio_instagram_user_reels',
         '/api/v1/instagram/user/reels',
-        10,
+        1,
         'List the reels of an Instagram account.',
-        z.object({ username: igUsername, user_id: igUserId, count: igFeedCount, cursor })
+        z.object({ username: igUsername, user_id: igUserId, count: igFeedCount, cursor }),
+        undefined,
+        igCost('1 credit, 2 the first time a username is looked up')
     ),
     endpoint(
         'userTagged',
         'Instagram User Tagged Posts',
         'scavio_instagram_user_tagged',
         '/api/v1/instagram/user/tagged',
-        10,
+        1,
         'List the posts an Instagram account is tagged in.',
-        z.object({ username: igUsername, user_id: igUserId, count: igFeedCount, cursor })
+        z.object({ username: igUsername, user_id: igUserId, count: igFeedCount, cursor }),
+        undefined,
+        igCost('1 credit, 2 the first time a username is looked up')
     ),
     endpoint(
         'userStories',
         'Instagram User Stories',
         'scavio_instagram_user_stories',
         '/api/v1/instagram/user/stories',
-        10,
+        2,
         'Get the currently active stories of an Instagram account. Not paginated.',
-        z.object({ username: igUsername, user_id: igUserId })
+        z.object({ username: igUsername, user_id: igUserId }),
+        undefined,
+        igCost('2 credits')
     ),
     endpoint(
         'post',
         'Instagram Post Detail',
         'scavio_instagram_post',
         '/api/v1/instagram/post',
-        8,
+        2,
         'Get one Instagram post. The post is at items[0]; video URLs live in video_versions[].url and covers in image_versions2.candidates.',
         z.object({
             url: z.string().optional().describe('Full post URL, e.g. https://www.instagram.com/p/DUajw4YkorV/'),
             media_id: z.string().optional().describe('Numeric media id, highest precedence'),
             shortcode: z.string().optional().describe('Post shortcode, e.g. DUajw4YkorV')
-        })
+        }),
+        undefined,
+        igCost('2 credits')
     ),
     endpoint(
         'postComments',
         'Instagram Post Comments',
         'scavio_instagram_post_comments',
         '/api/v1/instagram/post/comments',
-        10,
+        2,
         'Get the comments on an Instagram post. Identified by shortcode or url, media_id is not accepted here.',
         z.object({
             shortcode: z.string().optional().describe('Post shortcode, e.g. DUajw4YkorV'),
             url: z.string().optional().describe('Full post URL, parsed down to the shortcode'),
             cursor,
             sort_order: z.enum(['popular', 'newest']).optional().describe('Comment order, popular by default')
-        })
+        }),
+        undefined,
+        igCost('2 credits per page')
     ),
     endpoint(
         'postCommentReplies',
         'Instagram Comment Replies',
         'scavio_instagram_post_comment_replies',
         '/api/v1/instagram/post/comments/replies',
-        8,
-        'Get the replies to one Instagram comment. Needs media_id, which you resolve with the Instagram post tool.',
+        2,
+        'Get the replies to one Instagram comment. Needs media_id and the comment id (pk), which every comment from the post comments tool carries.',
         z.object({
             media_id: z.string().describe('Numeric media id of the post'),
             comment_id: z.string().describe('Id of the comment to expand'),
             cursor
-        })
+        }),
+        undefined,
+        igCost('2 credits')
     ),
     endpoint(
         'searchUsers',
         'Instagram Search Users',
         'scavio_instagram_search_users',
         '/api/v1/instagram/search/users',
-        10,
+        2,
         'Search Instagram accounts. The query field is named keyword and page size is not controllable.',
-        z.object({ keyword: z.string().max(500).describe('The search keyword'), cursor })
+        z.object({ keyword: z.string().max(500).describe('The search keyword'), cursor }),
+        undefined,
+        igCost('2 credits, 8 when a cursor is sent')
     ),
     endpoint(
         'searchHashtags',
         'Instagram Search Hashtags',
         'scavio_instagram_search_hashtags',
         '/api/v1/instagram/search/hashtags',
-        10,
+        2,
         'Search Instagram hashtags. The query field is named keyword.',
-        z.object({ keyword: z.string().max(500).describe('The search keyword'), cursor })
+        z.object({ keyword: z.string().max(500).describe('The search keyword'), cursor }),
+        undefined,
+        igCost('2 credits, 8 when a cursor is sent')
     ),
     endpoint(
         'userFollowers',
         'Instagram User Followers',
         'scavio_instagram_user_followers',
         '/api/v1/instagram/user/followers',
-        10,
+        2,
         'List the followers of an Instagram account.',
-        z.object({ username: igUsername, user_id: igUserId, count: igFollowCount, cursor })
+        z.object({ username: igUsername, user_id: igUserId, count: igFollowCount, cursor }),
+        undefined,
+        igCost('2 credits per page')
     ),
     endpoint(
         'userFollowings',
         'Instagram User Followings',
         'scavio_instagram_user_followings',
         '/api/v1/instagram/user/followings',
-        10,
+        2,
         'List the accounts an Instagram user follows.',
-        z.object({ username: igUsername, user_id: igUserId, count: igFollowCount, cursor })
+        z.object({ username: igUsername, user_id: igUserId, count: igFollowCount, cursor }),
+        undefined,
+        igCost('2 credits per page')
     )
 ]
 
