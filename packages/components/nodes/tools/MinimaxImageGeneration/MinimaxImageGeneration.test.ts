@@ -93,6 +93,20 @@ describe('MinimaxImageGeneration', () => {
             expect(url).toBe('https://api.minimaxi.com/v1/image_generation')
         })
 
+        it('should send subject reference image URLs or data URLs', async () => {
+            ;(global as any).fetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({ data: { image_urls: ['data:image/png;base64,result'] }, base_resp: { status_code: 0 } })
+            })
+
+            const nodeData = createNodeData({ model: 'image-01' })
+            const tool = await nodeClass.init(nodeData, '', {})
+            await tool._call({ prompt: 'a refined portrait', subject_reference: ['https://example.com/source.png'] })
+
+            const [, requestInit] = (global as any).fetch.mock.calls[0]
+            expect(JSON.parse(requestInit.body).subject_reference).toEqual(['https://example.com/source.png'])
+        })
+
         it('should throw when the API returns a non-zero status code', async () => {
             ;(global as any).fetch.mockResolvedValue({
                 ok: true,

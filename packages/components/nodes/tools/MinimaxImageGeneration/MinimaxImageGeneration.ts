@@ -162,7 +162,13 @@ class MinimaxImageTool extends StructuredTool {
     description =
         'Generate images from a text description using MiniMax image generation. Input should be a detailed text prompt describing the desired image.'
     schema = z.object({
-        prompt: z.string().describe('A detailed text description of the image to generate.')
+        prompt: z.string().describe('A detailed text description of the image to generate.'),
+        subject_reference: z
+            .array(z.string())
+            .min(1)
+            .max(9)
+            .optional()
+            .describe('Optional reference image URLs or data URLs (base64) to guide the generated image.')
     })
 
     private apiKey: string
@@ -184,7 +190,7 @@ class MinimaxImageTool extends StructuredTool {
         this.n = params.n
     }
 
-    async _call({ prompt }: { prompt: string }): Promise<string> {
+    async _call({ prompt, subject_reference }: { prompt: string; subject_reference?: string[] }): Promise<string> {
         const payload: Record<string, any> = {
             model: this.model,
             prompt,
@@ -193,6 +199,7 @@ class MinimaxImageTool extends StructuredTool {
             prompt_optimizer: this.promptOptimizer,
             n: this.n
         }
+        if (subject_reference?.length) payload.subject_reference = subject_reference
 
         const response = await fetch(`${this.baseUrl}/v1/image_generation`, {
             method: 'POST',
@@ -214,19 +221,11 @@ class MinimaxImageTool extends StructuredTool {
             throw new Error(`MiniMax image generation failed: ${statusMsg}`)
         }
 
-        if (this.outputFormat === 'base64') {
-            const images = data?.data?.image_base64
-            if (!Array.isArray(images) || images.length === 0) {
-                throw new Error('MiniMax returned no image data')
-            }
-            return images.map((image: string) => `data:image/png;base64,${image}`).join('\n')
+        const images = data?.data?.image_urls
+        if (!Array.isArray(images) || images.length === 0) {
+            throw new Error('MiniMax returned no image data')
         }
-
-        const urls = data?.data?.image_urls
-        if (!Array.isArray(urls) || urls.length === 0) {
-            throw new Error('MiniMax returned no image URLs')
-        }
-        return urls.join('\n')
+        return images.join('\n')
     }
 }
 
