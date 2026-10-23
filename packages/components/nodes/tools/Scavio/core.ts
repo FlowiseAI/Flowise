@@ -1902,7 +1902,7 @@ export const EBAY_ENDPOINTS: ScavioEndpoint[] = [
 ]
 
 /* -------------------------------------------------------------------------- */
-/* Target - 4 endpoints                                                       */
+/* Target - 5 endpoints                                                       */
 /* -------------------------------------------------------------------------- */
 
 export const TARGET_ENDPOINTS: ScavioEndpoint[] = [
@@ -1927,7 +1927,7 @@ export const TARGET_ENDPOINTS: ScavioEndpoint[] = [
                 .string()
                 .optional()
                 .describe(
-                    'Numeric Target store id. Unlike Walmart this is a real request parameter: it decides prices and availability. Default: 3991.'
+                    'Numeric Target store id. Unlike Walmart this is a real request parameter: it decides prices only (in-store stock: Target Availability). Default: 3991.'
                 )
         })
     ),
@@ -1952,7 +1952,7 @@ export const TARGET_ENDPOINTS: ScavioEndpoint[] = [
                 .string()
                 .optional()
                 .describe(
-                    'Numeric Target store id. Unlike Walmart this is a real request parameter: it decides prices and availability. Default: 3991.'
+                    'Numeric Target store id. Unlike Walmart this is a real request parameter: it decides prices only (in-store stock: Target Availability). Default: 3991.'
                 )
         })
     ),
@@ -1973,7 +1973,7 @@ export const TARGET_ENDPOINTS: ScavioEndpoint[] = [
                 .string()
                 .optional()
                 .describe(
-                    'Numeric Target store id. Unlike Walmart this is a real request parameter: it decides prices and availability. Default: 3991.'
+                    'Numeric Target store id. Unlike Walmart this is a real request parameter: it decides prices only (in-store stock: Target Availability). Default: 3991.'
                 )
         })
     ),
@@ -2001,8 +2001,22 @@ export const TARGET_ENDPOINTS: ScavioEndpoint[] = [
                 .string()
                 .optional()
                 .describe(
-                    'Numeric Target store id. Unlike Walmart this is a real request parameter: it decides prices and availability. Default: 3991.'
+                    'Numeric Target store id. Unlike Walmart this is a real request parameter: it decides prices only (in-store stock: Target Availability). Default: 3991.'
                 )
+        })
+    ),
+    endpoint(
+        'availability',
+        'Target Availability',
+        'scavio_target_availability',
+        '/api/v1/target/availability',
+        1,
+        'In-store stock for a Target product at every store near a ZIP: units available, in-store, pickup, curbside and ship-to-store status, distance, address and hours.',
+        z.object({
+            tcin: z.string().describe('Target catalog item number (TCIN).'),
+            zip: z.string().describe('5-digit US ZIP code to search around.'),
+            radius: z.number().int().optional().describe('Search radius in miles, 1-100. Default: 25. At most 20 stores.'),
+            store_id: z.string().optional().describe('Return only this Target store. It must be within radius of zip.')
         })
     )
 ]
