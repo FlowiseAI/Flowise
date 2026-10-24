@@ -11,7 +11,7 @@ const FALLBACK_MODELS: INodeOptionsValue[] = [
     { label: 'Qwen3.7 Plus', name: 'qwen3-7-plus' },
     { label: 'Qwen3.7 Max', name: 'qwen3-7-max' },
     { label: 'DeepSeek V4 Pro', name: 'deepseek-v4-pro' },
-    { label: 'DeepSeek V4 Flash', name: 'deepseek-v4-flash' },
+    { label: 'DeepSeek V4.1 Flash', name: 'deepseek-v4-1-flash' },
     { label: 'GLM-5.1', name: 'glm-5-1' },
     { label: 'Kimi K2.7 Code', name: 'kimi-k2-7-code' },
     { label: 'MiniMax M3', name: 'minimax-m3' }
